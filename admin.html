@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>EasyABC Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#050b15;--panel:#101c2d;--panel2:#172538;--line:rgba(255,255,255,.12);--text:#f8fafc;--muted:#9fb0c6;--a:#68a8ff;--b:#30d8e8;--green:#46e0a0;--red:#ff8a8a;--yellow:#ffd36a}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0,#182b50,#07111f 40%,#040a13 80%);min-height:100vh}button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.muted{color:var(--muted)}.small{font-size:12px}.top{height:72px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;background:rgba(4,10,19,.78);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}.brand{font-size:21px;font-weight:900}.brand span{color:#48dce7}.actions{display:flex;gap:8px;align-items:center}.btn,.ghost,.danger{border-radius:13px;padding:10px 14px;font-weight:800}.btn{border:0;background:linear-gradient(135deg,var(--a),var(--b));color:#03101d}.ghost{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text)}.danger{border:1px solid rgba(255,138,138,.3);background:rgba(255,138,138,.1);color:#ffc2c2}.wrap{width:min(1280px,94vw);margin:0 auto;padding:32px 0 70px}.login{width:min(520px,92vw);margin:10vh auto;padding:28px;border-radius:26px;border:1px solid var(--line);background:linear-gradient(155deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:0 30px 90px rgba(0,0,0,.35)}.login h1{margin:0 0 8px;font-size:34px}.login label,.field{display:grid;gap:7px;color:var(--muted);font-size:12px}.login input,.field input,.field textarea,.field select{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06);color:var(--text)}.field textarea{min-height:96px;resize:vertical}.field select option{color:#111}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}.tab{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);font-weight:800}.tab.active{border-color:transparent;background:linear-gradient(135deg,var(--a),var(--b));color:#03101d}.view{display:none}.view.active{display:block}.titlebar{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:18px}.titlebar h1{margin:0;font-size:36px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat,.panel{border:1px solid var(--line);background:linear-gradient(155deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border-radius:22px;padding:20px}.stat b{display:block;font-size:30px;margin-top:7px}.split{display:grid;grid-template-columns:.85fr 1.15fr;gap:18px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.span2{grid-column:1/-1}.check{display:flex;align-items:center;gap:9px;color:var(--text);margin-top:10px}.check input{width:auto}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:18px}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{text-align:left;padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;vertical-align:top}.table th{color:#b9c7dc;background:rgba(255,255,255,.04);position:sticky;top:0}.status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900}.on{background:rgba(70,224,160,.1);color:#a8f4d3;border:1px solid rgba(70,224,160,.2)}.off{background:rgba(255,138,138,.1);color:#ffc2c2;border:1px solid rgba(255,138,138,.2)}.pending{background:rgba(255,211,106,.1);color:#ffe0a0;border:1px solid rgba(255,211,106,.2)}.notice{margin:12px 0;padding:11px 13px;border-radius:12px;border:1px solid var(--line);color:var(--muted);font-size:12px}.notice.ok{color:#a8f4d3;border-color:rgba(70,224,160,.25)}.notice.err{color:#ffc2c2;border-color:rgba(255,138,138,.25)}.filebox{padding:12px;border:1px dashed rgba(104,168,255,.35);border-radius:13px;background:rgba(104,168,255,.06)}.filebox input{padding:0;border:0;background:none}.mobilecards{display:none}.orderitems{color:var(--muted);font-size:11px;margin-top:4px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}}
+@media(max-width:620px){.top{padding:0 3vw}.actions .desktop{display:none}.wrap{width:94vw;padding-top:22px}.grid{grid-template-columns:1fr 1fr}.titlebar{align-items:flex-start;flex-direction:column}.formgrid{grid-template-columns:1fr}.span2{grid-column:auto}.tablewrap{display:none}.mobilecards{display:grid;gap:12px}.mcard{padding:15px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.05)}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Easy<span>ABC</span> <span class="muted" style="font-size:12px">ADMIN</span></div>
+  <div class="actions">
+    <button class="ghost desktop" onclick="location.href='./'">← Store</button>
+    <span id="adminIdentity" class="muted small"></span>
+    <button id="signOutBtn" class="ghost hidden" onclick="signOutAdmin()">Sign out</button>
+  </div>
+</header>
+
+<section id="loginView" class="login">
+  <h1>Admin Access</h1>
+  <p class="muted">Sign in with an email that has been whitelisted as an EasyABC administrator.</p>
+  <label>Email
+    <input id="adminEmail" type="email" placeholder="admin@example.com" autocomplete="email">
+  </label>
+  <button id="adminLoginBtn" class="btn" style="width:100%;margin-top:14px" onclick="sendAdminLink()">Send Admin Access Link</button>
+  <div id="loginMsg" class="notice">The access link must be opened in this browser/device.</div>
+  <button class="ghost" style="width:100%;margin-top:8px" onclick="location.href='./'">Back to Store</button>
+</section>
+
+<main id="adminApp" class="wrap hidden">
+  <div class="tabs">
+    <button class="tab active" data-view="dashboard" onclick="showTab('dashboard',this)">Dashboard</button>
+    <button class="tab" data-view="categories" onclick="showTab('categories',this)">Categories</button>
+    <button class="tab" data-view="products" onclick="showTab('products',this)">Products</button>
+    <button class="tab" data-view="orders" onclick="showTab('orders',this)">Orders</button>
+  </div>
+
+  <section id="view-dashboard" class="view active">
+    <div class="titlebar"><div><div class="muted small">STORE OVERVIEW</div><h1>Dashboard</h1></div><button class="ghost" onclick="refreshAll()">Refresh</button></div>
+    <div class="grid">
+      <div class="stat"><span class="muted">Products</span><b id="statProducts">0</b></div>
+      <div class="stat"><span class="muted">Active Products</span><b id="statActive">0</b></div>
+      <div class="stat"><span class="muted">Categories</span><b id="statCategories">0</b></div>
+      <div class="stat"><span class="muted">Paid Orders</span><b id="statPaid">0</b></div>
+    </div>
+    <div class="panel" style="margin-top:18px">
+      <h3>Quick management</h3>
+      <p class="muted">Use Categories to organize the storefront. Use Products to manage pricing, descriptions and downloadable files. Changes are reflected on the live shop automatically.</p>
+      <div class="toolbar">
+        <button class="btn" onclick="openNewProduct()">+ New Product</button>
+        <button class="ghost" onclick="openNewCategory()">+ New Category</button>
+        <button class="ghost" onclick="location.href='./'">View Store</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-categories" class="view">
+    <div class="titlebar"><div><div class="muted small">STORE ORGANIZATION</div><h1>Categories</h1></div><button class="btn" onclick="newCategory()">+ Add Category</button></div>
+    <div class="split">
+      <div class="panel">
+        <h3 id="categoryFormTitle">New Category</h3>
+        <input id="categoryId" type="hidden">
+        <div class="field"><label>Name</label><input id="catName" placeholder="Trading"></div>
+        <div class="field" style="margin-top:10px"><label>Slug</label><input id="catSlug" placeholder="trading"></div>
+        <div class="field" style="margin-top:10px"><label>Description</label><textarea id="catDescription" placeholder="Trading and market analysis tools"></textarea></div>
+        <div class="formgrid" style="margin-top:10px">
+          <div class="field"><label>Sort Order</label><input id="catSort" type="number" value="0"></div>
+          <label class="check"><input id="catActive" type="checkbox" checked> Active</label>
+        </div>
+        <div class="toolbar"><button class="btn" onclick="saveCategory()">Save Category</button><button class="ghost" onclick="newCategory()">Clear</button></div>
+        <div id="categoryMsg" class="notice hidden"></div>
+      </div>
+      <div>
+        <div class="tablewrap"><table class="table"><thead><tr><th>Name</th><th>Slug</th><th>Products</th><th>Status</th><th>Sort</th><th>Action</th></tr></thead><tbody id="categoryRows"></tbody></table></div>
+        <div id="categoryCards" class="mobilecards"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-products" class="view">
+    <div class="titlebar"><div><div class="muted small">CATALOG</div><h1>Products</h1></div><button class="btn" onclick="newProduct()">+ Add Product</button></div>
+    <div class="split">
+      <div class="panel">
+        <h3 id="productFormTitle">New Product</h3>
+        <input id="productId" type="hidden">
+        <div class="formgrid">
+          <div class="field"><label>Name</label><input id="prodName" placeholder="Market Watch v.1"></div>
+          <div class="field"><label>Price (RM)</label><input id="prodPrice" type="number" min="0" step="0.01" value="0.00"></div>
+          <div class="field"><label>Category</label><select id="prodCategory"><option value="">Uncategorized</option></select></div>
+          <div class="field"><label>Emoji / Icon</label><input id="prodEmoji" placeholder="📈"></div>
+          <div class="field span2"><label>Description</label><textarea id="prodDescription" placeholder="Describe the product"></textarea></div>
+          <div class="field"><label>Sort Order</label><input id="prodSort" type="number" value="0"></div>
+          <label class="check"><input id="prodActive" type="checkbox" checked> Active on store</label>
+          <div class="field span2"><label>Download Name</label><input id="prodDownloadName" placeholder="Market Watch v.1.zip"></div>
+          <div class="field span2"><label>Private Storage Path</label><input id="prodDownloadPath" placeholder="products/market-watch-v1.zip"></div>
+          <div class="field span2 filebox"><label>Upload / replace downloadable file</label><input id="prodFile" type="file"><div class="muted small" style="margin-top:7px">Uploads privately to <b>digital-products</b>. The path will be filled automatically.</div></div>
+        </div>
+        <div class="toolbar"><button class="btn" onclick="saveProduct()">Save Product</button><button class="ghost" onclick="newProduct()">Clear</button></div>
+        <div id="productMsg" class="notice hidden"></div>
+      </div>
+      <div>
+        <div class="tablewrap"><table class="table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>File</th><th>Status</th><th>Sort</th><th>Action</th></tr></thead><tbody id="productRows"></tbody></table></div>
+        <div id="productCards" class="mobilecards"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-orders" class="view">
+    <div class="titlebar"><div><div class="muted small">SALES</div><h1>Orders</h1></div><button class="ghost" onclick="loadOrders()">Refresh</button></div>
+    <div class="tablewrap"><table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th><th>Paid</th><th>Created</th></tr></thead><tbody id="orderRows"></tbody></table></div>
+    <div id="orderCards" class="mobilecards"></div>
+  </section>
+</main>
+
+<script>
+const SUPABASE_URL='https://rygtjnzccemtpkjellgs.supabase.co';
+const SUPABASE_KEY='sb_publishable_WQibr98hDPjOIVqA0twL1g_OVUxgynh';
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+let categories=[],products=[],orders=[];
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const money=v=>'RM'+Number(v||0).toFixed(2);
+const slugify=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+
+function msg(id,text,type=''){
+  const el=document.getElementById(id);el.textContent=text;el.className='notice '+type;el.classList.remove('hidden');
+}
+function clearMsg(id){document.getElementById(id).classList.add('hidden')}
+
+async function sendAdminLink(){
+  const email=document.getElementById('adminEmail').value.trim().toLowerCase();
+  const btn=document.getElementById('adminLoginBtn');
+  if(!email){msg('loginMsg','Enter your admin email.','err');return}
+  btn.disabled=true;btn.textContent='Sending…';
+  try{
+    const {error}=await client.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});
+    if(error)throw error;
+    msg('loginMsg','Admin access link sent. Open it in this browser/device.','ok');
+  }catch(e){
+    const t=e.message||String(e);
+    msg('loginMsg',t.toLowerCase().includes('rate limit')?'Email rate limit reached. Wait before requesting another link.':t,'err');
+  }finally{btn.disabled=false;btn.textContent='Send Admin Access Link'}
+}
+
+async function checkAdmin(){
+  const {data:{session}}=await client.auth.getSession();
+  if(!session?.user){showLogin();return false}
+  const {data,error}=await client.rpc('is_admin');
+  if(error||data!==true){
+    document.getElementById('adminEmail').value=session.user.email||'';
+    msg('loginMsg','This signed-in email is not authorized as an EasyABC admin.','err');
+    showLogin();return false;
+  }
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('adminApp').classList.remove('hidden');
+  document.getElementById('signOutBtn').classList.remove('hidden');
+  document.getElementById('adminIdentity').textContent=session.user.email||'Admin';
+  await refreshAll();
+  return true;
+}
+function showLogin(){document.getElementById('loginView').classList.remove('hidden');document.getElementById('adminApp').classList.add('hidden');document.getElementById('signOutBtn').classList.add('hidden')}
+async function signOutAdmin(){await client.auth.signOut();location.href='admin.html'}
+
+function showTab(name,btn){
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+name));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  (btn||document.querySelector('.tab[data-view="'+name+'"]'))?.classList.add('active');
+  scrollTo({top:0,behavior:'smooth'});
+}
+function openNewProduct(){showTab('products');newProduct()}
+function openNewCategory(){showTab('categories');newCategory()}
+
+async function refreshAll(){
+  await Promise.all([loadCategories(),loadProducts(),loadOrders()]);
+  updateStats();
+}
+async function loadCategories(){
+  const {data,error}=await client.from('categories').select('*').order('sort_order').order('name');
+  if(error){console.error(error);return}
+  categories=data||[];
+  renderCategorySelect();renderCategories();
+}
+async function loadProducts(){
+  const {data,error}=await client.from('products').select('*').order('sort_order').order('name');
+  if(error){console.error(error);return}
+  products=data||[];renderProducts();renderCategories();
+}
+async function loadOrders(){
+  const {data,error}=await client.from('orders').select('id,order_no,customer_name,customer_email,amount,status,paid_at,created_at').order('created_at',{ascending:false}).limit(100);
+  if(error){console.error(error);return}
+  orders=data||[];renderOrders();updateStats();
+}
+function updateStats(){
+  document.getElementById('statProducts').textContent=products.length;
+  document.getElementById('statActive').textContent=products.filter(x=>x.active).length;
+  document.getElementById('statCategories').textContent=categories.length;
+  document.getElementById('statPaid').textContent=orders.filter(x=>x.status==='paid').length;
+}
+function catName(id){return categories.find(x=>String(x.id)===String(id))?.name||'Uncategorized'}
+function renderCategorySelect(){
+  const s=document.getElementById('prodCategory');
+  const current=s.value;
+  s.innerHTML='<option value="">Uncategorized</option>'+categories.map(c=>'<option value="'+c.id+'">'+esc(c.name)+(c.active?'':' (Inactive)')+'</option>').join('');
+  if([...s.options].some(o=>o.value===current))s.value=current;
+}
+
+function newCategory(){
+  document.getElementById('categoryFormTitle').textContent='New Category';
+  document.getElementById('categoryId').value='';
+  document.getElementById('catName').value='';
+  document.getElementById('catSlug').value='';
+  document.getElementById('catDescription').value='';
+  document.getElementById('catSort').value='0';
+  document.getElementById('catActive').checked=true;clearMsg('categoryMsg');
+}
+function editCategory(id){
+  const c=categories.find(x=>String(x.id)===String(id));if(!c)return;
+  document.getElementById('categoryFormTitle').textContent='Edit Category';
+  document.getElementById('categoryId').value=c.id;
+  document.getElementById('catName').value=c.name||'';
+  document.getElementById('catSlug').value=c.slug||'';
+  document.getElementById('catDescription').value=c.description||'';
+  document.getElementById('catSort').value=c.sort_order||0;
+  document.getElementById('catActive').checked=!!c.active;clearMsg('categoryMsg');scrollTo({top:120,behavior:'smooth'});
+}
+async function saveCategory(){
+  const id=document.getElementById('categoryId').value;
+  const name=document.getElementById('catName').value.trim();
+  const slug=(document.getElementById('catSlug').value.trim()||slugify(name));
+  if(!name||!slug){msg('categoryMsg','Name and slug are required.','err');return}
+  const payload={name,slug,description:document.getElementById('catDescription').value.trim()||null,sort_order:Number(document.getElementById('catSort').value)||0,active:document.getElementById('catActive').checked};
+  const q=id?client.from('categories').update(payload).eq('id',id):client.from('categories').insert(payload);
+  const {error}=await q;if(error){msg('categoryMsg',error.message,'err');return}
+  msg('categoryMsg','Category saved.','ok');await loadCategories();newCategory();
+}
+async function deleteCategory(id){
+  const c=categories.find(x=>String(x.id)===String(id));if(!c||!confirm('Delete category "'+c.name+'"? Products will become uncategorized.'))return;
+  const {error}=await client.from('categories').delete().eq('id',id);
+  if(error){alert(error.message);return}await loadCategories();await loadProducts();
+}
+function renderCategories(){
+  const counts={};products.forEach(p=>{if(p.category_id)counts[p.category_id]=(counts[p.category_id]||0)+1});
+  document.getElementById('categoryRows').innerHTML=categories.map(c=>'<tr><td><b>'+esc(c.name)+'</b><div class="muted small">'+esc(c.description||'')+'</div></td><td>'+esc(c.slug)+'</td><td>'+(counts[c.id]||0)+'</td><td><span class="status '+(c.active?'on':'off')+'">'+(c.active?'ACTIVE':'INACTIVE')+'</span></td><td>'+c.sort_order+'</td><td><button class="ghost" onclick="editCategory('+c.id+')">Edit</button> <button class="danger" onclick="deleteCategory('+c.id+')">Delete</button></td></tr>').join('');
+  document.getElementById('categoryCards').innerHTML=categories.map(c=>'<div class="mcard"><div class="row"><b>'+esc(c.name)+'</b><span class="status '+(c.active?'on':'off')+'">'+(c.active?'ACTIVE':'OFF')+'</span></div><div class="muted small">'+esc(c.description||'')+'</div><div class="toolbar"><button class="ghost" onclick="editCategory('+c.id+')">Edit</button><button class="danger" onclick="deleteCategory('+c.id+')">Delete</button></div></div>').join('');
+}
+
+function newProduct(){
+  document.getElementById('productFormTitle').textContent='New Product';
+  ['productId','prodName','prodEmoji','prodDescription','prodDownloadName','prodDownloadPath'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('prodPrice').value='0.00';document.getElementById('prodCategory').value='';document.getElementById('prodSort').value='0';document.getElementById('prodActive').checked=true;document.getElementById('prodFile').value='';clearMsg('productMsg');
+}
+function editProduct(id){
+  const p=products.find(x=>String(x.id)===String(id));if(!p)return;
+  document.getElementById('productFormTitle').textContent='Edit Product';
+  document.getElementById('productId').value=p.id;document.getElementById('prodName').value=p.name||'';document.getElementById('prodPrice').value=Number(p.price||0).toFixed(2);document.getElementById('prodCategory').value=p.category_id||'';document.getElementById('prodEmoji').value=p.emoji||'';document.getElementById('prodDescription').value=p.description||'';document.getElementById('prodSort').value=p.sort_order||0;document.getElementById('prodActive').checked=!!p.active;document.getElementById('prodDownloadName').value=p.download_name||'';document.getElementById('prodDownloadPath').value=p.download_path||'';document.getElementById('prodFile').value='';clearMsg('productMsg');scrollTo({top:120,behavior:'smooth'});
+}
+async function uploadProductFile(){
+  const file=document.getElementById('prodFile').files[0];if(!file)return null;
+  const safe=file.name.replace(/[^a-zA-Z0-9._-]+/g,'-');
+  const path='products/'+Date.now()+'-'+safe;
+  msg('productMsg','Uploading private file…');
+  const {error}=await client.storage.from('digital-products').upload(path,file,{upsert:false,contentType:file.type||undefined});
+  if(error)throw error;
+  return {path,name:file.name};
+}
+async function saveProduct(){
+  try{
+    const id=document.getElementById('productId').value;
+    const name=document.getElementById('prodName').value.trim();
+    if(!name)throw new Error('Product name is required.');
+    const uploaded=await uploadProductFile();
+    const payload={
+      name,
+      description:document.getElementById('prodDescription').value.trim()||null,
+      price:Number(document.getElementById('prodPrice').value)||0,
+      emoji:document.getElementById('prodEmoji').value.trim()||'📦',
+      category_id:document.getElementById('prodCategory').value?Number(document.getElementById('prodCategory').value):null,
+      active:document.getElementById('prodActive').checked,
+      sort_order:Number(document.getElementById('prodSort').value)||0,
+      download_name:(uploaded?.name||document.getElementById('prodDownloadName').value.trim())||null,
+      download_path:(uploaded?.path||document.getElementById('prodDownloadPath').value.trim())||null
+    };
+    const q=id?client.from('products').update(payload).eq('id',id):client.from('products').insert(payload);
+    const {error}=await q;if(error)throw error;
+    msg('productMsg','Product saved successfully.','ok');await loadProducts();newProduct();
+  }catch(e){msg('productMsg',e.message||String(e),'err')}
+}
+async function deleteProduct(id){
+  const p=products.find(x=>String(x.id)===String(id));if(!p||!confirm('Delete product "'+p.name+'"? This will not delete historical order items.'))return;
+  const {error}=await client.from('products').delete().eq('id',id);if(error){alert(error.message);return}await loadProducts();
+}
+function renderProducts(){
+  document.getElementById('productRows').innerHTML=products.map(p=>'<tr><td><b>'+esc(p.emoji||'📦')+' '+esc(p.name)+'</b><div class="muted small">'+esc(p.description||'')+'</div></td><td>'+esc(catName(p.category_id))+'</td><td>'+money(p.price)+'</td><td>'+(p.download_path?'<span class="status on">READY</span>':'<span class="status pending">NO FILE</span>')+'</td><td><span class="status '+(p.active?'on':'off')+'">'+(p.active?'ACTIVE':'INACTIVE')+'</span></td><td>'+p.sort_order+'</td><td><button class="ghost" onclick="editProduct('+p.id+')">Edit</button> <button class="danger" onclick="deleteProduct('+p.id+')">Delete</button></td></tr>').join('');
+  document.getElementById('productCards').innerHTML=products.map(p=>'<div class="mcard"><div class="row"><b>'+esc(p.emoji||'📦')+' '+esc(p.name)+'</b><b>'+money(p.price)+'</b></div><div class="muted small">'+esc(catName(p.category_id))+'</div><div class="toolbar"><button class="ghost" onclick="editProduct('+p.id+')">Edit</button><button class="danger" onclick="deleteProduct('+p.id+')">Delete</button></div></div>').join('');
+  updateStats();
+}
+function renderOrders(){
+  const statusClass=s=>s==='paid'?'on':s==='failed'?'off':'pending';
+  document.getElementById('orderRows').innerHTML=orders.map(o=>'<tr><td><b>'+esc(o.order_no)+'</b></td><td>'+esc(o.customer_name||'-')+'<div class="muted small">'+esc(o.customer_email||'')+'</div></td><td>'+money(o.amount)+'</td><td><span class="status '+statusClass(o.status)+'">'+esc(String(o.status||'').toUpperCase())+'</span></td><td>'+esc(o.paid_at?new Date(o.paid_at).toLocaleString():'-')+'</td><td>'+esc(new Date(o.created_at).toLocaleString())+'</td></tr>').join('');
+  document.getElementById('orderCards').innerHTML=orders.map(o=>'<div class="mcard"><div class="row"><b>'+esc(o.order_no)+'</b><b>'+money(o.amount)+'</b></div><div class="muted small">'+esc(o.customer_email||o.customer_name||'')+'</div><div style="margin-top:8px"><span class="status '+statusClass(o.status)+'">'+esc(String(o.status||'').toUpperCase())+'</span></div></div>').join('');
+}
+
+client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_IN'||event==='USER_UPDATED')setTimeout(checkAdmin,60);if(event==='SIGNED_OUT')showLogin()});
+checkAdmin();
+</script>
+</body>
+</html>
