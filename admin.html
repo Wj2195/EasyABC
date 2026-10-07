@@ -8,7 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#050b15;--panel:#101c2d;--panel2:#172538;--line:rgba(255,255,255,.12);--text:#f8fafc;--muted:#9fb0c6;--a:#68a8ff;--b:#30d8e8;--green:#46e0a0;--red:#ff8a8a;--yellow:#ffd36a}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0,#182b50,#07111f 40%,#040a13 80%);min-height:100vh}button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.muted{color:var(--muted)}.small{font-size:12px}.top{height:72px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;background:rgba(4,10,19,.78);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}.brand{font-size:21px;font-weight:900}.brand span{color:#48dce7}.actions{display:flex;gap:8px;align-items:center}.btn,.ghost,.danger{border-radius:13px;padding:10px 14px;font-weight:800}.btn{border:0;background:linear-gradient(135deg,var(--a),var(--b));color:#03101d}.ghost{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text)}.danger{border:1px solid rgba(255,138,138,.3);background:rgba(255,138,138,.1);color:#ffc2c2}.wrap{width:min(1280px,94vw);margin:0 auto;padding:32px 0 70px}.login{width:min(520px,92vw);margin:10vh auto;padding:28px;border-radius:26px;border:1px solid var(--line);background:linear-gradient(155deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:0 30px 90px rgba(0,0,0,.35)}.login h1{margin:0 0 8px;font-size:34px}.login label,.field{display:grid;gap:7px;color:var(--muted);font-size:12px}.login input,.field input,.field textarea,.field select{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06);color:var(--text)}.field textarea{min-height:96px;resize:vertical}.field select option{color:#111}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}.tab{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);font-weight:800}.tab.active{border-color:transparent;background:linear-gradient(135deg,var(--a),var(--b));color:#03101d}.view{display:none}.view.active{display:block}.titlebar{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:18px}.titlebar h1{margin:0;font-size:36px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat,.panel{border:1px solid var(--line);background:linear-gradient(155deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border-radius:22px;padding:20px}.stat b{display:block;font-size:30px;margin-top:7px}.split{display:grid;grid-template-columns:.85fr 1.15fr;gap:18px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.span2{grid-column:1/-1}.check{display:flex;align-items:center;gap:9px;color:var(--text);margin-top:10px}.check input{width:auto}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:18px}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{text-align:left;padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;vertical-align:top}.table th{color:#b9c7dc;background:rgba(255,255,255,.04);position:sticky;top:0}.status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900}.on{background:rgba(70,224,160,.1);color:#a8f4d3;border:1px solid rgba(70,224,160,.2)}.off{background:rgba(255,138,138,.1);color:#ffc2c2;border:1px solid rgba(255,138,138,.2)}.pending{background:rgba(255,211,106,.1);color:#ffe0a0;border:1px solid rgba(255,211,106,.2)}.notice{margin:12px 0;padding:11px 13px;border-radius:12px;border:1px solid var(--line);color:var(--muted);font-size:12px}.notice.ok{color:#a8f4d3;border-color:rgba(70,224,160,.25)}.notice.err{color:#ffc2c2;border-color:rgba(255,138,138,.25)}.filebox{padding:12px;border:1px dashed rgba(104,168,255,.35);border-radius:13px;background:rgba(104,168,255,.06)}.filebox input{padding:0;border:0;background:none}.image-preview{margin-top:10px;min-height:120px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.04);display:grid;place-items:center;overflow:hidden}.image-preview img{width:100%;max-height:240px;object-fit:cover;display:block}.thumb{width:64px;height:46px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}.mobilecards{display:none}.orderitems{color:var(--muted);font-size:11px;margin-top:4px}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0,#182b50,#07111f 40%,#040a13 80%);min-height:100vh}button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.muted{color:var(--muted)}.small{font-size:12px}.top{height:72px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;background:rgba(4,10,19,.78);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}.brand{font-size:21px;font-weight:900}.brand span{color:#48dce7}.actions{display:flex;gap:8px;align-items:center}.btn,.ghost,.danger{border-radius:13px;padding:10px 14px;font-weight:800}.btn{border:0;background:linear-gradient(135deg,var(--a),var(--b));color:#03101d}.ghost{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text)}.danger{border:1px solid rgba(255,138,138,.3);background:rgba(255,138,138,.1);color:#ffc2c2}.wrap{width:min(1280px,94vw);margin:0 auto;padding:32px 0 70px}.login{width:min(520px,92vw);margin:10vh auto;padding:28px;border-radius:26px;border:1px solid var(--line);background:linear-gradient(155deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:0 30px 90px rgba(0,0,0,.35)}.login h1{margin:0 0 8px;font-size:34px}.login label,.field{display:grid;gap:7px;color:var(--muted);font-size:12px}.login input,.field input,.field textarea,.field select{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06);color:var(--text)}.field textarea{min-height:96px;resize:vertical}.field select option{color:#111}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}.tab{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);font-weight:800}.tab.active{border-color:transparent;background:linear-gradient(135deg,var(--a),var(--b));color:#03101d}.view{display:none}.view.active{display:block}.titlebar{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:18px}.titlebar h1{margin:0;font-size:36px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat,.panel{border:1px solid var(--line);background:linear-gradient(155deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border-radius:22px;padding:20px}.stat b{display:block;font-size:30px;margin-top:7px}.split{display:grid;grid-template-columns:.85fr 1.15fr;gap:18px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.span2{grid-column:1/-1}.check{display:flex;align-items:center;gap:9px;color:var(--text);margin-top:10px}.check input{width:auto}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:18px}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{text-align:left;padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;vertical-align:top}.table th{color:#b9c7dc;background:rgba(255,255,255,.04);position:sticky;top:0}.status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900}.on{background:rgba(70,224,160,.1);color:#a8f4d3;border:1px solid rgba(70,224,160,.2)}.off{background:rgba(255,138,138,.1);color:#ffc2c2;border:1px solid rgba(255,138,138,.2)}.pending{background:rgba(255,211,106,.1);color:#ffe0a0;border:1px solid rgba(255,211,106,.2)}.notice{margin:12px 0;padding:11px 13px;border-radius:12px;border:1px solid var(--line);color:var(--muted);font-size:12px}.notice.ok{color:#a8f4d3;border-color:rgba(70,224,160,.25)}.notice.err{color:#ffc2c2;border-color:rgba(255,138,138,.25)}.filebox{padding:12px;border:1px dashed rgba(104,168,255,.35);border-radius:13px;background:rgba(104,168,255,.06)}.filebox input{padding:0;border:0;background:none}.image-preview{margin-top:10px;min-height:120px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.04);display:grid;place-items:center;overflow:hidden}.image-preview img{width:100%;max-height:240px;object-fit:cover;display:block}.thumb{width:64px;height:46px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}.media-manager{display:grid;gap:10px;margin-top:12px}.media-row{display:grid;grid-template-columns:90px 1fr auto;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.04)}.media-preview{width:90px;height:66px;border-radius:10px;overflow:hidden;background:#050a12;display:grid;place-items:center}.media-preview img,.media-preview video{width:100%;height:100%;object-fit:cover}.media-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mini{padding:7px 9px;border-radius:9px;font-size:11px}.cover-badge{display:inline-flex;padding:4px 7px;border-radius:999px;background:rgba(70,224,160,.11);border:1px solid rgba(70,224,160,.22);color:#a8f4d3;font-size:10px;font-weight:900}.media-empty{padding:18px;text-align:center;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}.mobilecards{display:none}.orderitems{color:var(--muted);font-size:11px;margin-top:4px}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}}
 @media(max-width:620px){.top{padding:0 3vw}.actions .desktop{display:none}.wrap{width:94vw;padding-top:22px}.grid{grid-template-columns:1fr 1fr}.titlebar{align-items:flex-start;flex-direction:column}.formgrid{grid-template-columns:1fr}.span2{grid-column:auto}.tablewrap{display:none}.mobilecards{display:grid;gap:12px}.mcard{padding:15px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.05)}}
 </style>
@@ -105,12 +105,20 @@
           <label class="check"><input id="prodActive" type="checkbox" checked> Active on store</label>
 
           <div class="field span2 filebox">
-            <label>Product Image</label>
+            <label>Single Cover Image (fallback)</label>
             <input id="prodImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" onchange="previewSelectedImage()">
-            <div class="muted small" style="margin-top:7px">Recommended: JPG/PNG/WebP, around 1200px wide. This image is public on the storefront.</div>
+            <div class="muted small" style="margin-top:7px">Optional fallback image. The Gallery & Video Manager below will take priority when media is added.</div>
             <div id="prodImagePreview" class="image-preview"><span class="muted small">No image selected</span></div>
             <input id="prodImagePath" type="hidden">
             <button type="button" class="ghost" style="margin-top:9px" onclick="removeProductImage()">Remove Image</button>
+          </div>
+
+          <div class="field span2 filebox">
+            <label>Gallery & Video Manager</label>
+            <input id="galleryFiles" type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm">
+            <div class="muted small" style="margin-top:7px">Upload multiple images and optional MP4/WebM videos. Save a new product first, then Edit it to manage its gallery.</div>
+            <button id="galleryUploadBtn" type="button" class="btn" style="margin-top:10px" onclick="uploadGalleryMedia()">Upload Selected Media</button>
+            <div id="mediaManager" class="media-manager"><div class="media-empty">Save or edit a product to manage its gallery.</div></div>
           </div>
 
           <div class="field span2"><label>Download Name</label><input id="prodDownloadName" placeholder="Market Watch v.1.zip"></div>
@@ -138,7 +146,7 @@
 const SUPABASE_URL='https://rygtjnzccemtpkjellgs.supabase.co';
 const SUPABASE_KEY='sb_publishable_WQibr98hDPjOIVqA0twL1g_OVUxgynh';
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-let categories=[],products=[],orders=[];
+let categories=[],products=[],orders=[],allMedia=[],currentMediaProductId=null,currentMedia=[];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const money=v=>'RM'+Number(v||0).toFixed(2);
 const slugify=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
@@ -227,7 +235,12 @@ async function loadCategories(){
 async function loadProducts(){
   const {data,error}=await client.from('products').select('*').order('sort_order').order('name');
   if(error){console.error(error);return}
-  products=data||[];renderProducts();renderCategories();
+  products=data||[];
+  try{
+    const {data:mediaData,error:mediaError}=await client.from('product_media').select('*').order('sort_order').order('id');
+    allMedia=mediaError?[]:(mediaData||[]);
+  }catch{allMedia=[]}
+  renderProducts();renderCategories();
 }
 async function loadOrders(){
   const {data,error}=await client.from('orders').select('id,order_no,customer_name,customer_email,amount,status,paid_at,created_at').order('created_at',{ascending:false}).limit(100);
@@ -288,6 +301,94 @@ function renderCategories(){
   document.getElementById('categoryCards').innerHTML=categories.map(c=>'<div class="mcard"><div class="row"><b>'+esc(c.name)+'</b><span class="status '+(c.active?'on':'off')+'">'+(c.active?'ACTIVE':'OFF')+'</span></div><div class="muted small">'+esc(c.description||'')+'</div><div class="toolbar"><button class="ghost" onclick="editCategory('+c.id+')">Edit</button><button class="danger" onclick="deleteCategory('+c.id+')">Delete</button></div></div>').join('');
 }
 
+function mediaPublicUrl(path){
+  return publicImageUrl(path);
+}
+function adminCover(p){
+  const list=allMedia.filter(m=>String(m.product_id)===String(p.id)).sort((a,b)=>(Number(b.is_cover)-Number(a.is_cover))||(Number(a.sort_order)-Number(b.sort_order))||(Number(a.id)-Number(b.id)));
+  if(list.length)return list[0];
+  if(p.image_path)return {media_type:'image',storage_path:p.image_path};
+  return null;
+}
+async function loadMediaManager(productId){
+  currentMediaProductId=productId?Number(productId):null;
+  const box=document.getElementById('mediaManager');
+  if(!currentMediaProductId){currentMedia=[];box.innerHTML='<div class="media-empty">Save the product first, then Edit it to upload gallery media.</div>';return}
+  const {data,error}=await client.from('product_media').select('*').eq('product_id',currentMediaProductId).order('sort_order').order('id');
+  if(error){box.innerHTML='<div class="media-empty">'+esc(error.message)+'</div>';return}
+  currentMedia=data||[];renderMediaManager();
+}
+function renderMediaManager(){
+  const box=document.getElementById('mediaManager');
+  if(!currentMedia.length){box.innerHTML='<div class="media-empty">No gallery media yet. Upload one or more images/videos above.</div>';return}
+  box.innerHTML=currentMedia.map((m,i)=>{
+    const url=mediaPublicUrl(m.storage_path);
+    const preview=m.media_type==='video'?'<video src="'+esc(url)+'" muted playsinline></video>':'<img src="'+esc(url)+'" alt="">';
+    return '<div class="media-row"><div class="media-preview">'+preview+'</div><div><b>'+esc(m.media_type==='video'?'Video':'Image')+'</b> '+(m.is_cover?'<span class="cover-badge">COVER</span>':'')+'<div class="muted small">'+esc(m.storage_path)+'</div><div class="muted small">Position '+(i+1)+'</div></div><div class="media-actions"><button class="ghost mini" onclick="moveMedia('+m.id+',-1)" '+(i===0?'disabled':'')+'>↑</button><button class="ghost mini" onclick="moveMedia('+m.id+',1)" '+(i===currentMedia.length-1?'disabled':'')+'>↓</button><button class="ghost mini" onclick="setMediaCover('+m.id+')">Set Cover</button><button class="danger mini" onclick="deleteMedia('+m.id+')">Delete</button></div></div>';
+  }).join('');
+}
+async function uploadGalleryMedia(){
+  if(!currentMediaProductId){msg('productMsg','Save this product first, then Edit it before uploading gallery media.','err');return}
+  const input=document.getElementById('galleryFiles'),files=[...(input.files||[])];
+  if(!files.length){msg('productMsg','Choose one or more images/videos first.','err');return}
+  const btn=document.getElementById('galleryUploadBtn');btn.disabled=true;btn.textContent='Uploading…';
+  try{
+    let nextSort=currentMedia.length?Math.max(...currentMedia.map(x=>Number(x.sort_order)||0))+1:1;
+    let hasCover=currentMedia.some(x=>x.is_cover);
+    for(let i=0;i<files.length;i++){
+      const file=files[i];
+      const isVideo=file.type.startsWith('video/');
+      if(isVideo && !['video/mp4','video/webm'].includes(file.type))throw new Error('Only MP4/WebM video is supported.');
+      if(!isVideo && !file.type.startsWith('image/'))throw new Error('Unsupported media type: '+file.name);
+      const safe=file.name.replace(/[^a-zA-Z0-9._-]+/g,'-');
+      const path='products/'+currentMediaProductId+'/'+Date.now()+'-'+i+'-'+safe;
+      const {error:uploadError}=await client.storage.from('product-media').upload(path,file,{upsert:false,contentType:file.type||undefined});
+      if(uploadError)throw uploadError;
+      const {error:insertError}=await client.from('product_media').insert({
+        product_id:currentMediaProductId,
+        media_type:isVideo?'video':'image',
+        storage_path:path,
+        sort_order:nextSort++,
+        is_cover:!hasCover && !isVideo
+      });
+      if(insertError)throw insertError;
+      if(!hasCover && !isVideo)hasCover=true;
+    }
+    input.value='';msg('productMsg','Gallery media uploaded.','ok');
+    await loadProducts();await loadMediaManager(currentMediaProductId);
+  }catch(e){msg('productMsg',e.message||String(e),'err')}
+  finally{btn.disabled=false;btn.textContent='Upload Selected Media'}
+}
+async function setMediaCover(id){
+  const target=currentMedia.find(x=>Number(x.id)===Number(id));if(!target)return;
+  if(target.media_type==='video'&&!confirm('Use this video as the storefront cover? A video cover may load slower.'))return;
+  const {error:e1}=await client.from('product_media').update({is_cover:false}).eq('product_id',currentMediaProductId);
+  if(e1){alert(e1.message);return}
+  const {error:e2}=await client.from('product_media').update({is_cover:true}).eq('id',id);
+  if(e2){alert(e2.message);return}
+  await loadProducts();await loadMediaManager(currentMediaProductId);
+}
+async function moveMedia(id,delta){
+  const i=currentMedia.findIndex(x=>Number(x.id)===Number(id)),j=i+delta;
+  if(i<0||j<0||j>=currentMedia.length)return;
+  const a=currentMedia[i],b=currentMedia[j],aSort=Number(a.sort_order)||i+1,bSort=Number(b.sort_order)||j+1;
+  const temp=1000000+Date.now()%100000;
+  let r=await client.from('product_media').update({sort_order:temp}).eq('id',a.id);if(r.error){alert(r.error.message);return}
+  r=await client.from('product_media').update({sort_order:aSort}).eq('id',b.id);if(r.error){alert(r.error.message);return}
+  r=await client.from('product_media').update({sort_order:bSort}).eq('id',a.id);if(r.error){alert(r.error.message);return}
+  await loadProducts();await loadMediaManager(currentMediaProductId);
+}
+async function deleteMedia(id){
+  const m=currentMedia.find(x=>Number(x.id)===Number(id));if(!m||!confirm('Delete this '+m.media_type+' from the product gallery?'))return;
+  const {error:dbError}=await client.from('product_media').delete().eq('id',id);if(dbError){alert(dbError.message);return}
+  await client.storage.from('product-media').remove([m.storage_path]);
+  await loadProducts();await loadMediaManager(currentMediaProductId);
+  if(m.is_cover && currentMedia.length){
+    const firstImage=currentMedia.find(x=>x.media_type==='image')||currentMedia[0];
+    if(firstImage)await setMediaCover(firstImage.id);
+  }
+}
+
 function publicImageUrl(path){
   if(!path)return '';
   const {data}=client.storage.from('product-media').getPublicUrl(path);
@@ -325,12 +426,12 @@ async function uploadProductImage(){
 function newProduct(){
   document.getElementById('productFormTitle').textContent='New Product';
   ['productId','prodName','prodEmoji','prodDescription','prodDownloadName','prodDownloadPath','prodImagePath'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('prodPrice').value='0.00';document.getElementById('prodCategory').value='';document.getElementById('prodSort').value='0';document.getElementById('prodActive').checked=true;document.getElementById('prodFile').value='';document.getElementById('prodImageFile').value='';renderProductImagePreview('');clearMsg('productMsg');
+  document.getElementById('prodPrice').value='0.00';document.getElementById('prodCategory').value='';document.getElementById('prodSort').value='0';document.getElementById('prodActive').checked=true;document.getElementById('prodFile').value='';document.getElementById('prodImageFile').value='';document.getElementById('galleryFiles').value='';renderProductImagePreview('');currentMediaProductId=null;currentMedia=[];document.getElementById('mediaManager').innerHTML='<div class="media-empty">Save the product first, then Edit it to upload gallery media.</div>';clearMsg('productMsg');
 }
 function editProduct(id){
   const p=products.find(x=>String(x.id)===String(id));if(!p)return;
   document.getElementById('productFormTitle').textContent='Edit Product';
-  document.getElementById('productId').value=p.id;document.getElementById('prodName').value=p.name||'';document.getElementById('prodPrice').value=Number(p.price||0).toFixed(2);document.getElementById('prodCategory').value=p.category_id||'';document.getElementById('prodEmoji').value=p.emoji||'';document.getElementById('prodDescription').value=p.description||'';document.getElementById('prodSort').value=p.sort_order||0;document.getElementById('prodActive').checked=!!p.active;document.getElementById('prodDownloadName').value=p.download_name||'';document.getElementById('prodDownloadPath').value=p.download_path||'';document.getElementById('prodFile').value='';document.getElementById('prodImageFile').value='';document.getElementById('prodImagePath').value=p.image_path||'';renderProductImagePreview(p.image_path||'');clearMsg('productMsg');scrollTo({top:120,behavior:'smooth'});
+  document.getElementById('productId').value=p.id;document.getElementById('prodName').value=p.name||'';document.getElementById('prodPrice').value=Number(p.price||0).toFixed(2);document.getElementById('prodCategory').value=p.category_id||'';document.getElementById('prodEmoji').value=p.emoji||'';document.getElementById('prodDescription').value=p.description||'';document.getElementById('prodSort').value=p.sort_order||0;document.getElementById('prodActive').checked=!!p.active;document.getElementById('prodDownloadName').value=p.download_name||'';document.getElementById('prodDownloadPath').value=p.download_path||'';document.getElementById('prodFile').value='';document.getElementById('prodImageFile').value='';document.getElementById('prodImagePath').value=p.image_path||'';renderProductImagePreview(p.image_path||'');document.getElementById('galleryFiles').value='';loadMediaManager(p.id);clearMsg('productMsg');scrollTo({top:120,behavior:'smooth'});
 }
 async function uploadProductFile(){
   const file=document.getElementById('prodFile').files[0];if(!file)return null;
@@ -370,8 +471,8 @@ async function deleteProduct(id){
   const {error}=await client.from('products').delete().eq('id',id);if(error){alert(error.message);return}await loadProducts();
 }
 function renderProducts(){
-  document.getElementById('productRows').innerHTML=products.map(p=>{const img=publicImageUrl(p.image_path);return '<tr><td>'+(img?'<img class="thumb" src="'+esc(img)+'" alt="">':'<span style="font-size:28px">'+esc(p.emoji||'📦')+'</span>')+'</td><td><b>'+esc(p.name)+'</b><div class="muted small">'+esc(p.description||'')+'</div></td><td>'+esc(catName(p.category_id))+'</td><td>'+money(p.price)+'</td><td>'+(p.download_path?'<span class="status on">READY</span>':'<span class="status pending">NO FILE</span>')+'</td><td><span class="status '+(p.active?'on':'off')+'">'+(p.active?'ACTIVE':'INACTIVE')+'</span></td><td>'+p.sort_order+'</td><td><button class="ghost" onclick="editProduct('+p.id+')">Edit</button> <button class="danger" onclick="deleteProduct('+p.id+')">Delete</button></td></tr>'}).join('');
-  document.getElementById('productCards').innerHTML=products.map(p=>'<div class="mcard"><div class="row"><b>'+esc(p.emoji||'📦')+' '+esc(p.name)+'</b><b>'+money(p.price)+'</b></div><div class="muted small">'+esc(catName(p.category_id))+'</div><div class="toolbar"><button class="ghost" onclick="editProduct('+p.id+')">Edit</button><button class="danger" onclick="deleteProduct('+p.id+')">Delete</button></div></div>').join('');
+  document.getElementById('productRows').innerHTML=products.map(p=>{const cover=adminCover(p);const img=cover?mediaPublicUrl(cover.storage_path):'';return '<tr><td>'+(img?'<img class="thumb" src="'+esc(img)+'" alt="">':'<span style="font-size:28px">'+esc(p.emoji||'📦')+'</span>')+'</td><td><b>'+esc(p.name)+'</b><div class="muted small">'+esc(p.description||'')+'</div></td><td>'+esc(catName(p.category_id))+'</td><td>'+money(p.price)+'</td><td>'+(p.download_path?'<span class="status on">READY</span>':'<span class="status pending">NO FILE</span>')+'</td><td><span class="status '+(p.active?'on':'off')+'">'+(p.active?'ACTIVE':'INACTIVE')+'</span></td><td>'+p.sort_order+'</td><td><button class="ghost" onclick="editProduct('+p.id+')">Edit</button> <button class="danger" onclick="deleteProduct('+p.id+')">Delete</button></td></tr>'}).join('');
+  document.getElementById('productCards').innerHTML=products.map(p=>{const cover=adminCover(p);const img=cover?mediaPublicUrl(cover.storage_path):'';return '<div class="mcard"><div class="row"><div style="display:flex;gap:9px;align-items:center">'+(img?'<img class="thumb" src="'+esc(img)+'" alt="">':'<span style="font-size:28px">'+esc(p.emoji||'📦')+'</span>')+'<b>'+esc(p.name)+'</b></div><b>'+money(p.price)+'</b></div><div class="muted small">'+esc(catName(p.category_id))+'</div><div class="toolbar"><button class="ghost" onclick="editProduct('+p.id+')">Edit</button><button class="danger" onclick="deleteProduct('+p.id+')">Delete</button></div></div>'}).join('');
   updateStats();
 }
 function renderOrders(){
