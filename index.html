@@ -70,7 +70,7 @@
 <div class="row" style="margin-top:15px"><span>Order No.</span><b id="orderNo">-</b></div>
 <div class="row" style="margin-top:9px"><span>Amount</span><b id="payAmount">RM0.00</b></div>
 <div id="paymentStatus" class="paystatus idle">NOT CREATED</div>
-<div id="successBox" class="success hidden"><b>✓ Payment successful</b><div class="muted small" style="margin-top:6px">Your order is confirmed and the payment has been received.</div><button class="primary full" style="margin-top:16px" onclick="finishOrder()">Back to Shop</button></div>
+<div id="successBox" class="success hidden"><b>✓ Payment successful</b><div class="muted small" style="margin-top:6px">Your order is confirmed and the payment has been received.</div><div id="instantDownloads" style="margin-top:14px"></div><button class="ghost full" style="margin-top:12px" onclick="finishOrder()">Back to Shop</button></div>
 </div>
 </div>
 </section>
@@ -530,6 +530,17 @@ async function createPayment(){
     currentOrderId=data.order_id;
     paymentUrl=data.payment_url;
     duitNowPaymentUrl=toDuitNowUrl(paymentUrl);
+
+    try{
+      localStorage.setItem('easyabc_pending_order',JSON.stringify({
+        id:String(data.order_id),
+        order_no:data.order_no||'',
+        amount:Number(data.amount||0),
+        payment_url:paymentUrl,
+        duitnow_url:duitNowPaymentUrl,
+        created_at:Date.now()
+      }));
+    }catch{}
     document.getElementById('orderNo').textContent=data.order_no;
     document.getElementById('exact').textContent=M(data.amount);
     document.getElementById('payAmount').textContent=M(data.amount);
@@ -553,7 +564,16 @@ async function createPayment(){
   }
 }
 function openPayment(){const url=duitNowPaymentUrl||paymentUrl;if(url)window.open(url,'_blank','noopener')}
-function finishOrder(){currentOrderId=null;paymentUrl='';duitNowPaymentUrl='';show('home');render()}
+function finishOrder(){
+  currentOrderId=null;
+  paymentUrl='';
+  duitNowPaymentUrl='';
+  try{localStorage.removeItem('easyabc_pending_order')}catch{}
+  if(orderChannel){try{client.removeChannel(orderChannel)}catch{} orderChannel=null}
+  if(pollTimer){clearInterval(pollTimer);pollTimer=null}
+  show('home');
+  render();
+}
 
 async function downloadPurchase(orderId,productId,button){
   if(!orderId){
@@ -680,24 +700,37 @@ function setPaymentStatus(kind,text){
 }
 async function refreshOrder(){
   if(!currentOrderId)return;
-  const {data,error}=await client.from('orders').select('id,status,amount,order_no').eq('id',currentOrderId).maybeSingle();
-  if(error)return;
-  if(data)applyOrder(data);
+  try{
+    const {data,error}=await promiseWithTimeout(
+      client.from('orders')
+        .select('id,status,amount,order_no,paid_at')
+        .eq('id',currentOrderId)
+        .maybeSingle(),
+      5000,
+      'Payment status'
+    );
+    if(error)return;
+    if(data)await applyOrder(data);
+  }catch(e){
+    console.warn('Payment status check failed:',e);
+  }
 }
 async function applyOrder(order){
   if(!order)return;
   if(order.status==='paid'){
+    const completedOrderId=currentOrderId;
     let paidItems=[];
     try{
       const {data}=await client.from('order_items')
         .select('product_id,product_name,unit_price,quantity,line_total')
-        .eq('order_id',currentOrderId)
+        .eq('order_id',completedOrderId)
         .order('id',{ascending:true});
       paidItems=data||[];
     }catch(e){console.error(e)}
 
     cart=[];
     localStorage.setItem('easyabc_cart','[]');
+    try{localStorage.removeItem('easyabc_pending_order')}catch{}
     render();
 
     document.getElementById('paymentHeading').textContent='Order complete';
@@ -705,22 +738,39 @@ async function applyOrder(order){
     document.getElementById('qrBox').classList.add('hidden');
     document.getElementById('openPayBtn').classList.add('hidden');
     document.getElementById('payTitle').textContent='Payment received';
-    document.getElementById('payDesc').textContent='Thank you. Your payment has been confirmed.';
+    document.getElementById('payDesc').textContent='Payment confirmed automatically. Your secure downloads are ready now.';
     document.getElementById('sub').textContent=M(order.amount);
     document.getElementById('exact').textContent=M(order.amount);
     document.getElementById('payAmount').textContent=M(order.amount);
 
-    if(paidItems.length){
-      document.getElementById('items').innerHTML=paidItems.map(i=>
-        `<div class="item"><div><b>${esc(i.product_name)}</b><div class="muted">${M(i.unit_price)} × ${i.quantity}</div><button class="download-btn" onclick="downloadPurchase('${currentOrderId}',${Number(i.product_id)},this)">↓ Download ${esc(i.product_name)}</button></div><span>${i.quantity} pcs</span><b>${M(i.line_total)}</b></div>`
-      ).join('');
-    }else{
-      document.getElementById('items').innerHTML='<p class="muted">Your order has been paid successfully.</p>';
+    const itemHtml=paidItems.length
+      ? paidItems.map(i=>
+          `<div class="item"><div><b>${esc(i.product_name)}</b><div class="muted">${M(i.unit_price)} × ${i.quantity}</div><button class="download-btn" onclick="downloadPurchase('${completedOrderId}',${Number(i.product_id)},this)">↓ Download ${esc(i.product_name)}</button></div><span>${i.quantity} pcs</span><b>${M(i.line_total)}</b></div>`
+        ).join('')
+      : '<p class="muted">Your order has been paid successfully.</p>';
+
+    document.getElementById('items').innerHTML=itemHtml;
+
+    const instant=document.getElementById('instantDownloads');
+    if(instant){
+      instant.innerHTML=paidItems.length
+        ? '<div class="muted small" style="margin-bottom:8px">Your download is unlocked:</div>'+
+          paidItems.map(i=>
+            `<button class="download-btn" style="width:100%;margin-top:7px" onclick="downloadPurchase('${completedOrderId}',${Number(i.product_id)},this)">↓ Download ${esc(i.product_name)}</button>`
+          ).join('')
+        : '<div class="muted small">Your purchase is ready in My Purchases.</div>';
     }
 
-    setPaymentStatus('paid','✓ PAYMENT RECEIVED');
+    setPaymentStatus('paid','✓ PAYMENT RECEIVED • DOWNLOAD READY');
     document.getElementById('successBox').classList.remove('hidden');
+
+    if(orderChannel){try{client.removeChannel(orderChannel)}catch{} orderChannel=null}
     if(pollTimer){clearInterval(pollTimer);pollTimer=null}
+
+    // Bring the success/download area into view when payment completes.
+    setTimeout(()=>{
+      document.getElementById('paymentPanel')?.scrollIntoView({behavior:'smooth',block:'center'});
+    },150);
   }else if(order.status==='failed'){
     setPaymentStatus('failed','PAYMENT FAILED');
   }else{
@@ -732,10 +782,48 @@ function subscribeOrder(id){
   orderChannel=client.channel('easyabc-order-'+id)
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'orders',filter:'id=eq.'+id},payload=>applyOrder(payload.new))
     .subscribe();
+
   if(pollTimer)clearInterval(pollTimer);
-  pollTimer=setInterval(refreshOrder,5000);
+  pollTimer=setInterval(refreshOrder,3000);
   refreshOrder();
 }
+
+function restorePendingOrder(){
+  try{
+    const pending=JSON.parse(localStorage.getItem('easyabc_pending_order')||'null');
+    if(!pending?.id)return false;
+
+    // Ignore stale unpaid orders older than 24 hours.
+    if(pending.created_at && Date.now()-Number(pending.created_at)>86400000){
+      localStorage.removeItem('easyabc_pending_order');
+      return false;
+    }
+
+    currentOrderId=String(pending.id);
+    paymentUrl=pending.payment_url||'';
+    duitNowPaymentUrl=pending.duitnow_url||toDuitNowUrl(paymentUrl||'');
+
+    if(pending.order_no)document.getElementById('orderNo').textContent=pending.order_no;
+    if(Number.isFinite(Number(pending.amount))){
+      document.getElementById('exact').textContent=M(Number(pending.amount));
+      document.getElementById('payAmount').textContent=M(Number(pending.amount));
+    }
+
+    subscribeOrder(currentOrderId);
+    return true;
+  }catch(e){
+    console.warn('Could not restore pending order:',e);
+    return false;
+  }
+}
+
+window.addEventListener('focus',()=>{
+  if(currentOrderId)refreshOrder();
+});
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&currentOrderId)refreshOrder();
+});
 
 async function init(){
   const savedEmail=localStorage.getItem('easyabc_last_email')||'';
@@ -772,6 +860,7 @@ async function init(){
   try{
     await ensureCustomerSession();
     document.getElementById('authHint').textContent='Checkout session ready.';
+    restorePendingOrder();
   }catch(e){
     document.getElementById('authHint').textContent=e.message||String(e);
   }
