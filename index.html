@@ -741,7 +741,8 @@ async function init(){
       .subscribe();
   }catch(e){
     console.error(e);
-    document.getElementById('dbStatus')?.textContent='RETRYING';
+    const dbStatusEl=document.getElementById('dbStatus');
+    if(dbStatusEl) dbStatusEl.textContent='RETRYING';
     setDb('Connecting to live catalog • retrying…','warn');
     catalogRetryTimer=setTimeout(retryCatalog,5000);
   }
