@@ -286,9 +286,35 @@ function openProduct(id){
   const cat=categoryName(p.category_id),catEl=document.getElementById('modalCategory');
   catEl.textContent=cat;catEl.classList.toggle('hidden',!cat);
   document.getElementById('modalQty').textContent=qty(p.id);
-  document.getElementById('modalMinus').onclick=()=>{setq(p.id,Math.max(0,qty(p.id)-1));document.getElementById('modalQty').textContent=qty(p.id)};
-  document.getElementById('modalPlus').onclick=()=>{setq(p.id,qty(p.id)+1);document.getElementById('modalQty').textContent=qty(p.id)};
-  document.getElementById('modalAdd').onclick=()=>{setq(p.id,qty(p.id)+1);document.getElementById('modalQty').textContent=qty(p.id)};
+  document.getElementById('modalMinus').disabled=qty(p.id)===0;
+  document.getElementById('modalPlus').disabled=qty(p.id)>=1;
+  document.getElementById('modalAdd').disabled=qty(p.id)>=1;
+  document.getElementById('modalAdd').textContent=qty(p.id)>=1?'Added ✓':'Add to Cart';
+
+  document.getElementById('modalMinus').onclick=()=>{
+    setq(p.id,0);
+    document.getElementById('modalQty').textContent=0;
+    document.getElementById('modalMinus').disabled=true;
+    document.getElementById('modalPlus').disabled=false;
+    document.getElementById('modalAdd').disabled=false;
+    document.getElementById('modalAdd').textContent='Add to Cart';
+  };
+  document.getElementById('modalPlus').onclick=()=>{
+    setq(p.id,1);
+    document.getElementById('modalQty').textContent=1;
+    document.getElementById('modalMinus').disabled=false;
+    document.getElementById('modalPlus').disabled=true;
+    document.getElementById('modalAdd').disabled=true;
+    document.getElementById('modalAdd').textContent='Added ✓';
+  };
+  document.getElementById('modalAdd').onclick=()=>{
+    setq(p.id,1);
+    document.getElementById('modalQty').textContent=1;
+    document.getElementById('modalMinus').disabled=false;
+    document.getElementById('modalPlus').disabled=true;
+    document.getElementById('modalAdd').disabled=true;
+    document.getElementById('modalAdd').textContent='Added ✓';
+  };
   renderGallery();
   document.getElementById('productModal').classList.remove('hidden');
 }
