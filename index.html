@@ -61,12 +61,12 @@
 <div class="paygrid">
 <div>
 <div class="panel"><h3>Order Summary</h3><div id="items"></div><div class="totals"><div class="row"><span>Subtotal</span><b id="sub">RM0.00</b></div><div class="row total"><span>Exact Amount</span><b id="exact">RM0.00</b></div></div></div>
-<div id="customerPanel" class="panel" style="margin-top:18px"><h3>Customer Details</h3><div class="form"><label>Name<input id="name" placeholder="Customer name" autocomplete="name"></label><label>Phone<input id="phone" placeholder="0123456789" autocomplete="tel"></label></div><label>Email <span class="muted">(for purchase recovery)</span><input id="email" type="email" placeholder="you@example.com" autocomplete="email"></label><label>Reference / Note<input id="note" placeholder="Optional"></label><button id="createPayBtn" class="primary" style="margin-top:16px" onclick="createPayment()">Create Secure Payment</button><div id="authHint" class="muted small" style="margin-top:10px"></div></div>
+<div id="customerPanel" class="panel" style="margin-top:18px"><h3>Customer Details</h3><div class="form"><label>Name<input id="name" placeholder="Customer name" autocomplete="name"></label><label>Phone<input id="phone" placeholder="0123456789" autocomplete="tel"></label></div><label>Email <span class="muted">(for receipt & purchase recovery)</span><input id="email" type="email" placeholder="you@example.com" autocomplete="email"></label><label>Reference / Note<input id="note" placeholder="Optional"></label><button id="createPayBtn" class="primary" style="margin-top:16px" onclick="createPayment()">Create Secure Payment</button><div class="muted small" style="margin-top:10px">Your name, email and phone will be passed securely to ToyyibPay so you do not need to type them again.</div><div id="authHint" class="muted small" style="margin-top:7px"></div></div>
 </div>
 
 <div id="paymentPanel" class="panel"><span class="tag">DUITNOW QR + FPX</span><div class="dnqr-ready">DUITNOW QR APPROVED</div><h2 id="payTitle">Secure Payment</h2><p id="payDesc" class="muted">Create your order first. EasyABC will create the exact bill amount, then you can pay through ToyyibPay using DuitNow QR or FPX.</p>
 <div id="qrBox" class="qr"><div class="placeholder"><div class="icon">▦</div><b>Secure payment link</b><span>QR appears after your bill is created</span></div><div id="qr"></div></div>
-<button id="openPayBtn" class="primary full hidden" onclick="openPayment()">Pay with DuitNow QR / FPX</button>
+<button id="openPayBtn" class="primary full hidden" onclick="openPayment()">Continue to DuitNow QR</button>
 <div class="row" style="margin-top:15px"><span>Order No.</span><b id="orderNo">-</b></div>
 <div class="row" style="margin-top:9px"><span>Amount</span><b id="payAmount">RM0.00</b></div>
 <div id="paymentStatus" class="paystatus idle">NOT CREATED</div>
@@ -524,13 +524,13 @@ async function createPayment(){
     document.getElementById('exact').textContent=M(data.amount);
     document.getElementById('payAmount').textContent=M(data.amount);
     document.getElementById('payTitle').textContent='DuitNow QR Ready';
-    document.getElementById('payDesc').textContent='Click Pay with DuitNow QR to open the DuitNow QR screen directly. The bill amount is fixed securely by EasyABC. You can still use the QR below on another device.';
+    document.getElementById('payDesc').textContent='Continue to ToyyibPay with your customer details pre-filled. Select DuitNow QR, then generate and scan the QR. The bill amount is fixed securely by EasyABC.';
     const qrEl=document.getElementById('qr');
     qrEl.innerHTML='';
     if(typeof QRCode==='undefined') throw new Error('QR library failed to load. Please refresh and try again.');
     new QRCode(qrEl,{text:paymentUrl,width:260,height:260,correctLevel:QRCode.CorrectLevel.M});
     document.getElementById('qrBox').classList.add('ready');
-    document.getElementById('openPayBtn').textContent='Pay with DuitNow QR';
+    document.getElementById('openPayBtn').textContent='Continue to DuitNow QR';
     document.getElementById('openPayBtn').classList.remove('hidden');
     setPaymentStatus('pending','WAITING FOR PAYMENT');
     subscribeOrder(currentOrderId);
