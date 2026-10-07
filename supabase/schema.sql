@@ -28,6 +28,10 @@ create table if not exists public.orders (
 alter table public.products enable row level security;
 alter table public.orders enable row level security;
 
+grant usage on schema public to anon, authenticated;
+grant select on table public.products to anon, authenticated;
+grant select on table public.orders to authenticated;
+
 drop policy if exists "products public read" on public.products;
 create policy "products public read" on public.products for select to anon,authenticated using(active=true);
 
