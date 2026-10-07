@@ -29,8 +29,13 @@
   <label>Email
     <input id="adminEmail" type="email" placeholder="admin@example.com" autocomplete="email">
   </label>
-  <button id="adminLoginBtn" class="btn" style="width:100%;margin-top:14px" onclick="sendAdminLink()">Send Admin Access Link</button>
-  <div id="loginMsg" class="notice">The access link must be opened in this browser/device.</div>
+  <label style="margin-top:10px">Password
+    <input id="adminPassword" type="password" placeholder="Admin password" autocomplete="current-password">
+  </label>
+  <button id="passwordLoginBtn" class="btn" style="width:100%;margin-top:14px" onclick="signInAdminPassword()">Sign In</button>
+  <div style="display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:12px"><span style="height:1px;background:var(--line);flex:1"></span>OR<span style="height:1px;background:var(--line);flex:1"></span></div>
+  <button id="adminLoginBtn" class="ghost" style="width:100%" onclick="sendAdminLink()">Send Email Access Link</button>
+  <div id="loginMsg" class="notice">Password login is recommended for admin use. Email access link remains available as backup.</div>
   <button class="ghost" style="width:100%;margin-top:8px" onclick="location.href='./'">Back to Store</button>
 </section>
 
@@ -132,6 +137,29 @@ function msg(id,text,type=''){
   const el=document.getElementById(id);el.textContent=text;el.className='notice '+type;el.classList.remove('hidden');
 }
 function clearMsg(id){document.getElementById(id).classList.add('hidden')}
+
+async function signInAdminPassword(){
+  const email=document.getElementById('adminEmail').value.trim().toLowerCase();
+  const password=document.getElementById('adminPassword').value;
+  const btn=document.getElementById('passwordLoginBtn');
+  if(!email||!password){msg('loginMsg','Enter your admin email and password.','err');return}
+  btn.disabled=true;btn.textContent='Signing in…';
+  try{
+    const {data,error}=await client.auth.signInWithPassword({email,password});
+    if(error)throw error;
+    const {data:isAdmin,error:adminError}=await client.rpc('is_admin');
+    if(adminError||isAdmin!==true){
+      await client.auth.signOut();
+      throw new Error('This account is not authorized as an EasyABC admin.');
+    }
+    msg('loginMsg','Signed in successfully.','ok');
+    await checkAdmin();
+  }catch(e){
+    msg('loginMsg',e.message||String(e),'err');
+  }finally{
+    btn.disabled=false;btn.textContent='Sign In';
+  }
+}
 
 async function sendAdminLink(){
   const email=document.getElementById('adminEmail').value.trim().toLowerCase();
