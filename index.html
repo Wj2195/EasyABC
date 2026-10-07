@@ -127,8 +127,8 @@ function mediaForProduct(product){
   return [];
 }
 function coverForProduct(product){
-  const list=mediaForProduct(product);
-  return list[0]||null;
+  const list=mediaForProduct(product).filter(m=>m.media_type==='image');
+  return list.find(m=>m.is_cover)||list[0]||null;
 }
 function modalBackdrop(e){if(e.target===document.getElementById('productModal'))closeProductModal()}
 function closeProductModal(){document.getElementById('productModal').classList.add('hidden');const v=document.querySelector('#galleryStage video');if(v)v.pause();modalProductId=null}
