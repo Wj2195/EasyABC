@@ -64,9 +64,9 @@
 <div id="customerPanel" class="panel" style="margin-top:18px"><h3>Customer Details</h3><div class="form"><label>Name<input id="name" placeholder="Customer name" autocomplete="name"></label><label>Phone<input id="phone" placeholder="0123456789" autocomplete="tel"></label></div><label>Email <span class="muted">(for purchase recovery)</span><input id="email" type="email" placeholder="you@example.com" autocomplete="email"></label><label>Reference / Note<input id="note" placeholder="Optional"></label><button id="createPayBtn" class="primary" style="margin-top:16px" onclick="createPayment()">Create Secure Payment</button><div id="authHint" class="muted small" style="margin-top:10px"></div></div>
 </div>
 
-<div id="paymentPanel" class="panel"><span class="tag">DUITNOW / ONLINE PAYMENT</span><h2 id="payTitle">Payment QR</h2><p id="payDesc" class="muted">Create your order first. The QR will open the secure toyyibPay payment page for the exact server-calculated amount.</p>
-<div id="qrBox" class="qr"><div class="placeholder"><div class="icon">▦</div><b>Exact-amount payment</b><span>QR appears after payment is created</span></div><div id="qr"></div></div>
-<button id="openPayBtn" class="primary full hidden" onclick="openPayment()">Open Payment Page</button>
+<div id="paymentPanel" class="panel"><span class="tag">DUITNOW QR + FPX</span><div class="dnqr-ready">DUITNOW QR APPROVED</div><h2 id="payTitle">Secure Payment</h2><p id="payDesc" class="muted">Create your order first. EasyABC will create the exact bill amount, then you can pay through ToyyibPay using DuitNow QR or FPX.</p>
+<div id="qrBox" class="qr"><div class="placeholder"><div class="icon">▦</div><b>Secure payment link</b><span>QR appears after your bill is created</span></div><div id="qr"></div></div>
+<button id="openPayBtn" class="primary full hidden" onclick="openPayment()">Pay with DuitNow QR / FPX</button>
 <div class="row" style="margin-top:15px"><span>Order No.</span><b id="orderNo">-</b></div>
 <div class="row" style="margin-top:9px"><span>Amount</span><b id="payAmount">RM0.00</b></div>
 <div id="paymentStatus" class="paystatus idle">NOT CREATED</div>
@@ -477,7 +477,7 @@ async function ensureCustomerSession(){
 async function createPayment(){
   if(!cart.length)return;
   const btn=document.getElementById('createPayBtn');
-  btn.disabled=true;btn.textContent='Creating payment…';
+  btn.disabled=true;btn.textContent='Creating DuitNow-ready bill…';
   setPaymentStatus('pending','CREATING PAYMENT…');
   try{
     const session=await ensureCustomerSession();
@@ -511,8 +511,8 @@ async function createPayment(){
     document.getElementById('orderNo').textContent=data.order_no;
     document.getElementById('exact').textContent=M(data.amount);
     document.getElementById('payAmount').textContent=M(data.amount);
-    document.getElementById('payTitle').textContent='Scan to Pay';
-    document.getElementById('payDesc').textContent='Scan this QR with another device, or click Open Payment Page. The exact amount was recalculated securely from Supabase.';
+    document.getElementById('payTitle').textContent='DuitNow QR Ready';
+    document.getElementById('payDesc').textContent='Scan this payment-link QR with another device, or click Pay with DuitNow QR / FPX. On ToyyibPay, choose DuitNow QR and tap Generate QR Code. The bill amount is fixed securely by EasyABC.';
     const qrEl=document.getElementById('qr');
     qrEl.innerHTML='';
     if(typeof QRCode==='undefined') throw new Error('QR library failed to load. Please refresh and try again.');
