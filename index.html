@@ -363,7 +363,7 @@ async function loadProducts(){
   renderCategories();
   render();
 
-  document.getElementById('dbStatus').textContent='LIVE';
+  document.getElementById('dbStatus')?.textContent='LIVE';
   setDb('Catalog synced — '+products.length+' tools ready','live');
   hideCatalogStatusSoon();
 
@@ -380,7 +380,7 @@ async function retryCatalog(){
     await loadProducts();
   }catch(e){
     console.error(e);
-    document.getElementById('dbStatus').textContent='RETRYING';
+    document.getElementById('dbStatus')?.textContent='RETRYING';
     setDb('Catalog connection is slow — retrying automatically…','warn');
     catalogRetryTimer=setTimeout(retryCatalog,5000);
   }
@@ -661,7 +661,7 @@ async function init(){
       .subscribe();
   }catch(e){
     console.error(e);
-    document.getElementById('dbStatus').textContent='RETRYING';
+    document.getElementById('dbStatus')?.textContent='RETRYING';
     setDb('Catalog connection is slow — retrying automatically…','warn');
     catalogRetryTimer=setTimeout(retryCatalog,5000);
   }
@@ -672,6 +672,6 @@ async function init(){
     document.getElementById('authHint').textContent=e.message||String(e);
   }
 }
-init().catch(e=>{console.error(e);setDb('Catalog is temporarily unavailable. Please refresh in a moment.','err')});
+init().catch(e=>{console.error(e);setDb('Catalog connection is slow — retrying automatically…','warn');setTimeout(retryCatalog,3000)});
 </script>
 </body></html>
