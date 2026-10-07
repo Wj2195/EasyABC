@@ -172,7 +172,7 @@ function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 function qty(id){return cart.find(x=>String(x.id)===String(id))?.q||0}
 function setq(id,q){const n=Number(q)>0?1:0;cart=cart.filter(x=>String(x.id)!==String(id));if(n===1)cart.push({id,q:1});localStorage.setItem('easyabc_cart',JSON.stringify(cart));render()}
 function total(){return cart.reduce((s,i)=>{const p=products.find(x=>String(x.id)===String(i.id));return s+(p?p.p*i.q:0)},0)}
-function cleanCart(){cart=cart.filter(i=>products.some(p=>String(p.id)===String(i.id)));localStorage.setItem('easyabc_cart',JSON.stringify(cart))}
+function cleanCart(){const seen=new Set();cart=cart.filter(i=>products.some(p=>String(p.id)===String(i.id))).filter(i=>{const k=String(i.id);if(seen.has(k))return false;seen.add(k);return true}).map(i=>({id:i.id,q:1}));localStorage.setItem('easyabc_cart',JSON.stringify(cart))}
 function setDb(text,type=''){
   const d=document.getElementById('dbDebug');
   if(!d)return;
