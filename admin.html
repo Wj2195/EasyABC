@@ -305,7 +305,7 @@ function mediaPublicUrl(path){
   return publicImageUrl(path);
 }
 function adminCover(p){
-  const list=allMedia.filter(m=>String(m.product_id)===String(p.id)).sort((a,b)=>(Number(b.is_cover)-Number(a.is_cover))||(Number(a.sort_order)-Number(b.sort_order))||(Number(a.id)-Number(b.id)));
+  const list=allMedia.filter(m=>String(m.product_id)===String(p.id)&&m.media_type==='image').sort((a,b)=>(Number(b.is_cover)-Number(a.is_cover))||(Number(a.sort_order)-Number(b.sort_order))||(Number(a.id)-Number(b.id)));
   if(list.length)return list[0];
   if(p.image_path)return {media_type:'image',storage_path:p.image_path};
   return null;
@@ -361,7 +361,7 @@ async function uploadGalleryMedia(){
 }
 async function setMediaCover(id){
   const target=currentMedia.find(x=>Number(x.id)===Number(id));if(!target)return;
-  if(target.media_type==='video'&&!confirm('Use this video as the storefront cover? A video cover may load slower.'))return;
+  if(target.media_type==='video'){alert('Choose an image as the cover. Videos can still appear and play inside the product gallery.');return;}
   const {error:e1}=await client.from('product_media').update({is_cover:false}).eq('product_id',currentMediaProductId);
   if(e1){alert(e1.message);return}
   const {error:e2}=await client.from('product_media').update({is_cover:true}).eq('id',id);
