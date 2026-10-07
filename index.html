@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>EasyABC Shop</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 <style>
 :root{--bg:#050b15;--card:rgba(255,255,255,.08);--line:rgba(255,255,255,.13);--text:#f8fafc;--muted:#9fb0c6;--a:#68a8ff;--b:#30d8e8}
@@ -15,7 +16,7 @@
 <header class="top"><div class="brand">Easy<span>ABC</span></div><div class="nav"><button onclick="show('home')">Home</button><button onclick="goPay()">Payment</button><button class="primary" onclick="goPay()">🛒 <span id="cartCount">0</span></button></div></header>
 
 <section id="home" class="page active">
-<div class="hero"><div><span class="tag">ONLINE SHOP</span><h1>Pick it.<br>Scan it.<br><span>Paid.</span></h1><p>Choose products from the homepage, then continue to one simple payment page where the exact order amount is prepared for QR checkout.</p><button class="primary" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Shop Products</button></div><div class="visual"><div class="orb"></div><div class="float f1">🔊</div><div class="float f2">⌚</div><div class="float f3">🎧</div></div></div>
+<div class="hero"><div><span class="tag">ONLINE SHOP • <span id="dbStatus">CONNECTING...</span></span><h1>Pick it.<br>Scan it.<br><span>Paid.</span></h1><p>Choose products from the homepage, then continue to one simple payment page where the exact order amount is prepared for QR checkout.</p><button class="primary" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Shop Products</button></div><div class="visual"><div class="orb"></div><div class="float f1">🔊</div><div class="float f2">⌚</div><div class="float f3">🎧</div></div></div>
 <div id="products" class="tools"><div><span class="tag">ALL PRODUCTS</span><h2>Choose what you like</h2></div><input id="search" placeholder="Search products..." oninput="render()"></div>
 <div id="grid" class="grid"></div>
 <div class="sticky"><div><b><span id="qtyTotal">0</span> item(s)</b><div class="muted">Total: <span id="cartTotal">RM0.00</span></div></div><button class="primary" onclick="goPay()">Proceed to Payment →</button></div>
@@ -33,15 +34,110 @@
 </section>
 
 <script>
-const products=[{id:1,n:'Retro Bluetooth Speaker',p:39.9,e:'🔊',d:'Portable retro speaker with stylish look and rich sound.'},{id:2,n:'Smart Watch Pro',p:89,e:'⌚',d:'Track calls, notifications and daily activity.'},{id:3,n:'Wireless Earbuds',p:55,e:'🎧',d:'Compact earbuds with simple Bluetooth pairing.'},{id:4,n:'Mini Desk Fan',p:25,e:'🌀',d:'Cooling airflow for desk, bedside and small spaces.'},{id:5,n:'Night Lamp',p:32,e:'💡',d:'Soft ambient lighting with a clean modern look.'},{id:6,n:'Power Bank',p:65,e:'🔋',d:'Reliable backup power for your phone and travel.'}];
-let cart=JSON.parse(localStorage.getItem('easyabc_cart')||'[]'); const M=v=>'RM'+Number(v).toFixed(2);
-function qty(id){return cart.find(x=>x.id==id)?.q||0} function setq(id,q){cart=cart.filter(x=>x.id!=id);if(q>0)cart.push({id,q});localStorage.setItem('easyabc_cart',JSON.stringify(cart));render()}
-function total(){return cart.reduce((s,i)=>{let p=products.find(x=>x.id==i.id);return s+(p?p.p*i.q:0)},0)}
-function render(){let q=document.getElementById('search').value.toLowerCase();document.getElementById('grid').innerHTML=products.filter(p=>p.n.toLowerCase().includes(q)).map(p=>`<article class="card"><div class="pic">${p.e}</div><div class="body"><h3>${p.n}</h3><p>${p.d}</p><div class="row"><span class="price">${M(p.p)}</span></div><div class="qty"><button onclick="setq(${p.id},qty(${p.id})-1)">−</button><b>${qty(p.id)}</b><button onclick="setq(${p.id},qty(${p.id})+1)">+</button></div><button class="primary" style="width:100%" onclick="setq(${p.id},qty(${p.id})+1)">Add to Cart</button></div></article>`).join('');let n=cart.reduce((a,b)=>a+b.q,0),t=total();document.getElementById('cartCount').textContent=n;document.getElementById('qtyTotal').textContent=n;document.getElementById('cartTotal').textContent=M(t);renderPay()}
-function renderPay(){let t=total();document.getElementById('sub').textContent=M(t);document.getElementById('exact').textContent=M(t);document.getElementById('payAmount').textContent=M(t);document.getElementById('items').innerHTML=cart.length?cart.map(i=>{let p=products.find(x=>x.id==i.id);return `<div class="item"><div><b>${p.n}</b><div class="muted">${M(p.p)} × ${i.q}</div></div><span>${i.q} pcs</span><b>${M(p.p*i.q)}</b></div>`}).join(''):'<p class="muted">Your cart is empty.</p>'}
-function show(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==id));scrollTo({top:0,behavior:'smooth'})}
-function goPay(){if(!cart.length){alert('Add at least one product first.');return}renderPay();show('payment')}
-function makeQR(){if(!cart.length)return;let no='ORD-'+Date.now(),t=total();document.getElementById('orderNo').textContent=no;let text='EasyABC Shop\nOrder: '+no+'\nAmount: '+M(t)+'\nCustomer: '+(document.getElementById('name').value||'-')+'\nPhone: '+(document.getElementById('phone').value||'-');QRCode.toCanvas(document.getElementById('qr'),text,{width:260,margin:1})}
+const SUPABASE_URL='https://rygtjnzccemtpkiellgs.supabase.co';
+const SUPABASE_KEY='sb_publishable_WQibr98hDPjOIVqA0twL1g_OVUxgynh';
+
+const fallbackProducts=[
+{id:1,n:'Retro Bluetooth Speaker',p:39.9,e:'🔊',d:'Portable retro speaker with stylish look and rich sound.'},
+{id:2,n:'Smart Watch Pro',p:89,e:'⌚',d:'Track calls, notifications and daily activity.'},
+{id:3,n:'Wireless Earbuds',p:55,e:'🎧',d:'Compact earbuds with simple Bluetooth pairing.'},
+{id:4,n:'Mini Desk Fan',p:25,e:'🌀',d:'Cooling airflow for desk, bedside and small spaces.'},
+{id:5,n:'Night Lamp',p:32,e:'💡',d:'Soft ambient lighting with a clean modern look.'},
+{id:6,n:'Power Bank',p:65,e:'🔋',d:'Reliable backup power for your phone and travel.'}
+];
+
+let products=[...fallbackProducts];
+let cart=JSON.parse(localStorage.getItem('easyabc_cart')||'[]');
+const M=v=>'RM'+Number(v).toFixed(2);
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function qty(id){return cart.find(x=>String(x.id)===String(id))?.q||0}
+function setq(id,q){
+  cart=cart.filter(x=>String(x.id)!==String(id));
+  if(q>0)cart.push({id,q});
+  localStorage.setItem('easyabc_cart',JSON.stringify(cart));
+  render();
+}
+function total(){
+  return cart.reduce((s,i)=>{
+    let p=products.find(x=>String(x.id)===String(i.id));
+    return s+(p?p.p*i.q:0)
+  },0)
+}
+function cleanCart(){
+  cart=cart.filter(i=>products.some(p=>String(p.id)===String(i.id)));
+  localStorage.setItem('easyabc_cart',JSON.stringify(cart));
+}
+function render(){
+  let q=document.getElementById('search').value.toLowerCase();
+  document.getElementById('grid').innerHTML=products
+    .filter(p=>p.n.toLowerCase().includes(q)||(p.d||'').toLowerCase().includes(q))
+    .map(p=>`<article class="card"><div class="pic">${esc(p.e)}</div><div class="body"><h3>${esc(p.n)}</h3><p>${esc(p.d)}</p><div class="row"><span class="price">${M(p.p)}</span></div><div class="qty"><button onclick="setq('${p.id}',qty('${p.id}')-1)">−</button><b>${qty(p.id)}</b><button onclick="setq('${p.id}',qty('${p.id}')+1)">+</button></div><button class="primary" style="width:100%" onclick="setq('${p.id}',qty('${p.id}')+1)">Add to Cart</button></div></article>`)
+    .join('');
+  let n=cart.reduce((a,b)=>a+b.q,0),t=total();
+  document.getElementById('cartCount').textContent=n;
+  document.getElementById('qtyTotal').textContent=n;
+  document.getElementById('cartTotal').textContent=M(t);
+  renderPay();
+}
+function renderPay(){
+  let t=total();
+  document.getElementById('sub').textContent=M(t);
+  document.getElementById('exact').textContent=M(t);
+  document.getElementById('payAmount').textContent=M(t);
+  document.getElementById('items').innerHTML=cart.length?cart.map(i=>{
+    let p=products.find(x=>String(x.id)===String(i.id));
+    if(!p)return '';
+    return `<div class="item"><div><b>${esc(p.n)}</b><div class="muted">${M(p.p)} × ${i.q}</div></div><span>${i.q} pcs</span><b>${M(p.p*i.q)}</b></div>`
+  }).join(''):'<p class="muted">Your cart is empty.</p>'
+}
+function show(id){
+  document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id==id));
+  scrollTo({top:0,behavior:'smooth'})
+}
+function goPay(){
+  if(!cart.length){alert('Add at least one product first.');return}
+  renderPay();show('payment')
+}
+function makeQR(){
+  if(!cart.length)return;
+  let no='ORD-'+Date.now(),t=total();
+  document.getElementById('orderNo').textContent=no;
+  let text='EasyABC Shop\nOrder: '+no+'\nAmount: '+M(t)+'\nCustomer: '+(document.getElementById('name').value||'-')+'\nPhone: '+(document.getElementById('phone').value||'-');
+  QRCode.toCanvas(document.getElementById('qr'),text,{width:260,margin:1})
+}
+async function loadProducts(){
+  const {data,error}=await client.from('products')
+    .select('id,name,description,price,emoji,sort_order')
+    .eq('active',true)
+    .order('sort_order',{ascending:true});
+  if(error)throw error;
+  products=(data||[]).map(p=>({id:p.id,n:p.name,p:Number(p.price),e:p.emoji||'📦',d:p.description||''}));
+  cleanCart();
+  render();
+}
+async function initLive(){
+  const status=document.getElementById('dbStatus');
+  try{
+    await loadProducts();
+    status.textContent='LIVE';
+    client.channel('easyabc-products-live')
+      .on('postgres_changes',{event:'*',schema:'public',table:'products'},async()=>{
+        try{await loadProducts();status.textContent='LIVE'}catch(e){console.error(e)}
+      })
+      .subscribe(s=>{
+        if(s==='SUBSCRIBED')status.textContent='LIVE';
+      });
+  }catch(err){
+    console.error(err);
+    status.textContent='OFFLINE DEMO';
+    products=[...fallbackProducts];
+    render();
+  }
+}
+
 render();
+initLive();
 </script>
 </body></html>
