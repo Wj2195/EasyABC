@@ -129,6 +129,7 @@ let modalMediaIndex=0;
 let cart=JSON.parse(localStorage.getItem('easyabc_cart')||'[]');
 let currentOrderId=null;
 let paymentUrl='';
+let duitNowPaymentUrl='';
 let orderChannel=null;
 let pollTimer=null;
 const M=v=>'RM'+Number(v||0).toFixed(2);
@@ -474,6 +475,16 @@ async function ensureCustomerSession(){
   return data.session;
 }
 
+function toDuitNowUrl(url){
+  try{
+    const u=new URL(url);
+    u.searchParams.set('mode','paymentDuitNowQR');
+    return u.toString();
+  }catch{
+    return url+(url.includes('?')?'&':'?')+'mode=paymentDuitNowQR';
+  }
+}
+
 async function createPayment(){
   if(!cart.length)return;
   const btn=document.getElementById('createPayBtn');
@@ -508,16 +519,18 @@ async function createPayment(){
 
     currentOrderId=data.order_id;
     paymentUrl=data.payment_url;
+    duitNowPaymentUrl=toDuitNowUrl(paymentUrl);
     document.getElementById('orderNo').textContent=data.order_no;
     document.getElementById('exact').textContent=M(data.amount);
     document.getElementById('payAmount').textContent=M(data.amount);
     document.getElementById('payTitle').textContent='DuitNow QR Ready';
-    document.getElementById('payDesc').textContent='Scan this payment-link QR with another device, or click Pay with DuitNow QR / FPX. On ToyyibPay, choose DuitNow QR and tap Generate QR Code. The bill amount is fixed securely by EasyABC.';
+    document.getElementById('payDesc').textContent='Click Pay with DuitNow QR to open the DuitNow QR screen directly. The bill amount is fixed securely by EasyABC. You can still use the QR below on another device.';
     const qrEl=document.getElementById('qr');
     qrEl.innerHTML='';
     if(typeof QRCode==='undefined') throw new Error('QR library failed to load. Please refresh and try again.');
     new QRCode(qrEl,{text:paymentUrl,width:260,height:260,correctLevel:QRCode.CorrectLevel.M});
     document.getElementById('qrBox').classList.add('ready');
+    document.getElementById('openPayBtn').textContent='Pay with DuitNow QR';
     document.getElementById('openPayBtn').classList.remove('hidden');
     setPaymentStatus('pending','WAITING FOR PAYMENT');
     subscribeOrder(currentOrderId);
@@ -529,8 +542,8 @@ async function createPayment(){
     btn.disabled=false;btn.textContent='Create Secure Payment';
   }
 }
-function openPayment(){if(paymentUrl)window.open(paymentUrl,'_blank','noopener')}
-function finishOrder(){currentOrderId=null;paymentUrl='';show('home');render()}
+function openPayment(){const url=duitNowPaymentUrl||paymentUrl;if(url)window.open(url,'_blank','noopener')}
+function finishOrder(){currentOrderId=null;paymentUrl='';duitNowPaymentUrl='';show('home');render()}
 
 async function downloadPurchase(orderId,productId,button){
   if(!orderId){
