@@ -17,7 +17,7 @@
 
 <section id="home" class="page active">
 <div class="hero"><div><span class="tag">ONLINE SHOP • <span id="dbStatus">CONNECTING...</span></span><h1>Pick it.<br>Scan it.<br><span>Paid.</span></h1><p>Choose products from the homepage, then continue to one simple payment page where the exact order amount is prepared for QR checkout.</p><button class="primary" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Shop Products</button></div><div class="visual"><div class="orb"></div><div class="float f1">🔊</div><div class="float f2">⌚</div><div class="float f3">🎧</div></div></div>
-<div id="products" class="tools"><div><span class="tag">ALL PRODUCTS</span><h2>Choose what you like</h2></div><input id="search" placeholder="Search products..." oninput="render()"></div>
+<div id="dbDebug" style="margin:18px 0;padding:11px 14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.05);color:#9fb0c6;font-size:13px">Database: connecting…</div>\n<div id="products" class="tools"><div><span class="tag">ALL PRODUCTS</span><h2>Choose what you like</h2></div><input id="search" placeholder="Search products..." oninput="render()"></div>
 <div id="grid" class="grid"></div>
 <div class="sticky"><div><b><span id="qtyTotal">0</span> item(s)</b><div class="muted">Total: <span id="cartTotal">RM0.00</span></div></div><button class="primary" onclick="goPay()">Proceed to Payment →</button></div>
 </section>
@@ -108,14 +108,22 @@ function makeQR(){
   QRCode.toCanvas(document.getElementById('qr'),text,{width:260,margin:1})
 }
 async function loadProducts(){
-  const {data,error}=await client.from('products')
-    .select('id,name,description,price,emoji,sort_order')
-    .eq('active',true)
-    .order('sort_order',{ascending:true});
-  if(error)throw error;
+  const url=SUPABASE_URL+'/rest/v1/products?select=id,name,description,price,emoji,sort_order&active=eq.true&order=sort_order.asc';
+  const response=await fetch(url,{
+    headers:{
+      apikey:SUPABASE_KEY,
+      Accept:'application/json'
+    },
+    cache:'no-store'
+  });
+  const body=await response.text();
+  if(!response.ok) throw new Error('Supabase '+response.status+': '+body);
+  const data=JSON.parse(body);
   products=(data||[]).map(p=>({id:p.id,n:p.name,p:Number(p.price),e:p.emoji||'📦',d:p.description||''}));
   cleanCart();
   render();
+  const debug=document.getElementById('dbDebug');
+  if(debug){debug.textContent='Database: LIVE — '+products.length+' products loaded from Supabase';debug.style.color='#a4f2cf'}
 }
 async function initLive(){
   const status=document.getElementById('dbStatus');
@@ -132,6 +140,8 @@ async function initLive(){
   }catch(err){
     console.error(err);
     status.textContent='OFFLINE DEMO';
+    const debug=document.getElementById('dbDebug');
+    if(debug){debug.textContent='Database error: '+(err.message||err);debug.style.color='#ffb4b4'}
     products=[...fallbackProducts];
     render();
   }
