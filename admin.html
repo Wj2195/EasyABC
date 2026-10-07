@@ -8,7 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#050b15;--panel:#101c2d;--panel2:#172538;--line:rgba(255,255,255,.12);--text:#f8fafc;--muted:#9fb0c6;--a:#68a8ff;--b:#30d8e8;--green:#46e0a0;--red:#ff8a8a;--yellow:#ffd36a}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0,#182b50,#07111f 40%,#040a13 80%);min-height:100vh}button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.muted{color:var(--muted)}.small{font-size:12px}.top{height:72px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;background:rgba(4,10,19,.78);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}.brand{font-size:21px;font-weight:900}.brand span{color:#48dce7}.actions{display:flex;gap:8px;align-items:center}.btn,.ghost,.danger{border-radius:13px;padding:10px 14px;font-weight:800}.btn{border:0;background:linear-gradient(135deg,var(--a),var(--b));color:#03101d}.ghost{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text)}.danger{border:1px solid rgba(255,138,138,.3);background:rgba(255,138,138,.1);color:#ffc2c2}.wrap{width:min(1280px,94vw);margin:0 auto;padding:32px 0 70px}.login{width:min(520px,92vw);margin:10vh auto;padding:28px;border-radius:26px;border:1px solid var(--line);background:linear-gradient(155deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:0 30px 90px rgba(0,0,0,.35)}.login h1{margin:0 0 8px;font-size:34px}.login label,.field{display:grid;gap:7px;color:var(--muted);font-size:12px}.login input,.field input,.field textarea,.field select{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06);color:var(--text)}.field textarea{min-height:96px;resize:vertical}.field select option{color:#111}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}.tab{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);font-weight:800}.tab.active{border-color:transparent;background:linear-gradient(135deg,var(--a),var(--b));color:#03101d}.view{display:none}.view.active{display:block}.titlebar{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:18px}.titlebar h1{margin:0;font-size:36px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat,.panel{border:1px solid var(--line);background:linear-gradient(155deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border-radius:22px;padding:20px}.stat b{display:block;font-size:30px;margin-top:7px}.split{display:grid;grid-template-columns:.85fr 1.15fr;gap:18px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.span2{grid-column:1/-1}.check{display:flex;align-items:center;gap:9px;color:var(--text);margin-top:10px}.check input{width:auto}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:18px}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{text-align:left;padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;vertical-align:top}.table th{color:#b9c7dc;background:rgba(255,255,255,.04);position:sticky;top:0}.status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900}.on{background:rgba(70,224,160,.1);color:#a8f4d3;border:1px solid rgba(70,224,160,.2)}.off{background:rgba(255,138,138,.1);color:#ffc2c2;border:1px solid rgba(255,138,138,.2)}.pending{background:rgba(255,211,106,.1);color:#ffe0a0;border:1px solid rgba(255,211,106,.2)}.notice{margin:12px 0;padding:11px 13px;border-radius:12px;border:1px solid var(--line);color:var(--muted);font-size:12px}.notice.ok{color:#a8f4d3;border-color:rgba(70,224,160,.25)}.notice.err{color:#ffc2c2;border-color:rgba(255,138,138,.25)}.filebox{padding:12px;border:1px dashed rgba(104,168,255,.35);border-radius:13px;background:rgba(104,168,255,.06)}.filebox input{padding:0;border:0;background:none}.mobilecards{display:none}.orderitems{color:var(--muted);font-size:11px;margin-top:4px}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 0,#182b50,#07111f 40%,#040a13 80%);min-height:100vh}button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.muted{color:var(--muted)}.small{font-size:12px}.top{height:72px;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;background:rgba(4,10,19,.78);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}.brand{font-size:21px;font-weight:900}.brand span{color:#48dce7}.actions{display:flex;gap:8px;align-items:center}.btn,.ghost,.danger{border-radius:13px;padding:10px 14px;font-weight:800}.btn{border:0;background:linear-gradient(135deg,var(--a),var(--b));color:#03101d}.ghost{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text)}.danger{border:1px solid rgba(255,138,138,.3);background:rgba(255,138,138,.1);color:#ffc2c2}.wrap{width:min(1280px,94vw);margin:0 auto;padding:32px 0 70px}.login{width:min(520px,92vw);margin:10vh auto;padding:28px;border-radius:26px;border:1px solid var(--line);background:linear-gradient(155deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:0 30px 90px rgba(0,0,0,.35)}.login h1{margin:0 0 8px;font-size:34px}.login label,.field{display:grid;gap:7px;color:var(--muted);font-size:12px}.login input,.field input,.field textarea,.field select{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06);color:var(--text)}.field textarea{min-height:96px;resize:vertical}.field select option{color:#111}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}.tab{padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);font-weight:800}.tab.active{border-color:transparent;background:linear-gradient(135deg,var(--a),var(--b));color:#03101d}.view{display:none}.view.active{display:block}.titlebar{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:18px}.titlebar h1{margin:0;font-size:36px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat,.panel{border:1px solid var(--line);background:linear-gradient(155deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border-radius:22px;padding:20px}.stat b{display:block;font-size:30px;margin-top:7px}.split{display:grid;grid-template-columns:.85fr 1.15fr;gap:18px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.span2{grid-column:1/-1}.check{display:flex;align-items:center;gap:9px;color:var(--text);margin-top:10px}.check input{width:auto}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:18px}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{text-align:left;padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;vertical-align:top}.table th{color:#b9c7dc;background:rgba(255,255,255,.04);position:sticky;top:0}.status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900}.on{background:rgba(70,224,160,.1);color:#a8f4d3;border:1px solid rgba(70,224,160,.2)}.off{background:rgba(255,138,138,.1);color:#ffc2c2;border:1px solid rgba(255,138,138,.2)}.pending{background:rgba(255,211,106,.1);color:#ffe0a0;border:1px solid rgba(255,211,106,.2)}.notice{margin:12px 0;padding:11px 13px;border-radius:12px;border:1px solid var(--line);color:var(--muted);font-size:12px}.notice.ok{color:#a8f4d3;border-color:rgba(70,224,160,.25)}.notice.err{color:#ffc2c2;border-color:rgba(255,138,138,.25)}.filebox{padding:12px;border:1px dashed rgba(104,168,255,.35);border-radius:13px;background:rgba(104,168,255,.06)}.filebox input{padding:0;border:0;background:none}.image-preview{margin-top:10px;min-height:120px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.04);display:grid;place-items:center;overflow:hidden}.image-preview img{width:100%;max-height:240px;object-fit:cover;display:block}.thumb{width:64px;height:46px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}.mobilecards{display:none}.orderitems{color:var(--muted);font-size:11px;margin-top:4px}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}}
 @media(max-width:620px){.top{padding:0 3vw}.actions .desktop{display:none}.wrap{width:94vw;padding-top:22px}.grid{grid-template-columns:1fr 1fr}.titlebar{align-items:flex-start;flex-direction:column}.formgrid{grid-template-columns:1fr}.span2{grid-column:auto}.tablewrap{display:none}.mobilecards{display:grid;gap:12px}.mcard{padding:15px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.05)}}
 </style>
@@ -103,6 +103,16 @@
           <div class="field span2"><label>Description</label><textarea id="prodDescription" placeholder="Describe the product"></textarea></div>
           <div class="field"><label>Sort Order</label><input id="prodSort" type="number" value="0"></div>
           <label class="check"><input id="prodActive" type="checkbox" checked> Active on store</label>
+
+          <div class="field span2 filebox">
+            <label>Product Image</label>
+            <input id="prodImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif" onchange="previewSelectedImage()">
+            <div class="muted small" style="margin-top:7px">Recommended: JPG/PNG/WebP, around 1200px wide. This image is public on the storefront.</div>
+            <div id="prodImagePreview" class="image-preview"><span class="muted small">No image selected</span></div>
+            <input id="prodImagePath" type="hidden">
+            <button type="button" class="ghost" style="margin-top:9px" onclick="removeProductImage()">Remove Image</button>
+          </div>
+
           <div class="field span2"><label>Download Name</label><input id="prodDownloadName" placeholder="Market Watch v.1.zip"></div>
           <div class="field span2"><label>Private Storage Path</label><input id="prodDownloadPath" placeholder="products/market-watch-v1.zip"></div>
           <div class="field span2 filebox"><label>Upload / replace downloadable file</label><input id="prodFile" type="file"><div class="muted small" style="margin-top:7px">Uploads privately to <b>digital-products</b>. The path will be filled automatically.</div></div>
@@ -111,7 +121,7 @@
         <div id="productMsg" class="notice hidden"></div>
       </div>
       <div>
-        <div class="tablewrap"><table class="table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>File</th><th>Status</th><th>Sort</th><th>Action</th></tr></thead><tbody id="productRows"></tbody></table></div>
+        <div class="tablewrap"><table class="table"><thead><tr><th>Image</th><th>Product</th><th>Category</th><th>Price</th><th>File</th><th>Status</th><th>Sort</th><th>Action</th></tr></thead><tbody id="productRows"></tbody></table></div>
         <div id="productCards" class="mobilecards"></div>
       </div>
     </div>
@@ -278,15 +288,49 @@ function renderCategories(){
   document.getElementById('categoryCards').innerHTML=categories.map(c=>'<div class="mcard"><div class="row"><b>'+esc(c.name)+'</b><span class="status '+(c.active?'on':'off')+'">'+(c.active?'ACTIVE':'OFF')+'</span></div><div class="muted small">'+esc(c.description||'')+'</div><div class="toolbar"><button class="ghost" onclick="editCategory('+c.id+')">Edit</button><button class="danger" onclick="deleteCategory('+c.id+')">Delete</button></div></div>').join('');
 }
 
+function publicImageUrl(path){
+  if(!path)return '';
+  const {data}=client.storage.from('product-media').getPublicUrl(path);
+  return data?.publicUrl||'';
+}
+function renderProductImagePreview(path){
+  const box=document.getElementById('prodImagePreview');
+  if(!box)return;
+  const url=publicImageUrl(path);
+  box.innerHTML=url?'<img src="'+esc(url)+'" alt="Product image preview">':'<span class="muted small">No image selected</span>';
+}
+function previewSelectedImage(){
+  const file=document.getElementById('prodImageFile').files[0];
+  const box=document.getElementById('prodImagePreview');
+  if(!file){renderProductImagePreview(document.getElementById('prodImagePath').value);return}
+  const url=URL.createObjectURL(file);
+  box.innerHTML='<img src="'+url+'" alt="Selected image preview">';
+}
+function removeProductImage(){
+  document.getElementById('prodImageFile').value='';
+  document.getElementById('prodImagePath').value='';
+  renderProductImagePreview('');
+}
+async function uploadProductImage(){
+  const file=document.getElementById('prodImageFile').files[0];
+  if(!file)return document.getElementById('prodImagePath').value||null;
+  const safe=file.name.replace(/[^a-zA-Z0-9._-]+/g,'-');
+  const path='products/'+Date.now()+'-'+safe;
+  msg('productMsg','Uploading product image…');
+  const {error}=await client.storage.from('product-media').upload(path,file,{upsert:false,contentType:file.type||undefined});
+  if(error)throw error;
+  return path;
+}
+
 function newProduct(){
   document.getElementById('productFormTitle').textContent='New Product';
-  ['productId','prodName','prodEmoji','prodDescription','prodDownloadName','prodDownloadPath'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('prodPrice').value='0.00';document.getElementById('prodCategory').value='';document.getElementById('prodSort').value='0';document.getElementById('prodActive').checked=true;document.getElementById('prodFile').value='';clearMsg('productMsg');
+  ['productId','prodName','prodEmoji','prodDescription','prodDownloadName','prodDownloadPath','prodImagePath'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('prodPrice').value='0.00';document.getElementById('prodCategory').value='';document.getElementById('prodSort').value='0';document.getElementById('prodActive').checked=true;document.getElementById('prodFile').value='';document.getElementById('prodImageFile').value='';renderProductImagePreview('');clearMsg('productMsg');
 }
 function editProduct(id){
   const p=products.find(x=>String(x.id)===String(id));if(!p)return;
   document.getElementById('productFormTitle').textContent='Edit Product';
-  document.getElementById('productId').value=p.id;document.getElementById('prodName').value=p.name||'';document.getElementById('prodPrice').value=Number(p.price||0).toFixed(2);document.getElementById('prodCategory').value=p.category_id||'';document.getElementById('prodEmoji').value=p.emoji||'';document.getElementById('prodDescription').value=p.description||'';document.getElementById('prodSort').value=p.sort_order||0;document.getElementById('prodActive').checked=!!p.active;document.getElementById('prodDownloadName').value=p.download_name||'';document.getElementById('prodDownloadPath').value=p.download_path||'';document.getElementById('prodFile').value='';clearMsg('productMsg');scrollTo({top:120,behavior:'smooth'});
+  document.getElementById('productId').value=p.id;document.getElementById('prodName').value=p.name||'';document.getElementById('prodPrice').value=Number(p.price||0).toFixed(2);document.getElementById('prodCategory').value=p.category_id||'';document.getElementById('prodEmoji').value=p.emoji||'';document.getElementById('prodDescription').value=p.description||'';document.getElementById('prodSort').value=p.sort_order||0;document.getElementById('prodActive').checked=!!p.active;document.getElementById('prodDownloadName').value=p.download_name||'';document.getElementById('prodDownloadPath').value=p.download_path||'';document.getElementById('prodFile').value='';document.getElementById('prodImageFile').value='';document.getElementById('prodImagePath').value=p.image_path||'';renderProductImagePreview(p.image_path||'');clearMsg('productMsg');scrollTo({top:120,behavior:'smooth'});
 }
 async function uploadProductFile(){
   const file=document.getElementById('prodFile').files[0];if(!file)return null;
@@ -302,6 +346,7 @@ async function saveProduct(){
     const id=document.getElementById('productId').value;
     const name=document.getElementById('prodName').value.trim();
     if(!name)throw new Error('Product name is required.');
+    const uploadedImagePath=await uploadProductImage();
     const uploaded=await uploadProductFile();
     const payload={
       name,
@@ -311,6 +356,7 @@ async function saveProduct(){
       category_id:document.getElementById('prodCategory').value?Number(document.getElementById('prodCategory').value):null,
       active:document.getElementById('prodActive').checked,
       sort_order:Number(document.getElementById('prodSort').value)||0,
+      image_path:uploadedImagePath,
       download_name:(uploaded?.name||document.getElementById('prodDownloadName').value.trim())||null,
       download_path:(uploaded?.path||document.getElementById('prodDownloadPath').value.trim())||null
     };
@@ -324,7 +370,7 @@ async function deleteProduct(id){
   const {error}=await client.from('products').delete().eq('id',id);if(error){alert(error.message);return}await loadProducts();
 }
 function renderProducts(){
-  document.getElementById('productRows').innerHTML=products.map(p=>'<tr><td><b>'+esc(p.emoji||'📦')+' '+esc(p.name)+'</b><div class="muted small">'+esc(p.description||'')+'</div></td><td>'+esc(catName(p.category_id))+'</td><td>'+money(p.price)+'</td><td>'+(p.download_path?'<span class="status on">READY</span>':'<span class="status pending">NO FILE</span>')+'</td><td><span class="status '+(p.active?'on':'off')+'">'+(p.active?'ACTIVE':'INACTIVE')+'</span></td><td>'+p.sort_order+'</td><td><button class="ghost" onclick="editProduct('+p.id+')">Edit</button> <button class="danger" onclick="deleteProduct('+p.id+')">Delete</button></td></tr>').join('');
+  document.getElementById('productRows').innerHTML=products.map(p=>{const img=publicImageUrl(p.image_path);return '<tr><td>'+(img?'<img class="thumb" src="'+esc(img)+'" alt="">':'<span style="font-size:28px">'+esc(p.emoji||'📦')+'</span>')+'</td><td><b>'+esc(p.name)+'</b><div class="muted small">'+esc(p.description||'')+'</div></td><td>'+esc(catName(p.category_id))+'</td><td>'+money(p.price)+'</td><td>'+(p.download_path?'<span class="status on">READY</span>':'<span class="status pending">NO FILE</span>')+'</td><td><span class="status '+(p.active?'on':'off')+'">'+(p.active?'ACTIVE':'INACTIVE')+'</span></td><td>'+p.sort_order+'</td><td><button class="ghost" onclick="editProduct('+p.id+')">Edit</button> <button class="danger" onclick="deleteProduct('+p.id+')">Delete</button></td></tr>'}).join('');
   document.getElementById('productCards').innerHTML=products.map(p=>'<div class="mcard"><div class="row"><b>'+esc(p.emoji||'📦')+' '+esc(p.name)+'</b><b>'+money(p.price)+'</b></div><div class="muted small">'+esc(catName(p.category_id))+'</div><div class="toolbar"><button class="ghost" onclick="editProduct('+p.id+')">Edit</button><button class="danger" onclick="deleteProduct('+p.id+')">Delete</button></div></div>').join('');
   updateStats();
 }
