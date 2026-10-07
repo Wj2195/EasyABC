@@ -169,6 +169,57 @@ async function fetchJsonWithTimeout(url,ms=8000){
     clearTimeout(timer);
   }
 }
+function promiseWithTimeout(promise,ms=6000,label='Request'){
+  let timer;
+  const timeout=new Promise((_,reject)=>{
+    timer=setTimeout(()=>reject(new Error(label+' timed out')),ms);
+  });
+  return Promise.race([promise,timeout]).finally(()=>clearTimeout(timer));
+}
+async function queryProductsReliable(){
+  // Method 1: Supabase client (works with the current browser session).
+  try{
+    const {data,error}=await promiseWithTimeout(
+      client.from('products').select('*').eq('active',true).order('sort_order',{ascending:true}),
+      5500,
+      'Catalog'
+    );
+    if(error)throw error;
+    if(Array.isArray(data))return data;
+  }catch(e){console.warn('Catalog client route failed:',e)}
+
+  // Method 2: public REST fallback.
+  const url=SUPABASE_URL+'/rest/v1/products?select=*&active=eq.true&order=sort_order.asc';
+  return await fetchJsonWithTimeout(url,5500);
+}
+async function queryOptionalReliable(table,select,orderSpec,url){
+  try{
+    let q=client.from(table).select(select);
+    for(const o of orderSpec)q=q.order(o.column,{ascending:o.ascending!==false});
+    if(table==='categories')q=q.eq('active',true);
+    const {data,error}=await promiseWithTimeout(q,4500,table);
+    if(error)throw error;
+    if(Array.isArray(data))return data;
+  }catch(e){console.warn(table+' client route failed:',e)}
+  try{return await fetchJsonWithTimeout(url,4500)}catch(e){console.warn(table+' REST route failed:',e);return []}
+}
+function saveCatalogCache(rawProducts,rawCategories,rawMedia){
+  try{
+    localStorage.setItem('easyabc_catalog_cache_v3',JSON.stringify({
+      saved_at:Date.now(),
+      products:rawProducts||[],
+      categories:rawCategories||[],
+      media:rawMedia||[]
+    }));
+  }catch{}
+}
+function loadCatalogCache(){
+  try{
+    const x=JSON.parse(localStorage.getItem('easyabc_catalog_cache_v3')||'null');
+    return x&&Array.isArray(x.products)?x:null;
+  }catch{return null}
+}
+
 
 function productImageUrl(path){
   if(!path)return '';
@@ -328,12 +379,12 @@ function goPay(){if(!cart.length){alert('Add at least one product first.');retur
 
 async function loadProducts(){
   document.getElementById('dbDebug')?.classList.remove('synced');
-  setDb('Syncing live catalog…','');
+  setDb('Preparing smart catalog…','');
 
-  const productUrl=SUPABASE_URL+'/rest/v1/products?select=*&active=eq.true&order=sort_order.asc';
-  const data=await fetchJsonWithTimeout(productUrl,10000);
+  const rawProducts=await queryProductsReliable();
 
-  products=(data||[]).map(p=>({
+  // Render the essential catalog immediately.
+  products=(rawProducts||[]).map(p=>({
     id:p.id,
     n:p.name,
     p:Number(p.price),
@@ -342,29 +393,41 @@ async function loadProducts(){
     category_id:p.category_id??null,
     image_path:p.image_path||''
   }));
+  cleanCart();
+  renderCategories();
+  render();
 
-  // Optional catalog extras should never block the core product list.
+  // Load categories/media separately so they cannot hold up the store.
   const mediaUrlReq=SUPABASE_URL+'/rest/v1/product_media?select=id,product_id,media_type,storage_path,sort_order,is_cover&order=sort_order.asc,id.asc';
   const categoryUrl=SUPABASE_URL+'/rest/v1/categories?select=id,name,slug,sort_order&active=eq.true&order=sort_order.asc,name.asc';
 
-  const [mediaResult,categoryResult]=await Promise.allSettled([
-    fetchJsonWithTimeout(mediaUrlReq,6000),
-    fetchJsonWithTimeout(categoryUrl,6000)
+  const [rawMedia,rawCategories]=await Promise.all([
+    queryOptionalReliable(
+      'product_media',
+      'id,product_id,media_type,storage_path,sort_order,is_cover',
+      [{column:'sort_order'},{column:'id'}],
+      mediaUrlReq
+    ),
+    queryOptionalReliable(
+      'categories',
+      'id,name,slug,sort_order,active',
+      [{column:'sort_order'},{column:'name'}],
+      categoryUrl
+    )
   ]);
 
-  productMedia=mediaResult.status==='fulfilled'?(mediaResult.value||[]):[];
-  categories=categoryResult.status==='fulfilled'?(categoryResult.value||[]):[];
+  productMedia=rawMedia||[];
+  categories=rawCategories||[];
 
   if(activeCategory!=='all'&&!categories.some(x=>String(x.id)===activeCategory)){
     activeCategory='all';
   }
 
-  cleanCart();
   renderCategories();
   render();
+  saveCatalogCache(rawProducts,rawCategories,rawMedia);
 
-  document.getElementById('dbStatus')?.textContent='LIVE';
-  setDb('Catalog synced — '+products.length+' tools ready','live');
+  setDb('Catalog ready — '+products.length+' tools','live');
   hideCatalogStatusSoon();
 
   const smart=document.getElementById('smartResults');
@@ -374,15 +437,32 @@ async function loadProducts(){
 }
 
 let catalogRetryTimer=null;
+let catalogRetryCount=0;
 async function retryCatalog(){
   clearTimeout(catalogRetryTimer);
   try{
     await loadProducts();
+    catalogRetryCount=0;
   }catch(e){
-    console.error(e);
-    document.getElementById('dbStatus')?.textContent='RETRYING';
-    setDb('Catalog connection is slow — retrying automatically…','warn');
-    catalogRetryTimer=setTimeout(retryCatalog,5000);
+    console.error('Catalog load failed:',e);
+    catalogRetryCount++;
+
+    const cached=loadCatalogCache();
+    if(cached?.products?.length){
+      products=(cached.products||[]).map(p=>({
+        id:p.id,n:p.name,p:Number(p.price),e:p.emoji||'📦',d:p.description||'',
+        category_id:p.category_id??null,image_path:p.image_path||''
+      }));
+      categories=cached.categories||[];
+      productMedia=cached.media||[];
+      cleanCart();renderCategories();render();
+      setDb('Showing saved catalog • reconnecting…','warn');
+    }else{
+      setDb('Connecting to live catalog • retrying…','warn');
+    }
+
+    const delay=Math.min(4000+catalogRetryCount*2000,12000);
+    catalogRetryTimer=setTimeout(retryCatalog,delay);
   }
 }
 
@@ -662,7 +742,7 @@ async function init(){
   }catch(e){
     console.error(e);
     document.getElementById('dbStatus')?.textContent='RETRYING';
-    setDb('Catalog connection is slow — retrying automatically…','warn');
+    setDb('Connecting to live catalog • retrying…','warn');
     catalogRetryTimer=setTimeout(retryCatalog,5000);
   }
   try{
@@ -672,6 +752,6 @@ async function init(){
     document.getElementById('authHint').textContent=e.message||String(e);
   }
 }
-init().catch(e=>{console.error(e);setDb('Catalog connection is slow — retrying automatically…','warn');setTimeout(retryCatalog,3000)});
+init().catch(e=>{console.error(e);setDb('Connecting to live catalog • retrying…','warn');setTimeout(retryCatalog,3000)});
 </script>
 </body></html>
