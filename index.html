@@ -61,7 +61,7 @@
 <div class="paygrid">
 <div>
 <div class="panel"><h3>Order Summary</h3><div id="items"></div><div class="totals"><div class="row"><span>Subtotal</span><b id="sub">RM0.00</b></div><div class="row total"><span>Exact Amount</span><b id="exact">RM0.00</b></div></div></div>
-<div id="customerPanel" class="panel" style="margin-top:18px"><h3>Customer Details</h3><div class="form"><label>Name<input id="name" placeholder="Customer name" autocomplete="name"></label><label>Phone<input id="phone" placeholder="0123456789" autocomplete="tel"></label></div><label>Email <span class="muted">(for receipt & purchase recovery)</span><input id="email" type="email" placeholder="you@example.com" autocomplete="email"></label><label>Reference / Note<input id="note" placeholder="Optional"></label><button id="createPayBtn" class="primary" style="margin-top:16px" onclick="createPayment()">Create Secure Payment</button><div class="muted small" style="margin-top:10px">Your name, email and phone will be passed securely to ToyyibPay so you do not need to type them again.</div><div id="authHint" class="muted small" style="margin-top:7px"></div></div>
+<div id="customerPanel" class="panel" style="margin-top:18px"><h3>Customer Details</h3><div class="form"><label>Name<input id="name" placeholder="Customer name" autocomplete="name" required></label><label>Phone<input id="phone" placeholder="0123456789" autocomplete="tel" required></label></div><label>Email <span class="muted">(for receipt & purchase recovery)</span><input id="email" type="email" placeholder="you@example.com" autocomplete="email" required></label><label>Reference / Note<input id="note" placeholder="Optional"></label><button id="createPayBtn" class="primary" style="margin-top:16px" onclick="createPayment()">Create Secure Payment</button><div class="muted small" style="margin-top:10px">Your name, email and phone will be passed securely to ToyyibPay so you do not need to type them again.</div><div id="authHint" class="muted small" style="margin-top:7px"></div></div>
 </div>
 
 <div id="paymentPanel" class="panel"><span class="tag">DUITNOW QR + FPX</span><div class="dnqr-ready">DUITNOW QR APPROVED</div><h2 id="payTitle">Secure Payment</h2><p id="payDesc" class="muted">Create your order first. EasyABC will create the exact bill amount, then you can pay through ToyyibPay using DuitNow QR or FPX.</p>
@@ -495,16 +495,26 @@ async function createPayment(){
     if(!session) throw new Error('Could not create customer session.');
     document.getElementById('authHint').textContent='Secure anonymous customer session active.';
 
+    const customerName=document.getElementById('name').value.trim();
+    const customerPhone=document.getElementById('phone').value.trim();
     const customerEmail=document.getElementById('email').value.trim().toLowerCase();
-    if(!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)){
-      throw new Error('Please enter a valid email. It is used to recover your purchase on another device.');
+
+    if(!customerName){
+      throw new Error('Please enter your name.');
     }
+    if(!customerPhone){
+      throw new Error('Please enter your phone number.');
+    }
+    if(!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)){
+      throw new Error('Please enter a valid email. It is used for your receipt and purchase recovery.');
+    }
+
     localStorage.setItem('easyabc_last_email',customerEmail);
 
     const payload={
       items:cart.map(i=>({product_id:Number(i.id),quantity:i.q})),
-      customer_name:document.getElementById('name').value.trim(),
-      customer_phone:document.getElementById('phone').value.trim(),
+      customer_name:customerName,
+      customer_phone:customerPhone,
       customer_email:customerEmail,
       note:document.getElementById('note').value.trim()
     };
