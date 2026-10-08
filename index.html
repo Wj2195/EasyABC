@@ -349,7 +349,7 @@ body{background:radial-gradient(ellipse at 78% 2%,rgba(28,80,125,.27),transparen
 
       <div class="handoff-actions">
         <button class="ghost full" onclick="closeCheckoutHandoff()">Not yet</button>
-        <button class="primary full" onclick="launchToyyibPay()">Continue to ToyyibPay →</button>
+        <button id="handoffLaunchBtn" class="primary full" onclick="launchToyyibPay()">Continue to ToyyibPay →</button>
       </div>
       <div class="handoff-note">Payment processing is handled securely by ToyyibPay. EasyABC will detect successful payment automatically and unlock your download.</div>
     </div>
@@ -1035,16 +1035,42 @@ function checkoutHandoffBackdrop(e){
   }
 }
 
+let toyyibPayLaunchLocked=false;
 function launchToyyibPay(){
   const url=duitNowPaymentUrl||paymentUrl;
-  if(!url)return;
+  if(!url||toyyibPayLaunchLocked)return;
+
+  // Avoid a double click creating two payment tabs.
+  toyyibPayLaunchLocked=true;
+  const btn=document.getElementById('handoffLaunchBtn');
+  if(btn)btn.disabled=true;
 
   trackEvent('payment_opened',null,currentOrderId);
   closeCheckoutHandoff();
 
-  const opened=window.open(url,'_blank','noopener');
-  if(!opened){
-    window.location.href=url;
+  try{
+    // Opening with 'noopener' can return null EVEN WHEN the tab opens.
+    // The old code mistook this for a blocked popup and redirected EasyABC
+    // to ToyyibPay too, leaving two payment tabs.
+    // Open a reusable blank payment tab, detach its opener immediately,
+    // then navigate just that tab to the payment provider.
+    const paymentTab=window.open('about:blank','easyabc_toyyibpay_checkout');
+    if(paymentTab){
+      try{paymentTab.opener=null}catch(e){}
+      paymentTab.location.replace(url);
+      try{paymentTab.focus()}catch(e){}
+    }else{
+      // The new tab really was blocked; use this tab instead.
+      window.location.assign(url);
+    }
+  }catch(e){
+    console.warn('Could not open the payment tab:',e);
+    window.location.assign(url);
+  }finally{
+    setTimeout(()=>{
+      toyyibPayLaunchLocked=false;
+      if(btn)btn.disabled=false;
+    },1800);
   }
 }
 function finishOrder(){
