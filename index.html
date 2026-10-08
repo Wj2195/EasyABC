@@ -28,6 +28,10 @@
 .community-list{display:grid;gap:12px;align-content:start}.community-post{padding:16px 17px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid var(--line)}.community-post-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.community-user{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.community-kind{display:inline-flex;padding:4px 8px;border-radius:999px;border:1px solid rgba(104,168,255,.22);background:rgba(104,168,255,.09);color:#cfe2ff;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}.community-time{color:var(--muted);font-size:10px}.community-message{margin-top:10px;color:#e8eef7;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}.community-reply{margin-top:13px;padding:12px 13px;border-radius:14px;background:rgba(70,224,160,.07);border:1px solid rgba(70,224,160,.16)}.community-reply b{color:#a8f4d3}.community-reply div{margin-top:5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}.community-empty{padding:24px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}.community-note{margin-top:9px;color:var(--muted);font-size:11px;line-height:1.5}
 @media(max-width:800px){.community-grid{grid-template-columns:1fr}.community-head{align-items:flex-start;flex-direction:column}.community-form-row{grid-template-columns:1fr}}
 
+
+/* Checkout disclaimer */
+.disclaimer-modal{position:fixed;inset:0;z-index:140;background:rgba(1,7,15,.82);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:18px}.disclaimer-modal.hidden{display:none}.disclaimer-card{width:min(660px,96vw);max-height:92vh;overflow:auto;border:1px solid rgba(255,211,106,.22);border-radius:26px;background:linear-gradient(155deg,#162238,#08111f 60%,#07131e);box-shadow:0 34px 110px rgba(0,0,0,.58)}.disclaimer-head{padding:22px 24px 18px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,rgba(255,211,106,.10),rgba(104,168,255,.06));display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.disclaimer-head h3{margin:5px 0 0;font-size:25px}.disclaimer-icon{flex:0 0 46px;width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:rgba(255,211,106,.12);border:1px solid rgba(255,211,106,.25);font-size:23px}.disclaimer-body{padding:22px 24px 24px}.disclaimer-body p{color:var(--muted);line-height:1.65;margin:0 0 13px}.disclaimer-list{margin:12px 0 16px;padding-left:22px;color:#dce7f5;line-height:1.6}.disclaimer-list li{margin:7px 0}.disclaimer-trading{padding:13px 14px;border-radius:14px;background:rgba(255,211,106,.07);border:1px solid rgba(255,211,106,.16);color:#ffe4a5;font-size:12px;line-height:1.6}.disclaimer-check{display:flex!important;grid-template-columns:none!important;align-items:flex-start;gap:10px;margin-top:17px!important;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.035);color:#eef4fb!important;font-size:13px!important;line-height:1.55}.disclaimer-check input{width:18px!important;height:18px;min-width:18px;margin:2px 0 0;padding:0!important;accent-color:#30d8e8}.disclaimer-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:15px}.disclaimer-legal{margin-top:11px!important;text-align:center;font-size:10px;line-height:1.5;color:#7f92aa!important}@media(max-width:560px){.disclaimer-head,.disclaimer-body{padding-left:18px;padding-right:18px}.disclaimer-actions{grid-template-columns:1fr}.disclaimer-card{border-radius:22px}}
+
 </style>
 </head>
 <body>
@@ -126,6 +130,39 @@
   <div class="panel"><p class="muted">Loading your purchases…</p></div>
 </div>
 </section>
+
+
+<div id="checkoutDisclaimer" class="disclaimer-modal hidden" onclick="disclaimerBackdrop(event)">
+  <div class="disclaimer-card" role="dialog" aria-modal="true" aria-labelledby="disclaimerTitle">
+    <div class="disclaimer-head">
+      <div>
+        <span class="tag">IMPORTANT NOTICE</span>
+        <h3 id="disclaimerTitle">Please read before checkout</h3>
+      </div>
+      <div class="disclaimer-icon">⚠</div>
+    </div>
+    <div class="disclaimer-body">
+      <p>EasyABC provides downloadable digital tools and software on an <b>“as-is”</b> and <b>“as-available”</b> basis. By continuing, you acknowledge that downloading, installing and using any EasyABC product is at your own risk.</p>
+      <p>To the maximum extent permitted by applicable law, EasyABC will not be responsible for loss, damage or disruption arising from the use of, or inability to use, a downloaded product, including:</p>
+      <ul class="disclaimer-list">
+        <li>device, operating-system or software problems such as freezing, crashing, slowing down, incompatibility or other technical issues;</li>
+        <li>missing, corrupted, deleted or inaccessible files or data, and download or installation failures;</li>
+        <li>loss of work, business interruption or other indirect or consequential loss; and</li>
+        <li>trading, investment or financial losses resulting from decisions made using Market Watch, trading tools, indicators, analysis or other EasyABC products.</li>
+      </ul>
+      <div class="disclaimer-trading"><b>Trading notice:</b> Market Watch and other trading-related products are tools for informational and analytical purposes only. They are not financial or investment advice, and EasyABC does not guarantee accuracy, future performance or profit.</div>
+      <label class="disclaimer-check">
+        <input id="disclaimerAgree" type="checkbox" onchange="syncDisclaimerButton()">
+        <span>I have read and understood the notice above, and I agree to use EasyABC products at my own risk.</span>
+      </label>
+      <div class="disclaimer-actions">
+        <button class="ghost full" onclick="closeDisclaimer()">Cancel</button>
+        <button id="disclaimerContinue" class="primary full" onclick="acceptDisclaimer()" disabled>I Agree — Continue to Checkout</button>
+      </div>
+      <p class="disclaimer-legal">Nothing in this notice excludes or limits any right or liability that cannot legally be excluded or limited under applicable law.</p>
+    </div>
+  </div>
+</div>
 
 <div id="checkoutHandoff" class="checkout-handoff hidden" onclick="checkoutHandoffBackdrop(event)">
   <div class="handoff-card">
@@ -487,7 +524,35 @@ function renderPay(){
   document.getElementById('items').innerHTML=cart.length?cart.map(i=>{const p=products.find(x=>String(x.id)===String(i.id));if(!p)return '';return `<div class="item"><div><b>${esc(p.n)}</b><div class="muted">${M(p.p)} × ${i.q}</div></div><span>${i.q} pcs</span><b>${M(p.p*i.q)}</b></div>`}).join(''):'<p class="muted">Your cart is empty.</p>';
 }
 function show(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));scrollTo({top:0,behavior:'smooth'})}
-function goPay(){if(!cart.length){alert('Add at least one product first.');return}trackEvent('checkout_started');renderPay();show('payment')}
+function goPay(){
+  if(!cart.length){alert('Add at least one product first.');return}
+  openDisclaimer();
+}
+function openDisclaimer(){
+  const modal=document.getElementById('checkoutDisclaimer');
+  const check=document.getElementById('disclaimerAgree');
+  if(check)check.checked=false;
+  syncDisclaimerButton();
+  modal?.classList.remove('hidden');
+}
+function closeDisclaimer(){
+  document.getElementById('checkoutDisclaimer')?.classList.add('hidden');
+}
+function disclaimerBackdrop(e){
+  if(e.target===document.getElementById('checkoutDisclaimer'))closeDisclaimer();
+}
+function syncDisclaimerButton(){
+  const agreed=!!document.getElementById('disclaimerAgree')?.checked;
+  const btn=document.getElementById('disclaimerContinue');
+  if(btn)btn.disabled=!agreed;
+}
+function acceptDisclaimer(){
+  if(!document.getElementById('disclaimerAgree')?.checked)return;
+  closeDisclaimer();
+  trackEvent('checkout_started');
+  renderPay();
+  show('payment');
+}
 
 async function loadProducts(){
   document.getElementById('dbDebug')?.classList.remove('synced');
@@ -958,7 +1023,12 @@ function restorePendingOrder(){
   }
 }
 
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCheckoutHandoff()});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closeCheckoutHandoff();
+    closeDisclaimer();
+  }
+});
 
 window.addEventListener('focus',()=>{
   if(currentOrderId)refreshOrder();
