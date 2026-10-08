@@ -19,6 +19,15 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
 
 @media(max-width:900px){.hero,.paygrid{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.modal-grid{grid-template-columns:1fr}.gallery-stage{min-height:360px;border-radius:28px 28px 0 0}.modal-info{padding:24px}}@media(max-width:620px){.top{padding:0 3vw}.brand{font-size:18px}.nav{gap:6px}.nav button{padding:8px 9px;font-size:12px}.nav button:nth-child(1),.nav button:nth-child(2){display:none}.hero{min-height:auto}.hero h1{font-size:52px}.visual{min-height:360px}.grid{grid-template-columns:1fr}.tools{display:block}.tools input{min-width:0;width:100%}.form{grid-template-columns:1fr}.sticky{flex-direction:column;gap:10px;align-items:stretch;text-align:center}.item{grid-template-columns:1fr auto}.item>b{grid-column:2}}
+
+/* Community feedback board */
+.community{margin:34px 0 12px;padding:24px;border:1px solid var(--line);border-radius:27px;background:linear-gradient(155deg,rgba(255,255,255,.09),rgba(255,255,255,.035));box-shadow:0 24px 70px rgba(0,0,0,.22)}
+.community-head{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-bottom:18px}.community-head h2{margin:8px 0 6px;font-size:30px}.community-head p{margin:0;color:var(--muted);line-height:1.6}
+.community-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px}.community-compose{padding:18px;border-radius:20px;background:rgba(3,12,25,.46);border:1px solid var(--line)}
+.community-compose label{display:grid;gap:7px;color:var(--muted);font-size:12px;margin-top:10px}.community-compose input,.community-compose textarea,.community-compose select{width:100%;font:inherit;padding:12px 13px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.06);color:var(--text);outline:none}.community-compose select option{color:#111}.community-compose textarea{min-height:118px;resize:vertical}.community-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.community-list{display:grid;gap:12px;align-content:start}.community-post{padding:16px 17px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid var(--line)}.community-post-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.community-user{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.community-kind{display:inline-flex;padding:4px 8px;border-radius:999px;border:1px solid rgba(104,168,255,.22);background:rgba(104,168,255,.09);color:#cfe2ff;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}.community-time{color:var(--muted);font-size:10px}.community-message{margin-top:10px;color:#e8eef7;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}.community-reply{margin-top:13px;padding:12px 13px;border-radius:14px;background:rgba(70,224,160,.07);border:1px solid rgba(70,224,160,.16)}.community-reply b{color:#a8f4d3}.community-reply div{margin-top:5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}.community-empty{padding:24px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}.community-note{margin-top:9px;color:var(--muted);font-size:11px;line-height:1.5}
+@media(max-width:800px){.community-grid{grid-template-columns:1fr}.community-head{align-items:flex-start;flex-direction:column}.community-form-row{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -36,6 +45,43 @@
 <div id="products" class="tools"><div><span class="tag">ALL PRODUCTS</span><h2>Choose what you like</h2></div><input id="search" placeholder="Search products..." oninput="render()"></div>
 <div id="categoryBar" class="category-bar"></div>
 <div id="grid" class="grid"></div>
+
+<div class="community" id="community">
+  <div class="community-head">
+    <div>
+      <span class="tag">COMMUNITY</span>
+      <h2>Feedback, comments & questions</h2>
+      <p>Have an idea, comment or question? Post it here. No account form needed — just choose a nickname.</p>
+    </div>
+    <button class="ghost" onclick="loadCommunity()">Refresh</button>
+  </div>
+  <div class="community-grid">
+    <div class="community-compose">
+      <div class="community-form-row">
+        <label>Nickname
+          <input id="communityNickname" maxlength="40" placeholder="Your nickname" autocomplete="nickname">
+        </label>
+        <label>Post type
+          <select id="communityKind">
+            <option value="question">Question</option>
+            <option value="feedback">Feedback</option>
+            <option value="comment">Comment</option>
+          </select>
+        </label>
+      </div>
+      <label>Your message
+        <textarea id="communityMessage" maxlength="1000" placeholder="Write your feedback, comment or question..."></textarea>
+      </label>
+      <input id="communityWebsite" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button id="communityPostBtn" class="primary full" onclick="submitCommunityPost()">Post</button>
+      <div id="communityMsg" class="community-note">Your post will appear publicly. Please avoid sharing personal or sensitive information.</div>
+    </div>
+    <div id="communityList" class="community-list">
+      <div class="community-empty">Loading community posts…</div>
+    </div>
+  </div>
+</div>
+
 <div class="sticky"><div><b><span id="qtyTotal">0</span> item(s)</b><div class="muted">Total: <span id="cartTotal">RM0.00</span></div></div><button class="primary" onclick="goPay()">Proceed to Payment →</button></div>
 </section>
 
@@ -922,6 +968,91 @@ document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'&&currentOrderId)refreshOrder();
 });
 
+
+let communityPosts=[];
+let communityChannel=null;
+
+function communityKindLabel(kind){
+  return ({question:'Question',feedback:'Feedback',comment:'Comment'})[kind]||'Post';
+}
+function communityDate(value){
+  try{return new Date(value).toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'})}
+  catch{return ''}
+}
+function renderCommunity(){
+  const box=document.getElementById('communityList');
+  if(!box)return;
+  if(!communityPosts.length){
+    box.innerHTML='<div class="community-empty">No posts yet. Be the first to leave a question or feedback.</div>';
+    return;
+  }
+  box.innerHTML=communityPosts.map(p=>{
+    const reply=p.admin_reply
+      ? '<div class="community-reply"><b>EasyABC replied</b><div>'+esc(p.admin_reply)+'</div></div>'
+      : '';
+    return '<article class="community-post"><div class="community-post-top"><div class="community-user"><b>'+esc(p.nickname)+'</b><span class="community-kind">'+esc(communityKindLabel(p.kind))+'</span></div><span class="community-time">'+esc(communityDate(p.created_at))+'</span></div><div class="community-message">'+esc(p.message)+'</div>'+reply+'</article>';
+  }).join('');
+}
+async function loadCommunity(){
+  const box=document.getElementById('communityList');
+  if(!box)return;
+  try{
+    const {data,error}=await client.from('community_posts')
+      .select('id,nickname,kind,message,admin_reply,replied_at,created_at')
+      .eq('visible',true)
+      .order('created_at',{ascending:false})
+      .limit(50);
+    if(error)throw error;
+    communityPosts=data||[];
+    renderCommunity();
+  }catch(e){
+    console.info('Community board is not active yet:',e?.message||e);
+    box.innerHTML='<div class="community-empty">Community board is being set up. Please check back shortly.</div>';
+  }
+}
+async function submitCommunityPost(){
+  const nickname=(document.getElementById('communityNickname').value||'').trim();
+  const kind=document.getElementById('communityKind').value;
+  const message=(document.getElementById('communityMessage').value||'').trim();
+  const honeypot=(document.getElementById('communityWebsite').value||'').trim();
+  const btn=document.getElementById('communityPostBtn');
+  const note=document.getElementById('communityMsg');
+
+  if(honeypot)return;
+  if(nickname.length<2){note.textContent='Please enter a nickname with at least 2 characters.';return}
+  if(message.length<3){note.textContent='Please write a little more before posting.';return}
+
+  btn.disabled=true;btn.textContent='Posting…';note.textContent='Posting your message…';
+  try{
+    const session=await ensureCustomerSession();
+    if(!session?.user?.id)throw new Error('Could not create a posting session.');
+    const {error}=await client.from('community_posts').insert({
+      nickname:nickname.slice(0,40),
+      kind,
+      message:message.slice(0,1000),
+      author_id:session.user.id
+    });
+    if(error)throw error;
+    localStorage.setItem('easyabc_community_nickname',nickname.slice(0,40));
+    document.getElementById('communityMessage').value='';
+    note.textContent='✓ Posted successfully.';
+    await loadCommunity();
+  }catch(e){
+    console.error(e);
+    const t=e?.message||String(e);
+    note.textContent=t.includes('community_posts')?'Community posting is not active yet. Run the community setup in Supabase first.':t;
+  }finally{
+    btn.disabled=false;btn.textContent='Post';
+  }
+}
+function subscribeCommunity(){
+  if(communityChannel){try{client.removeChannel(communityChannel)}catch{}}
+  communityChannel=client.channel('easyabc-community-live')
+    .on('postgres_changes',{event:'*',schema:'public',table:'community_posts'},()=>loadCommunity())
+    .subscribe();
+}
+
+
 async function init(){
   trackPageView();
   const savedEmail=localStorage.getItem('easyabc_last_email')||'';
@@ -959,8 +1090,14 @@ async function init(){
     await ensureCustomerSession();
     document.getElementById('authHint').textContent='Checkout session ready.';
     restorePendingOrder();
+    const savedNickname=localStorage.getItem('easyabc_community_nickname')||'';
+    const nicknameInput=document.getElementById('communityNickname');
+    if(nicknameInput&&savedNickname)nicknameInput.value=savedNickname;
+    await loadCommunity();
+    subscribeCommunity();
   }catch(e){
     document.getElementById('authHint').textContent=e.message||String(e);
+    loadCommunity();
   }
 }
 init().catch(e=>{console.error(e);setDb('Connecting to live catalog • retrying…','warn');setTimeout(retryCatalog,3000)});
