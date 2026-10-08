@@ -859,11 +859,18 @@ function render(){
 }
 
 
+function parseBillTimestamp(value){
+  // Earlier versions saved created_at as Date.now() (milliseconds).
+  if(typeof value==='number'&&Number.isFinite(value))return value;
+  if(typeof value==='string'&&/^\d{12,}$/.test(value))return Number(value);
+  const parsed=Date.parse(value||'');
+  return Number.isFinite(parsed)?parsed:NaN;
+}
 function getBillExpiresAt(bill){
   if(!bill)return NaN;
-  const explicit=Date.parse(bill.expires_at||'');
+  const explicit=parseBillTimestamp(bill.expires_at);
   if(Number.isFinite(explicit))return explicit;
-  const created=Date.parse(bill.created_at||'');
+  const created=parseBillTimestamp(bill.created_at);
   if(Number.isFinite(created))return created+BILL_EXPIRY_MS;
   return NaN;
 }
