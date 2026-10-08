@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07111f">
-<title>EasyABC Shop</title>
+<title>EasyABC | Smart Apps, Templates & Digital Tools</title>
+<meta name="description" content="Explore EasyABC digital tools, automation apps, trading analysis utilities and Excel templates. Browse, pay securely with ToyyibPay and download after payment confirmation.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="EasyABC — Smart Tools. Less Manual Work.">
+<meta property="og:description" content="Practical digital apps and templates for trading, reporting and everyday productivity.">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
@@ -32,30 +36,159 @@
 /* Checkout disclaimer */
 .disclaimer-modal{position:fixed;inset:0;z-index:140;background:rgba(1,7,15,.82);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:18px}.disclaimer-modal.hidden{display:none}.disclaimer-card{width:min(660px,96vw);max-height:92vh;overflow:auto;border:1px solid rgba(255,211,106,.22);border-radius:26px;background:linear-gradient(155deg,#162238,#08111f 60%,#07131e);box-shadow:0 34px 110px rgba(0,0,0,.58)}.disclaimer-head{padding:22px 24px 18px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,rgba(255,211,106,.10),rgba(104,168,255,.06));display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.disclaimer-head h3{margin:5px 0 0;font-size:25px}.disclaimer-icon{flex:0 0 46px;width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:rgba(255,211,106,.12);border:1px solid rgba(255,211,106,.25);font-size:23px}.disclaimer-body{padding:22px 24px 24px}.disclaimer-body p{color:var(--muted);line-height:1.65;margin:0 0 13px}.disclaimer-list{margin:12px 0 16px;padding-left:22px;color:#dce7f5;line-height:1.6}.disclaimer-list li{margin:7px 0}.disclaimer-trading{padding:13px 14px;border-radius:14px;background:rgba(255,211,106,.07);border:1px solid rgba(255,211,106,.16);color:#ffe4a5;font-size:12px;line-height:1.6}.disclaimer-check{display:flex!important;grid-template-columns:none!important;align-items:flex-start;gap:10px;margin-top:17px!important;padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.035);color:#eef4fb!important;font-size:13px!important;line-height:1.55}.disclaimer-check input{width:18px!important;height:18px;min-width:18px;margin:2px 0 0;padding:0!important;accent-color:#30d8e8}.disclaimer-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:15px}.disclaimer-legal{margin-top:11px!important;text-align:center;font-size:10px;line-height:1.5;color:#7f92aa!important}@media(max-width:560px){.disclaimer-head,.disclaimer-body{padding-left:18px;padding-right:18px}.disclaimer-actions{grid-template-columns:1fr}.disclaimer-card{border-radius:22px}}
 
+
+/* EasyABC Midnight Tech v2: progressive storefront refresh, no checkout changes */
+:root{--bg:#06101e;--a:#74a8ff;--b:#55e1e7;--muted:#a7b9ce;--line:rgba(165,211,250,.14);--card:rgba(255,255,255,.055)}
+body{background:radial-gradient(ellipse at 78% 2%,rgba(28,80,125,.27),transparent 38%),radial-gradient(ellipse at 3% 35%,rgba(84,56,134,.18),transparent 43%),#06101e}
+.top{height:76px;background:rgba(6,16,30,.83);border-bottom:1px solid rgba(141,200,240,.13);box-shadow:0 10px 40px rgba(0,0,0,.1)}
+.brand-button{border:0;background:none;padding:6px 0;color:#f4f8ff;letter-spacing:-.055em;white-space:nowrap}
+.brand span,.footer-logo span{background:linear-gradient(100deg,#7faeff,#55e1e7);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand:after{content:" / DIGITAL TOOLS";font-size:9px;letter-spacing:.13em;color:#7f96b6}
+.nav{align-items:center;gap:7px}.nav button{transition:background .2s,border-color .2s,transform .2s}.nav button:hover{border-color:rgba(85,225,231,.4);background:rgba(85,225,231,.085)}
+.nav .nav-cart{border:1px solid transparent;color:#061321}.nav .nav-cart:hover{background:linear-gradient(135deg,#91b8ff,#74f3f3);transform:translateY(-1px)}
+.page{width:min(1220px,92vw);padding-top:28px}
+.hero{min-height:545px;grid-template-columns:1.04fr .96fr;gap:35px;padding:34px 0 36px}
+.hero-copy{z-index:1;padding:16px 0}
+.hero .tag{color:#b8e8f4;background:rgba(85,225,231,.09);border-color:rgba(85,225,231,.2)}
+.hero h1{font-size:clamp(48px,5.35vw,78px);line-height:1.03;letter-spacing:-.065em;margin:26px 0 22px}
+.hero-highlight{background:linear-gradient(90deg,#74a8ff 1%,#55e1e7 70%,#a5eaff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{max-width:540px;font-size:17px;line-height:1.8;color:#b8c8dc}
+.hero-actions{display:flex;gap:11px;align-items:center;flex-wrap:wrap;margin-top:28px}.hero-actions button{padding:15px 22px;border-radius:13px;font-size:14px}
+.hero-primary{box-shadow:0 12px 35px rgba(66,197,221,.17)}.hero-secondary{border-color:rgba(145,177,224,.22)}
+.hero-caption{margin-top:27px;color:#849bb6;font-size:12px}
+.visual{min-height:475px;isolation:isolate}.visual:after,.visual:before{display:none}
+.showcase-halo{position:absolute;inset:4% 2%;z-index:-1;background:radial-gradient(circle,rgba(49,176,225,.18),transparent 64%);filter:blur(18px)}
+.featured-shell{position:relative;width:min(100%,520px);border:1px solid rgba(139,203,242,.23);border-radius:23px;background:linear-gradient(150deg,#152b46,#09172a 56%,#081424);box-shadow:0 25px 80px rgba(0,0,0,.44),0 0 65px rgba(61,174,218,.11);overflow:hidden;animation:showcaseIn 1s ease both}
+.featured-topbar{padding:14px 17px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(6,16,30,.73);border-bottom:1px solid rgba(255,255,255,.08);font-size:9px;letter-spacing:.12em;font-weight:900;color:#b1c5dc}
+.window-dots{display:inline-flex;gap:5px}.window-dots i{width:7px;height:7px;border-radius:50%;background:#fe8f95}.window-dots i:nth-child(2){background:#f2cf82}.window-dots i:nth-child(3){background:#65d9b5}
+.featured-live{font-size:9px;color:#64e7cf}
+.featured-picture{height:244px;padding:13px;background:radial-gradient(ellipse at 50% 20%,rgba(106,172,231,.14),transparent 64%),#071526;display:grid;place-items:center;overflow:hidden}
+.featured-picture img{display:block;width:100%;height:100%;object-fit:contain;border-radius:11px;filter:drop-shadow(0 9px 17px rgba(0,0,0,.42));animation:featuredFade .42s ease}
+.featured-empty{width:100%;height:100%;display:grid;place-content:center;gap:13px;text-align:center;border:1px dashed rgba(122,200,240,.2);border-radius:12px;color:#a6bfd9}
+.featured-empty>span{font-size:65px;filter:drop-shadow(0 0 22px rgba(85,225,231,.33))}.featured-empty small{font-size:12px}
+.featured-bottom{padding:20px 23px 21px;background:linear-gradient(140deg,rgba(25,50,77,.94),rgba(7,21,38,.98))}
+.featured-category{font-size:10px;letter-spacing:.11em;color:#66dedf;font-weight:900}
+.featured-product-row{display:flex;align-items:start;justify-content:space-between;gap:12px;margin:10px 0 20px}.featured-product-row h2{font-size:22px;line-height:1.25;letter-spacing:-.025em;margin:0;overflow-wrap:anywhere}.featured-product-row p{font-size:12px;margin:7px 0 0;color:#9aadc3;line-height:1.5;max-width:305px}
+.featured-price{font-size:19px;font-weight:900;white-space:nowrap;color:#f3faff}
+.featured-controls{display:flex;align-items:center;justify-content:space-between;gap:13px}.featured-view{padding:11px 16px;border-radius:11px;border:1px solid rgba(100,213,221,.3);background:rgba(69,222,224,.13);color:#b4f9f2;font-weight:800;font-size:12px}.featured-view:hover{background:rgba(69,222,224,.24)}
+.featured-navigation{display:flex;align-items:center;gap:10px}.featured-navigation button{height:30px;width:30px;border-radius:9px;border:1px solid rgba(159,211,247,.25);background:rgba(255,255,255,.05);color:#fff;font-size:22px;line-height:1}
+.featured-dots{display:flex;gap:5px;align-items:center}.featured-dot{display:block;border:0;width:7px;height:7px;border-radius:20px;background:#395a77;padding:0;transition:all .22s}.featured-dot.is-active{background:#55e1e7;width:18px}
+.showcase-float{position:absolute;z-index:2;display:flex;align-items:center;gap:8px;border:1px solid rgba(119,196,240,.2);background:rgba(10,34,59,.93);border-radius:13px;padding:12px 14px;font-size:20px;box-shadow:0 14px 30px rgba(0,0,0,.28);pointer-events:none;animation:showcaseFloat 6s ease-in-out infinite}.showcase-float span{font-size:9px;letter-spacing:.09em;color:#c0d4e7;font-weight:900}.showcase-float-a{left:-20px;top:17%}.showcase-float-b{right:-14px;bottom:13%;animation-delay:-3s}
+@keyframes showcaseFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}@keyframes showcaseIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}@keyframes featuredFade{from{opacity:.4;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
+.trust-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:10px 0 56px}
+.trust-point{display:flex;gap:13px;align-items:center;min-height:82px;padding:17px 15px;border:1px solid rgba(148,194,230,.13);border-radius:17px;background:rgba(255,255,255,.035)}
+.trust-point strong,.trust-point span{display:block}.trust-point strong{font-size:12px;color:#f2f7fc;margin-bottom:5px}.trust-point div>span{font-size:11px;line-height:1.5;color:#95abc3}.trust-symbol{width:37px;height:37px;flex-shrink:0;display:grid!important;place-items:center;border-radius:12px;color:#73f2e5;background:rgba(85,225,231,.085);border:1px solid rgba(85,225,231,.16);font-size:19px}
+.tools{scroll-margin-top:110px;margin:10px 0 20px}.tools h2{font-size:clamp(27px,3.5vw,40px);margin:9px 0 4px}.products-lead{color:#91a9c3;margin:0;font-size:13px}
+.search-wrap{display:flex;gap:8px;align-items:center;position:relative}.search-icon{position:absolute;left:14px;font-size:24px;color:#91a8c2}.tools input{padding-left:42px;min-width:295px;outline:none}.tools input:focus{border-color:rgba(85,225,231,.65);box-shadow:0 0 0 3px rgba(85,225,231,.07)}
+.category-bar{margin-bottom:25px}.cat-btn{font-size:12px;font-weight:750}.cat-btn.active{box-shadow:0 8px 24px rgba(73,196,217,.12)}
+.grid{gap:20px}.card{display:flex;flex-direction:column;border-radius:22px;background:linear-gradient(145deg,rgba(25,45,69,.96),rgba(11,25,43,.95));border-color:rgba(145,198,230,.17);box-shadow:0 15px 40px rgba(0,0,0,.19);transition:transform .24s,box-shadow .24s,border-color .24s}
+.card:hover,.card:focus-within{transform:translateY(-5px);border-color:rgba(85,225,231,.37);box-shadow:0 21px 53px rgba(0,0,0,.32),0 0 35px rgba(85,225,231,.07)}
+.card .pic{height:220px;background:radial-gradient(circle at 50% 35%,rgba(70,143,194,.15),transparent 73%),#081725;position:relative}
+.card .pic img{object-fit:contain;padding:10px;transition:transform .3s}.card:hover .pic img{transform:scale(1.035)}
+.preview-label{position:absolute;left:13px;bottom:12px;background:rgba(5,17,33,.82);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);border-radius:8px;padding:5px 8px;color:#d9e9f7;font-size:10px;letter-spacing:.04em}
+.card .body{display:flex;flex-direction:column;flex:1;padding:20px}.card .body h3{font-size:18px;line-height:1.35;letter-spacing:-.018em;margin:2px 0 9px;min-height:48px}
+.card .product-summary{line-height:1.58;color:#9cb1c7;font-size:12px;margin:0 0 15px;min-height:38px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .product-price-row{margin-top:auto;padding:4px 0 8px}.price{font-size:23px}.product-format{font-size:10px;color:#8eaac4;border:1px solid rgba(144,192,231,.13);border-radius:9px;padding:6px 8px}
+.card .qty{margin:11px 0}.card .qty button:disabled{opacity:.38;cursor:not-allowed}.card .view-details{margin-top:10px;font-size:12px}.card .primary{font-size:13px}
+.how-section{scroll-margin-top:105px;padding:45px 0 8px}.section-heading{max-width:630px}.section-heading h2{font-size:clamp(29px,3.6vw,40px);line-height:1.2;margin:15px 0 10px}.section-heading p{color:#a1b4c9;margin:0 0 25px;line-height:1.7}
+.how-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.how-step{background:linear-gradient(155deg,rgba(22,46,72,.87),rgba(8,23,40,.87));border:1px solid rgba(158,199,226,.14);border-radius:19px;padding:22px;position:relative;overflow:hidden;transition:transform .24s,border-color .24s}.how-step:hover{transform:translateY(-4px);border-color:rgba(85,225,231,.32)}
+.how-number{position:absolute;top:15px;right:17px;font-size:12px;font-weight:900;color:#4c708b}.how-icon{height:50px;width:50px;border-radius:15px;display:grid;place-items:center;background:rgba(85,225,231,.075);border:1px solid rgba(85,225,231,.12);font-size:26px;color:#76e7e7}
+.how-step h3{font-size:16px;margin:19px 0 7px}.how-step p{color:#93a9c0;font-size:12px;line-height:1.7;margin:0}
+.faq-panel{display:grid;grid-template-columns:.78fr 1.22fr;gap:20px;margin:24px 0 12px;padding:25px;border-radius:22px;background:linear-gradient(130deg,rgba(67,116,157,.12),rgba(22,41,63,.58));border:1px solid rgba(152,204,237,.16)}
+.faq-panel h3{font-size:25px;margin:14px 0 8px;letter-spacing:-.03em}.faq-panel p{color:#9eb2c8;line-height:1.7;font-size:12px}.faq-list{display:grid;gap:8px;align-content:start}
+.faq-list details{border:1px solid rgba(163,203,239,.15);border-radius:12px;background:rgba(3,13,26,.38);padding:12px 15px}.faq-list summary{cursor:pointer;color:#e6f1fa;font-size:13px;font-weight:750;padding-right:10px}.faq-list details p{margin:9px 0 3px}.faq-list details[open]{border-color:rgba(85,225,231,.3)}
+.community{scroll-margin-top:105px;margin-top:49px;background:linear-gradient(140deg,rgba(17,43,67,.81),rgba(7,23,39,.91));border-color:rgba(129,194,231,.19)}.community-head h2{font-size:clamp(27px,3.5vw,36px);letter-spacing:-.04em}.community-head p{max-width:610px;font-size:13px}.community-meta{display:flex;align-items:center;gap:7px;margin-top:11px;color:#7de8d8;font-size:11px}
+.community-compose{background:rgba(4,18,33,.6)}.community-compose input:focus,.community-compose textarea:focus,.community-compose select:focus{border-color:#55e1e7}.community-post{background:rgba(14,36,57,.75);transition:border-color .2s,transform .2s}.community-post:hover{border-color:rgba(85,225,231,.28)}.community-reply{border-left:3px solid #5ae2cc}
+.modal-benefits{display:grid;gap:7px;padding:14px 16px;margin:16px 0;border:1px solid rgba(85,225,231,.14);border-radius:12px;background:rgba(85,225,231,.045);font-size:11px;line-height:1.5;color:#c0e9e6}
+.modal-info h2{line-height:1.2}.modal-desc{font-size:13px}.modal-price{margin:15px 0}
+.sticky{border:1px solid rgba(96,221,220,.25);box-shadow:0 16px 45px rgba(0,0,0,.44);background:rgba(8,24,41,.95);padding:14px 21px}.sticky-total .muted strong{color:#b4f8f0}.sticky .primary{padding:13px 22px}
+.site-footer{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap;align-items:center;margin:58px 0 20px;padding:29px 0 0;border-top:1px solid rgba(147,191,220,.13)}.footer-logo{font-weight:900;font-size:23px;letter-spacing:-.05em}.site-footer p{color:#8299b1;font-size:11px;margin:5px 0 0}.footer-links{display:flex;gap:15px}.footer-links button{background:none;border:0;color:#c7d9e9;font-size:12px;padding:7px}.footer-links button:hover{color:#55e1e7}.site-footer .footer-note{flex-basis:100%;font-size:10px;color:#6e829a}
+@media(max-width:1000px){.hero{gap:12px}.featured-picture{height:210px}.trust-strip{grid-template-columns:repeat(2,1fr)}.how-grid{grid-template-columns:repeat(2,1fr)}.brand:after{display:none}}
+@media(max-width:900px){.hero{grid-template-columns:1fr;gap:10px;padding:24px 0}.hero-copy{padding:0}.hero h1{max-width:780px}.visual{min-height:445px}.showcase-float-a{left:3%}.showcase-float-b{right:2%}.featured-picture{height:235px}.faq-panel{grid-template-columns:1fr}}
+@media(max-width:620px){.page{width:92vw;padding-top:16px}.top{height:66px;padding:0 4vw}.nav .nav-home,.nav .nav-tools,.nav .nav-community{display:none}.nav .nav-purchases{padding:9px 10px;font-size:11px}.nav .nav-cart{padding:9px 12px}.brand{font-size:21px}.hero{gap:14px;padding:16px 0 18px}.hero h1{font-size:clamp(40px,11vw,56px);margin:20px 0 14px}.hero p{font-size:14px;line-height:1.75}.hero-subline{font-size:10px}.hero-actions{margin-top:22px;gap:9px}.hero-actions button{padding:13px 16px;font-size:12px}.hero-caption{margin-top:16px;line-height:1.6}.visual{min-height:385px;padding:6px 0}.featured-shell{width:96%;border-radius:18px}.featured-picture{height:160px}.featured-topbar{font-size:8px;padding:10px}.featured-live{font-size:8px}.featured-bottom{padding:15px}.featured-product-row{margin:8px 0 15px}.featured-product-row h2{font-size:17px}.featured-product-row p{font-size:11px}.featured-price{font-size:15px}.featured-view{padding:9px;font-size:10px}.featured-navigation{gap:7px}.featured-navigation button{width:26px;height:26px}.showcase-float{display:none}.trust-strip{grid-template-columns:1fr 1fr;gap:8px;margin:0 0 36px}.trust-point{padding:11px;gap:8px;min-height:79px;align-items:flex-start}.trust-symbol{width:29px;height:29px;border-radius:9px;font-size:16px}.trust-point strong{font-size:10px;line-height:1.4}.trust-point div>span{font-size:9px}.tools{margin:4px 0 14px}.tools h2{font-size:29px}.products-lead{margin-bottom:18px}.search-wrap{display:block}.search-wrap input{width:100%}.category-bar{display:flex;flex-wrap:nowrap;overflow:auto;padding-bottom:8px;scrollbar-width:thin}.cat-btn{flex:0 0 auto}.grid{grid-template-columns:1fr;gap:15px}.card .pic{height:220px}.card .body h3{min-height:0}.card .product-summary{min-height:0}.how-section{padding-top:42px}.how-grid{grid-template-columns:1fr 1fr;gap:9px}.how-step{padding:15px}.how-icon{height:39px;width:39px;font-size:21px}.how-step h3{font-size:13px;margin-top:13px}.how-step p{font-size:11px}.faq-panel{padding:17px}.community{margin-top:36px;padding:17px}.community-head h2{font-size:28px}.sticky:not(.has-items){display:none}.sticky.has-items{flex-direction:row;align-items:center;text-align:left;gap:9px;padding:10px 12px;bottom:9px;border-radius:13px}.sticky .sticky-total{flex:1}.sticky .sticky-total b{font-size:11px}.sticky .sticky-total .muted{font-size:11px}.sticky .primary{padding:12px 11px;flex:0 0 46%;font-size:11px}.site-footer{margin-top:36px;padding-bottom:30px}.footer-links{gap:3px;flex-wrap:wrap}}
+@media(max-width:370px){.brand{font-size:19px}.nav .nav-purchases{font-size:10px;padding:8px}.nav .nav-cart{padding:8px}.featured-picture{height:140px}.hero-kicker{gap:4px}.hero-subline{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.featured-shell,.showcase-float,.featured-picture img,.card,.how-step{animation:none!important;transition:none!important}.card:hover,.how-step:hover{transform:none!important}}
+
 </style>
 </head>
 <body>
-<header class="top"><div class="brand">Easy<span>ABC</span></div><div class="nav"><button onclick="show('home')">Home</button><button onclick="goPay()">Payment</button><button onclick="showPurchases()">My Purchases</button><button class="primary" onclick="goPay()">🛒 <span id="cartCount">0</span></button></div></header>
+<header class="top">
+  <button class="brand brand-button" onclick="show('home')" aria-label="EasyABC homepage">Easy<span>ABC</span></button>
+  <nav class="nav" aria-label="Main navigation">
+    <button class="nav-home" onclick="show('home')">Home</button>
+    <button class="nav-tools" onclick="scrollToSection('products')">Products</button>
+    <button class="nav-community" onclick="scrollToSection('community')">Community</button>
+    <button class="nav-purchases" onclick="showPurchases()">My Purchases</button>
+    <button class="primary nav-cart" onclick="goPay()" aria-label="Open checkout cart">🛒 <span id="cartCount">0</span></button>
+  </nav>
+</header>
 
 <section id="home" class="page active">
-<div class="hero"><div class="hero-copy"><div class="hero-kicker"><span class="tag"><span class="live-dot"></span>LIVE AUTOMATION</span><span class="hero-subline">Smart tools. Less manual work.</span></div><h1>Build less.<br>Automate more.<br><span id="rotatingWord" class="rotating-word">Smarter.</span></h1><p>Discover practical apps built to reduce repetitive work, speed up decisions, and turn everyday tasks into simple automated flows.</p><button class="primary" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Browse Tools ✦</button></div><div class="visual"><div class="orb"></div><div class="float f1">⚡<div style="font-size:10px;margin-top:8px;color:#b7c9df">AUTOMATE</div></div><div class="float f2">◈<div style="font-size:10px;margin-top:8px;color:#b7c9df">ANALYZE</div></div><div class="float f3">↗<div style="font-size:10px;margin-top:8px;color:#b7c9df">DELIVER</div></div></div></div>
-<div class="automation-strip">
-  <div class="auto-step"><div class="auto-icon">◉</div><strong>Live Catalog</strong><span>Supabase sync</span></div>
-  <div class="auto-step"><div class="auto-icon">⌁</div><strong>Easy Browse</strong><span>Quick product finder</span></div>
-  <div class="auto-step"><div class="auto-icon">▦</div><strong>Secure Pay</strong><span>Exact amount QR</span></div>
-  <div class="auto-step"><div class="auto-icon">↓</div><strong>Instant Access</strong><span>Paid download delivery</span></div>
+<div class="hero">
+  <div class="hero-copy">
+    <div class="hero-kicker"><span class="tag"><span class="live-dot"></span>SMART DIGITAL TOOLS</span><span class="hero-subline">Made to save your time</span></div>
+    <h1>Less busywork.<br><span class="hero-highlight">More progress.</span></h1>
+    <p>Apps, trading tools and Excel templates that help you automate repetitive tasks, review information faster and get back to what matters.</p>
+    <div class="hero-actions">
+      <button class="primary hero-primary" onclick="scrollToSection('products')">Explore Tools <span aria-hidden="true">↗</span></button>
+      <button class="ghost hero-secondary" onclick="scrollToSection('how-it-works')">How It Works <span aria-hidden="true">→</span></button>
+    </div>
+    <div class="hero-caption"><span class="live-dot"></span>Practical downloads for everyday work and analysis</div>
+  </div>
+  <div class="visual" aria-label="EasyABC featured product showcase">
+    <div class="showcase-halo"></div>
+    <div class="featured-shell">
+      <div class="featured-topbar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>FEATURED ON EASYABC</span><span class="featured-live">● CATALOG</span></div>
+      <div id="featuredPicture" class="featured-picture"><div class="featured-empty"><span aria-hidden="true">✦</span><small>Discover our latest tools</small></div></div>
+      <div class="featured-bottom">
+        <div class="featured-category" id="featuredCategory">DIGITAL TOOLS</div>
+        <div class="featured-product-row"><div><h2 id="featuredTitle">Featured Tools</h2><p id="featuredDescription">Explore our digital products.</p></div><div class="featured-price" id="featuredPrice"></div></div>
+        <div class="featured-controls">
+          <button class="featured-view" onclick="openFeaturedProduct()">Explore this tool <span aria-hidden="true">↗</span></button>
+          <div class="featured-navigation"><button onclick="moveFeatured(-1)" aria-label="Previous featured product">‹</button><span id="featuredDots" class="featured-dots" aria-label="Featured product position"></span><button onclick="moveFeatured(1)" aria-label="Next featured product">›</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="showcase-float showcase-float-a" aria-hidden="true">✦ <span>WORK SMARTER</span></div>
+    <div class="showcase-float showcase-float-b" aria-hidden="true">↗ <span>MAKE IT SIMPLE</span></div>
+  </div>
+</div>
+<div class="trust-strip" aria-label="Shopping with EasyABC">
+  <div class="trust-point"><span class="trust-symbol">🔒</span><div><strong>Secure checkout</strong><span>Payment through ToyyibPay</span></div></div>
+  <div class="trust-point"><span class="trust-symbol">↓</span><div><strong>Digital delivery</strong><span>Download after confirmed payment</span></div></div>
+  <div class="trust-point"><span class="trust-symbol">▦</span><div><strong>Convenient payment</strong><span>DuitNow QR &amp; FPX</span></div></div>
+  <div class="trust-point"><span class="trust-symbol">↺</span><div><strong>Purchase recovery</strong><span>Access again using your email</span></div></div>
 </div>
 <div id="dbDebug" class="db"><span class="live-dot"></span>Syncing live catalog…</div>
-<div id="products" class="tools"><div><span class="tag">ALL PRODUCTS</span><h2>Choose what you like</h2></div><input id="search" placeholder="Search products..." oninput="render()"></div>
+<div id="products" class="tools"><div><span class="tag">EXPLORE EASYABC</span><h2>Find your next time-saver</h2><p class="products-lead">Simple tools for trading, reporting, automation and more.</p></div><label class="search-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input id="search" aria-label="Search products" placeholder="Search tools and templates..." oninput="render()"></label></div>
 <div id="categoryBar" class="category-bar"></div>
 <div id="grid" class="grid"></div>
 
+<section id="how-it-works" class="how-section" aria-labelledby="howTitle">
+ <div class="section-heading"><span class="tag">SIMPLE FROM START TO FINISH</span><h2 id="howTitle">From browsing to using, in four steps.</h2><p>Know what happens before you buy a digital tool.</p></div>
+ <div class="how-grid">
+   <div class="how-step"><span class="how-number">01</span><span class="how-icon" aria-hidden="true">⌕</span><h3>Explore products</h3><p>Open a product to review its description, screenshots and price.</p></div>
+   <div class="how-step"><span class="how-number">02</span><span class="how-icon" aria-hidden="true">🔒</span><h3>Checkout safely</h3><p>Review your cart and complete payment using ToyyibPay.</p></div>
+   <div class="how-step"><span class="how-number">03</span><span class="how-icon" aria-hidden="true">↓</span><h3>Get your download</h3><p>Once payment is confirmed, your download is unlocked.</p></div>
+   <div class="how-step"><span class="how-number">04</span><span class="how-icon" aria-hidden="true">↺</span><h3>Access it again</h3><p>Use My Purchases and your checkout email to recover access.</p></div>
+ </div>
+ <div class="faq-panel">
+   <div><span class="tag">GOOD TO KNOW</span><h3>Questions before checkout?</h3><p>Quick answers about downloads and payment.</p></div>
+   <div class="faq-list">
+     <details><summary>How will I receive my purchase?</summary><p>Your digital download becomes available after EasyABC confirms the payment. Use the download button on your completed order.</p></details>
+     <details><summary>Can I download a purchase again?</summary><p>Go to My Purchases and use the email address from checkout to request a secure access link.</p></details>
+     <details><summary>Can I check whether a tool works on my device?</summary><p>Review the product details and available previews before buying. If compatibility is unclear, ask a question in the community section first.</p></details>
+     <details><summary>Do trading tools guarantee profits?</summary><p>No. Trading tools provide analysis and information, not guaranteed outcomes or investment advice. Trading involves risk.</p></details>
+   </div>
+ </div>
+</section>
 <div class="community" id="community">
   <div class="community-head">
     <div>
-      <span class="tag">COMMUNITY</span>
-      <h2>Feedback, comments & questions</h2>
-      <p>Have an idea, comment or question? Post it here. No account form needed — just choose a nickname.</p>
+      <span class="tag">THE EASYABC COMMUNITY</span>
+      <h2>Questions, feedback &amp; ideas.</h2>
+      <p>Curious about a tool or have an idea for something new? Join the conversation using only a nickname.</p>
+      <div class="community-meta"><span class="live-dot"></span><span id="communityCount">Loading discussions…</span> <span>· Public Q&amp;A</span></div>
     </div>
     <button class="ghost" onclick="loadCommunity()">Refresh</button>
   </div>
@@ -86,7 +219,8 @@
   </div>
 </div>
 
-<div class="sticky"><div><b><span id="qtyTotal">0</span> item(s)</b><div class="muted">Total: <span id="cartTotal">RM0.00</span></div></div><button class="primary" onclick="goPay()">Proceed to Payment →</button></div>
+<div class="sticky" aria-label="Shopping cart"><div class="sticky-total"><b>🛒 <span id="qtyTotal">0</span> item(s) selected</b><div class="muted">Total: <strong id="cartTotal">RM0.00</strong></div></div><button class="primary" onclick="goPay()">Proceed to Payment →</button></div>
+<footer class="site-footer"><div><strong class="footer-logo">Easy<span>ABC</span></strong><p>Small tools. More time for what matters.</p></div><div class="footer-links"><button onclick="scrollToSection('products')">Products</button><button onclick="scrollToSection('community')">Community</button><button onclick="showPurchases()">My Purchases</button></div><p class="footer-note">Digital products are provided subject to their individual descriptions and the checkout notice. Trading involves risk.</p></footer>
 </section>
 
 <section id="payment" class="page">
@@ -234,6 +368,7 @@
         <span id="modalCategory" class="product-cat hidden"></span>
         <h2 id="modalName">Product</h2>
         <div id="modalDesc" class="modal-desc"></div>
+        <div class="modal-benefits"><span>✓ Digital download after payment confirmation</span><span>✓ Access again through My Purchases</span></div>
         <div id="modalPrice" class="modal-price">RM0.00</div>
         <div class="qty">
           <button id="modalMinus">−</button>
@@ -544,16 +679,66 @@ function galleryMove(step){
   modalMediaIndex=(modalMediaIndex+step+list.length)%list.length;renderGallery();
 }
 
-const rotatingWords=['Smarter.','Automated.','Faster.','Simpler.'];
-let rotatingWordIndex=0;
+/* Featured showcase: uses real images already managed by EasyABC's product media table. */
+let featuredIndex=0;
+let featuredProductId='';
+function featuredList(){
+  return products.slice().sort((a,b)=>Number(!!coverForProduct(b))-Number(!!coverForProduct(a))).slice(0,5);
+}
+function renderFeatured(){
+  const stage=document.getElementById('featuredPicture');
+  if(!stage)return;
+  const list=featuredList();
+  if(!list.length){
+    featuredProductId='';
+    document.getElementById('featuredTitle').textContent='Discover EasyABC';
+    document.getElementById('featuredDescription').textContent='Digital tools will appear here once the catalog loads.';
+    document.getElementById('featuredPrice').textContent='';
+    document.getElementById('featuredDots').innerHTML='';
+    return;
+  }
+  const existing=list.findIndex(p=>String(p.id)===featuredProductId);
+  if(existing>=0)featuredIndex=existing;
+  else if(featuredIndex>=list.length)featuredIndex=0;
+  const p=list[featuredIndex];
+  const cover=coverForProduct(p),src=cover?mediaUrl(cover.storage_path):'';
+  if(featuredProductId!==String(p.id)||stage.dataset.image!==src){
+    stage.innerHTML=src?'<img src="'+esc(src)+'" alt="Preview of '+esc(p.n)+'" decoding="async" loading="eager">':'<div class="featured-empty"><span aria-hidden="true">'+esc(p.e)+'</span><small>See product details and available previews</small></div>';
+    stage.dataset.image=src;
+  }
+  featuredProductId=String(p.id);
+  document.getElementById('featuredTitle').textContent=p.n;
+  document.getElementById('featuredDescription').textContent=productSummary(p.d);
+  document.getElementById('featuredCategory').textContent=(categoryName(p.category_id)||'EASYABC PRODUCT').toUpperCase();
+  document.getElementById('featuredPrice').textContent=M(p.p);
+  document.getElementById('featuredDots').innerHTML=list.map((item,i)=>'<button class="featured-dot '+(i===featuredIndex?'is-active':'')+'" aria-label="Show featured product '+(i+1)+'" aria-pressed="'+(i===featuredIndex)+'" onclick="selectFeatured('+i+')"></button>').join('');
+}
+function selectFeatured(index){
+  const list=featuredList();
+  if(!list.length)return;
+  featuredIndex=Math.max(0,Math.min(index,list.length-1));
+  featuredProductId='';
+  renderFeatured();
+}
+function moveFeatured(step){
+  const list=featuredList();
+  if(!list.length)return;
+  featuredIndex=(featuredIndex+step+list.length)%list.length;
+  featuredProductId='';
+  renderFeatured();
+}
+function openFeaturedProduct(){
+  const p=featuredList()[featuredIndex];
+  if(p)openProduct(p.id);
+}
+function scrollToSection(id){
+  if(!document.getElementById('home')?.classList.contains('active'))show('home');
+  requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}));
+}
 setInterval(()=>{
-  const el=document.getElementById('rotatingWord');if(!el)return;
-  rotatingWordIndex=(rotatingWordIndex+1)%rotatingWords.length;
-  el.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-8px)'}],{duration:180,fill:'forwards'}).onfinish=()=>{
-    el.textContent=rotatingWords[rotatingWordIndex];
-    el.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:240,fill:'forwards'});
-  };
-},2600);
+  if(document.hidden||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(document.getElementById('home')?.classList.contains('active'))moveFeatured(1);
+},6500);
 
 function categoryName(id){
   if(id===null||id===undefined||id==='') return '';
@@ -574,8 +759,13 @@ function renderCategories(){
   bar.innerHTML=buttons.join('');
 }
 
+function productSummary(value){
+  const clean=String(value||'').replace(/\s+/g,' ').trim();
+  if(!clean)return 'Open the details for more information about this digital product.';
+  return clean.length>126?clean.slice(0,123).trimEnd()+'…':clean;
+}
 function render(){
-  const q=document.getElementById('search').value.toLowerCase();
+  const q=document.getElementById('search').value.toLowerCase().trim();
   const filtered=products.filter(p=>{
     const matchesSearch=p.n.toLowerCase().includes(q)||(p.d||'').toLowerCase().includes(q);
     const matchesCategory=activeCategory==='all'||String(p.category_id||'')===activeCategory;
@@ -585,13 +775,22 @@ function render(){
     const cat=categoryName(p.category_id);
     const cover=coverForProduct(p);
     const img=cover?mediaUrl(cover.storage_path):'';
-    const media=img?`<img src="${esc(img)}" alt="${esc(p.n)}" loading="lazy">`:esc(p.e);
-    return `<article class="card" onclick="openProduct('${p.id}')"><div class="pic">${media}</div><div class="body">${cat?`<span class="product-cat">${esc(cat)}</span>`:''}<h3>${esc(p.n)}</h3><div class="row"><span class="price">${M(p.p)}</span></div><div class="qty"><button onclick="event.stopPropagation();setq('${p.id}',0)" ${qty(p.id)===0?'disabled':''}>−</button><b>${qty(p.id)}</b><button onclick="event.stopPropagation();setq('${p.id}',1)" ${qty(p.id)>=1?'disabled':''}>+</button><span class="muted small">Max 1</span></div><button class="primary" style="width:100%" onclick="event.stopPropagation();setq('${p.id}',1)" ${qty(p.id)>=1?'disabled':''}>${qty(p.id)>=1?'Added ✓':'Add to Cart'}</button><button class="view-details" onclick="event.stopPropagation();openProduct('${p.id}')">View Details</button></div></article>`;
-  }).join(''):'<div class="empty-products">No products found in this category.</div>';
+    const media=img?'<img src="'+esc(img)+'" alt="Preview of '+esc(p.n)+'" loading="lazy" decoding="async">':esc(p.e);
+    const selected=qty(p.id)>=1;
+    return '<article class="card" role="group" aria-label="'+esc(p.n)+'"><div class="pic">'+media+'<span class="preview-label">'+(img?'PRODUCT PREVIEW':'DIGITAL PRODUCT')+'</span></div>'+
+      '<div class="body">'+(cat?'<span class="product-cat">'+esc(cat)+'</span>':'')+
+      '<h3>'+esc(p.n)+'</h3><p class="product-summary">'+esc(productSummary(p.d))+'</p>'+
+      '<div class="row product-price-row"><span class="price">'+M(p.p)+'</span><span class="product-format">Digital download</span></div>'+
+      '<div class="qty"><button aria-label="Remove '+esc(p.n)+' from cart" onclick="setq('+Number(p.id)+',0)" '+(!selected?'disabled':'')+'>−</button><b>'+qty(p.id)+'</b><button aria-label="Add '+esc(p.n)+' to cart" onclick="setq('+Number(p.id)+',1)" '+(selected?'disabled':'')+'>+</button><span class="muted small">Max 1</span></div>'+
+      '<button class="primary" onclick="setq('+Number(p.id)+',1)" '+(selected?'disabled':'')+'>'+(selected?'Added ✓':'Add to Cart ↗')+'</button>'+
+      '<button class="view-details" onclick="openProduct('+Number(p.id)+')">View Details &amp; Previews →</button></div></article>';
+  }).join(''):'<div class="empty-products">No products found. Try another category or search term.</div>';
   const n=cart.reduce((a,b)=>a+b.q,0),t=total();
   document.getElementById('cartCount').textContent=n;
   document.getElementById('qtyTotal').textContent=n;
   document.getElementById('cartTotal').textContent=M(t);
+  document.querySelector('.sticky')?.classList.toggle('has-items',n>0);
+  renderFeatured();
   renderPay();
 }
 function renderPay(){
@@ -1128,6 +1327,8 @@ function communityDate(value){
   catch{return ''}
 }
 function renderCommunity(){
+  const count=document.getElementById('communityCount');
+  if(count)count.textContent=communityPosts.length+' discussion'+(communityPosts.length===1?'':'s');
   const box=document.getElementById('communityList');
   if(!box)return;
   if(!communityPosts.length){
