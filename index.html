@@ -500,6 +500,7 @@ let modalMediaIndex=0;
 let cart=JSON.parse(localStorage.getItem('easyabc_cart')||'[]');
 let currentOrderId=null;
 let activeBillSnapshot=null;
+let orderPaymentConfirmed=false;
 let previousPendingBill=null;
 let billCreating=false;
 let paymentUrl='';
@@ -878,11 +879,11 @@ function isBillExpired(bill){
   const t=getBillExpiresAt(bill);
   return Number.isFinite(t)&&Date.now()>=t;
 }
-function currentBillExpired(){return !!currentOrderId&&isBillExpired(activeBillSnapshot);}
+function currentBillExpired(){return !!currentOrderId&&!orderPaymentConfirmed&&isBillExpired(activeBillSnapshot);}
 function updateBillExpiryDisplay(){
   const info=document.getElementById('billExpiryInfo');
   if(!info)return;
-  if(!currentOrderId||!activeBillSnapshot){
+  if(!currentOrderId||!activeBillSnapshot||orderPaymentConfirmed){
     info.classList.add('hidden');info.textContent='';
     return;
   }
@@ -965,7 +966,7 @@ function resetBillForNewCart(){
     };
     try{localStorage.setItem('easyabc_pending_order',JSON.stringify(previousPendingBill))}catch(e){}
   }
-  currentOrderId=null;activeBillSnapshot=null;paymentUrl='';duitNowPaymentUrl='';
+  currentOrderId=null;activeBillSnapshot=null;orderPaymentConfirmed=false;paymentUrl='';duitNowPaymentUrl='';
   updateBillExpiryDisplay();
   document.getElementById('paymentHeading').textContent='Complete your order';
   document.getElementById('customerPanel').classList.remove('hidden');
@@ -1005,6 +1006,7 @@ async function verifySavedBillItems(orderId){
   }
 }
 function loadPreviousBillIntoCheckout(bill){
+  orderPaymentConfirmed=false;
   currentOrderId=String(bill.id);
   activeBillSnapshot={amount:Number(bill.amount),items:null,verified:false,created_at:bill.created_at||null,expires_at:bill.expires_at||null};
   paymentUrl=bill.payment_url||'';
@@ -1198,6 +1200,7 @@ async function createPayment(){
   if(!cart.length||paymentFlowActive||currentOrderId||billCreating)return;
   if(previousPendingBill&&!confirm('An earlier '+M(previousPendingBill.amount)+' ToyyibPay bill exists. Create a NEW bill for the selected '+M(total())+' cart? The old bill will not be cancelled. Do not pay both.'))return;
   billCreating=true;
+  orderPaymentConfirmed=false;
   const requestSnapshot=selectedBillSnapshot();
   const requestCreatedAt=new Date();
   const requestExpiresAt=new Date(requestCreatedAt.getTime()+BILL_EXPIRY_MS).toISOString();
@@ -1472,7 +1475,7 @@ function launchToyyibPay(){
 }
 function finishOrder(){
   finishPaymentProgress();
-  currentOrderId=null;activeBillSnapshot=null;
+  currentOrderId=null;activeBillSnapshot=null;orderPaymentConfirmed=false;
   paymentUrl='';
   duitNowPaymentUrl='';
   updateBillExpiryDisplay();
@@ -1626,6 +1629,7 @@ async function refreshOrder(){
 async function applyOrder(order){
   if(!order||String(order.id)!==String(currentOrderId))return;
   if(order.status==='paid'){
+    orderPaymentConfirmed=true;
     finishPaymentProgress();
     const completedOrderId=currentOrderId;
     let paidItems=[];
@@ -1695,7 +1699,7 @@ async function applyOrder(order){
     try{localStorage.removeItem('easyabc_pending_order')}catch{}
     if(orderChannel){try{client.removeChannel(orderChannel)}catch{}orderChannel=null;}
     if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
-    currentOrderId=null;activeBillSnapshot=null;paymentUrl='';duitNowPaymentUrl='';
+    currentOrderId=null;activeBillSnapshot=null;orderPaymentConfirmed=false;paymentUrl='';duitNowPaymentUrl='';
     renderPay();
     updateBillExpiryDisplay();
   }else{
