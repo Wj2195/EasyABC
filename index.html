@@ -136,6 +136,9 @@ body.checkout-locked{overflow:hidden}
 @media(max-width:560px){.payment-progress{padding:10px}.payment-progress-card{border-radius:19px}.progress-topline{padding:14px 16px}.progress-body{padding:23px 17px}.progress-spinner{height:69px;width:69px;margin-bottom:14px}.progress-inner{height:50px;width:50px;font-size:22px}.progress-body h2{font-size:25px;margin:13px 0}.progress-steps span{font-size:9px;padding:9px 4px}.progress-body>p{font-size:12px}.progress-footer{padding:11px 12px;font-size:9px}}
 @media(prefers-reduced-motion:reduce){.progress-spinner,.progress-inner{animation:none}}
 
+
+.previous-bill-notice,.bill-context{border:1px solid rgba(255,209,115,.3);background:rgba(255,211,106,.07);border-radius:13px;padding:13px 15px;margin:0 0 14px;color:#ffe3ad;font-size:12px;line-height:1.6}
+.previous-bill-notice strong{color:#fff1c9}.previous-bill-notice p{margin:7px 0 11px}.previous-bill-notice button{font-size:11px;padding:9px 12px}
 </style>
 </head>
 <body>
@@ -254,12 +257,12 @@ body.checkout-locked{overflow:hidden}
 <div class="tools"><div><span class="tag">PAYMENT</span><h2 id="paymentHeading">Complete your order</h2></div><button class="ghost" onclick="show('home')">← Back</button></div>
 <div class="paygrid">
 <div>
-<div class="panel"><h3>Order Summary</h3><div id="items"></div><div class="totals"><div class="row"><span>Subtotal</span><b id="sub">RM0.00</b></div><div class="row total"><span>Exact Amount</span><b id="exact">RM0.00</b></div></div></div>
-<div id="customerPanel" class="panel" style="margin-top:18px"><h3>Customer Details</h3><div class="form"><label>Name<input id="name" placeholder="Customer name" autocomplete="name" required></label><label>Phone<input id="phone" placeholder="0123456789" autocomplete="tel" required></label></div><label>Email <span class="muted">(for receipt & purchase recovery)</span><input id="email" type="email" placeholder="you@example.com" autocomplete="email" required></label><label>Reference / Note<input id="note" placeholder="Optional"></label><button id="createPayBtn" class="primary" style="margin-top:16px" onclick="createPayment()">Create Secure Payment</button><div class="muted small" style="margin-top:10px">Your name, email and phone will be passed securely to ToyyibPay so you do not need to type them again.</div><div id="authHint" class="muted small" style="margin-top:7px"></div></div>
+<div class="panel"><h3>Order Summary</h3><div id="billContext" class="bill-context hidden"></div><div id="items"></div><div class="totals"><div class="row"><span>Subtotal</span><b id="sub">RM0.00</b></div><div class="row total"><span>Exact Amount</span><b id="exact">RM0.00</b></div></div></div>
+<div id="customerPanel" class="panel" style="margin-top:18px"><div id="previousBillNotice" class="previous-bill-notice hidden"></div><h3>Customer Details</h3><div class="form"><label>Name<input id="name" placeholder="Customer name" autocomplete="name" required></label><label>Phone<input id="phone" placeholder="0123456789" autocomplete="tel" required></label></div><label>Email <span class="muted">(for receipt & purchase recovery)</span><input id="email" type="email" placeholder="you@example.com" autocomplete="email" required></label><label>Reference / Note<input id="note" placeholder="Optional"></label><button id="createPayBtn" class="primary" style="margin-top:16px" onclick="createPayment()">Create Secure Payment</button><div class="muted small" style="margin-top:10px">Your name, email and phone will be passed securely to ToyyibPay so you do not need to type them again.</div><div id="authHint" class="muted small" style="margin-top:7px"></div></div>
 </div>
 
-<div id="paymentPanel" class="panel"><span class="tag">DUITNOW QR + FPX</span><div class="dnqr-ready">DUITNOW QR APPROVED</div><h2 id="payTitle">Secure Payment</h2><p id="payDesc" class="muted">Create your order first. EasyABC will create the exact bill amount, then you can pay through ToyyibPay using DuitNow QR or FPX.</p>
-<div id="qrBox" class="qr"><div class="placeholder"><div class="icon">▦</div><b>Secure payment link</b><span>QR appears after your bill is created</span></div><div id="qr"></div></div>
+<div id="paymentPanel" class="panel"><span class="tag">DUITNOW QR + FPX</span><div class="dnqr-ready">PAY VIA TOYYIBPAY</div><h2 id="payTitle">Secure Payment</h2><p id="payDesc" class="muted">Create your order first. EasyABC will create the exact bill amount, then you can pay through ToyyibPay using DuitNow QR or FPX.</p>
+<div id="qrBox" class="qr"><div class="placeholder"><div class="icon">▦</div><b>Payment link not yet created</b><span>Review your cart and click Create Secure Payment first.</span></div><div id="qr"></div></div>
 <button id="openPayBtn" class="primary full hidden" onclick="openPayment()">Continue to DuitNow QR</button>
 <div class="row" style="margin-top:15px"><span>Order No.</span><b id="orderNo">-</b></div>
 <div class="row" style="margin-top:9px"><span>Amount</span><b id="payAmount">RM0.00</b></div>
@@ -492,6 +495,9 @@ let modalProductId=null;
 let modalMediaIndex=0;
 let cart=JSON.parse(localStorage.getItem('easyabc_cart')||'[]');
 let currentOrderId=null;
+let activeBillSnapshot=null;
+let previousPendingBill=null;
+let billCreating=false;
 let paymentUrl='';
 let duitNowPaymentUrl='';
 let orderChannel=null;
@@ -845,16 +851,148 @@ function render(){
   renderFeatured();
   renderPay();
 }
+
+function selectedBillSnapshot(amount=total()){
+  return {amount:Number(amount),items:cart.map(i=>{
+    const p=products.find(x=>String(x.id)===String(i.id));
+    return {product_id:Number(i.id),product_name:p?.n||'Digital product',unit_price:Number(p?.p||0),quantity:Number(i.q)};
+  })};
+}
+function billMatchesCart(bill){
+  if(!bill||!Array.isArray(bill.items)||bill.items.length!==cart.length||Math.abs(Number(bill.amount)-total())>.005)return false;
+  return cart.every(i=>{
+    const p=products.find(x=>String(x.id)===String(i.id));
+    const v=bill.items.find(x=>String(x.product_id)===String(i.id));
+    return !!p&&!!v&&Number(v.quantity)===Number(i.q)&&Math.abs(Number(v.unit_price)-Number(p.p))<.005;
+  });
+}
+function showPreviousBillNotice(){
+  const el=document.getElementById('previousBillNotice');
+  if(!el)return;
+  if(!previousPendingBill||currentOrderId){el.classList.add('hidden');return;}
+  el.classList.remove('hidden');
+  el.innerHTML='<strong>Previous unfinished bill found</strong><p>The old '+M(previousPendingBill.amount)+' bill is NOT included in this '+M(total())+' checkout. Do not pay both bills. You can review the old bill, or create a new payment for the selected items.</p><button class="ghost" onclick="resumePreviousBill()">Review earlier '+M(previousPendingBill.amount)+' bill</button>';
+}
+function archivePreviousBill(){
+  if(!previousPendingBill)return;
+  try{
+    const key='easyabc_previous_bills_v1';
+    const list=JSON.parse(localStorage.getItem(key)||'[]');
+    const arr=Array.isArray(list)?list:[];
+    if(!arr.some(p=>String(p.id)===String(previousPendingBill.id)))arr.unshift(previousPendingBill);
+    localStorage.setItem(key,JSON.stringify(arr.slice(0,10)));
+  }catch(e){}
+  previousPendingBill=null;
+  showPreviousBillNotice();
+}
+function resetBillForNewCart(){
+  if(paymentFlowActive)return false;
+  if(orderChannel){try{client.removeChannel(orderChannel)}catch(e){}orderChannel=null;}
+  if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
+  if(currentOrderId&&paymentUrl){
+    previousPendingBill={
+      id:String(currentOrderId),
+      order_no:document.getElementById('orderNo').textContent,
+      amount:Number(activeBillSnapshot?.amount||0),
+      items:activeBillSnapshot?.items||null,
+      payment_url:paymentUrl,
+      duitnow_url:duitNowPaymentUrl,
+      created_at:Date.now()
+    };
+    try{localStorage.setItem('easyabc_pending_order',JSON.stringify(previousPendingBill))}catch(e){}
+  }
+  currentOrderId=null;activeBillSnapshot=null;paymentUrl='';duitNowPaymentUrl='';
+  document.getElementById('paymentHeading').textContent='Complete your order';
+  document.getElementById('customerPanel').classList.remove('hidden');
+  document.getElementById('qrBox').classList.remove('ready','hidden');
+  document.getElementById('qr').innerHTML='';
+  document.getElementById('openPayBtn').classList.add('hidden');
+  document.getElementById('openPayBtn').disabled=false;
+  document.getElementById('createPayBtn').disabled=false;
+  document.getElementById('createPayBtn').textContent='Create Secure Payment';
+  document.getElementById('orderNo').textContent='-';
+  document.getElementById('payTitle').textContent='Secure Payment';
+  document.getElementById('payDesc').textContent='Review the items and total on the left. Enter your details and click Create Secure Payment to generate a NEW payment link for this exact amount.';
+  document.getElementById('successBox').classList.add('hidden');
+  setPaymentStatus('idle','PAYMENT NOT CREATED');
+  renderPay();showPreviousBillNotice();
+  return true;
+}
+async function verifySavedBillItems(orderId){
+  try{
+    const {data,error}=await client.from('order_items').select('product_id,product_name,unit_price,quantity,line_total').eq('order_id',orderId);
+    if(error)throw error;
+    if(!Array.isArray(data)||!data.length)throw Error('Bill items unavailable');
+    if(String(orderId)!==String(currentOrderId))return;
+    const sum=data.reduce((t,x)=>t+Number(x.line_total??Number(x.unit_price)*Number(x.quantity)),0);
+    if(Math.abs(sum-activeBillSnapshot.amount)>.005)throw Error('Saved bill total does not match its items');
+    activeBillSnapshot.items=data.map(x=>({product_id:x.product_id,product_name:x.product_name,unit_price:x.unit_price,quantity:x.quantity}));
+    activeBillSnapshot.verified=true;
+    document.getElementById('openPayBtn').disabled=false;
+    renderPay();
+  }catch(e){
+    console.warn('Saved bill verification failed',e);
+    if(String(orderId)===String(currentOrderId)){
+      document.getElementById('openPayBtn').disabled=true;
+      document.getElementById('payDesc').textContent='The previous bill items could not be verified. Please do not pay this link until the order can be checked.';
+    }
+  }
+}
+function loadPreviousBillIntoCheckout(bill){
+  currentOrderId=String(bill.id);
+  activeBillSnapshot={amount:Number(bill.amount),items:null,verified:false};
+  paymentUrl=bill.payment_url||'';
+  duitNowPaymentUrl=bill.duitnow_url||toDuitNowUrl(paymentUrl);
+  document.getElementById('orderNo').textContent=bill.order_no||'-';
+  document.getElementById('createPayBtn').disabled=true;
+  document.getElementById('createPayBtn').textContent='Payment link already created';
+  document.getElementById('payTitle').textContent='Previous Payment Link';
+  document.getElementById('payDesc').textContent='This is the previously created '+M(bill.amount)+' bill, not your updated cart. Its order items will be checked before payment is permitted.';
+  document.getElementById('qr').innerHTML='';
+  document.getElementById('qrBox').classList.remove('ready');
+  if(paymentUrl&&typeof QRCode!=='undefined'){
+    new QRCode(document.getElementById('qr'),{text:paymentUrl,width:260,height:260,correctLevel:QRCode.CorrectLevel.M});
+    document.getElementById('qrBox').classList.add('ready');
+  }
+  document.getElementById('openPayBtn').classList.toggle('hidden',!paymentUrl);
+  document.getElementById('openPayBtn').disabled=true;
+  verifySavedBillItems(currentOrderId);
+  renderPay();
+  showPreviousBillNotice();
+  subscribeOrder(currentOrderId);
+}
+function resumePreviousBill(){
+  if(!previousPendingBill||currentOrderId||paymentFlowActive)return;
+  const bill=previousPendingBill;
+  previousPendingBill=null;
+  loadPreviousBillIntoCheckout(bill);
+  show('payment');
+}
+
 function renderPay(){
-  const t=total();
-  document.getElementById('sub').textContent=M(t);
-  if(!currentOrderId) document.getElementById('exact').textContent=M(t);
-  if(!currentOrderId) document.getElementById('payAmount').textContent=M(t);
-  document.getElementById('items').innerHTML=cart.length?cart.map(i=>{const p=products.find(x=>String(x.id)===String(i.id));if(!p)return '';return `<div class="item"><div><b>${esc(p.n)}</b><div class="muted">${M(p.p)} × ${i.q}</div></div><span>${i.q} pcs</span><b>${M(p.p*i.q)}</b></div>`}).join(''):'<p class="muted">Your cart is empty.</p>';
+  const bill=currentOrderId?activeBillSnapshot:null;
+  const amount=bill?Number(bill.amount):total();
+  const rows=bill?bill.items:cart.map(i=>{
+    const p=products.find(x=>String(x.id)===String(i.id));
+    return p?{product_name:p.n,unit_price:p.p,quantity:i.q}:null;
+  }).filter(Boolean);
+  document.getElementById('sub').textContent=M(amount);
+  document.getElementById('exact').textContent=M(amount);
+  document.getElementById('payAmount').textContent=M(amount);
+  document.getElementById('items').innerHTML=rows&&rows.length?rows.map(i=>'<div class="item"><div><b>'+esc(i.product_name)+'</b><div class="muted">'+M(i.unit_price)+' × '+i.quantity+'</div></div><span>'+i.quantity+' pcs</span><b>'+M(Number(i.unit_price)*Number(i.quantity))+'</b></div>').join(''):(bill?'<p class="muted">Verifying the items included in your previous bill…</p>':'<p class="muted">Your cart is empty.</p>');
+  const note=document.getElementById('billContext');
+  note.classList.toggle('hidden',!bill||billMatchesCart(bill));
+  if(bill&&!billMatchesCart(bill))note.textContent='This is an earlier '+M(amount)+' payment bill, separate from your current '+M(total())+' cart. Use Back, then Proceed to Payment if you want to buy the current selection instead.';
 }
 function show(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));scrollTo({top:0,behavior:'smooth'})}
 function goPay(){
-  if(!cart.length){alert('Add at least one product first.');return}
+  if(paymentFlowActive)return;
+  if(!cart.length){alert('Add at least one product first.');return;}
+  if(currentOrderId&&!billMatchesCart(activeBillSnapshot)){
+    if(!confirm('The existing bill is '+M(activeBillSnapshot?.amount)+', but your current cart is '+M(total())+'. Start a new checkout? This will not cancel the previous ToyyibPay bill. Do not pay both.'))return;
+    resetBillForNewCart();
+  }
+  showPreviousBillNotice();
   openDisclaimer();
 }
 function openDisclaimer(){
@@ -987,7 +1125,10 @@ function toDuitNowUrl(url){
 }
 
 async function createPayment(){
-  if(!cart.length||paymentFlowActive||currentOrderId)return;
+  if(!cart.length||paymentFlowActive||currentOrderId||billCreating)return;
+  if(previousPendingBill&&!confirm('An earlier '+M(previousPendingBill.amount)+' ToyyibPay bill exists. Create a NEW bill for the selected '+M(total())+' cart? The old bill will not be cancelled. Do not pay both.'))return;
+  billCreating=true;
+  const requestSnapshot=selectedBillSnapshot();
   const btn=document.getElementById('createPayBtn');
   btn.disabled=true;btn.textContent='Creating DuitNow-ready bill…';
   setPaymentStatus('pending','CREATING PAYMENT…');
@@ -1029,6 +1170,11 @@ async function createPayment(){
     if(!data?.payment_url)throw new Error(data?.error||'Payment URL was not returned.');
 
     currentOrderId=data.order_id;
+    activeBillSnapshot={amount:Number(data.amount),items:requestSnapshot.items,verified:Math.abs(Number(data.amount)-requestSnapshot.amount)<.005};
+    if(!activeBillSnapshot.verified){
+      throw new Error('Payment bill amount did not match the selected cart. The link has been blocked; please contact EasyABC before paying.');
+    }
+    if(previousPendingBill)archivePreviousBill();
     paymentUrl=data.payment_url;
     duitNowPaymentUrl=toDuitNowUrl(paymentUrl);
 
@@ -1037,6 +1183,7 @@ async function createPayment(){
         id:String(data.order_id),
         order_no:data.order_no||'',
         amount:Number(data.amount||0),
+        items:requestSnapshot.items,
         payment_url:paymentUrl,
         duitnow_url:duitNowPaymentUrl,
         created_at:Date.now()
@@ -1045,8 +1192,8 @@ async function createPayment(){
     document.getElementById('orderNo').textContent=data.order_no;
     document.getElementById('exact').textContent=M(data.amount);
     document.getElementById('payAmount').textContent=M(data.amount);
-    document.getElementById('payTitle').textContent='DuitNow QR Ready';
-    document.getElementById('payDesc').textContent='Continue to ToyyibPay with your customer details pre-filled. Select DuitNow QR, then generate and scan the QR. The bill amount is fixed securely by EasyABC.';
+    document.getElementById('payTitle').textContent='Payment Link Ready';
+    document.getElementById('payDesc').textContent='This QR opens the ToyyibPay payment page. The bank DuitNow QR is generated on ToyyibPay after you select that payment method. This bill matches the order summary.';
     const qrEl=document.getElementById('qr');
     qrEl.innerHTML='';
     if(typeof QRCode==='undefined') throw new Error('QR library failed to load. Please refresh and try again.');
@@ -1054,6 +1201,9 @@ async function createPayment(){
     document.getElementById('qrBox').classList.add('ready');
     document.getElementById('openPayBtn').textContent='Continue to DuitNow QR';
     document.getElementById('openPayBtn').classList.remove('hidden');
+    document.getElementById('openPayBtn').disabled=false;
+    renderPay();
+    showPreviousBillNotice();
     setPaymentStatus('pending','WAITING FOR PAYMENT');
     subscribeOrder(currentOrderId);
   }catch(e){
@@ -1061,13 +1211,14 @@ async function createPayment(){
     setPaymentStatus('failed','PAYMENT SETUP ERROR');
     alert(e.message||String(e));
   }finally{
+    billCreating=false;
     btn.disabled=!!currentOrderId;
     btn.textContent=currentOrderId?'Payment link created ✓':'Create Secure Payment';
   }
 }
 function openPayment(){
   const url=duitNowPaymentUrl||paymentUrl;
-  if(!url||!currentOrderId)return;
+  if(!url||!currentOrderId||!activeBillSnapshot?.verified)return;
   if(paymentFlowActive)return;
   const marker=readPaymentFlowMarker();
   if(marker&&String(marker.order_id)===String(currentOrderId)){
@@ -1216,7 +1367,7 @@ async function returnToCheckout(){
 
 function launchToyyibPay(){
   const url=duitNowPaymentUrl||paymentUrl;
-  if(!url||!currentOrderId||paymentFlowActive)return;
+  if(!url||!currentOrderId||paymentFlowActive||!activeBillSnapshot?.verified)return;
   // An EasyABC tab may already be monitoring this same payment order.
   const marker=readPaymentFlowMarker();
   if(marker&&String(marker.order_id)===String(currentOrderId)){
@@ -1244,7 +1395,7 @@ function launchToyyibPay(){
 }
 function finishOrder(){
   finishPaymentProgress();
-  currentOrderId=null;
+  currentOrderId=null;activeBillSnapshot=null;
   paymentUrl='';
   duitNowPaymentUrl='';
   try{localStorage.removeItem('easyabc_pending_order')}catch{}
@@ -1408,9 +1559,11 @@ async function applyOrder(order){
       paidItems=data||[];
     }catch(e){console.error(e)}
 
-    cart=[];
-    localStorage.setItem('easyabc_cart','[]');
+    const purchased=new Set((activeBillSnapshot?.items||[]).map(i=>String(i.product_id)));
+    cart=purchased.size?cart.filter(i=>!purchased.has(String(i.id))):cart;
+    localStorage.setItem('easyabc_cart',JSON.stringify(cart));
     try{localStorage.removeItem('easyabc_pending_order')}catch{}
+    previousPendingBill=null;
     render();
 
     document.getElementById('paymentHeading').textContent='Order complete';
@@ -1463,7 +1616,8 @@ async function applyOrder(order){
     try{localStorage.removeItem('easyabc_pending_order')}catch{}
     if(orderChannel){try{client.removeChannel(orderChannel)}catch{}orderChannel=null;}
     if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
-    currentOrderId=null;paymentUrl='';duitNowPaymentUrl='';
+    currentOrderId=null;activeBillSnapshot=null;paymentUrl='';duitNowPaymentUrl='';
+    renderPay();
   }else{
     setPaymentStatus('pending',paymentFlowActive?'PAYMENT IN PROGRESS — AWAITING CONFIRMATION':'WAITING FOR PAYMENT');
   }
@@ -1481,46 +1635,24 @@ function subscribeOrder(id){
 
 function restorePendingOrder(){
   try{
-    const pending=JSON.parse(localStorage.getItem('easyabc_pending_order')||'null');
-    if(!pending?.id)return false;
-
-    // Ignore stale unpaid orders older than 24 hours.
-    if(pending.created_at && Date.now()-Number(pending.created_at)>86400000){
-      localStorage.removeItem('easyabc_pending_order');
-      return false;
+    const saved=JSON.parse(localStorage.getItem('easyabc_pending_order')||'null');
+    if(!saved?.id)return false;
+    if(saved.created_at&&Date.now()-Number(saved.created_at)>86400000){
+      localStorage.removeItem('easyabc_pending_order');return false;
     }
-
-    currentOrderId=String(pending.id);
-    paymentUrl=pending.payment_url||'';
-    duitNowPaymentUrl=pending.duitnow_url||toDuitNowUrl(paymentUrl||'');
-
-    if(pending.order_no)document.getElementById('orderNo').textContent=pending.order_no;
-    document.getElementById('createPayBtn').disabled=true;
-    document.getElementById('createPayBtn').textContent='Payment link created ✓';
-    if(paymentUrl){
-      document.getElementById('payTitle').textContent='DuitNow QR Ready';
-      document.getElementById('payDesc').textContent='An existing bill is ready. Continue to ToyyibPay to complete the same order, or wait for payment confirmation if you already paid.';
-      document.getElementById('openPayBtn').classList.remove('hidden');
-      const qr=document.getElementById('qr');
-      if(qr&&typeof QRCode!=='undefined'){
-        qr.innerHTML='';
-        new QRCode(qr,{text:paymentUrl,width:260,height:260,correctLevel:QRCode.CorrectLevel.M});
-        document.getElementById('qrBox').classList.add('ready');
-      }
-    }
-    if(Number.isFinite(Number(pending.amount))){
-      document.getElementById('exact').textContent=M(Number(pending.amount));
-      document.getElementById('payAmount').textContent=M(Number(pending.amount));
-    }
-
-    subscribeOrder(currentOrderId);
     const marker=readPaymentFlowMarker();
-    if(marker&&String(marker.order_id)===String(currentOrderId))beginPaymentProgress(true);
+    if(marker&&String(marker.order_id)===String(saved.id)){
+      // Restore an active payment progress monitor, not a new shopping session.
+      loadPreviousBillIntoCheckout(saved);
+      beginPaymentProgress(true);
+    }else{
+      // An unfinished bill is optional; never populate a fresh checkout with its QR.
+      previousPendingBill=saved;
+      showPreviousBillNotice();
+      renderPay();
+    }
     return true;
-  }catch(e){
-    console.warn('Could not restore pending order:',e);
-    return false;
-  }
+  }catch(e){console.warn('Could not restore unfinished bill',e);return false}
 }
 
 document.addEventListener('keydown',e=>{
