@@ -25,31 +25,14 @@
 <header class="top"><div class="brand">Easy<span>ABC</span></div><div class="nav"><button onclick="show('home')">Home</button><button onclick="goPay()">Payment</button><button onclick="showPurchases()">My Purchases</button><button class="primary" onclick="goPay()">🛒 <span id="cartCount">0</span></button></div></header>
 
 <section id="home" class="page active">
-<div class="hero"><div class="hero-copy"><div class="hero-kicker"><span class="tag"><span class="live-dot"></span>LIVE AUTOMATION</span><span class="hero-subline">Smart tools. Less manual work.</span></div><h1>Build less.<br>Automate more.<br><span id="rotatingWord" class="rotating-word">Smarter.</span></h1><p>Discover practical apps built to reduce repetitive work, speed up decisions, and turn everyday tasks into simple automated flows.</p><button class="primary" onclick="document.getElementById('smartFinder').scrollIntoView({behavior:'smooth'})">Find My Tool ✦</button></div><div class="visual"><div class="orb"></div><div class="float f1">⚡<div style="font-size:10px;margin-top:8px;color:#b7c9df">AUTOMATE</div></div><div class="float f2">◈<div style="font-size:10px;margin-top:8px;color:#b7c9df">ANALYZE</div></div><div class="float f3">↗<div style="font-size:10px;margin-top:8px;color:#b7c9df">DELIVER</div></div></div></div>
+<div class="hero"><div class="hero-copy"><div class="hero-kicker"><span class="tag"><span class="live-dot"></span>LIVE AUTOMATION</span><span class="hero-subline">Smart tools. Less manual work.</span></div><h1>Build less.<br>Automate more.<br><span id="rotatingWord" class="rotating-word">Smarter.</span></h1><p>Discover practical apps built to reduce repetitive work, speed up decisions, and turn everyday tasks into simple automated flows.</p><button class="primary" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Browse Tools ✦</button></div><div class="visual"><div class="orb"></div><div class="float f1">⚡<div style="font-size:10px;margin-top:8px;color:#b7c9df">AUTOMATE</div></div><div class="float f2">◈<div style="font-size:10px;margin-top:8px;color:#b7c9df">ANALYZE</div></div><div class="float f3">↗<div style="font-size:10px;margin-top:8px;color:#b7c9df">DELIVER</div></div></div></div>
 <div class="automation-strip">
   <div class="auto-step"><div class="auto-icon">◉</div><strong>Live Catalog</strong><span>Supabase sync</span></div>
-  <div class="auto-step"><div class="auto-icon">⌁</div><strong>Smart Match</strong><span>Product finder</span></div>
+  <div class="auto-step"><div class="auto-icon">⌁</div><strong>Easy Browse</strong><span>Quick product finder</span></div>
   <div class="auto-step"><div class="auto-icon">▦</div><strong>Secure Pay</strong><span>Exact amount QR</span></div>
   <div class="auto-step"><div class="auto-icon">↓</div><strong>Instant Access</strong><span>Paid download delivery</span></div>
 </div>
 <div id="dbDebug" class="db"><span class="live-dot"></span>Syncing live catalog…</div>
-<div id="smartFinder" class="smart-box">
-  <div class="smart-head">
-    <div class="smart-title"><div class="ai-orb-mini"></div><div><b>EasyABC Smart Assistant</b><div class="muted small">Tell me what you want to automate or improve. I’ll match it against the live catalog.</div></div></div>
-    <span class="tag">SMART MATCH</span>
-  </div>
-  <div class="smart-input-row">
-    <input id="smartQuery" placeholder="Example: I want a tool to analyze trading markets faster" onkeydown="if(event.key==='Enter')runSmartFinder()">
-    <button class="primary" onclick="runSmartFinder()">Find Tools ✦</button>
-  </div>
-  <div class="smart-chips">
-    <button class="smart-chip" onclick="smartPreset('trading market analysis')">Trading</button>
-    <button class="smart-chip" onclick="smartPreset('finance accounting automation')">Finance</button>
-    <button class="smart-chip" onclick="smartPreset('affiliate automation social media')">Affiliate</button>
-    <button class="smart-chip" onclick="smartPreset('AI productivity automation')">AI & Automation</button>
-  </div>
-  <div id="smartResults" class="smart-results"></div>
-</div>
 <div id="products" class="tools"><div><span class="tag">ALL PRODUCTS</span><h2>Choose what you like</h2></div><input id="search" placeholder="Search products..." oninput="render()"></div>
 <div id="categoryBar" class="category-bar"></div>
 <div id="grid" class="grid"></div>
@@ -411,44 +394,6 @@ setInterval(()=>{
   };
 },2600);
 
-function smartPreset(q){
-  const input=document.getElementById('smartQuery');if(input)input.value=q;
-  runSmartFinder();
-}
-function tokenize(v){
-  return String(v||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(x=>x.length>1);
-}
-function runSmartFinder(){
-  const input=document.getElementById('smartQuery');
-  const box=document.getElementById('smartResults');
-  const q=(input?.value||'').trim();
-  if(!q){box.innerHTML='<div class="muted small">Tell me what you need first — for example, “trading analysis” or “finance automation”.</div>';return}
-  box.innerHTML='<div class="thinking">Analyzing catalog <i></i><i></i><i></i></div>';
-  setTimeout(()=>{
-    const words=tokenize(q);
-    const scored=products.map(p=>{
-      const cat=categoryName(p.category_id);
-      const hay=(p.n+' '+p.d+' '+cat).toLowerCase();
-      let score=0;
-      words.forEach(w=>{if(hay.includes(w))score+=3;});
-      const intentBoost={
-        trading:['trade','trading','market','forex','stock','bursa','analysis'],
-        finance:['finance','account','accounting','cash','loan','budget'],
-        affiliate:['affiliate','social','content','viral','trend','marketing'],
-        ai:['ai','automation','automate','productivity','smart']
-      };
-      Object.values(intentBoost).forEach(group=>{
-        if(words.some(w=>group.includes(w)) && group.some(g=>hay.includes(g)))score+=2;
-      });
-      return {p,score,cat};
-    }).sort((a,b)=>b.score-a.score||a.p.p-b.p.p);
-    const hits=scored.filter(x=>x.score>0).slice(0,3);
-    const picks=hits.length?hits:scored.slice(0,Math.min(3,scored.length));
-    if(!picks.length){box.innerHTML='<div class="muted small">No products are available yet.</div>';return}
-    box.innerHTML=picks.map((x,i)=>'<div class="smart-result" onclick="openProduct(\''+x.p.id+'\')"><span>Match '+(i+1)+(x.cat?' • '+esc(x.cat):'')+'</span><b>'+esc(x.p.n)+'</b><span>'+M(x.p.p)+' • '+esc((x.p.d||'').slice(0,76))+'</span></div>').join('');
-  },520);
-}
-
 function categoryName(id){
   if(id===null||id===undefined||id==='') return '';
   return categories.find(c=>String(c.id)===String(id))?.name||'';
@@ -551,10 +496,6 @@ async function loadProducts(){
   setDb('Catalog ready — '+products.length+' tools','live');
   hideCatalogStatusSoon();
 
-  const smart=document.getElementById('smartResults');
-  if(smart && !smart.innerHTML.trim()){
-    smart.innerHTML='<div class="muted small">Try “trading”, “finance automation”, or describe the problem you want to solve.</div>';
-  }
 }
 
 let catalogRetryTimer=null;
