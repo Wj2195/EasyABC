@@ -15,6 +15,14 @@
 /* Community admin */
 .feedback-reply{width:100%;min-height:74px;resize:vertical;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.055);color:var(--text);font:inherit}.feedback-message{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}.feedback-type{display:inline-flex;padding:4px 7px;border-radius:999px;border:1px solid rgba(104,168,255,.22);background:rgba(104,168,255,.09);color:#cfe2ff;font-size:9px;font-weight:900;text-transform:uppercase}.feedback-actions{display:flex;gap:6px;flex-wrap:wrap}
 
+
+/* Order archive: retain all records, separate inactive bills from live checkouts. */
+.order-filter-bar{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0 8px}
+.order-filter{border:1px solid rgba(160,197,231,.2);color:#bdd0e5;background:rgba(255,255,255,.04);border-radius:12px;padding:10px 13px;font-weight:800;font-size:12px}
+.order-filter.active{border-color:#52d9e3;background:rgba(79,215,228,.12);color:#b9faff}
+.order-filter span{display:inline-block;padding:2px 6px;margin-left:4px;background:rgba(255,255,255,.09);border-radius:6px}
+.order-help{color:#94a9c1;font-size:11px;line-height:1.6;margin:0 0 15px}
+@media(max-width:620px){.order-filter-bar{display:grid;grid-template-columns:1fr 1fr}.order-filter{text-align:left;padding:11px 9px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -246,6 +254,13 @@
 
   <section id="view-orders" class="view">
     <div class="titlebar"><div><div class="muted small">SALES</div><h1>Orders</h1></div><button class="ghost" onclick="loadOrders()">Refresh</button></div>
+    <div class="order-filter-bar" role="group" aria-label="Filter orders">
+      <button class="order-filter active" data-order-filter="active" onclick="setOrderFilter('active')">Active unpaid <span id="ordersActiveCount">0</span></button>
+      <button class="order-filter" data-order-filter="paid" onclick="setOrderFilter('paid')">Paid <span id="ordersPaidCount">0</span></button>
+      <button class="order-filter" data-order-filter="history" onclick="setOrderFilter('history')">Expired / cancelled <span id="ordersHistoryCount">0</span></button>
+      <button class="order-filter" data-order-filter="all" onclick="setOrderFilter('all')">All orders <span id="ordersAllCount">0</span></button>
+    </div>
+    <p class="order-help" id="orderHelp">An unpaid bill is active for 1 hour from creation. Expired orders are hidden here, not deleted; pending bank transactions may still settle later.</p>
     <div class="tablewrap"><table class="table"><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th><th>Paid</th><th>Created</th></tr></thead><tbody id="orderRows"></tbody></table></div>
     <div id="orderCards" class="mobilecards"></div>
   </section>
@@ -269,6 +284,35 @@ const SUPABASE_KEY='sb_publishable_WQibr98hDPjOIVqA0twL1g_OVUxgynh';
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 let categories=[],products=[],orders=[],allMedia=[],currentMediaProductId=null,currentMedia=[],communityAdmin=[],announcementsAdmin=[];
 let analyticsData=null;
+let orderFilter='active';
+const ORDER_WINDOW_MS=60*60*1000;
+function orderDeadline(o){
+  const direct=o.expires_at?Date.parse(o.expires_at):NaN;
+  const created=Date.parse(o.created_at);
+  return Number.isFinite(direct)?direct:Number.isFinite(created)?created+ORDER_WINDOW_MS:NaN;
+}
+function orderDisplayStatus(o){
+  const status=String(o.status||'pending').toLowerCase();
+  if(status==='paid')return 'PAID';
+  if(status==='cancelled'||status==='canceled')return 'CANCELLED';
+  if(status==='failed')return 'FAILED';
+  if(status==='expired')return 'EXPIRED';
+  // A pending order past its deadline is archived visually, not declared failed:
+  // a delayed signed ToyyibPay callback may still confirm legitimate payment.
+  if(status==='pending'&&Number.isFinite(orderDeadline(o))&&Date.now()>=orderDeadline(o))return 'EXPIRED · VERIFY PAYMENT';
+  return status.toUpperCase();
+}
+function orderBucket(o){
+  const status=orderDisplayStatus(o);
+  if(status==='PAID')return 'paid';
+  return status==='PENDING'?'active':'history';
+}
+function setOrderFilter(value){
+  if(!['active','paid','history','all'].includes(value))return;
+  orderFilter=value;
+  renderOrders();
+}
+
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const money=v=>'RM'+Number(v||0).toFixed(2);
 const slugify=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
@@ -595,7 +639,7 @@ async function loadProducts(){
   renderProducts();renderCategories();
 }
 async function loadOrders(){
-  const {data,error}=await client.from('orders').select('id,order_no,customer_name,customer_email,amount,status,paid_at,created_at').order('created_at',{ascending:false}).limit(100);
+  const {data,error}=await client.from('orders').select('*').order('created_at',{ascending:false}).limit(100);
   if(error){console.error(error);return}
   orders=data||[];renderOrders();updateStats();
 }
@@ -831,12 +875,26 @@ function renderProducts(){
   updateStats();
 }
 function renderOrders(){
-  const statusClass=s=>s==='paid'?'on':s==='failed'?'off':'pending';
-  document.getElementById('orderRows').innerHTML=orders.map(o=>'<tr><td><b>'+esc(o.order_no)+'</b></td><td>'+esc(o.customer_name||'-')+'<div class="muted small">'+esc(o.customer_email||'')+'</div></td><td>'+money(o.amount)+'</td><td><span class="status '+statusClass(o.status)+'">'+esc(String(o.status||'').toUpperCase())+'</span></td><td>'+esc(o.paid_at?new Date(o.paid_at).toLocaleString():'-')+'</td><td>'+esc(new Date(o.created_at).toLocaleString())+'</td></tr>').join('');
-  document.getElementById('orderCards').innerHTML=orders.map(o=>'<div class="mcard"><div class="row"><b>'+esc(o.order_no)+'</b><b>'+money(o.amount)+'</b></div><div class="muted small">'+esc(o.customer_email||o.customer_name||'')+'</div><div style="margin-top:8px"><span class="status '+statusClass(o.status)+'">'+esc(String(o.status||'').toUpperCase())+'</span></div></div>').join('');
+  const counts={active:0,paid:0,history:0,all:orders.length};
+  orders.forEach(o=>{counts[orderBucket(o)]++;});
+  for(const name of ['active','paid','history','all']){
+    document.getElementById('orders'+name.charAt(0).toUpperCase()+name.slice(1)+'Count').textContent=counts[name];
+  }
+  document.querySelectorAll('[data-order-filter]').forEach(btn=>{
+    const active=btn.dataset.orderFilter===orderFilter;
+    btn.classList.toggle('active',active);
+    btn.setAttribute('aria-pressed',String(active));
+  });
+  const filtered=orders.filter(o=>orderFilter==='all'||orderBucket(o)===orderFilter);
+  const statusClass=o=>orderBucket(o)==='paid'?'on':orderBucket(o)==='active'?'pending':'off';
+  const badge=o=>'<span class="status '+statusClass(o)+'">'+esc(orderDisplayStatus(o))+'</span>';
+  document.getElementById('orderRows').innerHTML=filtered.length?filtered.map(o=>
+    '<tr><td><b>'+esc(o.order_no)+'</b></td><td>'+esc(o.customer_name||'-')+'<div class="muted small">'+esc(o.customer_email||'')+'</div></td><td>'+money(o.amount)+'</td><td>'+badge(o)+'</td><td>'+esc(o.paid_at?new Date(o.paid_at).toLocaleString():'-')+'</td><td>'+esc(new Date(o.created_at).toLocaleString())+'</td></tr>'
+  ).join(''):'<tr><td colspan="6" class="muted">No orders in this view.</td></tr>';
+  document.getElementById('orderCards').innerHTML=filtered.length?filtered.map(o=>
+    '<div class="mcard"><div class="row"><b>'+esc(o.order_no)+'</b><b>'+money(o.amount)+'</b></div><div class="muted small">'+esc(o.customer_email||o.customer_name||'')+'</div><div style="margin-top:8px">'+badge(o)+'</div></div>'
+  ).join(''):'<p class="muted">No orders in this view.</p>';
 }
-
-
 function communityTypeLabel(kind){
   return ({question:'Question',feedback:'Feedback',comment:'Comment'})[kind]||'Post';
 }
