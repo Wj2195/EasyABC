@@ -109,6 +109,33 @@ body{background:radial-gradient(ellipse at 78% 2%,rgba(28,80,125,.27),transparen
 @media(max-width:370px){.brand{font-size:19px}.nav .nav-purchases{font-size:10px;padding:8px}.nav .nav-cart{padding:8px}.featured-picture{height:140px}.hero-kicker{gap:4px}.hero-subline{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.featured-shell,.showcase-float,.featured-picture img,.card,.how-step{animation:none!important;transition:none!important}.card:hover,.how-step:hover{transform:none!important}}
 
+
+/* Keep EasyABC read-only while a ToyyibPay payment session is active. */
+body.checkout-locked{overflow:hidden}
+.payment-progress{position:fixed;inset:0;z-index:350;display:flex;justify-content:center;align-items:center;padding:16px;background:rgba(2,9,20,.91);backdrop-filter:blur(18px);overflow-y:auto}
+.payment-progress-card{width:min(550px,100%);margin:auto;border-radius:26px;border:1px solid rgba(92,209,229,.25);background:linear-gradient(155deg,#172b43,#0b192b 61%,#081625);box-shadow:0 30px 100px rgba(0,0,0,.62);overflow:hidden}
+.progress-topline{padding:19px 24px;border-bottom:1px solid rgba(167,204,244,.14);display:flex;align-items:center;justify-content:space-between;gap:14px;background:rgba(9,30,51,.6)}
+.progress-brand{font-weight:900;letter-spacing:-.04em;font-size:22px;color:#f5faff}.progress-brand span{color:#56e1e7}.progress-provider{font-size:9px;letter-spacing:.08em;font-weight:800;color:#a4c7d8;text-align:right}
+.progress-body{padding:30px 29px 27px;text-align:center}
+.progress-spinner{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;margin:0 auto 21px;border:3px solid rgba(88,221,224,.17);border-top-color:#57e0e8;border-right-color:#76aaff;animation:easyabcProgressSpin 2s linear infinite;box-shadow:0 0 35px rgba(74,202,220,.12)}
+.progress-inner{display:grid;place-items:center;width:70px;height:70px;border-radius:50%;background:rgba(86,214,226,.08);font-size:31px;animation:easyabcProgressSpin 2s linear infinite reverse}
+@keyframes easyabcProgressSpin{to{transform:rotate(360deg)}}
+.progress-tag{display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(92,224,218,.25);border-radius:20px;padding:7px 12px;font-size:10px;font-weight:900;color:#b0eee9;letter-spacing:.09em;background:rgba(70,220,214,.065)}
+.progress-body h2{font-size:clamp(25px,4vw,32px);line-height:1.15;margin:19px 0 10px;letter-spacing:-.04em}
+.progress-body>p{color:#a4b9cf;font-size:13px;line-height:1.7;margin:0 auto 18px;max-width:430px}
+.progress-steps{display:flex;justify-content:space-between;gap:7px;margin:21px 0 18px}
+.progress-steps span{flex:1;border-radius:10px;padding:11px 6px;font-size:10px;font-weight:800;border:1px solid rgba(172,205,242,.12);background:rgba(255,255,255,.025);color:#738aa2}
+.progress-steps span.done{color:#a0e8c7;border-color:rgba(109,238,188,.19)}.progress-steps span.current{color:#b4edf8;border-color:rgba(78,204,230,.3);background:rgba(80,206,224,.08)}
+.progress-order{background:rgba(2,11,24,.46);border:1px solid rgba(158,206,242,.16);padding:15px 17px;border-radius:14px;margin:0 0 18px;text-align:left}
+.progress-order>div{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:6px 0}.progress-order span{font-size:12px;color:#95abc4}.progress-order strong{font-size:12px;color:#f6fbff;overflow-wrap:anywhere;text-align:right}
+.progress-body .progress-hint{font-size:11px;color:#9eb1c6;margin:0 auto 16px}
+.progress-check,.progress-recover{display:block;width:100%;border-radius:13px;padding:12px 15px;font-size:12px;margin:9px 0}
+.progress-check:disabled{opacity:.5;cursor:wait}.progress-recover{border-color:rgba(255,210,124,.28);color:#f4d9aa}
+.progress-body .progress-recovery-message{font-size:11px;color:#e8c994;margin:10px auto 0;min-height:14px}
+.progress-footer{border-top:1px solid rgba(167,204,244,.11);padding:15px 19px;text-align:center;color:#8aa4bf;font-size:10px;background:rgba(2,11,23,.25)}
+@media(max-width:560px){.payment-progress{padding:10px}.payment-progress-card{border-radius:19px}.progress-topline{padding:14px 16px}.progress-body{padding:23px 17px}.progress-spinner{height:69px;width:69px;margin-bottom:14px}.progress-inner{height:50px;width:50px;font-size:22px}.progress-body h2{font-size:25px;margin:13px 0}.progress-steps span{font-size:9px;padding:9px 4px}.progress-body>p{font-size:12px}.progress-footer{padding:11px 12px;font-size:9px}}
+@media(prefers-reduced-motion:reduce){.progress-spinner,.progress-inner{animation:none}}
+
 </style>
 </head>
 <body>
@@ -356,6 +383,25 @@ body{background:radial-gradient(ellipse at 78% 2%,rgba(28,80,125,.27),transparen
   </div>
 </div>
 
+<div id="paymentProgressOverlay" class="payment-progress hidden" role="dialog" aria-modal="true" aria-labelledby="progressTitle" aria-describedby="progressMessage" tabindex="-1">
+  <div class="payment-progress-card">
+    <div class="progress-topline"><span class="progress-brand">Easy<span>ABC</span></span><span class="progress-provider">SECURE PAYMENT • TOYYIBPAY</span></div>
+    <div class="progress-body">
+      <div class="progress-spinner" aria-hidden="true"><div class="progress-inner">🔒</div></div>
+      <span class="progress-tag"><span class="live-dot"></span> PAYMENT IN PROGRESS</span>
+      <h2 id="progressTitle">Waiting for your payment</h2>
+      <p id="progressMessage" aria-live="polite">Please complete your payment in the ToyyibPay tab. EasyABC is checking your order automatically.</p>
+      <div class="progress-steps" aria-label="Payment process"><span class="done">1. Order ready</span><span class="current">2. Awaiting payment</span><span>3. Download unlocked</span></div>
+      <div class="progress-order"><div><span>Order</span><strong id="progressOrder">—</strong></div><div><span>Payment amount</span><strong id="progressAmount">—</strong></div></div>
+      <p class="progress-hint">EasyABC is temporarily locked to prevent duplicate payment tabs and orders. Please keep this page open. It will unlock when payment is confirmed or reported as failed.</p>
+      <button id="progressCheckBtn" class="ghost progress-check" onclick="checkPaymentProgress()">↻ Check payment status now</button>
+      <button id="progressRecoverBtn" class="ghost progress-recover hidden" onclick="returnToCheckout()">I have closed ToyyibPay — Return to checkout</button>
+      <p class="progress-recovery-message" id="progressRecoveryMessage" aria-live="polite"></p>
+    </div>
+    <div class="progress-footer"><span class="live-dot"></span> Status is verified from your EasyABC order, not from the browser tab.</div>
+  </div>
+</div>
+
 <div id="productModal" class="product-modal hidden" onclick="modalBackdrop(event)">
   <div class="modal-card">
     <button class="modal-close" onclick="closeProductModal()">×</button>
@@ -450,6 +496,12 @@ let paymentUrl='';
 let duitNowPaymentUrl='';
 let orderChannel=null;
 let pollTimer=null;
+let paymentWindow=null;
+let paymentFlowActive=false;
+let paymentTabClosedAt=0;
+let paymentWindowWatcher=null;
+let paymentRestoredAt=0;
+const PAYMENT_FLOW_KEY='easyabc_active_toyyibpay_payment_v1';
 let currentAnnouncementLink='';
 const M=v=>'RM'+Number(v||0).toFixed(2);
 
@@ -935,7 +987,7 @@ function toDuitNowUrl(url){
 }
 
 async function createPayment(){
-  if(!cart.length)return;
+  if(!cart.length||paymentFlowActive||currentOrderId)return;
   const btn=document.getElementById('createPayBtn');
   btn.disabled=true;btn.textContent='Creating DuitNow-ready bill…';
   setPaymentStatus('pending','CREATING PAYMENT…');
@@ -1009,12 +1061,19 @@ async function createPayment(){
     setPaymentStatus('failed','PAYMENT SETUP ERROR');
     alert(e.message||String(e));
   }finally{
-    btn.disabled=false;btn.textContent='Create Secure Payment';
+    btn.disabled=!!currentOrderId;
+    btn.textContent=currentOrderId?'Payment link created ✓':'Create Secure Payment';
   }
 }
 function openPayment(){
   const url=duitNowPaymentUrl||paymentUrl;
-  if(!url)return;
+  if(!url||!currentOrderId)return;
+  if(paymentFlowActive)return;
+  const marker=readPaymentFlowMarker();
+  if(marker&&String(marker.order_id)===String(currentOrderId)){
+    beginPaymentProgress(true);
+    return;
+  }
 
   document.getElementById('handoffOrderNo').textContent=
     document.getElementById('orderNo').textContent||'-';
@@ -1035,45 +1094,156 @@ function checkoutHandoffBackdrop(e){
   }
 }
 
-let toyyibPayLaunchLocked=false;
+
+/* The payment lock is keyed to the order, not to the number of clicks. */
+function readPaymentFlowMarker(){
+  try{
+    const marker=JSON.parse(localStorage.getItem(PAYMENT_FLOW_KEY)||'null');
+    if(!marker||!marker.order_id||!Number.isFinite(Number(marker.started_at)))return null;
+    if(Date.now()-Number(marker.started_at)>2*60*60*1000){
+      localStorage.removeItem(PAYMENT_FLOW_KEY);
+      return null;
+    }
+    return marker;
+  }catch{return null}
+}
+function disableStoreDuringPayment(disabled){
+  document.body.classList.toggle('checkout-locked',disabled);
+  document.querySelectorAll('.top,.page,#checkoutHandoff,#checkoutDisclaimer,#announcementModal,#productModal').forEach(el=>{
+    el.inert=disabled;
+  });
+}
+function paymentProgressText(title,message){
+  const h=document.getElementById('progressTitle');
+  const p=document.getElementById('progressMessage');
+  if(h)h.textContent=title;
+  if(p)p.textContent=message;
+}
+function beginPaymentProgress(restored=false){
+  if(!currentOrderId)return;
+  if(paymentFlowActive)return;
+  // Change the page before locking its navigation.
+  show('payment');
+  paymentFlowActive=true;
+  paymentTabClosedAt=0;
+  paymentRestoredAt=restored?Date.now():0;
+  if(!restored){
+    try{localStorage.setItem(PAYMENT_FLOW_KEY,JSON.stringify({order_id:String(currentOrderId),started_at:Date.now()}))}catch{}
+  }
+  document.getElementById('progressOrder').textContent=document.getElementById('orderNo').textContent||'-';
+  document.getElementById('progressAmount').textContent=document.getElementById('payAmount').textContent||'-';
+  document.getElementById('progressRecoverBtn').classList.add('hidden');
+  document.getElementById('progressRecoveryMessage').textContent='';
+  paymentProgressText(
+    restored?'Checking your existing payment':'Waiting for your payment',
+    restored?'EasyABC is checking the payment status for this order. Do not start a new payment if you have already paid.':'Complete payment in the ToyyibPay tab. EasyABC is waiting for confirmation and will unlock automatically.'
+  );
+  document.getElementById('paymentProgressOverlay').classList.remove('hidden');
+  disableStoreDuringPayment(true);
+  document.getElementById('paymentProgressOverlay').focus();
+  if(paymentWindowWatcher)clearInterval(paymentWindowWatcher);
+  paymentWindowWatcher=setInterval(watchPaymentProgress,1100);
+  watchPaymentProgress();
+}
+function finishPaymentProgress(){
+  if(!paymentFlowActive)return;
+  paymentFlowActive=false;
+  if(paymentWindowWatcher){clearInterval(paymentWindowWatcher);paymentWindowWatcher=null;}
+  paymentWindow=null;
+  paymentTabClosedAt=0;
+  paymentRestoredAt=0;
+  document.getElementById('paymentProgressOverlay').classList.add('hidden');
+  disableStoreDuringPayment(false);
+  const btn=document.getElementById('handoffLaunchBtn');
+  if(btn)btn.disabled=false;
+  try{
+    const marker=JSON.parse(localStorage.getItem(PAYMENT_FLOW_KEY)||'null');
+    if(marker&&String(marker.order_id)===String(currentOrderId))localStorage.removeItem(PAYMENT_FLOW_KEY);
+  }catch{}
+}
+function watchPaymentProgress(){
+  if(!paymentFlowActive)return;
+  const note=document.getElementById('progressRecoveryMessage');
+  const recover=document.getElementById('progressRecoverBtn');
+  // window.closed remains readable even when ToyyibPay is cross-origin.
+  if(paymentWindow){
+    try{
+      if(paymentWindow.closed){
+        paymentWindow=null;
+        paymentTabClosedAt=Date.now();
+        paymentProgressText('Checking payment status','Your ToyyibPay tab was closed. Checking whether your payment was completed before unlocking EasyABC.');
+      }
+    }catch(e){console.debug('Checking payment tab:',e)}
+  }
+  const waitStart=paymentTabClosedAt||paymentRestoredAt;
+  const pastRecoveryWait=waitStart&&Date.now()-waitStart>9000;
+  const longRunning=readPaymentFlowMarker();
+  const timedOut=longRunning&&Date.now()-Number(longRunning.started_at)>120000;
+  if(pastRecoveryWait||timedOut){
+    recover.classList.remove('hidden');
+    note.textContent='If payment is still processing at your bank, keep waiting. Returning to checkout does not cancel a ToyyibPay bill.';
+  }
+}
+async function checkPaymentProgress(){
+  if(!paymentFlowActive||!currentOrderId)return;
+  const btn=document.getElementById('progressCheckBtn');
+  if(btn){btn.disabled=true;btn.textContent='Checking your order…';}
+  try{await refreshOrder();}
+  finally{
+    if(btn){btn.disabled=false;btn.textContent='↻ Check payment status now';}
+    if(paymentFlowActive){
+      document.getElementById('progressRecoveryMessage').textContent='Payment has not been confirmed yet. Do not pay a second time if your bank already deducted the money.';
+    }
+  }
+}
+async function returnToCheckout(){
+  if(!paymentFlowActive)return;
+  // Do not unlock while the payment window is still open.
+  try{
+    if(paymentWindow&&!paymentWindow.closed){
+      alert('Your ToyyibPay payment tab is still open. Please finish payment or close that tab first, then return here.');
+      return;
+    }
+  }catch{}
+  if(!confirm('Only return if you have stopped paying on ToyyibPay. An initiated bank payment may still be processing. This does NOT cancel the payment or void the existing bill. Continue?'))return;
+  await refreshOrder();
+  if(!paymentFlowActive)return; // A paid or failed status may just have arrived.
+  finishPaymentProgress();
+  setPaymentStatus('pending','PAYMENT NOT CONFIRMED — YOU CAN RESUME THIS ORDER');
+  document.getElementById('payDesc').textContent='Payment has not been confirmed. If you did not complete payment, you may reopen the SAME existing bill with Continue to DuitNow QR. If your bank was charged, wait for confirmation instead of paying again.';
+  document.getElementById('openPayBtn').disabled=false;
+}
+
 function launchToyyibPay(){
   const url=duitNowPaymentUrl||paymentUrl;
-  if(!url||toyyibPayLaunchLocked)return;
-
-  // Avoid a double click creating two payment tabs.
-  toyyibPayLaunchLocked=true;
-  const btn=document.getElementById('handoffLaunchBtn');
-  if(btn)btn.disabled=true;
-
-  trackEvent('payment_opened',null,currentOrderId);
+  if(!url||!currentOrderId||paymentFlowActive)return;
+  // An EasyABC tab may already be monitoring this same payment order.
+  const marker=readPaymentFlowMarker();
+  if(marker&&String(marker.order_id)===String(currentOrderId)){
+    closeCheckoutHandoff();
+    beginPaymentProgress(true);
+    return;
+  }
   closeCheckoutHandoff();
-
+  beginPaymentProgress(false);
+  trackEvent('payment_opened',null,currentOrderId);
   try{
-    // Opening with 'noopener' can return null EVEN WHEN the tab opens.
-    // The old code mistook this for a blocked popup and redirected EasyABC
-    // to ToyyibPay too, leaving two payment tabs.
-    // Open a reusable blank payment tab, detach its opener immediately,
-    // then navigate just that tab to the payment provider.
-    const paymentTab=window.open('about:blank','easyabc_toyyibpay_checkout');
-    if(paymentTab){
-      try{paymentTab.opener=null}catch(e){}
-      paymentTab.location.replace(url);
-      try{paymentTab.focus()}catch(e){}
-    }else{
-      // The new tab really was blocked; use this tab instead.
-      window.location.assign(url);
-    }
+    // Opening a single reusable tab keeps EasyABC available for polling.
+    // Unlike a short 1.8-second click guard, this lock lasts for the whole attempt.
+    paymentWindow=window.open('about:blank','easyabc_toyyibpay_checkout');
+    if(!paymentWindow)throw new Error('Your browser blocked the ToyyibPay payment tab.');
+    try{paymentWindow.opener=null}catch(e){}
+    paymentWindow.location.replace(url);
+    try{paymentWindow.focus()}catch(e){}
   }catch(e){
-    console.warn('Could not open the payment tab:',e);
-    window.location.assign(url);
-  }finally{
-    setTimeout(()=>{
-      toyyibPayLaunchLocked=false;
-      if(btn)btn.disabled=false;
-    },1800);
+    console.warn('Could not launch ToyyibPay:',e);
+    try{paymentWindow?.close()}catch(ignore){}
+    finishPaymentProgress();
+    alert('Could not open ToyyibPay. Please allow pop-ups for EasyABC, then click Continue to DuitNow QR again. No second bill was created.');
   }
 }
 function finishOrder(){
+  finishPaymentProgress();
   currentOrderId=null;
   paymentUrl='';
   duitNowPaymentUrl='';
@@ -1225,8 +1395,9 @@ async function refreshOrder(){
   }
 }
 async function applyOrder(order){
-  if(!order)return;
+  if(!order||String(order.id)!==String(currentOrderId))return;
   if(order.status==='paid'){
+    finishPaymentProgress();
     const completedOrderId=currentOrderId;
     let paidItems=[];
     try{
@@ -1280,10 +1451,21 @@ async function applyOrder(order){
     setTimeout(()=>{
       document.getElementById('paymentPanel')?.scrollIntoView({behavior:'smooth',block:'center'});
     },150);
-  }else if(order.status==='failed'){
-    setPaymentStatus('failed','PAYMENT FAILED');
+  }else if(['failed','cancelled','canceled','expired'].includes(order.status)){
+    finishPaymentProgress();
+    setPaymentStatus('failed','PAYMENT FAILED OR EXPIRED — PLEASE TRY AGAIN');
+    document.getElementById('payTitle').textContent='Payment not completed';
+    document.getElementById('payDesc').textContent='This payment did not complete. You can create a new payment bill for your cart.';
+    document.getElementById('openPayBtn').classList.add('hidden');
+    document.getElementById('qrBox').classList.remove('ready');
+    document.getElementById('createPayBtn').disabled=false;
+    document.getElementById('createPayBtn').textContent='Create Secure Payment';
+    try{localStorage.removeItem('easyabc_pending_order')}catch{}
+    if(orderChannel){try{client.removeChannel(orderChannel)}catch{}orderChannel=null;}
+    if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
+    currentOrderId=null;paymentUrl='';duitNowPaymentUrl='';
   }else{
-    setPaymentStatus('pending','WAITING FOR PAYMENT');
+    setPaymentStatus('pending',paymentFlowActive?'PAYMENT IN PROGRESS — AWAITING CONFIRMATION':'WAITING FOR PAYMENT');
   }
 }
 function subscribeOrder(id){
@@ -1313,12 +1495,27 @@ function restorePendingOrder(){
     duitNowPaymentUrl=pending.duitnow_url||toDuitNowUrl(paymentUrl||'');
 
     if(pending.order_no)document.getElementById('orderNo').textContent=pending.order_no;
+    document.getElementById('createPayBtn').disabled=true;
+    document.getElementById('createPayBtn').textContent='Payment link created ✓';
+    if(paymentUrl){
+      document.getElementById('payTitle').textContent='DuitNow QR Ready';
+      document.getElementById('payDesc').textContent='An existing bill is ready. Continue to ToyyibPay to complete the same order, or wait for payment confirmation if you already paid.';
+      document.getElementById('openPayBtn').classList.remove('hidden');
+      const qr=document.getElementById('qr');
+      if(qr&&typeof QRCode!=='undefined'){
+        qr.innerHTML='';
+        new QRCode(qr,{text:paymentUrl,width:260,height:260,correctLevel:QRCode.CorrectLevel.M});
+        document.getElementById('qrBox').classList.add('ready');
+      }
+    }
     if(Number.isFinite(Number(pending.amount))){
       document.getElementById('exact').textContent=M(Number(pending.amount));
       document.getElementById('payAmount').textContent=M(Number(pending.amount));
     }
 
     subscribeOrder(currentOrderId);
+    const marker=readPaymentFlowMarker();
+    if(marker&&String(marker.order_id)===String(currentOrderId))beginPaymentProgress(true);
     return true;
   }catch(e){
     console.warn('Could not restore pending order:',e);
@@ -1335,6 +1532,15 @@ document.addEventListener('keydown',e=>{
 
 window.addEventListener('focus',()=>{
   if(currentOrderId)refreshOrder();
+});
+window.addEventListener('storage',event=>{
+  if(event.key!==PAYMENT_FLOW_KEY||!currentOrderId)return;
+  const marker=readPaymentFlowMarker();
+  if(marker&&String(marker.order_id)===String(currentOrderId)&&!paymentFlowActive){
+    beginPaymentProgress(true);
+  }else if(!marker&&paymentFlowActive&&!paymentWindow){
+    finishPaymentProgress();
+  }
 });
 
 document.addEventListener('visibilitychange',()=>{
