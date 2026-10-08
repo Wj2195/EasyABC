@@ -139,6 +139,9 @@ body.checkout-locked{overflow:hidden}
 
 .previous-bill-notice,.bill-context{border:1px solid rgba(255,209,115,.3);background:rgba(255,211,106,.07);border-radius:13px;padding:13px 15px;margin:0 0 14px;color:#ffe3ad;font-size:12px;line-height:1.6}
 .previous-bill-notice strong{color:#fff1c9}.previous-bill-notice p{margin:7px 0 11px}.previous-bill-notice button{font-size:11px;padding:9px 12px}
+
+.bill-expiry-info{margin-top:11px;border:1px solid rgba(85,225,231,.23);border-radius:12px;padding:11px 13px;font-size:12px;line-height:1.6;color:#c2e8eb;background:rgba(85,225,231,.04)}
+.bill-expiry-info.expired{color:#ffd6a3;background:rgba(255,198,99,.07);border-color:rgba(255,198,99,.28)}
 </style>
 </head>
 <body>
@@ -267,6 +270,7 @@ body.checkout-locked{overflow:hidden}
 <div class="row" style="margin-top:15px"><span>Order No.</span><b id="orderNo">-</b></div>
 <div class="row" style="margin-top:9px"><span>Amount</span><b id="payAmount">RM0.00</b></div>
 <div id="paymentStatus" class="paystatus idle">NOT CREATED</div>
+<div id="billExpiryInfo" class="bill-expiry-info hidden" aria-live="polite"></div>
 <div id="successBox" class="success hidden"><b>✓ Payment successful</b><div class="muted small" style="margin-top:6px">Your order is confirmed and the payment has been received.</div><div id="instantDownloads" style="margin-top:14px"></div><button class="ghost full" style="margin-top:12px" onclick="finishOrder()">Back to Shop</button></div>
 </div>
 
@@ -508,6 +512,8 @@ let paymentTabClosedAt=0;
 let paymentWindowWatcher=null;
 let paymentRestoredAt=0;
 const PAYMENT_FLOW_KEY='easyabc_active_toyyibpay_payment_v1';
+const BILL_EXPIRY_MS=60*60*1000; // exactly 1 hour (client restriction; server must match)
+let billExpiryCheckTimer=null;
 let currentAnnouncementLink='';
 const M=v=>'RM'+Number(v||0).toFixed(2);
 
@@ -852,6 +858,55 @@ function render(){
   renderPay();
 }
 
+
+function getBillExpiresAt(bill){
+  if(!bill)return NaN;
+  const explicit=Date.parse(bill.expires_at||'');
+  if(Number.isFinite(explicit))return explicit;
+  const created=Date.parse(bill.created_at||'');
+  if(Number.isFinite(created))return created+BILL_EXPIRY_MS;
+  return NaN;
+}
+function isBillExpired(bill){
+  const t=getBillExpiresAt(bill);
+  return Number.isFinite(t)&&Date.now()>=t;
+}
+function currentBillExpired(){return !!currentOrderId&&isBillExpired(activeBillSnapshot);}
+function updateBillExpiryDisplay(){
+  const info=document.getElementById('billExpiryInfo');
+  if(!info)return;
+  if(!currentOrderId||!activeBillSnapshot){
+    info.classList.add('hidden');info.textContent='';
+    return;
+  }
+  const until=getBillExpiresAt(activeBillSnapshot);
+  info.classList.remove('hidden');
+  const expired=isBillExpired(activeBillSnapshot);
+  info.classList.toggle('expired',expired);
+  if(!Number.isFinite(until)){
+    info.textContent='Bill expiry is being confirmed. Do not pay an unverified link.';
+    document.getElementById('openPayBtn').disabled=true;
+    return;
+  }
+  info.textContent=expired?'1-hour payment window has ended. This order is kept for reconciliation; do not pay its old link.':'Complete payment before '+new Date(until).toLocaleString('en-MY')+' (1-hour payment window).';
+  if(expired){
+    document.getElementById('openPayBtn').disabled=true;
+    document.getElementById('qrBox').classList.remove('ready');
+    if(paymentFlowActive){
+      paymentProgressText('Payment window ended','The 1-hour payment window has ended. We are still checking for any payment that started earlier. Please do not make another payment until its status is confirmed.');
+    }else{
+      setPaymentStatus('pending','PAYMENT WINDOW EXPIRED — VERIFYING FINAL STATUS');
+    }
+  }else if(activeBillSnapshot.verified&&!paymentFlowActive){
+    document.getElementById('openPayBtn').disabled=false;
+  }
+}
+function monitorBillExpiry(){
+  if(!currentOrderId)return;
+  updateBillExpiryDisplay();
+  if(currentBillExpired())refreshOrder();
+}
+
 function selectedBillSnapshot(amount=total()){
   return {amount:Number(amount),items:cart.map(i=>{
     const p=products.find(x=>String(x.id)===String(i.id));
@@ -871,7 +926,8 @@ function showPreviousBillNotice(){
   if(!el)return;
   if(!previousPendingBill||currentOrderId){el.classList.add('hidden');return;}
   el.classList.remove('hidden');
-  el.innerHTML='<strong>Previous unfinished bill found</strong><p>The old '+M(previousPendingBill.amount)+' bill is NOT included in this '+M(total())+' checkout. Do not pay both bills. You can review the old bill, or create a new payment for the selected items.</p><button class="ghost" onclick="resumePreviousBill()">Review earlier '+M(previousPendingBill.amount)+' bill</button>';
+  const expired=isBillExpired(previousPendingBill);
+  el.innerHTML='<strong>'+ (expired?'Previous bill expired':'Previous unfinished bill found') +'</strong><p>The old '+M(previousPendingBill.amount)+' bill is NOT included in this '+M(total())+' checkout. '+(expired?'Its 1-hour payment window has ended. Records are retained in EasyABC for reconciliation.':'Do not pay both bills; your earlier bill may still be outstanding.')+'</p><button class="ghost" onclick="resumePreviousBill()">Review earlier '+M(previousPendingBill.amount)+' bill (not new checkout)</button>';
 }
 function archivePreviousBill(){
   if(!previousPendingBill)return;
@@ -897,11 +953,13 @@ function resetBillForNewCart(){
       items:activeBillSnapshot?.items||null,
       payment_url:paymentUrl,
       duitnow_url:duitNowPaymentUrl,
-      created_at:Date.now()
+      created_at:activeBillSnapshot?.created_at||new Date().toISOString(),
+      expires_at:activeBillSnapshot?.expires_at||null
     };
     try{localStorage.setItem('easyabc_pending_order',JSON.stringify(previousPendingBill))}catch(e){}
   }
   currentOrderId=null;activeBillSnapshot=null;paymentUrl='';duitNowPaymentUrl='';
+  updateBillExpiryDisplay();
   document.getElementById('paymentHeading').textContent='Complete your order';
   document.getElementById('customerPanel').classList.remove('hidden');
   document.getElementById('qrBox').classList.remove('ready','hidden');
@@ -928,8 +986,9 @@ async function verifySavedBillItems(orderId){
     if(Math.abs(sum-activeBillSnapshot.amount)>.005)throw Error('Saved bill total does not match its items');
     activeBillSnapshot.items=data.map(x=>({product_id:x.product_id,product_name:x.product_name,unit_price:x.unit_price,quantity:x.quantity}));
     activeBillSnapshot.verified=true;
-    document.getElementById('openPayBtn').disabled=false;
+    document.getElementById('openPayBtn').disabled=isBillExpired(activeBillSnapshot);
     renderPay();
+    updateBillExpiryDisplay();
   }catch(e){
     console.warn('Saved bill verification failed',e);
     if(String(orderId)===String(currentOrderId)){
@@ -940,7 +999,7 @@ async function verifySavedBillItems(orderId){
 }
 function loadPreviousBillIntoCheckout(bill){
   currentOrderId=String(bill.id);
-  activeBillSnapshot={amount:Number(bill.amount),items:null,verified:false};
+  activeBillSnapshot={amount:Number(bill.amount),items:null,verified:false,created_at:bill.created_at||null,expires_at:bill.expires_at||null};
   paymentUrl=bill.payment_url||'';
   duitNowPaymentUrl=bill.duitnow_url||toDuitNowUrl(paymentUrl);
   document.getElementById('orderNo').textContent=bill.order_no||'-';
@@ -950,14 +1009,15 @@ function loadPreviousBillIntoCheckout(bill){
   document.getElementById('payDesc').textContent='This is the previously created '+M(bill.amount)+' bill, not your updated cart. Its order items will be checked before payment is permitted.';
   document.getElementById('qr').innerHTML='';
   document.getElementById('qrBox').classList.remove('ready');
-  if(paymentUrl&&typeof QRCode!=='undefined'){
+  if(paymentUrl&&!isBillExpired(activeBillSnapshot)&&typeof QRCode!=='undefined'){
     new QRCode(document.getElementById('qr'),{text:paymentUrl,width:260,height:260,correctLevel:QRCode.CorrectLevel.M});
     document.getElementById('qrBox').classList.add('ready');
   }
-  document.getElementById('openPayBtn').classList.toggle('hidden',!paymentUrl);
+  document.getElementById('openPayBtn').classList.toggle('hidden',!paymentUrl||isBillExpired(activeBillSnapshot));
   document.getElementById('openPayBtn').disabled=true;
   verifySavedBillItems(currentOrderId);
   renderPay();
+  updateBillExpiryDisplay();
   showPreviousBillNotice();
   subscribeOrder(currentOrderId);
 }
@@ -988,7 +1048,10 @@ function show(id){document.querySelectorAll('.page').forEach(x=>x.classList.togg
 function goPay(){
   if(paymentFlowActive)return;
   if(!cart.length){alert('Add at least one product first.');return;}
-  if(currentOrderId&&!billMatchesCart(activeBillSnapshot)){
+  if(currentOrderId&&currentBillExpired()){
+    if(!confirm('The previous bill has passed its 1-hour payment window. Create a fresh checkout for your current cart? Do not pay the old link; a transaction already started may still be settling.'))return;
+    resetBillForNewCart();
+  }else if(currentOrderId&&!billMatchesCart(activeBillSnapshot)){
     if(!confirm('The existing bill is '+M(activeBillSnapshot?.amount)+', but your current cart is '+M(total())+'. Start a new checkout? This will not cancel the previous ToyyibPay bill. Do not pay both.'))return;
     resetBillForNewCart();
   }
@@ -1129,6 +1192,8 @@ async function createPayment(){
   if(previousPendingBill&&!confirm('An earlier '+M(previousPendingBill.amount)+' ToyyibPay bill exists. Create a NEW bill for the selected '+M(total())+' cart? The old bill will not be cancelled. Do not pay both.'))return;
   billCreating=true;
   const requestSnapshot=selectedBillSnapshot();
+  const requestCreatedAt=new Date();
+  const requestExpiresAt=new Date(requestCreatedAt.getTime()+BILL_EXPIRY_MS).toISOString();
   const btn=document.getElementById('createPayBtn');
   btn.disabled=true;btn.textContent='Creating DuitNow-ready bill…';
   setPaymentStatus('pending','CREATING PAYMENT…');
@@ -1170,7 +1235,10 @@ async function createPayment(){
     if(!data?.payment_url)throw new Error(data?.error||'Payment URL was not returned.');
 
     currentOrderId=data.order_id;
-    activeBillSnapshot={amount:Number(data.amount),items:requestSnapshot.items,verified:Math.abs(Number(data.amount)-requestSnapshot.amount)<.005};
+    const providedExpiry=Date.parse(data.expires_at||'');
+    const exactExpiry=Number.isFinite(providedExpiry)?Math.min(providedExpiry,Date.parse(requestExpiresAt)):Date.parse(requestExpiresAt);
+    activeBillSnapshot={amount:Number(data.amount),items:requestSnapshot.items,verified:Math.abs(Number(data.amount)-requestSnapshot.amount)<.005,
+      created_at:requestCreatedAt.toISOString(),expires_at:new Date(exactExpiry).toISOString()};
     if(!activeBillSnapshot.verified){
       throw new Error('Payment bill amount did not match the selected cart. The link has been blocked; please contact EasyABC before paying.');
     }
@@ -1184,9 +1252,10 @@ async function createPayment(){
         order_no:data.order_no||'',
         amount:Number(data.amount||0),
         items:requestSnapshot.items,
+        expires_at:activeBillSnapshot.expires_at,
         payment_url:paymentUrl,
         duitnow_url:duitNowPaymentUrl,
-        created_at:Date.now()
+        created_at:requestCreatedAt.toISOString()
       }));
     }catch{}
     document.getElementById('orderNo').textContent=data.order_no;
@@ -1203,6 +1272,7 @@ async function createPayment(){
     document.getElementById('openPayBtn').classList.remove('hidden');
     document.getElementById('openPayBtn').disabled=false;
     renderPay();
+    updateBillExpiryDisplay();
     showPreviousBillNotice();
     setPaymentStatus('pending','WAITING FOR PAYMENT');
     subscribeOrder(currentOrderId);
@@ -1218,7 +1288,7 @@ async function createPayment(){
 }
 function openPayment(){
   const url=duitNowPaymentUrl||paymentUrl;
-  if(!url||!currentOrderId||!activeBillSnapshot?.verified)return;
+  if(!url||!currentOrderId||!activeBillSnapshot?.verified||currentBillExpired()){updateBillExpiryDisplay();return;}
   if(paymentFlowActive)return;
   const marker=readPaymentFlowMarker();
   if(marker&&String(marker.order_id)===String(currentOrderId)){
@@ -1367,7 +1437,7 @@ async function returnToCheckout(){
 
 function launchToyyibPay(){
   const url=duitNowPaymentUrl||paymentUrl;
-  if(!url||!currentOrderId||paymentFlowActive||!activeBillSnapshot?.verified)return;
+  if(!url||!currentOrderId||paymentFlowActive||!activeBillSnapshot?.verified||currentBillExpired()){updateBillExpiryDisplay();return;}
   // An EasyABC tab may already be monitoring this same payment order.
   const marker=readPaymentFlowMarker();
   if(marker&&String(marker.order_id)===String(currentOrderId)){
@@ -1398,6 +1468,7 @@ function finishOrder(){
   currentOrderId=null;activeBillSnapshot=null;
   paymentUrl='';
   duitNowPaymentUrl='';
+  updateBillExpiryDisplay();
   try{localStorage.removeItem('easyabc_pending_order')}catch{}
   if(orderChannel){try{client.removeChannel(orderChannel)}catch{} orderChannel=null}
   if(pollTimer){clearInterval(pollTimer);pollTimer=null}
@@ -1565,6 +1636,7 @@ async function applyOrder(order){
     try{localStorage.removeItem('easyabc_pending_order')}catch{}
     previousPendingBill=null;
     render();
+    updateBillExpiryDisplay();
 
     document.getElementById('paymentHeading').textContent='Order complete';
     document.getElementById('customerPanel').classList.add('hidden');
@@ -1618,8 +1690,13 @@ async function applyOrder(order){
     if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
     currentOrderId=null;activeBillSnapshot=null;paymentUrl='';duitNowPaymentUrl='';
     renderPay();
+    updateBillExpiryDisplay();
   }else{
-    setPaymentStatus('pending',paymentFlowActive?'PAYMENT IN PROGRESS — AWAITING CONFIRMATION':'WAITING FOR PAYMENT');
+    if(currentBillExpired()){
+      updateBillExpiryDisplay();
+    }else{
+      setPaymentStatus('pending',paymentFlowActive?'PAYMENT IN PROGRESS — AWAITING CONFIRMATION':'WAITING FOR PAYMENT');
+    }
   }
 }
 function subscribeOrder(id){
@@ -1637,17 +1714,21 @@ function restorePendingOrder(){
   try{
     const saved=JSON.parse(localStorage.getItem('easyabc_pending_order')||'null');
     if(!saved?.id)return false;
-    if(saved.created_at&&Date.now()-Number(saved.created_at)>86400000){
+    if(!saved.created_at){
+      console.warn('Old bill lacks creation timestamp; do not auto-open it.');
       localStorage.removeItem('easyabc_pending_order');return false;
     }
+    // Expired bills are archived for reconciliation, not deleted from Supabase.
+    // Never reopen ToyyibPay for them.
     const marker=readPaymentFlowMarker();
-    if(marker&&String(marker.order_id)===String(saved.id)){
+    if(marker&&String(marker.order_id)===String(saved.id)&&!isBillExpired(saved)){
       // Restore an active payment progress monitor, not a new shopping session.
       loadPreviousBillIntoCheckout(saved);
       beginPaymentProgress(true);
     }else{
       // An unfinished bill is optional; never populate a fresh checkout with its QR.
       previousPendingBill=saved;
+      if(isBillExpired(saved))try{localStorage.removeItem(PAYMENT_FLOW_KEY)}catch(e){}
       showPreviousBillNotice();
       renderPay();
     }
@@ -1676,8 +1757,9 @@ window.addEventListener('storage',event=>{
 });
 
 document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible'&&currentOrderId)refreshOrder();
+  if(document.visibilityState==='visible'&&currentOrderId){refreshOrder();updateBillExpiryDisplay();}
 });
+billExpiryCheckTimer=setInterval(monitorBillExpiry,15000);
 
 
 let communityPosts=[];
