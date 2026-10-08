@@ -47,6 +47,7 @@
   <div class="tabs">
     <button class="tab active" data-view="dashboard" onclick="showTab('dashboard',this)">Dashboard</button>
     <button class="tab" data-view="analytics" onclick="showTab('analytics',this)">Analytics</button>
+    <button class="tab" data-view="announcements" onclick="showTab('announcements',this)">Announcements</button>
     <button class="tab" data-view="categories" onclick="showTab('categories',this)">Categories</button>
     <button class="tab" data-view="products" onclick="showTab('products',this)">Products</button>
     <button class="tab" data-view="orders" onclick="showTab('orders',this)">Orders</button>
@@ -69,6 +70,7 @@
       <div class="toolbar">
         <button class="btn" onclick="openNewProduct()">+ New Product</button>
         <button class="ghost" onclick="openNewCategory()">+ New Category</button>
+        <button class="ghost" onclick="openNewAnnouncement()">📢 Announcement</button>
         <button class="ghost" onclick="location.href='./'">View Store</button>
       </div>
     </div>
@@ -107,6 +109,68 @@
           <thead><tr><th>#</th><th>Product</th><th>Views</th><th>Add to Cart</th></tr></thead>
           <tbody id="topProductRows"></tbody>
         </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-announcements" class="view">
+    <div class="titlebar">
+      <div><div class="muted small">CUSTOMER NEWS & NOTIFICATIONS</div><h1>Announcements</h1></div>
+      <button class="btn" onclick="newAnnouncement()">+ New Announcement</button>
+    </div>
+
+    <div id="announcementSetupMsg" class="notice hidden"></div>
+
+    <div class="split">
+      <div class="panel">
+        <h3 id="announcementFormTitle">New Announcement</h3>
+        <input id="announcementId" type="hidden">
+
+        <div class="field">
+          <label>Title</label>
+          <input id="announcementTitleInput" maxlength="120" placeholder="Example: New Update Available">
+        </div>
+
+        <div class="field" style="margin-top:10px">
+          <label>Short Message</label>
+          <textarea id="announcementMessageInput" maxlength="1000" placeholder="Tell customers about your latest news, product update or important notice."></textarea>
+        </div>
+
+        <div class="formgrid" style="margin-top:10px">
+          <div class="field">
+            <label>Button Text <span class="muted">(optional)</span></label>
+            <input id="announcementButtonText" maxlength="60" placeholder="View Update">
+          </div>
+          <div class="field">
+            <label>Button Link <span class="muted">(optional)</span></label>
+            <input id="announcementButtonUrl" placeholder="https://...">
+          </div>
+          <div class="field">
+            <label>Sort Order</label>
+            <input id="announcementSort" type="number" value="0">
+          </div>
+          <label class="check"><input id="announcementActive" type="checkbox"> Show popup on website</label>
+        </div>
+
+        <div class="notice" style="margin-top:14px">
+          When <b>Show popup on website</b> is ON, this notice will appear when a customer opens EasyABC. Only one announcement can be active at a time.
+        </div>
+
+        <div class="toolbar">
+          <button class="btn" onclick="saveAnnouncement()">Save Announcement</button>
+          <button class="ghost" onclick="newAnnouncement()">Clear</button>
+        </div>
+        <div id="announcementMsg" class="notice hidden"></div>
+      </div>
+
+      <div>
+        <div class="tablewrap">
+          <table class="table">
+            <thead><tr><th>Title</th><th>Message</th><th>Status</th><th>Updated</th><th>Action</th></tr></thead>
+            <tbody id="announcementRows"></tbody>
+          </table>
+        </div>
+        <div id="announcementCards" class="mobilecards"></div>
       </div>
     </div>
   </section>
@@ -203,7 +267,7 @@
 const SUPABASE_URL='https://rygtjnzccemtpkjellgs.supabase.co';
 const SUPABASE_KEY='sb_publishable_WQibr98hDPjOIVqA0twL1g_OVUxgynh';
 const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-let categories=[],products=[],orders=[],allMedia=[],currentMediaProductId=null,currentMedia=[],communityAdmin=[];
+let categories=[],products=[],orders=[],allMedia=[],currentMediaProductId=null,currentMedia=[],communityAdmin=[],announcementsAdmin=[];
 let analyticsData=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const money=v=>'RM'+Number(v||0).toFixed(2);
@@ -279,11 +343,168 @@ function showTab(name,btn){
 }
 function openNewProduct(){showTab('products');newProduct()}
 function openNewCategory(){showTab('categories');newCategory()}
+function openNewAnnouncement(){showTab('announcements');newAnnouncement()}
 
 async function refreshAll(){
-  await Promise.all([loadCategories(),loadProducts(),loadOrders(),loadAnalytics(),loadCommunityAdmin()]);
+  await Promise.all([loadCategories(),loadProducts(),loadOrders(),loadAnalytics(),loadCommunityAdmin(),loadAnnouncements()]);
   updateStats();
 }
+async function loadAnnouncements(){
+  const setup=document.getElementById('announcementSetupMsg');
+  try{
+    const {data,error}=await client
+      .from('announcements')
+      .select('*')
+      .order('active',{ascending:false})
+      .order('sort_order',{ascending:true})
+      .order('updated_at',{ascending:false});
+    if(error)throw error;
+    announcementsAdmin=data||[];
+    if(setup)setup.classList.add('hidden');
+    renderAnnouncements();
+  }catch(e){
+    announcementsAdmin=[];
+    renderAnnouncements();
+    if(setup){
+      setup.textContent='Announcement setup is not active yet. Run supabase/announcements_setup.sql once in Supabase SQL Editor. '+(e?.message||'');
+      setup.className='notice err';
+      setup.classList.remove('hidden');
+    }
+  }
+}
+
+function newAnnouncement(){
+  document.getElementById('announcementFormTitle').textContent='New Announcement';
+  document.getElementById('announcementId').value='';
+  document.getElementById('announcementTitleInput').value='';
+  document.getElementById('announcementMessageInput').value='';
+  document.getElementById('announcementButtonText').value='';
+  document.getElementById('announcementButtonUrl').value='';
+  document.getElementById('announcementSort').value='0';
+  document.getElementById('announcementActive').checked=false;
+  clearMsg('announcementMsg');
+}
+
+function editAnnouncement(id){
+  const a=announcementsAdmin.find(x=>String(x.id)===String(id));
+  if(!a)return;
+  document.getElementById('announcementFormTitle').textContent='Edit Announcement';
+  document.getElementById('announcementId').value=a.id;
+  document.getElementById('announcementTitleInput').value=a.title||'';
+  document.getElementById('announcementMessageInput').value=a.message||'';
+  document.getElementById('announcementButtonText').value=a.button_text||'';
+  document.getElementById('announcementButtonUrl').value=a.button_url||'';
+  document.getElementById('announcementSort').value=Number(a.sort_order)||0;
+  document.getElementById('announcementActive').checked=!!a.active;
+  clearMsg('announcementMsg');
+  scrollTo({top:100,behavior:'smooth'});
+}
+
+async function saveAnnouncement(){
+  try{
+    const id=document.getElementById('announcementId').value;
+    const title=document.getElementById('announcementTitleInput').value.trim();
+    const message=document.getElementById('announcementMessageInput').value.trim();
+    const buttonText=document.getElementById('announcementButtonText').value.trim();
+    const buttonUrl=document.getElementById('announcementButtonUrl').value.trim();
+    const active=document.getElementById('announcementActive').checked;
+
+    if(!title)throw new Error('Announcement title is required.');
+    if(!message)throw new Error('Announcement message is required.');
+
+    if(buttonUrl){
+      let parsed;
+      try{parsed=new URL(buttonUrl)}catch{throw new Error('Button Link must be a valid https:// or http:// URL.')}
+      if(!['https:','http:'].includes(parsed.protocol))throw new Error('Button Link must use https:// or http://.');
+    }
+
+    if(active){
+      const {error:offError}=await client
+        .from('announcements')
+        .update({active:false})
+        .eq('active',true);
+      if(offError)throw offError;
+    }
+
+    const payload={
+      title,
+      message,
+      button_text:buttonText||null,
+      button_url:buttonUrl||null,
+      active,
+      sort_order:Number(document.getElementById('announcementSort').value)||0
+    };
+
+    const q=id
+      ? client.from('announcements').update(payload).eq('id',id)
+      : client.from('announcements').insert(payload);
+
+    const {error}=await q;
+    if(error)throw error;
+
+    msg('announcementMsg',active?'Announcement saved and is now LIVE on the website.':'Announcement saved.','ok');
+    await loadAnnouncements();
+    newAnnouncement();
+  }catch(e){
+    msg('announcementMsg',e?.message||String(e),'err');
+  }
+}
+
+async function deleteAnnouncement(id){
+  const a=announcementsAdmin.find(x=>String(x.id)===String(id));
+  if(!a||!confirm('Delete announcement "'+(a.title||'Announcement')+'"?'))return;
+  const {error}=await client.from('announcements').delete().eq('id',id);
+  if(error){alert(error.message);return}
+  await loadAnnouncements();
+  newAnnouncement();
+}
+
+async function toggleAnnouncement(id,makeActive){
+  try{
+    if(makeActive){
+      const {error:offError}=await client.from('announcements').update({active:false}).eq('active',true);
+      if(offError)throw offError;
+    }
+    const {error}=await client.from('announcements').update({active:!!makeActive}).eq('id',id);
+    if(error)throw error;
+    await loadAnnouncements();
+  }catch(e){
+    alert(e?.message||String(e));
+  }
+}
+
+function renderAnnouncements(){
+  const rows=document.getElementById('announcementRows');
+  const cards=document.getElementById('announcementCards');
+  if(!rows||!cards)return;
+
+  if(!announcementsAdmin.length){
+    rows.innerHTML='<tr><td colspan="5" class="muted">No announcements yet.</td></tr>';
+    cards.innerHTML='<div class="mcard muted">No announcements yet.</div>';
+    return;
+  }
+
+  rows.innerHTML=announcementsAdmin.map(a=>
+    '<tr>'+
+      '<td><b>'+esc(a.title||'')+'</b>'+(a.button_text?'<div class="muted small">Button: '+esc(a.button_text)+'</div>':'')+'</td>'+
+      '<td>'+esc(String(a.message||'').slice(0,120))+(String(a.message||'').length>120?'…':'')+'</td>'+
+      '<td><span class="status '+(a.active?'on':'off')+'">'+(a.active?'LIVE':'OFF')+'</span></td>'+
+      '<td>'+esc(a.updated_at?new Date(a.updated_at).toLocaleString():'-')+'</td>'+
+      '<td><button class="ghost" onclick="editAnnouncement('+a.id+')">Edit</button> '+
+      '<button class="ghost" onclick="toggleAnnouncement('+a.id+','+(!a.active)+')">'+(a.active?'Turn Off':'Go Live')+'</button> '+
+      '<button class="danger" onclick="deleteAnnouncement('+a.id+')">Delete</button></td>'+
+    '</tr>'
+  ).join('');
+
+  cards.innerHTML=announcementsAdmin.map(a=>
+    '<div class="mcard">'+
+      '<div class="row"><b>'+esc(a.title||'')+'</b><span class="status '+(a.active?'on':'off')+'">'+(a.active?'LIVE':'OFF')+'</span></div>'+
+      '<div class="muted small" style="margin-top:7px">'+esc(String(a.message||'').slice(0,180))+'</div>'+
+      '<div class="toolbar"><button class="ghost" onclick="editAnnouncement('+a.id+')">Edit</button><button class="ghost" onclick="toggleAnnouncement('+a.id+','+(!a.active)+')">'+(a.active?'Turn Off':'Go Live')+'</button><button class="danger" onclick="deleteAnnouncement('+a.id+')">Delete</button></div>'+
+    '</div>'
+  ).join('');
+}
+
 async function loadAnalytics(){
   const setup=document.getElementById('analyticsSetup');
   try{
