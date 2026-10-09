@@ -27,6 +27,12 @@ const HUNTS={
  'sunmeadow-plains':{title:'Thornbush Trail',type:'thornboar',spots:[[13,15],[51,12],[18,36],[49,36]]},
  'moonlit-coast':{title:'Silverwater Shore',type:'tidewisp',spots:[[15,11],[52,13],[18,36],[47,36]]}
 };
+const GATHER_SPOTS={
+ 'autumn-grove':[[21,17,'mushroom'],[47,32,'herb'],[13,34,'mushroom']],
+ 'starglow-highlands':[[17,19,'herb'],[51,30,'ore'],[18,36,'herb']],
+ 'sunmeadow-plains':[[20,16,'berry'],[49,34,'herb'],[13,36,'berry']],
+ 'moonlit-coast':[[16,19,'seashell'],[51,33,'seashell'],[20,37,'herb']]
+};
 const VILLAGERS=[
  {id:'elara',name:'Elara',title:'Market gardener',x:26,y:24,color:'#d8aa89',emoji:'👩🏽‍🌾',favorite:'carrot',romance:true,line:'I bring fresh produce into town every morning.'},
  {id:'bram',name:'Bram',title:'Village guard',x:41,y:28,color:'#9bb4d3',emoji:'🛡️',favorite:'ore',romance:false,line:'Hunting grounds are safer if you watch for an enemy wind-up.'},
@@ -273,6 +279,32 @@ function swing(kind='slash'){
  game.updateUI();game.save();return true;
 }
 function swordAction(){return swing('slash');}
+function drawVillageDecor(sprites){
+ const decorations=[
+  {x:29,y:27,type:'lantern'},{x:45,y:28,type:'lantern'},
+  {x:37,y:26,type:'flower-stall'},{x:39,y:30,type:'fruit-cart'},{x:35,y:30,type:'sign'}
+ ];
+ for(const d of decorations)sprites.push({y:d.y+.25,draw:()=>{
+  const c=game.ctx,T=game.T,cam=game.camera(),x=d.x*T-cam.x,y=d.y*T-cam.y;
+  c.save();
+  if(d.type==='lantern'){
+   c.fillStyle='#695a4a';c.fillRect(x+13,y-17,5,34);
+   c.fillStyle='#e8b96e';c.fillRect(x+7,y-18,18,15);
+   c.fillStyle='#ffeeaa';c.fillRect(x+11,y-16,10,10);
+  }else if(d.type==='sign'){
+   c.fillStyle='#79634b';c.fillRect(x+14,y-13,5,31);
+   c.fillStyle='#e5c39a';c.fillRect(x+3,y-18,28,13);
+   c.fillStyle='#55745b';c.fillRect(x+8,y-14,18,4);
+  }else{
+   c.fillStyle='#896449';c.fillRect(x+3,y+6,27,12);
+   c.fillStyle=d.type==='fruit-cart'?'#c9b17b':'#cd8984';
+   c.fillRect(x+1,y-9,30,8);
+   c.fillStyle=d.type==='fruit-cart'?'#f0ce6a':'#eeacb7';
+   c.fillRect(x+8,y+1,7,6);c.fillRect(x+19,y+1,6,6);
+  }
+  c.restore();
+ }});
+}
 function drawCombat(){
  const c=game.ctx,cam=game.camera(),p=player(),T=game.T;
  if(charging){
@@ -298,6 +330,13 @@ function drawCombat(){
 }
 function drawExpansion(map,c,cx,cy){
  const T=game.T;
+ for(const [x,y,item] of GATHER_SPOTS[map.id]||[]){
+  if((state().gatheredAreas?.[map.id+':forage:'+x+','+y]||0)>state().day)continue;
+  const px=(x+.5)*T-cx,py=(y+.5)*T-cy;
+  c.save();c.fillStyle=item==='seashell'?'#bbebdc':item==='mushroom'?'#e9b0a3':item==='ore'?'#c6c3d8':'#a6da7d';
+  c.fillRect(px-5,py-7,11,12);c.fillStyle='#e9f5ba';c.fillRect(px-2,py-12,4,5);
+  c.restore();
+ }
  for(const m of monstersFor(map)){
   if(!m.alive)continue;const def=monsterDef(m),x=Math.round(m.x*T-cx),y=Math.round(m.y*T-cy);
   c.save();c.fillStyle='#143f3344';c.fillRect(x-13,y+8,28,6);
@@ -319,6 +358,19 @@ function drawExpansion(map,c,cx,cy){
 function isResourceVisible(map,obj){
  const id=map.id+':'+obj.x+','+obj.y;
  return (state().gatheredAreas?.[id]||0)<=state().day;
+}
+function interactExpansion(){
+ const map=window.EvergroveExpansion?.currentMap?.();if(!map)return false;
+ const s=state(),p=player();
+ for(const [x,y,item] of GATHER_SPOTS[map.id]||[]){
+  const key=map.id+':forage:'+x+','+y;
+  if((s.gatheredAreas?.[key]||0)>s.day||dist(p,{x:x+.5,y:y+.5})>1.8)continue;
+  s.gatheredAreas=s.gatheredAreas||{};s.gatheredAreas[key]=s.day+2;
+  game.give(item,1);game.fx(x+.5,y+.5,item==='herb'?'🌿':item==='mushroom'?'🍄':item==='seashell'?'🐚':'🫐');
+  resourceText('Foraged '+item+' in '+map.name);return true;
+ }
+ game.notify('Explore the hunting grounds, harvest glowing plants, or use tools on rocks and trees.');
+ return true;
 }
 function expansionAction(tool,x,y){
  const map=window.EvergroveExpansion?.currentMap?.();
@@ -343,5 +395,5 @@ function expansionAction(tool,x,y){
  return true;
 }
 init();
-window.EvergroveLiving={season,cycleSeed,farmAction,advanceDay,cropPaint,swordAction,beginCharge,releaseCharge,drawCombat,updateBase,updateBaseMonsters,updateExpansion,drawExpansion,expansionAction,isResourceVisible,currentMonsters:()=>monstersFor(window.EvergroveExpansion?.currentMap?.()),HUNTS,CROPS};
+window.EvergroveLiving={season,cycleSeed,farmAction,advanceDay,cropPaint,swordAction,beginCharge,releaseCharge,drawCombat,drawVillageDecor,interactExpansion,updateBase,updateBaseMonsters,updateExpansion,drawExpansion,expansionAction,isResourceVisible,currentMonsters:()=>monstersFor(window.EvergroveExpansion?.currentMap?.()),HUNTS,CROPS};
 })();
