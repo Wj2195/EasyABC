@@ -36,7 +36,21 @@ function normalize(world){
    if(!target)continue;
    portals.push({...point(m,side),side,to:target.id,arrival:arrival(target,delta.opposite),label:target.name});
   }
-  if(m.id==='base')world.basePortals=portals;else m.portals=portals;
+  if(m.id==='base')world.basePortals=portals;else {
+  m.portals=portals;
+  const clear=new Set();
+  for(const side of DIRECTIONS){
+    const p=point(m,side);
+    for(let d=0;d<4;d++)for(let k=-1;k<=1;k++){
+      const x=p.x+(side==='west'?d:side==='east'?-d:k);
+      const y=p.y+(side==='north'?d:side==='south'?-d:k);
+      if(x>=0&&y>=0&&x<m.width&&y<m.height)clear.add(x+','+y);
+    }
+  }
+  m.terrain=m.terrain||{};
+  for(const key of clear)m.terrain[key]='path';
+  m.objects=(m.objects||[]).filter(o=>!clear.has(o.x+','+o.y));
+ }
  }
  return world;
 }
