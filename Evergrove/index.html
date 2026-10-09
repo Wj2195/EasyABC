@@ -572,7 +572,7 @@ function drawWorld(){if(window.EvergroveExpansion?.active()){window.EvergroveExp
   for(const n of NPCS)sprites.push({y:n.y+.6,draw:()=>{drawHuman(n.x+.5,n.y+.5,n.color,false,n.dir||'down',n.walking?elapsed:0);const sx=Math.round((n.x+.5)*T-camera.x),sy=Math.round(n.y*T-camera.y-45);ctx.font='bold 11px monospace';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='#1a3f37';ctx.strokeText(n.name,sx,sy);ctx.fillStyle='#fff4d1';ctx.fillText(n.name,sx,sy);}});
   for(const m of monsters)if(m.alive)sprites.push({y:m.y+.1,draw:()=>{drawCreature(m.x,m.y,m.type,false,elapsed);if(m.hp<MONSTER_TYPES[m.type].hp){const px=m.x*T-camera.x;const py=m.y*T-camera.y-26;pixelRect(ctx,px-16,py,32,5,'#593d43');pixelRect(ctx,px-15,py+1,30*m.hp/MONSTER_TYPES[m.type].hp,3,'#b2e591');}}});
   if(state.follower!==null&&state.collection[state.follower]){const c=state.collection[state.follower],o={up:[.65,.85],down:[-.75,-.55],left:[.9,.6],right:[-.9,.55]}[p.dir];sprites.push({y:p.y+.3,draw:()=>drawCreature(p.x+o[0],p.y+o[1],c.type,true,elapsed)});}
-  sprites.push({y:p.y+.4,draw:()=>drawHuman(p.x,p.y,state.appearance?.color||'#79a8a4',true,p.dir,elapsed*(window.EvergroveNavigation?.getStatus()?.walking?1.65:1))});
+  sprites.push({y:p.y+.4,draw:()=>drawHuman(p.x,p.y,state.appearance?.color||'#79a8a4',true,p.dir,(input.ArrowUp||input.ArrowDown||input.ArrowLeft||input.ArrowRight||input.mobileup||input.mobiledown||input.mobileleft||input.mobileright||Math.abs(input.joyX||0)>.12||Math.abs(input.joyY||0)>.12||window.EvergroveNavigation?.getStatus()?.walking)?elapsed*(window.EvergroveNavigation?.getStatus()?.walking?1.65:1):0)});
   sprites.sort((a,b)=>a.y-b.y);for(const sprite of sprites)sprite.draw();
   if(pointerTile&&distance(p.x,p.y,pointerTile.x+.5,pointerTile.y+.5)<2.9){ctx.strokeStyle='#f4edbd';ctx.lineWidth=2;ctx.strokeRect(Math.round(pointerTile.x*T-camera.x)+1,Math.round(pointerTile.y*T-camera.y)+1,T-2,T-2);}
   for(const fx of particles){ctx.globalAlpha=clamp(fx.t,0,1);ctx.font='22px serif';ctx.fillText(fx.emoji,fx.x*T-camera.x,fx.y*T-camera.y+(1-fx.t)*-34);ctx.globalAlpha=1;}
@@ -839,7 +839,7 @@ function start(){const resumed=load();initWorld();resizeGame();window.addEventLi
 window.EvergroveNavGame={
  canvas,ctx,T,MW,MH,npcs:NPCS,homes:HOMES,door,monsters:()=>monsters,MONSTER_TYPES,typeAt,drawSoil:cropsSoil,consumeEnergy,give,earnXP,fx,updateUI,
  player:()=>state.player, state:()=>state, getInput:()=>input, save:()=>save(),camera:()=>camera, modal:()=>!!currentModal,
- drawPlayer:()=>drawHuman(state.player.x,state.player.y,state.appearance?.color||'#79a8a4',true,state.player.dir,elapsed),drawTree,drawRock,
+ drawPlayer:()=>drawHuman(state.player.x,state.player.y,state.appearance?.color||'#79a8a4',true,state.player.dir,(input.ArrowUp||input.ArrowDown||input.ArrowLeft||input.ArrowRight||Math.abs(input.joyX||0)>.12||Math.abs(input.joyY||0)>.12)?elapsed:0),drawTree,drawRock,
  blocked:(x,y)=>blockedPlayer(x,y),useTool:(x,y)=>act(state.selected,x,y),
  openNPC:id=>openModal('npc',{id}),
  openHome:id=>{const h=HOMES.find(o=>o.id===id);if(h)openModal(({sleep:'sleep',shop:'shop',craft:'craft',inn:'inn',archive:'journal'})[h.kind]||'journal');},
