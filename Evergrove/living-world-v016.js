@@ -13,6 +13,9 @@ const CROPS={
 };
 const SEEDIDS=Object.keys(CROPS),SEASONS=['Spring','Summer','Autumn','Winter'];
 const MONSTER_DEFS={
+ mossling:{name:'Mossling',hp:34,color:'#79c787',speed:1.04,aggro:5,range:.95,damage:5,windup:.45,loot:'fiber'},
+ emberfox:{name:'Emberfox',hp:46,color:'#ec996a',speed:1.4,aggro:6.1,range:1.05,damage:8,windup:.55,loot:'essence'},
+ puddlepuff:{name:'Puddlepuff',hp:38,color:'#8ecbe6',speed:.9,aggro:4.6,range:1,damage:6,windup:.75,loot:'herb'},
  treant:{name:'Bramble Treant',color:'#547f55',hp:85,speed:.7,aggro:6,range:1.35,damage:13,windup:.95,loot:'wood'},
  thornboar:{name:'Thornboar',color:'#c1a46a',hp:60,speed:1.35,aggro:6,range:1.08,damage:9,windup:.58,loot:'fiber'},
  cragling:{name:'Cragling',color:'#9b8a8e',hp:65,speed:.85,aggro:5.6,range:1.2,damage:11,windup:.8,loot:'ore'},
@@ -80,7 +83,6 @@ function farmAction(tool,x,y){
   if(!info.season.includes(season())){game.notify(info.name+' grows in '+info.season.join(' / ')+'.');return true;}
   if((s.inventory[chosen]||0)<1){game.notify('No '+info.name+' seed bags. Buy one from Willow Market.');return true;}
   if(!s.tilled[key]){game.notify('Prepare the center tile with the hoe first.');return true;}
-  if(!attemptEnergy(2))return true;
   let planted=0;
   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
     const tx=x+dx,ty=y+dy,id=tx+','+ty;
@@ -90,6 +92,7 @@ function farmAction(tool,x,y){
     }
   }
   if(!planted){game.notify('No prepared empty tiles in this 3×3 patch.');return true;}
+  if(!attemptEnergy(2)){for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const id=(x+dx)+','+(y+dy);if(s.crops[id]?.planted===s.day&&s.crops[id]?.kind===chosen&&s.crops[id]?.progress===0)delete s.crops[id];}return true;}
   game.give(chosen,-1);game.fx(x+.5,y+.5,info.icon);resourceText('🌱 Sowed '+planted+' '+info.name+' tiles from one seed bag.');
   return true;
  }
@@ -160,6 +163,7 @@ function npcDestination(n,time){
 function updateNpc(dt){
  const t=state().time;
  for(const n of game.npcs){
+  n.walking=false;
   if(!n.home)n.home={x:n.x,y:n.y};
   n.route=n.route||[];
   if(n.scheduleAt===undefined)n.scheduleAt=0;
@@ -215,7 +219,7 @@ function hitPlayer(m,def){
 function runMonster(m,dt,map=null){
  if(!m.alive){m.respawn-=dt;if(m.respawn<=0){m.alive=true;m.hp=monsterDef(m).hp;m.x=m.homeX||m.spawnX;m.y=m.homeY||m.spawnY;m.mode='idle';}return;}
  const def=monsterDef(m),p=player(),d=dist(m,p);
- m.cooldown=Math.max(0,m.cooldown||0-dt);m.stun=Math.max(0,(m.stun||0)-dt);
+ m.cooldown=Math.max(0,(m.cooldown||0)-dt);m.stun=Math.max(0,(m.stun||0)-dt);
  if(m.stun>0)return;
  if(m.windup>0){
   m.windup-=dt;m.mode='windup';
