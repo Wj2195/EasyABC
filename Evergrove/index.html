@@ -843,7 +843,7 @@ function start(){const resumed=load();initWorld();resizeGame();window.addEventLi
 window.EvergroveNavGame={
  canvas,ctx,T,MW,MH,npcs:NPCS,homes:HOMES,door,monsters:()=>monsters,MONSTER_TYPES,typeAt,drawSoil:cropsSoil,consumeEnergy,give,earnXP,fx,updateUI,
  player:()=>state.player, state:()=>state, getInput:()=>input, save:()=>save(),camera:()=>camera, modal:()=>!!currentModal,
- drawPlayer:()=>drawHuman(state.player.x,state.player.y,state.appearance?.color||'#79a8a4',true,state.player.dir,(input.ArrowUp||input.ArrowDown||input.ArrowLeft||input.ArrowRight||Math.abs(input.joyX||0)>.12||Math.abs(input.joyY||0)>.12)?elapsed:0),drawTree,drawRock,
+ drawPlayer:()=>drawHuman(state.player.x,state.player.y,state.appearance?.color||'#79a8a4',true,state.player.dir,(input.ArrowUp||input.ArrowDown||input.ArrowLeft||input.ArrowRight||Math.abs(input.joyX||0)>.12||Math.abs(input.joyY||0)>.12||window.EvergroveJourney?.walking?.())?performance.now()/1000:0),drawTree,drawRock,
  blocked:(x,y)=>blockedPlayer(x,y),useTool:(x,y)=>act(state.selected,x,y),
  openNPC:id=>openModal('npc',{id}),
  openHome:id=>{const h=HOMES.find(o=>o.id===id);if(h)openModal(({sleep:'sleep',shop:'shop',craft:'craft',inn:'inn',archive:'journal'})[h.kind]||'journal');},
