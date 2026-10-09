@@ -97,3 +97,24 @@ The current expansion prototype supports exploring painted terrain, blocked wate
 - Use **Up/Down and Z** or mouse to choose a region; **X**, **Esc**, right-click or the close button to return to play. Landscape mobile users can tap the World button and region cards.
 - Discovered expansion regions are stored in the existing local save. No save migration required.
 - Offline cache version `evergrove-pages-v0.13.0` includes the new World Atlas JS and CSS.
+
+
+## v0.14 — Four-way world map expansion
+
+**Five connected playable maps** (8,888 tiles total):
+| Compass position | World area | Tiles |
+|---|---|---|
+| Center (0,0) | Willow Valley | 68 × 48 |
+| North (0,-1) | Starglow Highlands | 48 × 34 |
+| East (1,0) | Autumn Grove | 42 × 30 |
+| South (0,1) | Moonlit Coast | 46 × 32 |
+| West (-1,0) | Sunmeadow Plains | 42 × 30 |
+
+Each map has **four fixed cardinal gateway positions**, always centered on its **north/east/south/west borders**. Active gateways transport to their neighbors; unavailable sides show dormant/OPEN markers reserved for future expansions. Gateways are reciprocal and lead to a safe location a few tiles inside the destination.
+
+The player-facing **World Atlas** now renders a compass-style connection diagram linking the actual map positions. Select any region to view its preview, or select an outer map to see nearby empty slots for future additions. Map previews never teleport the player.
+
+**Map Workshop:** https://wj2195.github.io/EasyABC/Evergrove/map-editor.html
+To create a new connected map, select **Connect from existing region**, choose an **Available side** (N/E/S/W), then click **Create map on selected side**. The editor assigns grid coordinates and both gateways automatically and exports the `worlds.json` registry. This browser tool does not publish directly: update `Evergrove/maps/worlds.json` in GitHub and bump the `CACHE_NAME` version in `sw.js` to deploy new maps and offline cache. Only people with GitHub write permissions can publish.
+
+Older browser saves keep the same key and remain compatible. The original Willow Valley retains its 68 × 48 legacy map and current NPC/farming RPG functionality. New areas currently support terrain, obstacles, running, click-to-move, world travel, and previews; their NPCs, farming, and interior gameplay are still future work.
