@@ -282,6 +282,6 @@ function drawMiniMap(canvas){
  }
  r(c,36.5*8-6,28.5*8-6,12,12,'#9deeff');
 }
-window.EvergroveHD={drawBackground,drawBuilding,drawTree,drawRock,propSprites,foreground,collision,drawMiniMap,
+window.EvergroveHD={enabled:()=>g.state().graphicsHD!==false,drawBackground,drawBuilding,drawTree,drawRock,propSprites,foreground,collision,drawMiniMap,
  reset:()=>{ground=null;CANVASES.clear();}};
 })();
