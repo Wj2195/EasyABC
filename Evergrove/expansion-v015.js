@@ -196,7 +196,7 @@ async function load(){
     current=m;state.discoveredMaps={...(state.discoveredMaps||{}),base:true,[m.id]:true};background=paint(m);
     if(!canStand(api.player().x,api.player().y)){
     const pos=safeArrival(m,m.spawn||{x:34.5,y:24.5});api.player().x=pos.x;api.player().y=pos.y;}showZone();api.save();}
-   else{state.activeMap='base';api.player().x=28.5;api.player().y=27.5;}
+   else if(!/^level-\d{2}$/.test(state.activeMap)&&!/^town-\d{2}$/.test(state.activeMap)){state.activeMap='base';api.player().x=28.5;api.player().y=27.5;}
   }
   if(state.activeMap==='base'&&state.mapLayoutRevision!==3){state.mapLayoutRevision=3;api.save();}
  }catch(e){console.warn('Evergrove expansion unavailable',e);}
