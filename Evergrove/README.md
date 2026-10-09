@@ -86,3 +86,14 @@ The workshop page itself is publicly viewable on GitHub Pages. A visitor may cre
 
 ### Expansion gameplay in v0.12
 The current expansion prototype supports exploring painted terrain, blocked water/cliffs/trees/rocks, keyboard or joystick movement, mouse click-to-run, and glowing doorways between maps. The original Willow Village continues supporting farming, NPCs, monsters and other prior gameplay. New-map NPC placement, in-map farming, monster spawning, shops and building interiors are future features.
+
+## v0.13 — World Atlas (player-facing Map button)
+
+- Click the **🗺️ World** button in the in-game right-hand menu or press **M** on PC.
+- Opens the World Atlas overlay inside the game, with a selectable region list and a full-sized map preview.
+- Lists **every published map** from `maps/worlds.json`, initially Willow Valley (68 × 48) and Autumn Grove (42 × 30). Newly published expansion maps appear automatically.
+- Shows **current location**, **visited/unvisited status**, total tiles, entrances and exits, and a player marker for the current map.
+- Select a region or gateway to preview it, **without teleporting**. Travel still requires walking through its actual in-game portal.
+- Use **Up/Down and Z** or mouse to choose a region; **X**, **Esc**, right-click or the close button to return to play. Landscape mobile users can tap the World button and region cards.
+- Discovered expansion regions are stored in the existing local save. No save migration required.
+- Offline cache version `evergrove-pages-v0.13.0` includes the new World Atlas JS and CSS.
