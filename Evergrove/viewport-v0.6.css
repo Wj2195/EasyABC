@@ -1,0 +1,19 @@
+/* Evergrove v0.6: edge-to-edge adaptive game. */
+:root {color-scheme:dark}
+html,body{margin:0!important;width:100%;height:100%;overflow:hidden!important;overscroll-behavior:none}
+body{background:#102426!important}
+.shell{position:fixed;inset:0;width:100vw!important;height:100dvh!important;max-width:none!important;padding:0!important;margin:0!important}
+.layout,.game-column{width:100%!important;height:100%!important;margin:0!important;padding:0!important}
+.game-frame{position:relative;width:100vw;height:100dvh;max-height:none;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:hidden}
+#game{display:block;width:100%!important;height:100%!important;max-height:none!important;aspect-ratio:auto!important;object-fit:fill;border-radius:0!important}
+.desktop-key-guide{position:absolute;bottom:clamp(10px,2.4dvh,24px);left:clamp(9px,1.6vw,22px);z-index:24;display:flex;flex-direction:column;gap:5px;padding:9px 10px;background:#102d32c9;border:1px solid #dae8b48c;border-radius:9px;box-shadow:0 4px 15px #0007;backdrop-filter:blur(3px);font:700 10px/1.15 ui-monospace,Consolas,monospace;color:#eef3d3}
+.desktop-key-guide .key-guide-heading{font-size:9px;color:#f4dba6;letter-spacing:1px;white-space:nowrap;margin-bottom:2px}
+.desktop-key-guide .key-guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.desktop-key-guide button{display:flex;align-items:center;gap:6px;min-width:107px;padding:3px 5px;border:1px solid #799e89;border-radius:4px;background:#2e4f4ad6;color:#f8f4db;font:700 10px/1.1 ui-monospace,Consolas,monospace;text-align:left}
+.desktop-key-guide button:hover,.desktop-key-guide button:focus-visible{background:#567e60;outline:1px solid #e5ecbe}
+.desktop-key-guide button:active,.desktop-key-guide button.pressed{background:#87b48e;color:#1a3233}
+.desktop-key-guide kbd{flex:none;display:grid;place-items:center;min-width:22px;height:21px;border-radius:4px;border:1px solid #e3eac2;background:#1e3637;box-shadow:inset 0 -2px #102627;color:#f5efca;font:900 12px ui-monospace,Consolas,monospace}
+.desktop-key-guide .key-guide-foot{font-size:9px;color:#c5d9c8;white-space:nowrap}
+@media(max-width:1020px) and (hover:hover){.desktop-key-guide{bottom:8px;left:8px;padding:6px;gap:3px}.desktop-key-guide button{min-width:80px;padding:3px;font-size:9px}.desktop-key-guide .key-guide-foot{font-size:8px}.desktop-key-guide kbd{min-width:19px;height:18px;font-size:10px}}
+@media(hover:none) and (pointer:coarse){.desktop-key-guide{display:none!important}.game-frame{position:fixed!important;inset:0!important}.mobile-controls{z-index:40}}
+@media(max-height:430px) and (hover:hover){.desktop-key-guide{bottom:5px;left:7px;padding:5px}.desktop-key-guide .key-guide-foot{display:none}}
