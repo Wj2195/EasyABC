@@ -45,9 +45,9 @@ small.key{font-family:monospace;color:#ffe1ad}
 <label for="mapName">Map name</label><input id="mapName" placeholder="Map name">
 <div class="grid"><div><label for="mapWidth">Width (tiles)</label><input type="number" id="mapWidth" min="12" max="160"></div>
 <div><label for="mapHeight">Height (tiles)</label><input type="number" id="mapHeight" min="12" max="120"></div></div>
-<button id="resize" style="margin-top:8px">Apply map size</button>
+<button id="resize" style="margin-top:8px" disabled title="All published regions use 68 × 48 tiles">Standard size: 68 × 48</button>
 <button class="danger" id="deleteMap">Delete map</button>
-<div class="note">Original Willow Village uses the legacy 68 × 48 map. Its entrance locations can be edited here, but its terrain is not yet editable in this workshop.</div>
+<div class="note">All regions now use <b>68 × 48 tiles</b>. New maps use this standard size automatically. The original Willow Valley terrain remains rendered by the original game engine.</div>
 </section>
 <section class="group"><h2>Four gateway sides</h2><div id="edgeStatus" class="note">Click a map to inspect connections.</div>
 <div class="note">Create a map from an available side. Both maps receive a centered gateway automatically.</div></section>
@@ -61,11 +61,11 @@ small.key{font-family:monospace;color:#ffe1ad}
 </section>
 </aside>
 </div>
-<script src="./world-grid-v014.js"></script>
+<script src="./world-grid-v015.js"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id), canvas=$('mapCanvas'),ctx=canvas.getContext('2d');
-const KEY='evergrove_map_workshop_v2', TERRAIN={grass:['Grass','#80b578'],forest:['Forest','#579569'],path:['Road','#c0ac82'],water:['Water','#559bb9'],stone:['Stone','#91a59c'],cliff:['Cliff','#727c84'],farm:['Farmland','#a37c54']};
+const KEY='evergrove_map_workshop_v3', TERRAIN={grass:['Grass','#80b578'],forest:['Forest','#579569'],path:['Road','#c0ac82'],water:['Water','#559bb9'],stone:['Stone','#91a59c'],cliff:['Cliff','#727c84'],farm:['Farmland','#a37c54']};
 const TOOLS={terrain:'🖌️ Terrain',tree:'🌳 Tree',rock:'🪨 Rock',spawn:'📍 Spawn',erase:'✖ Erase'};
 let data=null,mapId='base',brush='terrain',kind='grass',scale=24,painting=false,undoStack=[],redoStack=[],lastDraw='',localEdited=false;
 const clean=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
@@ -99,7 +99,8 @@ function ui(){
  $('terrain').innerHTML=Object.entries(TERRAIN).map(([k,v])=>'<button class="tool '+(kind===k?'active':'')+'" data-terrain="'+k+'">'+clean(v[0])+'</button>').join('');
  const m=active();$('mapName').value=m?.name||'Willow Village';$('mapName').disabled=!m;
  $('mapWidth').value=m?.width||68;$('mapHeight').value=m?.height||48;
- for(const id of ['mapWidth','mapHeight','resize','deleteMap'])$(id).disabled=!m;
+ for(const id of ['mapWidth','mapHeight','resize'])$(id).disabled=true;
+ $('deleteMap').disabled=!m;
  const savedFrom=$('connectFrom').value,all=[grid.BASE,...data.maps];
  $('connectFrom').innerHTML=all.map(t=>'<option value="'+clean(t.id)+'">'+clean(t.name)+'</option>').join('');
  $('connectFrom').value=all.some(t=>t.id===savedFrom&&grid.neighbors(data,t.id).some(n=>n.available))?savedFrom:(grid.neighbors(data,mapId).some(n=>n.available)?mapId:all.find(t=>grid.neighbors(data,t.id).some(n=>n.available))?.id||'base');
@@ -151,8 +152,7 @@ $('addMap').addEventListener('click',()=>{
  const name=prompt('New map name (e.g. Moonlight City):');if(!name)return;
  const id=name.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,36);
  if(!id||id==='base'||data.maps.some(m=>m.id===id)){alert('Choose a different map name.');return;}
- const w=Math.min(160,Math.max(12,Number(prompt('Width (12–160)', '42'))||42));
- const h=Math.min(120,Math.max(12,Number(prompt('Height (12–120)', '30'))||30));
+ const w=68,h=48;
  const map={id,name:name.slice(0,55),width:w,height:h,defaultTerrain:'grass',spawn:{x:Math.floor(w/2)+.5,y:Math.floor(h/2)+.5},terrain:{},objects:[],portals:[]};
  for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(Math.abs(x-Math.floor(w/2))<=1||Math.abs(y-Math.floor(h/2))<=1)map.terrain[x+','+y]='path';
  map.spawn=grid.arrival(map,grid.DIR[side].opposite);
@@ -177,9 +177,9 @@ $('export').addEventListener('click',()=>{if(!data)return;grid.normalize(data);c
  localStorage.setItem(KEY,JSON.stringify(data));status('Exported worlds.json. Upload it to Evergrove/maps/ on GitHub to publish changes.');});
 $('importBtn').addEventListener('click',()=>$('file').click());
 $('file').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;
- try{const parsed=JSON.parse(await file.text());if(!validate(parsed))throw Error('Unsupported map data format');snapshot();data=grid.normalize(parsed);mapId='base';localEdited=true;ui();status('Imported '+data.maps.length+' expansion maps.');}catch(err){alert('Import failed: '+err.message);}
+ try{const parsed=JSON.parse(await file.text());if(!validate(parsed))throw Error('Unsupported map data format or one or more regions are not 68 × 48 tiles');snapshot();data=grid.normalize(parsed);mapId='base';localEdited=true;ui();status('Imported '+data.maps.length+' expansion maps.');}catch(err){alert('Import failed: '+err.message);}
  e.target.value='';});
-function validate(v){return v&&v.schema===1&&Array.isArray(v.maps)&&Array.isArray(v.basePortals)&&v.maps.every(m=>m&&/^[a-z0-9-]+$/.test(m.id)&&Number.isInteger(m.width)&&m.width>=12&&m.width<=160&&Number.isInteger(m.height)&&m.height>=12&&m.height<=120&&Array.isArray(m.objects)&&Array.isArray(m.portals)&&m.terrain&&typeof m.terrain==='object');}
+function validate(v){return v&&v.schema===1&&Array.isArray(v.maps)&&Array.isArray(v.basePortals)&&v.maps.every(m=>m&&/^[a-z0-9-]+$/.test(m.id)&&Number.isInteger(m.width)&&m.width===68&&Number.isInteger(m.height)&&m.height===48&&Array.isArray(m.objects)&&Array.isArray(m.portals)&&m.terrain&&typeof m.terrain==='object');}
 async function loadPublished(discard=false){try{const r=await fetch('./maps/worlds.json',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const published=await r.json();if(!validate(published))throw Error('Invalid maps JSON');
  const draft=localStorage.getItem(KEY);data=grid.normalize((!discard&&draft&&validate(JSON.parse(draft)))?JSON.parse(draft):published);
  mapId='base';undoStack=[];redoStack=[];ui();status((!discard&&draft?'Local draft loaded. ':'Published maps loaded. ')+data.maps.length+' expansion map(s).');
