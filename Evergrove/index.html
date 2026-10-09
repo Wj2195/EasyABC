@@ -406,7 +406,7 @@ body{background:#101b23}
 </div>
 <input type="file" id="importFile" accept=".json,application/json" hidden />
 <script>
-/* EVERGROVE v0.14 Web Edition — no frameworks, CDNs or paid services. */
+/* EVERGROVE v0.15 Web Edition — no frameworks, CDNs or paid services. */
 (() => {
 'use strict';
 const T=32, MW=68, MH=48, H=576, KEY='evergrove_offline_save_v1';
@@ -431,7 +431,8 @@ const log=(msg)=>{logItems.unshift({day:state?.day||1,msg});logItems=logItems.sl
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.version===1&&s.player&&s.inventory&&s.crops){state={...initialState(),...s};state.inventory={...initialState().inventory,...s.inventory};state.appearance={...initialState().appearance,...s.appearance};state.stats={...initialState().stats,...s.stats};state.session={mode:'offline',roomId:null,maxPlayers:10};return true;}}catch(e){console.warn('Save read error:',e)}state=initialState();return false;}
 function save(silent=true){try{localStorage.setItem(KEY,JSON.stringify(state));lastSave=performance.now();if(!silent)notify('💾 Game saved to this browser.');return true}catch(e){if(!silent)notify('Local save failed. Export a backup in Settings.','error');return false}}
 function zone(x=state.player.x,y=state.player.y){if(x>=50&&y>=32)return{id:'ruins',name:'Ancient Ruins',tag:'THE OLD STONES'};if(x>=45&&y<13)return{id:'highland',name:'Starglow Highlands',tag:'AMONG THE MOUNTAINS'};if(x>=45)return{id:'forest',name:'Whisperwood Forest',tag:'THE WILD FRONTIER'};if(x<=28&&y>=35)return{id:'lake',name:'Moonlit Lake',tag:'A QUIET SHORE'};if(x>=27)return{id:'village',name:'Willow Village',tag:'A PLACE TO BELONG'};return{id:'farm',name:'Briarwood Farm',tag:'HOME SWEET HOME'};}
-function typeAt(x,y){if(x<0||y<0||x>=MW||y>=MH)return 'void';const lake=Math.pow((x-17)/11,2)+Math.pow((y-41)/6.25,2);if(lake<1)return 'water';if(x>48&&y<11)return 'mountain';if(x>=50&&y>=33)return 'ruins';if((y===29&&x>=9&&x<=48)||(x===28&&y>=15&&y<=38)||(y===22&&x>=27&&x<=46)||(x===40&&y>=20&&y<=39)||(y===38&&x>=28&&x<=46))return 'path';if(x>=28&&x<=46&&y>=11&&y<=39)return 'village';if(x>=46)return 'forest';if(x<=25&&y>=20&&y<=30)return 'farm';return 'grass';}
+function portalLane(x,y){return (Math.abs(x-Math.floor(MW/2))<=2&&(y<=8||y>=MH-9))||(Math.abs(y-Math.floor(MH/2))<=2&&(x<=8||x>=MW-9));}
+function typeAt(x,y){if(x<0||y<0||x>=MW||y>=MH)return 'void';if(portalLane(x,y))return 'path';const lake=Math.pow((x-17)/11,2)+Math.pow((y-41)/6.25,2);if(lake<1)return 'water';if(x>48&&y<11)return 'mountain';if(x>=50&&y>=33)return 'ruins';if((y===29&&x>=9&&x<=48)||(x===28&&y>=15&&y<=38)||(y===22&&x>=27&&x<=46)||(x===40&&y>=20&&y<=39)||(y===38&&x>=28&&x<=46))return 'path';if(x>=28&&x<=46&&y>=11&&y<=39)return 'village';if(x>=46)return 'forest';if(x<=25&&y>=20&&y<=30)return 'farm';return 'grass';}
 const isWater=(x,y)=>['water','void','mountain'].includes(typeAt(x,y));
 function homeAt(x,y){return HOMES.find(h=>x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h);}
 function door(h){return{x:h.x+Math.floor(h.w/2)+.5,y:h.y+h.h+.5};}
@@ -723,7 +724,7 @@ function refreshModal(){if(!currentModal)return;const type=currentModal.type;let
     html=`<p>Pick a name and outfit color for your explorer. Changes are applied to your character immediately.</p><div class="stat-line"><span>Explorer name</span><strong>${escapeText(state.appearance?.name||'Valley Wanderer')}</strong></div><button class="primary-btn" data-action="rename">✎ Change character name</button><h3>OUTFIT COLORS</h3><div class="button-line">${colors.map(([hex,label])=>`<button class="primary-btn" data-action="color" data-id="${hex}" style="border-color:${hex};background:${hex}44">${label}${state.appearance?.color===hex?' ✓':''}</button>`).join('')}</div>`;
   }
   else if(type==='settings'){
-    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.14 · Four-way World Expansion</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
+    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.15 · Five Equal-Sized Maps & Reliable Gateways</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
   }
   $('modalTitle').textContent=title;$('modalEyebrow').textContent=eyebrow;$('modalBody').innerHTML=html;
   if(type==='map'){if(window.EvergroveAtlas)window.EvergroveAtlas.mount();else drawMap();}
@@ -838,7 +839,7 @@ window.EvergroveNavGame={
  blocked:(x,y)=>blockedPlayer(x,y),useTool:(x,y)=>act(state.selected,x,y),
  openNPC:id=>openModal('npc',{id}),
  openHome:id=>{const h=HOMES.find(o=>o.id===id);if(h)openModal(({sleep:'sleep',shop:'shop',craft:'craft',inn:'inn',archive:'journal'})[h.kind]||'journal');},
- notify,drawBaseMap:drawMap,baseZone:()=>zone().name
+ notify,drawBaseMap:drawMap,baseZone:()=>zone().name,closeModal:()=>closeModal()
 };
 start();
 })();
@@ -846,9 +847,9 @@ start();
 </script>
 <script src="./controls-v0.8.js" defer></script>
 <script src="./evergrove_navigation_v012.js" defer></script>
-<script src="./world-grid-v014.js" defer></script>
-<script src="./expansion-v014.js" defer></script>
-<script src="./world-atlas-v014.js" defer></script>
+<script src="./world-grid-v015.js" defer></script>
+<script src="./expansion-v015.js" defer></script>
+<script src="./world-atlas-v015.js" defer></script>
 <script src="./web-updater.js" defer></script>
 </body>
 </html>
