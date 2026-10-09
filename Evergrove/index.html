@@ -318,6 +318,7 @@ body{background:#101b23}
 }
 
 </style>
+  <link rel="stylesheet" href="./viewport-v0.6.css" />
 </head>
 <body>
 <div class="shell">
@@ -338,7 +339,7 @@ body{background:#101b23}
       <div class="game-frame" id="gameFrame">
         <canvas id="game" width="960" height="576" aria-label="Top-down 2D browser game. Move using WASD or arrow keys."></canvas>
         <div class="viewport-badge" id="viewportBadge">✦ BRIARWOOD VALLEY</div>
-        <div class="view-hint" id="contextHint">WASD to move · E to talk · F to use tool</div>
+        <div class="view-hint" id="contextHint">Arrows move · Z talk · X use · A/S tools</div>
         <div class="toast-stack" id="toasts" aria-live="polite"></div>
         <div class="game-hud" aria-label="In-game status and menus">
           <div class="hud-top">
@@ -356,6 +357,16 @@ body{background:#101b23}
           </div>
           <div class="ingame-tools" id="ingameTools" aria-label="Select game tool"></div>
         </div>
+        <aside class="desktop-key-guide" aria-label="Desktop keyboard actions">
+          <div class="key-guide-heading">⌨ KEYBOARD CONTROLS</div>
+          <div class="key-guide-grid">
+            <button data-pad-action="talk" title="Talk / interact / confirm"><kbd>Z</kbd><span>Talk / OK</span></button>
+            <button data-pad-action="use" title="Use tool / go back"><kbd>X</kbd><span>Use / Back</span></button>
+            <button data-pad-action="previous" title="Previous tool / choice"><kbd>A</kbd><span>Previous</span></button>
+            <button data-pad-action="next" title="Next tool / choice"><kbd>S</kbd><span>Next</span></button>
+          </div>
+          <div class="key-guide-foot">ARROWS Move · 1–8 Tools · ESC Menu</div>
+        </aside>
         <div class="mobile-controls" id="mobileControls" aria-label="Touch gaming controls">
           <div class="joystick-zone" id="joystick" role="application" aria-label="Move: drag joystick in any direction">
             <div class="joystick-ring"></div><div class="joystick-knob" id="joystickKnob"></div>
@@ -393,10 +404,11 @@ body{background:#101b23}
 </div>
 <input type="file" id="importFile" accept=".json,application/json" hidden />
 <script>
-/* EVERGROVE v0.5 Web Edition — no frameworks, CDNs or paid services. */
+/* EVERGROVE v0.6 Web Edition — no frameworks, CDNs or paid services. */
 (() => {
 'use strict';
-const T=32, MW=68, MH=48, W=960, H=576, KEY='evergrove_offline_save_v1';
+const T=32, MW=68, MH=48, H=576, KEY='evergrove_offline_save_v1';
+let W=960;
 const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
 const $=id=>document.getElementById(id), clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const hash=(x,y,n=0)=>{let z=((x*73856093)^(y*19349663)^(n*83492791))>>>0;z=Math.imul(z^(z>>>16),0x7feb352d);z=Math.imul(z^(z>>>15),0x846ca68b);return ((z^(z>>>16))>>>0)/4294967295};
@@ -494,7 +506,7 @@ function gift(id,item){const npc=NPCS.find(n=>n.id===id);if(!npc||!state.invento
 function flirt(id){const npc=NPCS.find(n=>n.id===id);if(!npc?.romance)return;if(state.flirtDay[id]===state.day){showDialogueResult('You already spent time together today.');return;}state.flirtDay[id]=state.day;state.relationships[id]=clamp((state.relationships[id]||0)+1,0,10);updateUI();save();refreshModal();showDialogueResult(`💗 You spent a lovely afternoon with ${npc.name}. Friendship +1!`);}
 function propose(id){const npc=NPCS.find(n=>n.id===id);if(!npc?.romance||state.spouse||state.inventory.ring<1||(state.relationships[id]||0)<10)return;give('ring',-1);state.spouse=id;log(`Married ${npc.name} in Willow Village!`);earnXP(100);updateUI();save();refreshModal();showDialogueResult(`💍 ${npc.name} said yes! You're married!`);}
 function gameUpdate(dt){if(currentModal)return;
-  elapsed+=dt;let vx=0,vy=0;if(input.ArrowUp||input.KeyW||input.mobileup)vy--;if(input.ArrowDown||input.KeyS||input.mobiledown)vy++;if(input.ArrowLeft||input.KeyA||input.mobileleft)vx--;if(input.ArrowRight||input.KeyD||input.mobileright)vx++;
+  elapsed+=dt;let vx=0,vy=0;if(input.ArrowUp||input.mobileup)vy--;if(input.ArrowDown||input.mobiledown)vy++;if(input.ArrowLeft||input.mobileleft)vx--;if(input.ArrowRight||input.mobileright)vx++;
   vx+=(input.joyX||0);vy+=(input.joyY||0);if(vx||vy){const l=Math.hypot(vx,vy);if(l>1){vx/=l;vy/=l;}if(Math.abs(vx)>Math.abs(vy))state.player.dir=vx>0?'right':'left';else state.player.dir=vy>0?'down':'up';const speed=(input.ShiftLeft||input.ShiftRight)?4.7:3.1;const nx=state.player.x+vx*speed*dt,ny=state.player.y+vy*speed*dt;if(!blockedPlayer(nx,state.player.y))state.player.x=nx;if(!blockedPlayer(state.player.x,ny))state.player.y=ny;}
   const loc=zone();if(!state.visited[loc.id]){state.visited[loc.id]=true;log(`Discovered ${loc.name}!`);notify(`🧭 Discovered ${loc.name}`);save();updateUI();}
   minuteAccumulator+=dt*5.5;if(minuteAccumulator>=1){const n=Math.floor(minuteAccumulator);state.time+=n;minuteAccumulator-=n;if(state.time>=24*60)state.time=23*60+59;}
@@ -613,7 +625,7 @@ function refreshModal(){if(!currentModal)return;const type=currentModal.type;let
     html=`<div class="notification">🌿 An original pixel-world adventure you can play completely offline. Your progress saves automatically in this browser.</div><p>You have inherited a little cottage near Willow Village. Grow a farm, befriend the townsfolk, explore a living wilderness, capture magical creatures and build a place to call home.</p>
       <h3>YOUR FIRST STEPS</h3><div class="modal-list">
       <div class="modal-item"><span class="emoji">🌱</span><div class="item-detail"><strong>Start your farm</strong><small>Use <b>1</b> (hoe) on the grass, <b>2</b> to plant, <b>3</b> to water. Sleep at your cottage to grow crops.</small></div></div>
-      <div class="modal-item"><span class="emoji">🏡</span><div class="item-detail"><strong>Meet the village</strong><small>Move with WASD / arrows. Stand beside a villager or building doorway and press E.</small></div></div>
+      <div class="modal-item"><span class="emoji">🏡</span><div class="item-detail"><strong>Meet the village</strong><small>Move with arrow keys. Stand beside a villager or doorway and press Z to talk.</small></div></div>
       <div class="modal-item"><span class="emoji">🦊</span><div class="item-detail"><strong>Explore & collect creatures</strong><small>Go east into Whisperwood. Attack with sword (6), then catch with orbs (7).</small></div></div>
       <div class="modal-item"><span class="emoji">🛠️</span><div class="item-detail"><strong>Make the world yours</strong><small>Chop trees, mine rocks, pick a blueprint from Crafting and place it with tool 8.</small></div></div></div>
       <button class="primary-btn" data-action="close">✦ Begin adventure →</button>`;
@@ -687,7 +699,7 @@ function refreshModal(){if(!currentModal)return;const type=currentModal.type;let
     html=`<p>Pick a name and outfit color for your explorer. Changes are applied to your character immediately.</p><div class="stat-line"><span>Explorer name</span><strong>${escapeText(state.appearance?.name||'Valley Wanderer')}</strong></div><button class="primary-btn" data-action="rename">✎ Change character name</button><h3>OUTFIT COLORS</h3><div class="button-line">${colors.map(([hex,label])=>`<button class="primary-btn" data-action="color" data-id="${hex}" style="border-color:${hex};background:${hex}44">${label}${state.appearance?.color===hex?' ✓':''}</button>`).join('')}</div>`;
   }
   else if(type==='settings'){
-    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.5 · Web Edition</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
+    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.6 · Fullscreen & Keyboard</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
   }
   $('modalTitle').textContent=title;$('modalEyebrow').textContent=eyebrow;$('modalBody').innerHTML=html;
   if(type==='map')drawMap();
@@ -786,11 +798,20 @@ function bindEvents(){
   window.addEventListener('orientationchange',()=>{input.joyX=0;input.joyY=0;document.body.classList.remove('allow-portrait')});
 }
 function loop(now){const dt=Math.min((now-lastTick)/1000,.045);lastTick=now;gameUpdate(dt);drawWorld();requestAnimationFrame(loop)}
-function start(){const resumed=load();initWorld();bindEvents();updateUI();if(resumed){log(`Welcome back! Continued Day ${state.day}.`);notify('💾 Saved adventure restored!')}else{log('Inherited a cottage in Briarwood Valley.');log('A new adventure begins!');openModal('welcome');save();}requestAnimationFrame(loop);}
+function resizeGame(){
+  const frame=$('gameFrame');if(!frame)return;
+  const r=frame.getBoundingClientRect();if(!r.width||!r.height)return;
+  const next=Math.max(200,Math.min(MW*T,Math.round(H*r.width/r.height)));
+  if(W!==next || canvas.width!==next || canvas.height!==H){
+    W=next;canvas.width=W;canvas.height=H;ctx.imageSmoothingEnabled=false;
+  }
+}
+function start(){const resumed=load();initWorld();resizeGame();window.addEventListener('resize',resizeGame,{passive:true});window.addEventListener('orientationchange',()=>setTimeout(resizeGame,120),{passive:true});bindEvents();updateUI();if(resumed){log(`Welcome back! Continued Day ${state.day}.`);notify('💾 Saved adventure restored!')}else{log('Inherited a cottage in Briarwood Valley.');log('A new adventure begins!');openModal('welcome');save();}requestAnimationFrame(loop);}
 start();
 })();
 
 </script>
+<script src="./controls-v0.6.js" defer></script>
 <script src="./web-updater.js" defer></script>
 </body>
 </html>
