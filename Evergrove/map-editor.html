@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#18332c">
+<title>Evergrove — Map Workshop</title>
+<style>
+:root{--bg:#102322;--panel:#19322e;--panel2:#25443b;--border:#688774;--accent:#bfe3a1;--text:#f7f1d8;--muted:#bdd0bc}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.4 system-ui,sans-serif;color:var(--text)}
+button,input,select{font:inherit}button{color:var(--text);background:#355b49;border:1px solid #749d78;border-radius:6px;padding:7px 10px;cursor:pointer}button:hover{background:#486d51}button.active{background:#8dbb81;color:#142b23;font-weight:800}button.danger{background:#6b3841}button:disabled{opacity:.4}input,select{background:#11251f;color:var(--text);border:1px solid #75917d;border-radius:5px;padding:7px;min-width:0;width:100%}input[type=range]{padding:0}
+header{display:flex;gap:14px;align-items:center;padding:14px 20px;background:#1b3931;border-bottom:2px solid #819d6f;flex-wrap:wrap}h1{font-size:20px;margin:0}h2{font-size:15px;color:#dfefb9;margin:0 0 8px}header small,.muted{color:var(--muted);font-size:12px}header a{color:#cde6b4;margin-left:auto}
+.layout{display:grid;grid-template-columns:minmax(210px,260px) minmax(0,1fr) minmax(220px,282px);height:calc(100dvh - 67px);min-height:500px}
+aside{background:var(--panel);padding:15px;overflow:auto;border-right:1px solid var(--border)}aside.right{border-right:0;border-left:1px solid var(--border)}.group{border-bottom:1px solid #456154;padding-bottom:12px;margin-bottom:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+label{display:block;margin:10px 0 4px;font-size:12px;font-weight:700;color:#d9e8cb}
+button.tool{width:100%;font-size:12px;padding:8px 5px}.map-button{width:100%;display:block;margin-bottom:5px;text-align:left}.map-button small{display:block;color:#d9ddc6}.map-button.active small{color:#243b2e}
+main{display:flex;flex-direction:column;min-width:0;background:#132a25}.toolbar{padding:10px 14px;display:flex;gap:9px;align-items:center;border-bottom:1px solid #56705c;flex-wrap:wrap}.toolbar button{white-space:nowrap}.toolbar strong{font-size:15px}.viewport{flex:1;overflow:auto;display:grid;place-items:start center;padding:20px;background:repeating-linear-gradient(45deg,#193d34,#193d34 20px,#204436 20px,#204436 40px)}
+canvas{image-rendering:pixelated;box-shadow:0 12px 28px #0009;border:2px solid #d7dfa6;touch-action:none;cursor:crosshair}
+.status{padding:8px 13px;border-top:1px solid #476a58;color:#e4dfb8;min-height:38px;font-size:12px}
+.note{padding:9px;background:#294840;border-left:3px solid #a9cd84;color:#dfecd4;font-size:12px;margin:8px 0;line-height:1.5}
+small.key{font-family:monospace;color:#ffe1ad}
+@media(max-width:950px){.layout{grid-template-columns:200px minmax(0,1fr)}aside.right{grid-column:1/-1;grid-row:2;border-top:1px solid var(--border);border-left:0;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.layout{height:auto;min-height:calc(100dvh - 70px)}main{min-height:500px}}
+@media(max-width:600px){.layout{display:block}aside{max-height:none}aside.right{display:block}.viewport{min-height:350px}header a{margin-left:0}}
+</style>
+</head>
+<body>
+<header><div><h1>🌿 Evergrove — Map Workshop</h1><small>Terrain painter · Expand maps · Set portals · Export for GitHub</small></div>
+<a href="./" target="_blank" rel="noopener">↗ Play Evergrove</a></header>
+<div class="layout">
+<aside>
+<section class="group"><h2>World maps</h2><div id="mapList"></div>
+<button id="addMap">+ New expansion map</button></section>
+<section class="group"><h2>Editing tools</h2><div id="tools" class="grid"></div>
+<p class="muted">Left-click or drag to paint. Right-click to erase. Choose Portal to connect areas.</p></section>
+<section class="group"><h2>Map appearance</h2><div class="grid" id="terrain"></div></section>
+<section class="group"><h2>Zoom</h2><input id="zoom" type="range" min="12" max="40" step="2" value="24"><small id="zoomLabel">24 px per tile</small></section>
+</aside>
+<main>
+<div class="toolbar"><strong id="mapTitle">Loading world…</strong><span id="mapSize" class="muted"></span><button id="undo">↶ Undo</button><button id="redo">↷ Redo</button><button id="export">⬇ Export maps JSON</button></div>
+<div class="viewport"><canvas id="mapCanvas" aria-label="Paintable game map grid"></canvas></div>
+<div class="status" id="status">Loading published map data…</div>
+</main>
+<aside class="right">
+<section class="group"><h2>Map details</h2>
+<label for="mapName">Map name</label><input id="mapName" placeholder="Map name">
+<div class="grid"><div><label for="mapWidth">Width (tiles)</label><input type="number" id="mapWidth" min="12" max="160"></div>
+<div><label for="mapHeight">Height (tiles)</label><input type="number" id="mapHeight" min="12" max="120"></div></div>
+<button id="resize" style="margin-top:8px">Apply map size</button>
+<button class="danger" id="deleteMap">Delete map</button>
+<div class="note">Original Willow Village uses the legacy 68 × 48 map. Its entrance locations can be edited here, but its terrain is not yet editable in this workshop.</div>
+</section>
+<section class="group"><h2>Portal settings</h2>
+<label for="portalTo">Destination map</label><select id="portalTo"></select>
+<div class="grid"><div><label for="arrivalX">Arrival X</label><input id="arrivalX" type="number" min="0" max="160" step=".5" value="7.5"></div>
+<div><label for="arrivalY">Arrival Y</label><input id="arrivalY" type="number" min="0" max="120" step=".5" value="12.5"></div></div>
+<label for="portalLabel">Portal label</label><input id="portalLabel" value="Travel" maxlength="50">
+<div class="note">Select Portal, then click a tile to create or update a doorway. Create a return portal in the destination map too.</div>
+</section>
+<section class="group"><h2>Publish & save</h2>
+<button id="saveDraft">💾 Save local draft</button>
+<button id="importBtn">⬆ Import JSON</button><input id="file" type="file" accept=".json,application/json" hidden>
+<button id="loadPublished">↻ Reload published maps</button>
+<button id="clearDraft" class="danger">Discard local draft</button>
+<div class="note"><b>Admin security:</b> This workshop is publicly viewable. Only someone with write access to the GitHub repository can publish the exported <b>worlds.json</b>. No password or GitHub token is stored in this page.</div>
+<div class="note">After exporting, upload/replace <code>Evergrove/maps/worlds.json</code> in GitHub, then increase the offline cache version in <code>Evergrove/sw.js</code>. Or send the exported file here for me to publish.</div>
+</section>
+</aside>
+</div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id), canvas=$('mapCanvas'),ctx=canvas.getContext('2d');
+const KEY='evergrove_map_workshop_v1', TERRAIN={grass:['Grass','#80b578'],forest:['Forest','#579569'],path:['Road','#c0ac82'],water:['Water','#559bb9'],stone:['Stone','#91a59c'],cliff:['Cliff','#727c84'],farm:['Farmland','#a37c54']};
+const TOOLS={terrain:'🖌️ Terrain',tree:'🌳 Tree',rock:'🪨 Rock',portal:'🌀 Portal',spawn:'📍 Spawn',erase:'✖ Erase'};
+let data=null,mapId='base',brush='terrain',kind='grass',scale=24,painting=false,undoStack=[],redoStack=[],lastDraw='',localEdited=false;
+const clean=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
+const active=()=>mapId==='base'?null:data?.maps.find(m=>m.id===mapId);
+const listPortals=()=>mapId==='base'?data.basePortals:active()?.portals;
+const value=(id,def=0)=>Number($(id).value)||def;
+const coord=(x,y)=>x+','+y;
+const status=(m)=>{$('status').textContent=m};
+const clone=o=>JSON.parse(JSON.stringify(o));
+function snapshot(){undoStack.push(JSON.stringify(data));if(undoStack.length>70)undoStack.shift();redoStack=[];}
+function paintColor(type,x,y){const c=TERRAIN[type]?.[1]||TERRAIN.grass[1],dark=(x*5+y*7)%3===0;return dark?c:c;}
+function draw(){
+ if(!data)return;const m=active(),width=m?.width||68,height=m?.height||48;
+ canvas.width=width*scale;canvas.height=height*scale;ctx.imageSmoothingEnabled=false;
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  const key=coord(x,y),t=m?(m.terrain[key]||m.defaultTerrain||'grass'):(x===28||y===29?'path':'grass');
+  ctx.fillStyle=paintColor(t,x,y);ctx.fillRect(x*scale,y*scale,scale,scale);
+  ctx.strokeStyle='#132b2b40';ctx.strokeRect(x*scale+.5,y*scale+.5,scale,scale);
+ }
+ for(const o of m?.objects||[]){ctx.textAlign='center';ctx.font=Math.max(12,scale*.78)+'px serif';ctx.fillText(o.type==='tree'?'🌳':'🪨',(o.x+.5)*scale,(o.y+.8)*scale);}
+ if(m){ctx.fillStyle='#f4de94';ctx.fillRect(m.spawn.x*scale-5,m.spawn.y*scale-5,10,10);}
+ for(const p of listPortals()||[]){ctx.fillStyle='#202b43';ctx.beginPath();ctx.arc((p.x+.5)*scale,(p.y+.5)*scale,Math.max(5,scale*.33),0,7);ctx.fill();ctx.strokeStyle='#ffe9a0';ctx.lineWidth=2;ctx.stroke();}
+ $('mapTitle').textContent=m?m.name:'Willow Village (entrances only)';
+ $('mapSize').textContent=width+' × '+height+' tiles';
+}
+function ui(){
+ if(!data)return;
+ $('mapList').innerHTML=[{id:'base',name:'Willow Village',width:68,height:48},...data.maps].map(m=>'<button class="map-button '+(mapId===m.id?'active':'')+'" data-map="'+clean(m.id)+'">'+clean(m.name)+'<small>'+m.width+' × '+m.height+(m.id==='base'?' · legacy world':'')+'</small></button>').join('');
+ $('tools').innerHTML=Object.entries(TOOLS).map(([k,v])=>'<button class="tool '+(brush===k?'active':'')+'" data-tool="'+k+'">'+v+'</button>').join('');
+ $('terrain').innerHTML=Object.entries(TERRAIN).map(([k,v])=>'<button class="tool '+(kind===k?'active':'')+'" data-terrain="'+k+'">'+clean(v[0])+'</button>').join('');
+ const m=active();$('mapName').value=m?.name||'Willow Village';$('mapName').disabled=!m;
+ $('mapWidth').value=m?.width||68;$('mapHeight').value=m?.height||48;
+ for(const id of ['mapWidth','mapHeight','resize','deleteMap'])$(id).disabled=!m;
+ $('portalTo').innerHTML=[{id:'base',name:'Willow Village'},...data.maps].filter(t=>t.id!==mapId).map(t=>'<option value="'+clean(t.id)+'">'+clean(t.name)+'</option>').join('');
+ $('zoomLabel').textContent=scale+' px per tile';draw();
+}
+function editTile(x,y,erase=false){
+ if(!data)return;const m=active(),w=m?.width||68,h=m?.height||48;
+ if(x<0||y<0||x>=w||y>=h)return;
+ const mode=erase?'erase':brush;
+ if(mode==='terrain'&&!m){status('The original village terrain is fixed. Use the Portal tool here.');return;}
+ if(mode==='terrain'){if(kind===m.defaultTerrain)delete m.terrain[coord(x,y)];else m.terrain[coord(x,y)]=kind;}
+ else if(mode==='tree'||mode==='rock'){if(!m)return;const old=m.objects.findIndex(o=>o.x===x&&o.y===y);
+ if(old>=0)m.objects.splice(old,1);m.objects.push({x,y,type:mode});}
+ else if(mode==='spawn'){if(!m)return;m.spawn={x:x+.5,y:y+.5};}
+ else if(mode==='portal'){
+  const dest=$('portalTo').value;if(!dest){status('Create a destination map first.');return;}
+  const portals=listPortals(),idx=portals.findIndex(p=>p.x===x&&p.y===y);
+  const target=data.maps.find(p=>p.id===dest);
+  const fallback=dest==='base'?{x:28.5,y:27.5}:target?.spawn||{x:4.5,y:4.5};
+  const arr={x:value('arrivalX',fallback.x),y:value('arrivalY',fallback.y)};
+  if(idx>=0)portals.splice(idx,1);
+  portals.push({x,y,to:dest,arrival:arr,label:$('portalLabel').value.trim()||'Travel'});
+ }else if(mode==='erase'){if(m){delete m.terrain[coord(x,y)];m.objects=m.objects.filter(o=>o.x!==x||o.y!==y);}const portals=listPortals();
+ const at=portals.findIndex(p=>p.x===x&&p.y===y);if(at>=0)portals.splice(at,1);}
+ localEdited=true;draw();status('Edited '+(m?.name||'Willow Village')+' at '+x+','+y+'. Export JSON to publish.');
+}
+function where(e){const r=canvas.getBoundingClientRect();return{x:Math.floor((e.clientX-r.left)/r.width*canvas.width/scale),y:Math.floor((e.clientY-r.top)/r.height*canvas.height/scale)};}
+canvas.addEventListener('pointerdown',e=>{e.preventDefault();painting=true;const p=where(e);snapshot();editTile(p.x,p.y,e.button===2);canvas.setPointerCapture?.(e.pointerId);lastDraw=coord(p.x,p.y);});
+canvas.addEventListener('pointermove',e=>{if(!painting||!['terrain','tree','rock','erase'].includes(brush))return;const p=where(e),key=coord(p.x,p.y);if(key===lastDraw)return;lastDraw=key;editTile(p.x,p.y,e.buttons===2);});
+for(const n of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(n,()=>painting=false);
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+$('mapList').addEventListener('click',e=>{const b=e.target.closest('[data-map]');if(b){mapId=b.dataset.map;ui();}});
+$('tools').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(b){brush=b.dataset.tool;ui();}});
+$('terrain').addEventListener('click',e=>{const b=e.target.closest('[data-terrain]');if(b){kind=b.dataset.terrain;brush='terrain';ui();}});
+$('zoom').addEventListener('input',e=>{scale=Number(e.target.value);$('zoomLabel').textContent=scale+' px per tile';draw();});
+$('mapName').addEventListener('change',e=>{const m=active();if(!m)return;snapshot();m.name=e.target.value.trim().slice(0,55)||m.id;localEdited=true;ui();});
+$('addMap').addEventListener('click',()=>{const name=prompt('New map name (e.g. Moonlight City):');if(!name)return;
+ const id=name.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,36);
+ if(!id||id==='base'||data.maps.some(m=>m.id===id)){alert('Choose a different map name.');return;}
+ const w=Math.min(160,Math.max(12,Number(prompt('Width in tiles (12–160)', '42'))||42));
+ const h=Math.min(120,Math.max(12,Number(prompt('Height in tiles (12–120)', '30'))||30));
+ snapshot();data.maps.push({id,name:name.slice(0,55),width:w,height:h,defaultTerrain:'grass',spawn:{x:6.5,y:Math.floor(h/2)+.5},terrain:{},objects:[],portals:[{x:2,y:Math.floor(h/2),to:'base',arrival:{x:28.5,y:27.5},label:'Willow Village'}]});
+ const n=data.maps.length;data.basePortals.push({x:29+Math.floor((n-1)/4),y:27+(n-1)%4,to:id,arrival:{x:6.5,y:Math.floor(h/2)+.5},label:name.slice(0,50)});
+ mapId=id;localEdited=true;ui();status('New map created. Edit the entrance coordinates in Willow Village if needed.');});
+$('resize').addEventListener('click',()=>{const m=active();if(!m)return;
+ const w=Math.max(12,Math.min(160,value('mapWidth',m.width))),h=Math.max(12,Math.min(120,value('mapHeight',m.height)));
+ snapshot();m.width=w;m.height=h;
+ for(const key of Object.keys(m.terrain)){const [x,y]=key.split(',').map(Number);if(x>=w||y>=h)delete m.terrain[key];}
+ m.objects=m.objects.filter(o=>o.x<w&&o.y<h);m.portals=m.portals.filter(p=>p.x<w&&p.y<h);
+ m.spawn.x=Math.min(w-.5,m.spawn.x);m.spawn.y=Math.min(h-.5,m.spawn.y);
+ localEdited=true;ui();status('Map resized to '+w+' × '+h+'.');});
+$('deleteMap').addEventListener('click',()=>{const m=active();if(!m||!confirm('Delete '+m.name+' and any entrances leading to it?'))return;snapshot();
+ data.maps=data.maps.filter(x=>x.id!==m.id);data.basePortals=data.basePortals.filter(x=>x.to!==m.id);
+ data.maps.forEach(x=>x.portals=x.portals.filter(p=>p.to!==m.id));mapId='base';localEdited=true;ui();});
+$('undo').addEventListener('click',()=>{if(!undoStack.length)return;redoStack.push(JSON.stringify(data));data=JSON.parse(undoStack.pop());if(mapId!=='base'&&!active())mapId='base';ui();});
+$('redo').addEventListener('click',()=>{if(!redoStack.length)return;undoStack.push(JSON.stringify(data));data=JSON.parse(redoStack.pop());if(mapId!=='base'&&!active())mapId='base';ui();});
+$('saveDraft').addEventListener('click',()=>{localStorage.setItem(KEY,JSON.stringify(data));localEdited=false;status('Draft saved locally in this browser. Export JSON to publish.');});
+$('export').addEventListener('click',()=>{if(!data)return;const blob=new Blob([JSON.stringify({...data,version:new Date().toISOString().slice(0,10)},null,2)],{type:'application/json'}),link=document.createElement('a');
+ link.href=URL.createObjectURL(blob);link.download='worlds.json';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);
+ localStorage.setItem(KEY,JSON.stringify(data));status('Exported worlds.json. Upload it to Evergrove/maps/ on GitHub to publish changes.');});
+$('importBtn').addEventListener('click',()=>$('file').click());
+$('file').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;
+ try{const parsed=JSON.parse(await file.text());if(!validate(parsed))throw Error('Unsupported map data format');snapshot();data=parsed;mapId='base';localEdited=true;ui();status('Imported '+data.maps.length+' expansion maps.');}catch(err){alert('Import failed: '+err.message);}
+ e.target.value='';});
+function validate(v){return v&&v.schema===1&&Array.isArray(v.maps)&&Array.isArray(v.basePortals)&&v.maps.every(m=>m&&/^[a-z0-9-]+$/.test(m.id)&&Number.isInteger(m.width)&&m.width>=12&&m.width<=160&&Number.isInteger(m.height)&&m.height>=12&&m.height<=120&&Array.isArray(m.objects)&&Array.isArray(m.portals)&&m.terrain&&typeof m.terrain==='object');}
+async function loadPublished(discard=false){try{const r=await fetch('./maps/worlds.json',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const published=await r.json();if(!validate(published))throw Error('Invalid maps JSON');
+ const draft=localStorage.getItem(KEY);data=(!discard&&draft&&validate(JSON.parse(draft)))?JSON.parse(draft):published;
+ mapId='base';undoStack=[];redoStack=[];ui();status((!discard&&draft?'Local draft loaded. ':'Published maps loaded. ')+data.maps.length+' expansion map(s).');
+ }catch(e){status('Unable to load maps. '+e.message);}}
+$('loadPublished').addEventListener('click',()=>{if(confirm('Discard unsaved edits and reload the published maps?'))loadPublished(true);});
+$('clearDraft').addEventListener('click',()=>{if(!confirm('Discard your browser draft and reload published maps?'))return;localStorage.removeItem(KEY);loadPublished(true);});
+window.addEventListener('beforeunload',e=>{if(localEdited){e.preventDefault();e.returnValue='';}});
+loadPublished();
+})();
+</script>
+</body></html>
