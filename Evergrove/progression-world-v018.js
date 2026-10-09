@@ -362,7 +362,7 @@ function html(){
  '<button data-journey-close="1">← Existing world</button></div>'+
  '<div class="journey-selector"><label for="journeyRegion">Choose chapter</label><select id="journeyRegion">'+regionOptions+'</select></div>'+
  '<div class="journey-atlas-grid"><aside class="journey-map-list">'+items+'</aside>'+
- '<section class="journey-map-inspector"><h3>'+opened.displayName+'</h3>'+
+ '<section class="journey-map-inspector"><h3>'+opened.displayName+'</h3><canvas id="journeyPreview" class="journey-preview" width="544" height="384" aria-label="Preview of selected expedition region"></canvas>'+
  '<p>'+opened.visual.identity+'</p>'+
  '<div class="journey-flag">'+(opened.flags.safeZone?'🛡 SAFE ZONE — No monsters':'🌿 EXPLORATION — No monsters yet')+'</div>'+
  '<div class="journey-stat">68 × 48 tiles · '+(opened.kind==='level'?'Level '+opened.levelNumber:'Town')+'</div>'+
@@ -373,12 +373,40 @@ function html(){
  '<p class="journey-reminder">Explore by walking through gates. Selecting a map does not teleport you.</p>'+
  '</section></div></div>';
 }
+function drawAtlasPreview(){
+ const canvas=document.getElementById('journeyPreview'),entry=owns(focusId);
+ if(!canvas||!entry)return;
+ const c=canvas.getContext('2d');if(!c)return;
+ const preview=build(entry);canvas.width=W*8;canvas.height=H*8;c.imageSmoothingEnabled=false;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  const tile=preview.tiles[index(x,y)],pair=COLORS[tile]||COLORS.grass;
+  c.fillStyle=pair[0];c.fillRect(x*8,y*8,8,8);
+  if(/road|path/.test(tile)){c.fillStyle='#e3ddbf';c.fillRect(x*8+2,y*8+4,5,1);}
+  if(tile==='water'){c.fillStyle='#a8e9eb';c.fillRect(x*8+1,y*8+3,4,1);}
+ }
+ for(const b of preview.buildings){
+  const f=b.footprint,palette=entry.visual?.palette||['#bcb6a0'];
+  c.fillStyle=palette[b.render.variant%palette.length];
+  c.fillRect(f.x*8,f.y*8,f.width*8,f.height*8);
+  c.fillStyle='#f7e0a8';c.fillRect(b.door.x*8-2,b.door.y*8-4,5,4);
+ }
+ for(const o of preview.objects){
+  c.fillStyle=o.type==='tree'?'#315f4d':'#738681';c.fillRect(o.x*8+1,o.y*8,6,7);
+ }
+ c.fillStyle='#fbe8aa';
+ for(const p of preview.portals){c.beginPath();c.arc((p.gateTile.x+.5)*8,(p.gateTile.y+.5)*8,5,0,Math.PI*2);c.fill();}
+ if(current()===entry.id){
+  c.fillStyle='#ffffff';c.strokeStyle='#274141';c.lineWidth=2;
+  c.beginPath();c.arc(p().x*8,p().y*8,5,0,Math.PI*2);c.stroke();c.fill();
+ }
+}
 function openAtlas(){
  const body=document.getElementById('modalBody');if(!body)return;
  const existing=document.getElementById('atlasRoot');if(existing)existing.style.display='none';
  const old=document.getElementById('journeyAtlas');if(old)old.remove();
  body.insertAdjacentHTML('beforeend',html());launchVisible=true;
  const scope=document.getElementById('journeyAtlas');if(!scope)return;
+ drawAtlasPreview();
  scope.addEventListener('click',e=>{
   const close=e.target.closest('[data-journey-close]');if(close){scope.remove();if(existing)existing.style.display='grid';launchVisible=false;return;}
   const card=e.target.closest('[data-journey-view]');if(card){
