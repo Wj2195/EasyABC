@@ -137,6 +137,7 @@ function mount(){
  const root=$('atlasRoot');if(!root)return;
  root.addEventListener('click',e=>{const go=e.target.closest('[data-atlas-go]');if(go&&root.contains(go)){guide(go.dataset.atlasGo);return;}const b=e.target.closest('[data-atlas-region]');if(!b||!root.contains(b))return;choose(b.dataset.atlasRegion);});
  update();
+ window.EvergroveJourney?.mountAtlas?.();
 }
 function refresh(){
  if(!$('atlasRoot'))return;
