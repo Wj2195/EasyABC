@@ -29,7 +29,7 @@ small.key{font-family:monospace;color:#ffe1ad}
 <div class="layout">
 <aside>
 <section class="group"><h2>World maps</h2><div id="mapList"></div>
-<button id="addMap">+ New expansion map</button></section>
+<label>Connect from existing region</label><select id="connectFrom"></select><label>Available side</label><select id="connectSide"></select><button id="addMap">+ Create map on selected side</button><div class="note">All maps have north, east, south and west gateway positions. Connections and return gateways are generated automatically.</div></section>
 <section class="group"><h2>Editing tools</h2><div id="tools" class="grid"></div>
 <p class="muted">Left-click or drag to paint. Right-click to erase. Choose Portal to connect areas.</p></section>
 <section class="group"><h2>Map appearance</h2><div class="grid" id="terrain"></div></section>
@@ -66,14 +66,16 @@ small.key{font-family:monospace;color:#ffe1ad}
 </section>
 </aside>
 </div>
+<script src="./world-grid-v014.js"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id), canvas=$('mapCanvas'),ctx=canvas.getContext('2d');
-const KEY='evergrove_map_workshop_v1', TERRAIN={grass:['Grass','#80b578'],forest:['Forest','#579569'],path:['Road','#c0ac82'],water:['Water','#559bb9'],stone:['Stone','#91a59c'],cliff:['Cliff','#727c84'],farm:['Farmland','#a37c54']};
+const KEY='evergrove_map_workshop_v2', TERRAIN={grass:['Grass','#80b578'],forest:['Forest','#579569'],path:['Road','#c0ac82'],water:['Water','#559bb9'],stone:['Stone','#91a59c'],cliff:['Cliff','#727c84'],farm:['Farmland','#a37c54']};
 const TOOLS={terrain:'🖌️ Terrain',tree:'🌳 Tree',rock:'🪨 Rock',portal:'🌀 Portal',spawn:'📍 Spawn',erase:'✖ Erase'};
 let data=null,mapId='base',brush='terrain',kind='grass',scale=24,painting=false,undoStack=[],redoStack=[],lastDraw='',localEdited=false;
 const clean=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 const active=()=>mapId==='base'?null:data?.maps.find(m=>m.id===mapId);
+const grid=window.EvergroveWorldGrid;
 const listPortals=()=>mapId==='base'?data.basePortals:active()?.portals;
 const value=(id,def=0)=>Number($(id).value)||def;
 const coord=(x,y)=>x+','+y;
@@ -96,7 +98,7 @@ function draw(){
  $('mapSize').textContent=width+' × '+height+' tiles';
 }
 function ui(){
- if(!data)return;
+ if(!data)return;grid.normalize(data);
  $('mapList').innerHTML=[{id:'base',name:'Willow Village',width:68,height:48},...data.maps].map(m=>'<button class="map-button '+(mapId===m.id?'active':'')+'" data-map="'+clean(m.id)+'">'+clean(m.name)+'<small>'+m.width+' × '+m.height+(m.id==='base'?' · legacy world':'')+'</small></button>').join('');
  $('tools').innerHTML=Object.entries(TOOLS).map(([k,v])=>'<button class="tool '+(brush===k?'active':'')+'" data-tool="'+k+'">'+v+'</button>').join('');
  $('terrain').innerHTML=Object.entries(TERRAIN).map(([k,v])=>'<button class="tool '+(kind===k?'active':'')+'" data-terrain="'+k+'">'+clean(v[0])+'</button>').join('');
@@ -104,8 +106,19 @@ function ui(){
  $('mapWidth').value=m?.width||68;$('mapHeight').value=m?.height||48;
  for(const id of ['mapWidth','mapHeight','resize','deleteMap'])$(id).disabled=!m;
  $('portalTo').innerHTML=[{id:'base',name:'Willow Village'},...data.maps].filter(t=>t.id!==mapId).map(t=>'<option value="'+clean(t.id)+'">'+clean(t.name)+'</option>').join('');
+ const savedFrom=$('connectFrom').value,all=[grid.BASE,...data.maps];
+ $('connectFrom').innerHTML=all.map(t=>'<option value="'+clean(t.id)+'">'+clean(t.name)+'</option>').join('');
+ $('connectFrom').value=all.some(t=>t.id===savedFrom)?savedFrom:(grid.neighbors(data,mapId).some(n=>n.available)?mapId:all.find(t=>grid.neighbors(data,t.id).some(n=>n.available))?.id||'base');
+ updateAvailableSides();
  $('zoomLabel').textContent=scale+' px per tile';draw();
 }
+function updateAvailableSides(){
+ const source=$('connectFrom').value,options=grid.neighbors(data,source).filter(n=>n.available),old=$('connectSide').value;
+ $('connectSide').innerHTML=options.map(n=>'<option value="'+n.side+'">'+n.side.toUpperCase()+' (slot '+n.coord.x+','+n.coord.y+')</option>').join('');
+ if(options.some(n=>n.side===old))$('connectSide').value=old;
+ $('addMap').disabled=!options.length;
+}
+$('connectFrom').addEventListener('change',updateAvailableSides);
 function editTile(x,y,erase=false){
  if(!data)return;const m=active(),w=m?.width||68,h=m?.height||48;
  if(x<0||y<0||x>=w||y>=h)return;
@@ -137,37 +150,43 @@ $('tools').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');
 $('terrain').addEventListener('click',e=>{const b=e.target.closest('[data-terrain]');if(b){kind=b.dataset.terrain;brush='terrain';ui();}});
 $('zoom').addEventListener('input',e=>{scale=Number(e.target.value);$('zoomLabel').textContent=scale+' px per tile';draw();});
 $('mapName').addEventListener('change',e=>{const m=active();if(!m)return;snapshot();m.name=e.target.value.trim().slice(0,55)||m.id;localEdited=true;ui();});
-$('addMap').addEventListener('click',()=>{const name=prompt('New map name (e.g. Moonlight City):');if(!name)return;
+$('addMap').addEventListener('click',()=>{
+ const from=$('connectFrom').value,side=$('connectSide').value;
+ if(!grid.neighbors(data,from).some(n=>n.available&&n.side===side)){alert('No free map slot on this side.');return;}
+ const name=prompt('New map name (e.g. Moonlight City):');if(!name)return;
  const id=name.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,36);
  if(!id||id==='base'||data.maps.some(m=>m.id===id)){alert('Choose a different map name.');return;}
- const w=Math.min(160,Math.max(12,Number(prompt('Width in tiles (12–160)', '42'))||42));
- const h=Math.min(120,Math.max(12,Number(prompt('Height in tiles (12–120)', '30'))||30));
- snapshot();data.maps.push({id,name:name.slice(0,55),width:w,height:h,defaultTerrain:'grass',spawn:{x:6.5,y:Math.floor(h/2)+.5},terrain:{},objects:[],portals:[{x:2,y:Math.floor(h/2),to:'base',arrival:{x:28.5,y:27.5},label:'Willow Village'}]});
- const n=data.maps.length;data.basePortals.push({x:29+Math.floor((n-1)/4),y:27+(n-1)%4,to:id,arrival:{x:6.5,y:Math.floor(h/2)+.5},label:name.slice(0,50)});
- mapId=id;localEdited=true;ui();status('New map created. Edit the entrance coordinates in Willow Village if needed.');});
+ const w=Math.min(160,Math.max(12,Number(prompt('Width (12–160)', '42'))||42));
+ const h=Math.min(120,Math.max(12,Number(prompt('Height (12–120)', '30'))||30));
+ const map={id,name:name.slice(0,55),width:w,height:h,defaultTerrain:'grass',spawn:{x:Math.floor(w/2)+.5,y:Math.floor(h/2)+.5},terrain:{},objects:[],portals:[]};
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(Math.abs(x-Math.floor(w/2))<=1||Math.abs(y-Math.floor(h/2))<=1)map.terrain[x+','+y]='path';
+ map.spawn=grid.arrival(map,grid.DIR[side].opposite);
+ snapshot();if(!grid.attach(data,from,side,map)){alert('This side is already linked.');return;}
+ mapId=id;localEdited=true;ui();status(name+' connected to '+grid.findMap(data,from).name+' on its '+side.toUpperCase()+' side. Return portal added.');
+});
 $('resize').addEventListener('click',()=>{const m=active();if(!m)return;
  const w=Math.max(12,Math.min(160,value('mapWidth',m.width))),h=Math.max(12,Math.min(120,value('mapHeight',m.height)));
  snapshot();m.width=w;m.height=h;
  for(const key of Object.keys(m.terrain)){const [x,y]=key.split(',').map(Number);if(x>=w||y>=h)delete m.terrain[key];}
  m.objects=m.objects.filter(o=>o.x<w&&o.y<h);m.portals=m.portals.filter(p=>p.x<w&&p.y<h);
- m.spawn.x=Math.min(w-.5,m.spawn.x);m.spawn.y=Math.min(h-.5,m.spawn.y);
+ m.spawn.x=Math.min(w-.5,m.spawn.x);m.spawn.y=Math.min(h-.5,m.spawn.y);grid.normalize(data);
  localEdited=true;ui();status('Map resized to '+w+' × '+h+'.');});
 $('deleteMap').addEventListener('click',()=>{const m=active();if(!m||!confirm('Delete '+m.name+' and any entrances leading to it?'))return;snapshot();
  data.maps=data.maps.filter(x=>x.id!==m.id);data.basePortals=data.basePortals.filter(x=>x.to!==m.id);
- data.maps.forEach(x=>x.portals=x.portals.filter(p=>p.to!==m.id));mapId='base';localEdited=true;ui();});
+ data.maps.forEach(x=>x.portals=x.portals.filter(p=>p.to!==m.id));grid.normalize(data);mapId='base';localEdited=true;ui();});
 $('undo').addEventListener('click',()=>{if(!undoStack.length)return;redoStack.push(JSON.stringify(data));data=JSON.parse(undoStack.pop());if(mapId!=='base'&&!active())mapId='base';ui();});
 $('redo').addEventListener('click',()=>{if(!redoStack.length)return;undoStack.push(JSON.stringify(data));data=JSON.parse(redoStack.pop());if(mapId!=='base'&&!active())mapId='base';ui();});
 $('saveDraft').addEventListener('click',()=>{localStorage.setItem(KEY,JSON.stringify(data));localEdited=false;status('Draft saved locally in this browser. Export JSON to publish.');});
-$('export').addEventListener('click',()=>{if(!data)return;const blob=new Blob([JSON.stringify({...data,version:new Date().toISOString().slice(0,10)},null,2)],{type:'application/json'}),link=document.createElement('a');
+$('export').addEventListener('click',()=>{if(!data)return;grid.normalize(data);const blob=new Blob([JSON.stringify({...data,version:new Date().toISOString().slice(0,10)},null,2)],{type:'application/json'}),link=document.createElement('a');
  link.href=URL.createObjectURL(blob);link.download='worlds.json';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),2000);
  localStorage.setItem(KEY,JSON.stringify(data));status('Exported worlds.json. Upload it to Evergrove/maps/ on GitHub to publish changes.');});
 $('importBtn').addEventListener('click',()=>$('file').click());
 $('file').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;
- try{const parsed=JSON.parse(await file.text());if(!validate(parsed))throw Error('Unsupported map data format');snapshot();data=parsed;mapId='base';localEdited=true;ui();status('Imported '+data.maps.length+' expansion maps.');}catch(err){alert('Import failed: '+err.message);}
+ try{const parsed=JSON.parse(await file.text());if(!validate(parsed))throw Error('Unsupported map data format');snapshot();data=grid.normalize(parsed);mapId='base';localEdited=true;ui();status('Imported '+data.maps.length+' expansion maps.');}catch(err){alert('Import failed: '+err.message);}
  e.target.value='';});
 function validate(v){return v&&v.schema===1&&Array.isArray(v.maps)&&Array.isArray(v.basePortals)&&v.maps.every(m=>m&&/^[a-z0-9-]+$/.test(m.id)&&Number.isInteger(m.width)&&m.width>=12&&m.width<=160&&Number.isInteger(m.height)&&m.height>=12&&m.height<=120&&Array.isArray(m.objects)&&Array.isArray(m.portals)&&m.terrain&&typeof m.terrain==='object');}
 async function loadPublished(discard=false){try{const r=await fetch('./maps/worlds.json',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const published=await r.json();if(!validate(published))throw Error('Invalid maps JSON');
- const draft=localStorage.getItem(KEY);data=(!discard&&draft&&validate(JSON.parse(draft)))?JSON.parse(draft):published;
+ const draft=localStorage.getItem(KEY);data=grid.normalize((!discard&&draft&&validate(JSON.parse(draft)))?JSON.parse(draft):published);
  mapId='base';undoStack=[];redoStack=[];ui();status((!discard&&draft?'Local draft loaded. ':'Published maps loaded. ')+data.maps.length+' expansion map(s).');
  }catch(e){status('Unable to load maps. '+e.message);}}
 $('loadPublished').addEventListener('click',()=>{if(confirm('Discard unsaved edits and reload the published maps?'))loadPublished(true);});
