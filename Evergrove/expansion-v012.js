@@ -10,6 +10,7 @@ const objAt=(m,x,y)=>m.objects?.find(o=>o.x===x&&o.y===y);
 const passable=(m,x,y)=>inside(x,y,m)&&!['water','cliff'].includes(terrain(m,x,y))&&!objAt(m,x,y);
 const canStand=(x,y)=>{const r=.24;return [[-r,-r],[r,-r],[-r,r],[r,r]].every(([dx,dy])=>{const tx=Math.floor(x+dx),ty=Math.floor(y+dy);return passable(current,tx,ty);});};
 const clearRoute=()=>{route=[];};
+function safeArrival(m,pos){const x=Math.floor(pos.x),y=Math.floor(pos.y);if(passable(m,x,y))return pos;for(let rad=1;rad<Math.max(m.width,m.height);rad++){for(let dy=-rad;dy<=rad;dy++)for(let dx=-rad;dx<=rad;dx++){if(Math.abs(dx)!==rad&&Math.abs(dy)!==rad)continue;if(passable(m,x+dx,y+dy))return{x:x+dx+.5,y:y+dy+.5};}}return m.spawn||{x:4.5,y:4.5};}
 const tileCenter=(p)=>({x:p.x+.5,y:p.y+.5});
 function portalAt(x,y){return current?.portals?.find(p=>p.x===x&&p.y===y);}
 function paint(m){
@@ -53,6 +54,7 @@ function showZone(){
 }
 function travel(to,arrival){
  if(!worlds)return;
+ window.EvergroveNavigation?.cancel();
  const state=api.state(),p=api.player();
  if(to==='base'){
   current=null;state.activeMap='base';clearRoute();
@@ -63,7 +65,7 @@ function travel(to,arrival){
  const map=worlds.maps.find(m=>m.id===to);if(!map){api.notify('This destination has not been published yet.');return false;}
  if(!current)state.basePosition={x:p.x,y:p.y};
  current=map;background=paint(map);clearRoute();
- state.activeMap=map.id;const next=arrival||map.spawn||{x:4.5,y:4.5};
+ state.activeMap=map.id;const next=safeArrival(map,arrival||map.spawn||{x:4.5,y:4.5});
  p.x=next.x;p.y=next.y;lockedUntil=performance.now()+1000;
  api.save();api.notify('🧭 Entered '+map.name);showZone();return true;
 }
@@ -159,8 +161,8 @@ async function load(){
   worlds=data;
   const state=api.state();if(state.activeMap&&state.activeMap!=='base'){
    const m=data.maps.find(m=>m.id===state.activeMap);
-   if(m){current=m;background=paint(m);if(!inside(Math.floor(api.player().x),Math.floor(api.player().y),m)){
-    const pos=m.spawn||{x:4.5,y:4.5};api.player().x=pos.x;api.player().y=pos.y;}showZone();}
+   if(m){current=m;background=paint(m);if(!canStand(api.player().x,api.player().y)){
+    const pos=safeArrival(m,m.spawn||{x:4.5,y:4.5});api.player().x=pos.x;api.player().y=pos.y;}showZone();}
    else{state.activeMap='base';api.player().x=28.5;api.player().y=27.5;}
   }
  }catch(e){console.warn('Evergrove expansion unavailable',e);}
