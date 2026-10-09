@@ -1,4 +1,4 @@
-const CACHE_NAME='evergrove-pages-v0.14.0';
+const CACHE_NAME='evergrove-pages-v0.14.1';
 const PREFIX='evergrove-pages-';
 const ESSENTIAL=['./','./index.html','./web-updater.js', './viewport-v0.6.css','./readability-v0.8.css', './controls-v0.8.js','./evergrove_navigation_v012.js','./expansion-v014.js','./world-grid-v014.js','./world-atlas-v014.js','./world-atlas-v014.css','./maps/worlds.json','./map-editor.html','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ESSENTIAL))));
