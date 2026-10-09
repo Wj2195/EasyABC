@@ -115,7 +115,7 @@ function update(){
  '<span>◉ '+portalList(map.id).length+' gateways</span>';
  const portals=portalList(map.id);
  $('atlasPortals').innerHTML=portals.length?portals.map(p=>'<button type="button" class="atlas-gateway" data-atlas-region="'+escapeHTML(p.to)+'" title="Preview connected area">◉ '+escapeHTML(p.label||nameFor(p.to))+' → '+escapeHTML(nameFor(p.to))+'</button>').join(''):'<span class="atlas-footnote">No connected gates are published for this region yet.</span>';
- const open=grid()?.neighbors(registry(),map.id).filter(s=>s.available).map(s=>s.side.toUpperCase())||[];
+ const currentWorld=registry(),gridApi=grid(),open=currentWorld&&gridApi?gridApi.neighbors(currentWorld,map.id).filter(s=>s.available).map(s=>s.side.toUpperCase()):[];
  $('atlasNote').textContent=(now?'Your current region. ':'Preview only — ')+'Linked gateways are at the middle of each map edge. '+(open.length?'Free sides: '+open.join(', ')+'.':'All four sides connected.')+' Travel only through portals in-game.';
  if(map.id==='base')drawBase(canvas);else drawExpansion(map,canvas);
 }
