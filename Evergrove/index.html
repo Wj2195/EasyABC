@@ -405,7 +405,7 @@ body{background:#101b23}
 </div>
 <input type="file" id="importFile" accept=".json,application/json" hidden />
 <script>
-/* EVERGROVE v0.9 Web Edition — no frameworks, CDNs or paid services. */
+/* EVERGROVE v0.10 Web Edition — no frameworks, CDNs or paid services. */
 (() => {
 'use strict';
 const T=32, MW=68, MH=48, H=576, KEY='evergrove_offline_save_v1';
@@ -566,7 +566,7 @@ function drawWorld(){const p=state.player;camera.x=clamp(Math.round(p.x*T-W/2),0
   for(const n of NPCS)sprites.push({y:n.y+.6,draw:()=>{drawHuman(n.x+.5,n.y+.5,n.color,false,'down',elapsed);const sx=Math.round((n.x+.5)*T-camera.x),sy=Math.round(n.y*T-camera.y-45);ctx.font='bold 11px monospace';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='#1a3f37';ctx.strokeText(n.name,sx,sy);ctx.fillStyle='#fff4d1';ctx.fillText(n.name,sx,sy);}});
   for(const m of monsters)if(m.alive)sprites.push({y:m.y+.1,draw:()=>{drawCreature(m.x,m.y,m.type,false,elapsed);if(m.hp<MONSTER_TYPES[m.type].hp){const px=m.x*T-camera.x;const py=m.y*T-camera.y-26;pixelRect(ctx,px-16,py,32,5,'#593d43');pixelRect(ctx,px-15,py+1,30*m.hp/MONSTER_TYPES[m.type].hp,3,'#b2e591');}}});
   if(state.follower!==null&&state.collection[state.follower]){const c=state.collection[state.follower],o={up:[.65,.85],down:[-.75,-.55],left:[.9,.6],right:[-.9,.55]}[p.dir];sprites.push({y:p.y+.3,draw:()=>drawCreature(p.x+o[0],p.y+o[1],c.type,true,elapsed)});}
-  sprites.push({y:p.y+.4,draw:()=>drawHuman(p.x,p.y,state.appearance?.color||'#79a8a4',true,p.dir,elapsed)});
+  sprites.push({y:p.y+.4,draw:()=>drawHuman(p.x,p.y,state.appearance?.color||'#79a8a4',true,p.dir,elapsed*(window.EvergroveNavigation?.getStatus()?.walking?1.65:1))});
   sprites.sort((a,b)=>a.y-b.y);for(const sprite of sprites)sprite.draw();
   if(pointerTile&&distance(p.x,p.y,pointerTile.x+.5,pointerTile.y+.5)<2.9){ctx.strokeStyle='#f4edbd';ctx.lineWidth=2;ctx.strokeRect(Math.round(pointerTile.x*T-camera.x)+1,Math.round(pointerTile.y*T-camera.y)+1,T-2,T-2);}
   for(const fx of particles){ctx.globalAlpha=clamp(fx.t,0,1);ctx.font='22px serif';ctx.fillText(fx.emoji,fx.x*T-camera.x,fx.y*T-camera.y+(1-fx.t)*-34);ctx.globalAlpha=1;}
@@ -812,7 +812,7 @@ function bindEvents(){
   function targetFromEvent(e){const r=canvas.getBoundingClientRect();const px=(e.clientX-r.left)/r.width*W,py=(e.clientY-r.top)/r.height*H;return{x:Math.floor((px+camera.x)/T),y:Math.floor((py+camera.y)/T)}}
   canvas.addEventListener('mousemove',e=>{pointerTile=targetFromEvent(e)});canvas.addEventListener('mouseleave',()=>pointerTile=null);
   canvas.addEventListener('click',e=>{if(currentModal)return;const t=targetFromEvent(e);const n=NPCS.find(n=>Math.abs(n.x-t.x)<=1&&Math.abs(n.y-t.y)<=1);const h=HOMES.find(h=>Math.abs(door(h).x-t.x-.5)<1&&Math.abs(door(h).y-t.y-.5)<1);if(n&&distance(state.player.x,state.player.y,n.x+.5,n.y+.5)<2.2){openModal('npc',{id:n.id});return;}if(h&&distance(state.player.x,state.player.y,door(h).x,door(h).y)<2.3){interact();return;}act(state.selected,t.x,t.y);});
-  canvas.addEventListener('contextmenu',e=>{e.preventDefault();interact()});
+  $('gameFrame').addEventListener('contextmenu',e=>{if(!matchMedia('(hover: hover) and (pointer: fine)').matches)return;e.preventDefault();if(currentModal)backModal();else window.EvergroveNavigation?.cancel();});
   document.querySelectorAll('[data-dir]').forEach(btn=>{const dir='mobile'+btn.dataset.dir;btn.addEventListener('pointerdown',e=>{e.preventDefault();input[dir]=true;try{btn.setPointerCapture(e.pointerId)}catch(_){}});for(const event of ['pointerup','pointercancel','lostpointercapture','pointerleave'])btn.addEventListener(event,()=>input[dir]=false);});
   $('touchInteract').addEventListener('click',interact);$('touchUse').addEventListener('click',useFacing);
   window.addEventListener('beforeunload',()=>save());
@@ -841,7 +841,7 @@ start();
 
 </script>
 <script src="./controls-v0.8.js" defer></script>
-<script src="./evergrove_navigation_v09.js" defer></script>
+<script src="./evergrove_navigation_v010.js" defer></script>
 <script src="./web-updater.js" defer></script>
 </body>
 </html>
