@@ -201,3 +201,9 @@ A substantial **playable, original-code** visual redesign was applied to the leg
 - This is a visual-first renderer, not a pixel-perfect recreation of the concept screenshot. Richer animated sprite sheets, elaborate water systems and fully editable authored art tiles can be added later.
 
 Game: https://wj2195.github.io/EasyABC/Evergrove/
+
+## World progression blueprint (81-map planning foundation)
+
+**New data-only master plan, not yet playable:** [60-level progression registry](./maps/progression-60.json) · [full design guide](./maps/progression-60-guide.md) · [loader and validator](./maps/progression-loader-v1.js).
+
+Willow Valley respawn and safe town → three exploration maps → a safe town → repeat through **Level 60** and **Crownspire Capital**. This master plan includes **81 maps** (60 levels plus 21 safe towns), all **68 × 48 tiles**, ten standard service types in each town, 24 exterior buildings per safe town, detailed biome themes and reciprocal travel links. The new manifest has **no monster spawning** anywhere. The existing playable five-map registry, old hunting grounds and save data remain unchanged until the new generator and travel system are built.
