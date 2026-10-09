@@ -1,6 +1,6 @@
-const CACHE_NAME='evergrove-pages-v0.16.1';
+const CACHE_NAME='evergrove-pages-v0.17.0';
 const PREFIX='evergrove-pages-';
-const ESSENTIAL=['./','./index.html','./web-updater.js', './viewport-v0.6.css','./readability-v0.8.css', './controls-v0.8.js','./evergrove_navigation_v015.js','./expansion-v015.js','./world-grid-v015.js','./world-atlas-v015.js','./living-world-v016.js','./living-world-v016.css','./world-atlas-v014.css','./maps/worlds.json','./map-editor.html','./manifest.webmanifest','./icon.svg'];
+const ESSENTIAL=['./','./index.html','./web-updater.js', './viewport-v0.6.css','./readability-v0.8.css', './controls-v0.8.js','./evergrove_navigation_v015.js','./expansion-v015.js','./world-grid-v015.js','./world-atlas-v015.js','./living-world-v016.js','./living-world-v016.css','./willow-hd-v017.js','./willow-hd-v017.css','./world-atlas-v014.css','./maps/worlds.json','./map-editor.html','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ESSENTIAL))));
 self.addEventListener('message',e=>{if(e.data?.type==='SKIP_WAITING')self.skipWaiting();});
 self.addEventListener('activate',e=>e.waitUntil((async()=>{await Promise.all((await caches.keys()).filter(n=>n.startsWith(PREFIX)&&n!==CACHE_NAME).map(n=>caches.delete(n)));await self.clients.claim();})()));
