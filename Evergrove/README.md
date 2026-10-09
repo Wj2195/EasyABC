@@ -118,3 +118,25 @@ The player-facing **World Atlas** now renders a compass-style connection diagram
 To create a new connected map, select **Connect from existing region**, choose an **Available side** (N/E/S/W), then click **Create map on selected side**. The editor assigns grid coordinates and both gateways automatically and exports the `worlds.json` registry. This browser tool does not publish directly: update `Evergrove/maps/worlds.json` in GitHub and bump the `CACHE_NAME` version in `sw.js` to deploy new maps and offline cache. Only people with GitHub write permissions can publish.
 
 Older browser saves keep the same key and remain compatible. The original Willow Valley retains its 68 × 48 legacy map and current NPC/farming RPG functionality. New areas currently support terrain, obstacles, running, click-to-move, world travel, and previews; their NPCs, farming, and interior gameplay are still future work.
+
+
+## v0.15 — All maps now 68 × 48; easier gateways and assisted travel
+
+All five maps are the **same 68 × 48 tile size**: Willow Valley, Autumn Grove, Starglow Highlands, Sunmeadow Plains, and Moonlit Coast. At 32 pixels per tile, each map covers 2,176 × 1,536 world pixels; total published world = **16,320 tiles**.
+
+### What caused the confusing entrances?
+In v0.14, portals were drawn at the outermost tile (for example, north y=0, west x=0), with entry requiring the player to approach within less than half a tile of the exact gate center. They could technically be reached, but the edges and tiny activation radius made them difficult to spot and activate. The game's original-world paths were not specifically cleared to the outer entrances.
+
+### Fixed
+- The four cardinal gateway markers now sit **two tiles inside** their map boundaries, still centered on north/east/south/west.
+- Walking within approximately one tile of the correct gate triggers entry automatically.
+- A clear, marked entry lane is carved around every entrance in the original valley, and a connected walkable central cross-path is present in the expansion maps.
+- **World Atlas → select your current map → 🏃 Go to gateway** guides the character along a valid route without teleporting (supports PC and phone; manual directional input cancels the route).
+- Exact reciprocal entrances/exits remain connected to their corresponding neighbor.
+- All terrain and placed objects from smaller expansion maps are centered and preserved wherever possible.
+- Existing saves in a previous expansion map are migrated once using each map's original dimension offset. Key `evergrove_offline_save_v1` is unchanged, and a new `mapLayoutRevision` marker avoids repeated shifts.
+- Map Workshop now defaults new maps to fixed **68 × 48** and prevents inadvertent resizing.
+
+**To enter a different area:** play, open **🗺️ World (M)**, select the **current area**, and click its **Go to gateway** button for the desired destination. The atlas closes and the character runs to the corresponding portal. Alternatively, walk to the glowing gateway with normal movement controls.
+
+These changes are in GitHub as version 0.15. The offline worker cache version is `evergrove-pages-v0.15.0`. Accept the **Save & update** prompt or reload after publication. GitHub Pages publication may lag GitHub commits.
