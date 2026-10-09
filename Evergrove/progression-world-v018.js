@@ -453,6 +453,6 @@ function mountAtlas(){
 }
 document.addEventListener('click',onPointerClick,true);
 document.addEventListener('keydown',e=>{if(isActive()&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&!api.modal())route=[];},true);
-window.EvergroveJourney={active:isActive,ready:()=>!!data,update,draw,checkBaseEntrance:checkGate,drawBaseEntrance:drawBasePortal,walkTo,go:enter,scene:()=>scene,map:()=>map,registry:()=>data,mountAtlas,openAtlas,html,passable:pass,generate:build,plan,restore};
+window.EvergroveJourney={active:isActive,ready:()=>!!data,update,draw,checkBaseEntrance:checkGate,drawBaseEntrance:drawBasePortal,walkTo,go:enter,scene:()=>scene,map:()=>map,registry:()=>data,mountAtlas,openAtlas,html,passable:pass,generate:build,plan,restore,walking:()=>route.length>0};
 load();
 })();
