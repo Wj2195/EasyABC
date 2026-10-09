@@ -46,3 +46,13 @@ While a menu or conversation choice panel is open, **Up / Down** (also A / S) mo
 - **Touchscreen phones:** Keep the existing virtual joystick controls. Automatic click-to-walk only activates on fine-pointer desktop devices.
 
 No saved-game migration required. GitHub Pages v0.9.0 service worker precaches the click-to-move script for offline play.
+
+## v0.10 — Mouse click-to-run and right-click Back
+
+- **Left click in the world:** Automatically **run** to that destination at 5.8 tiles/second (previously 3.1).
+- **Arrow keys:** Continue using normal walking speed and interrupt automatic movement.
+- **Right-click while a menu, NPC conversation, or shop is open:** Go back to the previous selection, or close the menu at its top level.
+- **Right-click during gameplay:** Cancel the automatic running route. It no longer activates Talk/Interact.
+- **Shift + Left Click:** Use the selected tool on a nearby tile.
+- **Mobile controls:** Unchanged, still use the in-game joystick and touch buttons.
+- **Save data:** Unchanged; offline service worker cache version v0.10.0.
