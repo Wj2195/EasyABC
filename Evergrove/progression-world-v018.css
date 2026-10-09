@@ -1,0 +1,63 @@
+/* Evergrove v0.18 · responsive 81-map expedition UI */
+#modalBody:has(.journey-atlas){position:relative;overflow:hidden}
+.atlas-journey-launch{
+ flex:none;width:100%;min-height:51px;padding:10px 8px;
+ border:2px solid #e9dca3;border-radius:6px;
+ background:#3b654e;color:#fff2c7;box-shadow:0 3px 9px #0006;
+ font:800 clamp(11px,1vw,15px)/1.3 ui-monospace,Consolas,monospace;
+ text-align:center;cursor:pointer;
+}
+.atlas-journey-launch:hover,.atlas-journey-launch:focus-visible{background:#5d825b;border-color:#fff7c3}
+.journey-atlas{
+ position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;gap:10px;
+ background:#162f2d;border:1px solid #aec5a1;border-radius:5px;
+ padding:11px;overflow:hidden;min-height:0;
+ font:700 clamp(11px,1.15vw,14px)/1.4 ui-monospace,Consolas,monospace;color:#e4edcc;
+}
+.journey-atlas-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid #547b65;padding-bottom:7px}
+.journey-atlas-top strong{color:#f6e2ac;font-size:clamp(13px,1.5vw,18px);flex:1}
+.journey-atlas-top span{font-size:11px;color:#bfdebf}
+.journey-atlas button,.journey-atlas select{
+ font:700 clamp(10px,.95vw,13px)/1.3 ui-monospace,monospace;
+ color:#f0edda;background:#335748;border:1px solid #8ba989;border-radius:5px;
+ padding:7px 10px;cursor:pointer;touch-action:manipulation;
+}
+.journey-atlas button:hover,.journey-atlas button:focus-visible,
+.journey-atlas select:hover{background:#5b805c;border-color:#f5e6a7}
+.journey-selector{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.journey-selector label{font-weight:800;color:#d9e9c7}
+#journeyRegion{flex:1;min-width:150px;max-width:100%;min-height:34px}
+.journey-atlas-grid{display:grid;grid-template-columns:minmax(190px,37%) minmax(0,1fr);gap:10px;flex:1;min-height:0}
+.journey-map-list{background:#213e37;border:1px solid #6f9381;border-radius:7px;
+ display:flex;flex-direction:column;gap:7px;overflow-y:auto;padding:8px;scrollbar-width:thin}
+.journey-atlas button.journey-map-card{display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:4px;min-height:64px;flex:none;
+ background:#2d4e43;border-color:#668976}
+.journey-atlas button.journey-map-card.chosen{background:#58765b;border:2px solid #f1d998}
+.journey-map-card b{font-size:clamp(11px,1.05vw,14px);color:#fff4d5}
+.journey-map-card small{font-size:10px;color:#c8d6bc}
+.journey-map-inspector{overflow-y:auto;min-height:0;border:1px solid #6a9582;background:#203d37;border-radius:7px;padding:14px;scrollbar-width:thin}
+.journey-map-inspector h3{color:#f9e4a8;font-size:clamp(16px,1.8vw,23px);margin:0 0 6px}
+.journey-map-inspector p{font-weight:500;line-height:1.55;margin:8px 0}
+.journey-flag{display:inline-block;background:#43604c;border:1px solid #a4ca96;border-radius:4px;color:#eaffd7;padding:6px 9px;font-size:11px}
+.journey-stat{font-size:12px;color:#e4d8aa;padding:9px 0;border-bottom:1px solid #557b68}
+.journey-services{display:flex;flex-wrap:wrap;gap:5px;padding:9px 0}
+.journey-services span{border:1px solid #668c7c;color:#f3dfae;border-radius:3px;padding:4px 6px;background:#36564b;font-size:10px}
+.journey-actions{display:flex;flex-wrap:wrap;gap:8px;padding:9px 0}
+.journey-actions button{background:#567b56;color:#fff5cf}
+.journey-reminder{color:#bbd0bd;font-size:11px;font-style:italic}
+@media(max-width:760px),(max-height:460px){
+ .journey-atlas{padding:5px;gap:5px}
+ .journey-atlas-top{gap:5px;padding-bottom:4px}
+ .journey-selector{gap:4px}
+ .journey-atlas-grid{grid-template-columns:minmax(105px,34%) minmax(0,1fr);gap:5px}
+ .journey-map-list{gap:3px;padding:3px}
+ .journey-map-inspector{padding:6px}
+ .journey-atlas button.journey-map-card{min-height:45px;padding:4px 5px;gap:1px}
+ .journey-map-card small{font-size:9px}
+ .journey-map-inspector h3{font-size:14px}
+ .journey-map-inspector p{margin:4px 0;font-size:10px}
+ .journey-services span{font-size:9px;padding:2px 3px}
+ .journey-flag{font-size:9px;padding:4px}
+ .journey-stat{font-size:10px;padding:4px 0}
+ .journey-atlas button,.journey-atlas select{padding:4px 6px;font-size:10px}
+}
