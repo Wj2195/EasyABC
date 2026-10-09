@@ -319,6 +319,7 @@ body{background:#101b23}
 
 </style>
   <link rel="stylesheet" href="./viewport-v0.6.css" />
+  <link rel="stylesheet" href="./readability-v0.8.css" />
 </head>
 <body>
 <div class="shell">
@@ -404,7 +405,7 @@ body{background:#101b23}
 </div>
 <input type="file" id="importFile" accept=".json,application/json" hidden />
 <script>
-/* EVERGROVE v0.7 Web Edition — no frameworks, CDNs or paid services. */
+/* EVERGROVE v0.8 Web Edition — no frameworks, CDNs or paid services. */
 (() => {
 'use strict';
 const T=32, MW=68, MH=48, H=576, KEY='evergrove_offline_save_v1';
@@ -719,7 +720,7 @@ function refreshModal(){if(!currentModal)return;const type=currentModal.type;let
     html=`<p>Pick a name and outfit color for your explorer. Changes are applied to your character immediately.</p><div class="stat-line"><span>Explorer name</span><strong>${escapeText(state.appearance?.name||'Valley Wanderer')}</strong></div><button class="primary-btn" data-action="rename">✎ Change character name</button><h3>OUTFIT COLORS</h3><div class="button-line">${colors.map(([hex,label])=>`<button class="primary-btn" data-action="color" data-id="${hex}" style="border-color:${hex};background:${hex}44">${label}${state.appearance?.color===hex?' ✓':''}</button>`).join('')}</div>`;
   }
   else if(type==='settings'){
-    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.7 · Menu Keyboard Navigation</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
+    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.8 · Readable Menus</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
   }
   $('modalTitle').textContent=title;$('modalEyebrow').textContent=eyebrow;$('modalBody').innerHTML=html;
   if(type==='map')drawMap();
@@ -831,7 +832,7 @@ start();
 })();
 
 </script>
-<script src="./controls-v0.7.js" defer></script>
+<script src="./controls-v0.8.js" defer></script>
 <script src="./web-updater.js" defer></script>
 </body>
 </html>
