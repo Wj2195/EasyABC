@@ -1,11 +1,21 @@
-# Evergrove v0.5 GitHub Pages Edition
+# Evergrove v0.6 — Browser Game
 
-Live URL: https://wj2195.github.io/EasyABC/Evergrove/
+Play: https://wj2195.github.io/EasyABC/Evergrove/
 
-Evergrove lives inside the existing EasyABC GitHub repository as a separate folder.
+An offline-capable pixel-art farming, life simulation, RPG, sandbox and creature collecting game. Currently single-player; 2–10 player multiplayer rooms are planned, not active.
 
-Updates: replace index.html and bump CACHE_NAME in sw.js for each release. Returning players can accept the "Save & update" prompt. GitHub Pages uses HTTPS so offline caching works after the first successful online visit.
+## Controls
+- **Arrow keys:** Move
+- **Z:** Talk, interact, confirm highlighted menu option
+- **X:** Use tool, close a menu / go back
+- **A / S:** Previous / next tool, or move through menu choices
+- **1–8:** Select a tool directly
+- **Esc:** Open settings or close menus
+- **E / F:** Previous talk/use shortcuts are retained
 
-Saves: Local browser storage only, no cloud synchronization. Before moving from the old downloaded HTML, export the save in the old game's Settings and import it into the new site's Settings. The site and downloaded HTML use different storage origins. Future versions at the same URL retain the v1 save key as long as the game remains compatible.
+PC displays the key guide inside the full-screen game viewport. Mobile landscape uses a translucent left joystick plus TALK/USE and tool controls on the right.
 
-Offline cache may be cleared by the phone or browser. Regular save backup exports are advised. Multiplayer is not enabled yet.
+## Releases and saves
+The page is served by GitHub Pages from this folder in the EasyABC repository. For updates, change the game files and increment the version in sw.js (currently evergrove-pages-v0.6.0). The updater offers a Save & Update prompt when new service worker content is ready.
+
+Save data remains local to each browser using key `evergrove_offline_save_v1`. Export JSON backup in Settings before switching devices or clearing browser data. GitHub Pages hosting is free, subject to GitHub usage policies.
