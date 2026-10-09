@@ -103,7 +103,7 @@
     ctx.restore();
   }
   document.addEventListener('click', event => {
-    if (!isPc() || event.target !== canvas || api.modal() || window.EvergroveExpansion?.active() || event.detail === 0) return;
+    if (!isPc() || event.target !== canvas || api.modal() || window.EvergroveExpansion?.active() || window.EvergroveJourney?.active?.() || event.detail === 0) return;
     event.preventDefault(); event.stopImmediatePropagation();
     const rect = canvas.getBoundingClientRect(), cam = api.camera();
     const px = (event.clientX - rect.left) / rect.width * canvas.width + cam.x;
