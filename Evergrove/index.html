@@ -366,7 +366,7 @@ body{background:#101b23}
             <button data-pad-action="previous" title="Previous tool / menu choice"><kbd>A</kbd><span>Prev / Up</span></button>
             <button data-pad-action="next" title="Next tool / menu choice"><kbd>S</kbd><span>Next / Down</span></button>
           </div>
-          <div class="key-guide-foot">↑↓ Menu · Z / → OK · X / ← Back</div>
+          <div class="key-guide-foot">↑↓ Select in menus · Z OK · X Back</div>
         </aside>
         <div class="mobile-controls" id="mobileControls" aria-label="Touch gaming controls">
           <div class="joystick-zone" id="joystick" role="application" aria-label="Move: drag joystick in any direction">
@@ -405,7 +405,7 @@ body{background:#101b23}
 </div>
 <input type="file" id="importFile" accept=".json,application/json" hidden />
 <script>
-/* EVERGROVE v0.8 Web Edition — no frameworks, CDNs or paid services. */
+/* EVERGROVE v0.9 Web Edition — no frameworks, CDNs or paid services. */
 (() => {
 'use strict';
 const T=32, MW=68, MH=48, H=576, KEY='evergrove_offline_save_v1';
@@ -627,15 +627,15 @@ function showActiveModal(){
   refreshModal();
 }
 function openModal(type,extra={}){
-  if(currentModal&&currentModal.type!==type)modalHistory.push({...currentModal});
+  if(currentModal && currentModal.type!==type)modalHistory.push({...currentModal});
   else if(!currentModal)modalHistory=[];
   currentModal={type,...extra};showActiveModal();
 }
 function closeModal(){currentModal=null;modalHistory=[];dialogueTick++;$('modalLayer').classList.add('hidden');$('modalLayer').classList.remove('dialogue-layer','quest-layer');}
 function backModal(){
   if(currentModal?.type==='npc'){
-    const gifts=$('modalBody').querySelector('[data-dialogue-pane="gifts"]');
-    if(gifts&&!gifts.hidden){setDialoguePane('main');return;}
+    const giftPane=$('modalBody').querySelector('[data-dialogue-pane="gifts"]');
+    if(giftPane && !giftPane.hidden){setDialoguePane('main');return;}
   }
   if(modalHistory.length){currentModal=modalHistory.pop();showActiveModal();return;}
   closeModal();
@@ -720,7 +720,7 @@ function refreshModal(){if(!currentModal)return;const type=currentModal.type;let
     html=`<p>Pick a name and outfit color for your explorer. Changes are applied to your character immediately.</p><div class="stat-line"><span>Explorer name</span><strong>${escapeText(state.appearance?.name||'Valley Wanderer')}</strong></div><button class="primary-btn" data-action="rename">✎ Change character name</button><h3>OUTFIT COLORS</h3><div class="button-line">${colors.map(([hex,label])=>`<button class="primary-btn" data-action="color" data-id="${hex}" style="border-color:${hex};background:${hex}44">${label}${state.appearance?.color===hex?' ✓':''}</button>`).join('')}</div>`;
   }
   else if(type==='settings'){
-    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.8 · Readable Menus</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
+    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.9 · Mouse Click-to-Walk</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
   }
   $('modalTitle').textContent=title;$('modalEyebrow').textContent=eyebrow;$('modalBody').innerHTML=html;
   if(type==='map')drawMap();
@@ -818,7 +818,7 @@ function bindEvents(){
   window.addEventListener('beforeunload',()=>save());
   window.addEventListener('orientationchange',()=>{input.joyX=0;input.joyY=0;document.body.classList.remove('allow-portrait')});
 }
-function loop(now){const dt=Math.min((now-lastTick)/1000,.045);lastTick=now;gameUpdate(dt);drawWorld();requestAnimationFrame(loop)}
+function loop(now){const dt=Math.min((now-lastTick)/1000,.045);lastTick=now;window.EvergroveNavigation?.step(dt);gameUpdate(dt);drawWorld();window.EvergroveNavigation?.draw();requestAnimationFrame(loop)}
 function resizeGame(){
   const frame=$('gameFrame');if(!frame)return;
   const r=frame.getBoundingClientRect();if(!r.width||!r.height)return;
@@ -828,11 +828,20 @@ function resizeGame(){
   }
 }
 function start(){const resumed=load();initWorld();resizeGame();window.addEventListener('resize',resizeGame,{passive:true});window.addEventListener('orientationchange',()=>setTimeout(resizeGame,120),{passive:true});bindEvents();updateUI();if(resumed){log(`Welcome back! Continued Day ${state.day}.`);notify('💾 Saved adventure restored!')}else{log('Inherited a cottage in Briarwood Valley.');log('A new adventure begins!');openModal('welcome');save();}requestAnimationFrame(loop);}
+window.EvergroveNavGame={
+ canvas,ctx,T,MW,MH,npcs:NPCS,homes:HOMES,door,
+ player:()=>state.player, camera:()=>camera, modal:()=>!!currentModal,
+ blocked:(x,y)=>blockedPlayer(x,y),useTool:(x,y)=>act(state.selected,x,y),
+ openNPC:id=>openModal('npc',{id}),
+ openHome:id=>{const h=HOMES.find(o=>o.id===id);if(h)openModal(({sleep:'sleep',shop:'shop',craft:'craft',inn:'inn',archive:'journal'})[h.kind]||'journal');},
+ notify
+};
 start();
 })();
 
 </script>
 <script src="./controls-v0.8.js" defer></script>
+<script src="./evergrove_navigation_v09.js" defer></script>
 <script src="./web-updater.js" defer></script>
 </body>
 </html>
