@@ -278,6 +278,24 @@ function swing(kind='slash'){
  game.updateUI();game.save();return true;
 }
 function swordAction(){return swing('slash');}
+function drawVillagerDetails(n){
+ const c=game.ctx,T=game.T,cam=game.camera(),x=Math.round((n.x+.5)*T-cam.x),y=Math.round((n.y+.5)*T-cam.y);
+ c.save();
+ if(n.id==='elara'){
+  c.fillStyle='#eee2bb';c.fillRect(x-7,y-15,14,13);
+  c.fillStyle='#a67651';c.fillRect(x-5,y-14,10,3);
+  c.fillStyle='#f0d8b1';c.fillRect(x-13,y-37,26,5);
+ }else if(n.id==='bram'){
+  c.fillStyle='#7b95a7';c.fillRect(x-10,y-38,20,8);
+  c.fillStyle='#d4e0df';c.fillRect(x-7,y-19,14,5);
+  c.fillStyle='#f3dca9';c.fillRect(x-2,y-17,5,5);
+ }else if(n.id==='sora'){
+  c.fillStyle='#ddc9b1';c.fillRect(x-10,y-38,20,5);
+  c.fillStyle='#8cc6a8';c.fillRect(x+5,y-13,9,10);
+  c.fillStyle='#cee7b4';c.fillRect(x+7,y-15,4,6);
+ }
+ c.restore();
+}
 function drawVillageDecor(sprites){
  const decorations=[
   {x:29,y:27,type:'lantern'},{x:45,y:28,type:'lantern'},
@@ -402,5 +420,5 @@ function expansionAction(tool,x,y){
  return true;
 }
 init();
-window.EvergroveLiving={season,cycleSeed,farmAction,advanceDay,cropPaint,swordAction,beginCharge,releaseCharge,drawCombat,drawVillageDecor,interactExpansion,updateBase,updateBaseMonsters,updateExpansion,drawExpansion,expansionAction,isResourceVisible,currentMonsters:()=>monstersFor(window.EvergroveExpansion?.currentMap?.()),HUNTS,CROPS};
+window.EvergroveLiving={season,cycleSeed,farmAction,advanceDay,cropPaint,swordAction,beginCharge,releaseCharge,drawCombat,drawVillagerDetails,drawVillageDecor,interactExpansion,updateBase,updateBaseMonsters,updateExpansion,drawExpansion,expansionAction,isResourceVisible,currentMonsters:()=>monstersFor(window.EvergroveExpansion?.currentMap?.()),HUNTS,CROPS};
 })();
