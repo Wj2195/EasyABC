@@ -89,16 +89,15 @@ function farmAction(tool,x,y){
   if(!info.season.includes(season())){game.notify(info.name+' grows in '+info.season.join(' / ')+'.');return true;}
   if((s.inventory[chosen]||0)<1){game.notify('No '+info.name+' seed bags. Buy one from Willow Market.');return true;}
   if(!s.tilled[key]){game.notify('Prepare the center tile with the hoe first.');return true;}
-  let planted=0;
+  const plots=[];
   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
     const tx=x+dx,ty=y+dy,id=tx+','+ty;
-    if(s.tilled[id]&&eligible(tx,ty)){
-     s.crops[id]={kind:chosen,progress:0,stage:0,watered:false,planted:s.day};
-     planted++;
-    }
+    if(s.tilled[id]&&eligible(tx,ty))plots.push(id);
   }
-  if(!planted){game.notify('No prepared empty tiles in this 3×3 patch.');return true;}
-  if(!attemptEnergy(2)){for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const id=(x+dx)+','+(y+dy);if(s.crops[id]?.planted===s.day&&s.crops[id]?.kind===chosen&&s.crops[id]?.progress===0)delete s.crops[id];}return true;}
+  if(!plots.length){game.notify('No prepared empty tiles in this 3×3 patch.');return true;}
+  if(!attemptEnergy(2))return true;
+  for(const id of plots)s.crops[id]={kind:chosen,progress:0,stage:0,watered:false,planted:s.day};
+  const planted=plots.length;
   game.give(chosen,-1);game.fx(x+.5,y+.5,info.icon);resourceText('🌱 Sowed '+planted+' '+info.name+' tiles from one seed bag.');
   return true;
  }
