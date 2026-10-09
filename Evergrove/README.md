@@ -24,3 +24,12 @@ Save data remains local to each browser using key `evergrove_offline_save_v1`. E
 ## Keyboard menu navigation (v0.7)
 
 While a menu or conversation choice panel is open, **Up / Down** (also A / S) moves the highlighted choice, **Z / Right** confirms it and **X / Left / Escape** goes back. When no menu is open, the arrow keys move the character. Returning from a nested menu such as quests or gifts preserves the previous conversation.
+
+
+## v0.8 PC readability and locked menu choices
+
+- Up / Down (or A / S) now highlights *all* visible menu options, including disabled actions; locked actions remain unavailable.
+- Z / Right confirms the highlighted option. Trying a locked action displays its reason.
+- X / Left returns to the previous menu.
+- Desktop dialogue, HUD, and menu text are larger; phone landscape stays compact.
+- Save data is unchanged. Service worker cache version: evergrove-pages-v0.8.0.
