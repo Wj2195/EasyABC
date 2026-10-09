@@ -1,6 +1,6 @@
-const CACHE_NAME='evergrove-pages-v0.12.0';
+const CACHE_NAME='evergrove-pages-v0.13.0';
 const PREFIX='evergrove-pages-';
-const ESSENTIAL=['./','./index.html','./web-updater.js', './viewport-v0.6.css','./readability-v0.8.css', './controls-v0.8.js','./evergrove_navigation_v012.js','./expansion-v012.js','./maps/worlds.json','./map-editor.html','./manifest.webmanifest','./icon.svg'];
+const ESSENTIAL=['./','./index.html','./web-updater.js', './viewport-v0.6.css','./readability-v0.8.css', './controls-v0.8.js','./evergrove_navigation_v012.js','./expansion-v012.js','./world-atlas-v013.js','./world-atlas-v013.css','./maps/worlds.json','./map-editor.html','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ESSENTIAL))));
 self.addEventListener('message',e=>{if(e.data?.type==='SKIP_WAITING')self.skipWaiting();});
 self.addEventListener('activate',e=>e.waitUntil((async()=>{await Promise.all((await caches.keys()).filter(n=>n.startsWith(PREFIX)&&n!==CACHE_NAME).map(n=>caches.delete(n)));await self.clients.claim();})()));
