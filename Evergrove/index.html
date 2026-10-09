@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#131d26" />
+  <meta name="description" content="Play Evergrove: an offline-ready pixel farming, life, RPG and monster collecting adventure." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Evergrove" />
+  <title>Evergrove · Pocket Adventure v0.5</title>
+  <style>
+:root{--bg:#121c25;--panel:#1b2a33;--panel2:#22323b;--border:#34434b;--muted:#9ba9a8;--light:#eff2df;--green:#9fcf91;--mint:#b8e6ae;--gold:#f4d291;--blue:#a2cde1;--danger:#ff9690;--shadow:0 12px 36px #07101550}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(ellipse at 10% 5%,#203644,transparent 43%),radial-gradient(ellipse at 100% 90%,#24342a,transparent 44%),var(--bg);color:var(--light);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}button{font:inherit;color:inherit;cursor:pointer}button:disabled{opacity:.35;cursor:not-allowed}.shell{max-width:1510px;margin:auto;padding:22px 25px 16px}.topbar{display:flex;align-items:center;gap:13px;margin-bottom:18px}.brand-mark{height:48px;width:48px;display:grid;place-items:center;background:#a9d899;color:#1b342f;font-size:30px;border-radius:13px;box-shadow:0 0 26px #9bd59b25}.eyebrow{font-size:10px;font-weight:800;letter-spacing:2px;color:var(--green)}h1,h2,p{margin:0}.brand-copy h1{font-size:22px;letter-spacing:4px;font-weight:950;line-height:1.2}.brand-copy h1 span{color:var(--gold)}.top-spacer{flex:1}.pill{font-size:11px;letter-spacing:1px;font-weight:800;padding:10px 14px;border:1px solid #496054;border-radius:999px;color:#c1f2b7;background:#233b34;white-space:nowrap}.pill.muted{background:#24323b;border-color:#394a53;color:#bac7c6}.dot{display:inline-block;background:#a9ed8c;border-radius:50%;width:7px;height:7px;margin-right:6px;box-shadow:0 0 9px #b5f5a5}.icon-btn{background:#24353e;border:1px solid #43535b;border-radius:10px;width:35px;height:35px;display:grid;place-items:center;font-size:21px;font-weight:700}.icon-btn:hover,.quick-actions button:hover{border-color:var(--green);background:#29423d}.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:17px}.game-column{min-width:0}.world-header{display:flex;justify-content:space-between;align-items:center;padding:3px 5px 13px}.world-header h2{font-size:22px;letter-spacing:.3px;margin-top:3px}.world-details{display:flex;align-items:center;flex-wrap:wrap;gap:9px}.world-details span{font-size:12px;color:#e6e8d8;background:#22323c;border:1px solid #374953;padding:7px 10px;border-radius:6px;font-weight:700}.world-details .coin{color:#f6d793}.game-frame{position:relative;padding:6px;border:1px solid #65795d;border-radius:15px;background:#263a3a;box-shadow:0 20px 50px #050c1199;overflow:hidden}#game{display:block;width:100%;height:auto;aspect-ratio:5/3;image-rendering:pixelated;background:#528b63;border-radius:8px;cursor:crosshair}.viewport-badge{position:absolute;top:17px;left:18px;border:1px solid #f1f0d650;border-radius:5px;color:#fffbda;background:#14242caa;backdrop-filter:blur(5px);font-size:10px;letter-spacing:1.4px;font-weight:900;padding:7px 11px;pointer-events:none}.view-hint{position:absolute;bottom:17px;left:18px;pointer-events:none;background:#152a2dcc;border:1px solid #d0f5c535;padding:9px 12px;border-radius:7px;font-size:11px;font-weight:650;max-width:70%;text-shadow:0 1px #132}.toast-stack{position:absolute;left:50%;top:14%;transform:translateX(-50%);width:max-content;max-width:80%;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}.toast{background:#172c31ee;border:1px solid #a7d899aa;padding:10px 15px;border-radius:9px;color:#f6f6df;box-shadow:var(--shadow);font-size:12px;animation:pop .16s ease-out}.toast.error{border-color:#f7a398}@keyframes pop{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}.tool-row{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px;padding:12px 0 10px}.tool{background:#203139;border:1px solid #41515a;border-radius:10px;min-width:0;min-height:69px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:background .1s}.tool .tool-emoji{font-size:25px}.tool .tool-name{font-size:11px;font-weight:650;white-space:nowrap}.tool .tool-num{position:absolute;left:7px;top:5px;color:#829895;font-size:9px}.tool:hover{background:#31463e}.tool.active{background:#365344;border-color:#bcdd8e;box-shadow:inset 0 0 0 1px #a5cd8b,0 0 12px #a6d88525}.tool.active .tool-name{color:#d9f7bb}.bottom-row{display:flex;gap:18px;align-items:center;padding:4px 2px 14px}.bar-group{min-width:139px;flex:1;max-width:220px}.bar-group label{display:flex;justify-content:space-between;font-size:10px;font-weight:850;letter-spacing:1px;margin-bottom:6px;color:#c1ceca}.meter,.xp-track{height:8px;background:#0f1c24;overflow:hidden;border-radius:99px;border:1px solid #435453}.fill,.xp-track>div{height:100%;transition:width .25s ease}.fill.health{background:linear-gradient(90deg,#d66e67,#ffb295)}.fill.energy{background:linear-gradient(90deg,#72a4a4,#bceaa1)}.bottom-hint{margin-left:auto;font-size:11px;color:#abbdb5}.bottom-hint strong{color:#e1efcf}.quick-actions{display:flex;gap:8px;flex-wrap:wrap}.quick-actions button{padding:11px 13px;border-radius:9px;border:1px solid #42545a;background:#22313a;font-weight:760;font-size:12px}.sidebar{display:flex;flex-direction:column;gap:13px}.panel{background:linear-gradient(135deg,#22333b,#1d2c35);border:1px solid #394b50;border-radius:12px;padding:16px;box-shadow:0 8px 25px #0610182b}.panel-title{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:900;letter-spacing:1.2px;color:#d8e7c9;margin-bottom:13px}.tiny-chip{background:#405140;color:#c4e7ad;font-size:9px;border-radius:4px;padding:4px 6px}.profile{display:flex;align-items:center;gap:12px}.portrait{width:60px;height:60px;display:grid;place-items:center;background:linear-gradient(135deg,#80a9a1,#41746c);font-size:31px;border:2px solid #b4c7a8;border-radius:10px;box-shadow:inset 0 -6px #1f454630}.profile>div:last-child{flex:1;min-width:0}.profile strong,.companion-preview strong{display:block;font-size:13px}.profile small,.companion-preview small{display:block;font-size:10px;color:#a4b7b6;margin-top:4px}.xp-track{height:6px;margin-top:9px}.xp-track>div{background:#c7b1f0;width:0}.text-button{border:0;padding:0;background:transparent;color:#b6dcae;font-size:10px;letter-spacing:0}.text-button:hover{text-decoration:underline}.quest-preview{display:flex;flex-direction:column;gap:11px}.quest-item{display:flex;flex-direction:column;gap:5px}.quest-title{display:flex;justify-content:space-between;gap:9px;font-size:12px;font-weight:750}.quest-title span:last-child{font-weight:500;color:#d6ca97;white-space:nowrap}.quest-bar{height:5px;background:#344951;border-radius:5px;overflow:hidden}.quest-bar>div{height:100%;background:#aed69b}.inventory-mini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.bag-slot{display:flex;align-items:center;flex-direction:column;justify-content:center;gap:2px;background:#162730;border:1px solid #34454b;border-radius:8px;padding:6px 1px;min-height:58px}.bag-slot span{font-size:20px}.bag-slot small{font-size:10px;color:#dfe3d3}.companion-preview{display:flex;align-items:center;gap:12px}.creature-emoji{font-size:33px}.log-panel{min-height:170px;flex:1}.log-content{display:flex;flex-direction:column;gap:9px;max-height:210px;overflow:auto}.log-entry{font-size:11px;line-height:1.4;color:#b1c2bb;border-bottom:1px solid #34454b;padding-bottom:7px}.log-entry b{color:#f0e4b5}footer{display:flex;justify-content:space-between;gap:16px;padding:22px 4px 5px;color:#829797;font-size:10px;letter-spacing:1px}.modal-layer{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;background:#061017ca;backdrop-filter:blur(4px);padding:18px}.modal-layer.hidden{display:none}.modal{width:min(660px,96vw);max-height:min(86vh,850px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #7f9e82;border-radius:15px;background:#1a2a34;box-shadow:0 30px 90px #0009}.modal-head{padding:19px 22px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #40545a;background:#22373d}.modal-head h2{font-size:21px;margin-top:5px}.modal-body{overflow:auto;padding:20px 22px 25px}.modal p{font-size:13px;color:#d5ded3;line-height:1.7;margin:0 0 12px}.modal h3{font-size:12px;letter-spacing:1px;color:#c3e5b8;margin:16px 0 10px}.modal-list{display:grid;gap:10px}.modal-item{display:flex;align-items:center;gap:11px;padding:12px;border:1px solid #3d5458;border-radius:10px;background:#233741}.modal-item .emoji{font-size:28px;flex:0 0 35px;text-align:center}.modal-item .item-detail{flex:1;min-width:0}.modal-item strong{display:block;font-size:13px}.modal-item small{display:block;font-size:11px;color:#b6c7bf;margin-top:4px;line-height:1.4}.modal-item button,.choice,.primary-btn,.danger-btn{border:1px solid #6f9777;border-radius:7px;background:#3e654e;padding:9px 12px;font-size:11px;font-weight:850}.modal-item button:hover,.choice:hover,.primary-btn:hover{background:#527b5d}.modal-item button:disabled{background:#35444b;border-color:#4b5e60}.choice{width:100%;text-align:left;margin-top:8px;background:#293e43;border-color:#456060;padding:12px;font-size:12px}.primary-btn{padding:11px 15px;margin-top:8px}.danger-btn{background:#6b373d;border-color:#bb777b;margin-top:8px}.button-line{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.stat-line{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #31474d;color:#d2dcca;font-size:12px}.item-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.item-grid .bag-slot{min-height:85px}.item-grid .bag-slot small{word-break:break-word;padding:0 2px;text-align:center}.mini-map{width:100%;border:3px solid #51695c;border-radius:6px;image-rendering:pixelated}.notification{font-size:11px;padding:9px 12px;margin-bottom:13px;background:#2b423d;border-left:3px solid #aedda0;border-radius:5px;color:#dbe9d1}.subtle{color:#adbdba;font-size:11px!important}.kbd{display:inline-block;padding:2px 6px;border:1px solid #647875;border-radius:4px;background:#314449;color:#e4ebd9;font-family:monospace;font-size:11px}.mobile-controls{display:none}.mobile-controls button{background:#1a2c36bb;border:2px solid #e0f3cf77;color:#fff;border-radius:11px;touch-action:none}.dpad>button{margin-left:43px}.dpad button{width:43px;height:40px;margin:2px;font-size:15px}.touch-actions{display:flex;gap:8px;align-items:end}.touch-actions button{height:60px;width:58px;font-size:19px;font-weight:900}.touch-actions small{font-size:9px}@media(max-width:1180px){.layout{grid-template-columns:minmax(0,1fr) 265px}.pill.muted{display:none}.shell{padding:15px}.panel{padding:12px}.tool .tool-name{font-size:10px}}@media(max-width:850px){.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.world-header{gap:10px;flex-wrap:wrap}.bottom-hint{display:none}.log-panel{min-height:auto}.mobile-controls{display:flex;position:absolute;bottom:14px;left:12px;right:12px;justify-content:space-between;align-items:end;pointer-events:none}.mobile-controls button{pointer-events:auto}.view-hint{display:none}.shell{padding:9px}.topbar{gap:8px}.brand-mark{height:41px;width:41px}.brand-copy h1{font-size:17px}.brand-copy .eyebrow{font-size:8px}.world-details{gap:5px}.world-details span{font-size:10px;padding:5px 7px}}@media(max-width:580px){.sidebar{grid-template-columns:1fr}.pill.offline{font-size:8px;padding:7px}.tool-row{grid-template-columns:repeat(4,1fr)}.tool{min-height:58px}.world-header h2{font-size:18px}.world-details{width:100%}.game-frame{padding:3px}.viewport-badge{top:8px;left:8px;font-size:8px;padding:5px}.quick-actions button{flex:1 1 28%;font-size:10px;padding:9px 5px}.dpad button{width:35px;height:34px}.dpad>button{margin-left:36px}.touch-actions button{height:47px;width:42px}.item-grid{grid-template-columns:repeat(3,1fr)}.modal-body{padding:13px}.modal-head{padding:12px}}
+
+/* v0.2 - Pixel-world interface. Every actionable menu is over the game. */
+:root{--touch-opacity:.28}
+html,body{overscroll-behavior:none}
+body{background:#101b23}
+.shell{max-width:1260px;padding:20px;margin:auto}
+.topbar,.world-header,.tool-row,.bottom-row,.quick-actions,.sidebar,footer{display:none!important}
+.layout{display:block!important}.game-column{width:100%}
+.game-frame{padding:4px;position:relative;isolation:isolate;overflow:hidden;border:3px solid #617a61;border-radius:14px;background:#15292a;user-select:none;-webkit-user-select:none}
+#game{width:100%;height:auto;display:block;aspect-ratio:5/3;cursor:crosshair;touch-action:none}
+.view-hint,.viewport-badge{display:none!important}
+.game-hud{position:absolute;inset:0;pointer-events:none;z-index:10;font-family:ui-monospace,Consolas,monospace}
+.game-hud button{pointer-events:auto;touch-action:manipulation}
+.hud-top{position:absolute;left:1.5%;right:1.5%;top:2%;display:flex;align-items:flex-start;gap:8px;justify-content:space-between}
+.hud-location{display:flex;flex-direction:column;gap:3px;background:#172c2cbb;border:1px solid #d5e3bf5a;padding:7px 10px;border-radius:7px;text-shadow:1px 1px #172321;box-shadow:0 3px 12px #051a1855}
+.hud-location span:first-child{font-size:12px;letter-spacing:1px;font-weight:900;color:#fcf2c5}.hud-location span:last-child{font-size:10px;color:#e0f2cf;font-weight:700}
+.hud-stats{display:flex;margin-left:auto;gap:4px}.hud-stats span{background:#162c30bc;color:#ffecb4;border:1px solid #c5d6bc77;border-radius:7px;padding:7px 9px;font-size:12px;font-weight:800;text-shadow:1px 1px #142423}
+.hud-stats span:nth-child(2){color:#f7aaa0}.hud-stats span:nth-child(3){color:#b1eda9}
+.hud-icon{width:34px;height:34px;border:1px solid #cfeac593;border-radius:7px;background:#172c30ba;font-size:24px;font-weight:900;color:#fff5d7}
+.hud-menu{position:absolute;top:13.2%;right:1.35%;display:flex;flex-direction:column;gap:6px}
+.hud-menu button{min-width:48px;min-height:43px;padding:5px 8px;background:#122732bd;border:1px solid #e3ebc177;border-radius:7px;color:#f7edce;font-size:18px;display:flex;flex-direction:column;gap:1px;align-items:center;justify-content:center;text-shadow:1px 1px 1px #16282b}
+.hud-menu button small{font-size:9px;font-weight:850;letter-spacing:.3px}
+.hud-menu button:active,.hud-menu button:hover,.ingame-tool:hover{background:#50745bce}
+.ingame-tools{position:absolute;bottom:2.1%;left:50%;transform:translateX(-50%);display:flex;gap:4px;border:1px solid #e2e8c262;border-radius:9px;padding:4px;background:#0c2328bd}
+.ingame-tool{height:45px;min-width:48px;background:#2d4245b5;color:#fff;border:1px solid #8da79774;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;position:relative}
+.ingame-tool span{font-size:22px}.ingame-tool small{font:600 9px monospace;color:#cde5c8}.ingame-tool.active{background:#4c7559e8;border:2px solid #e4efa9}
+.modal-layer{position:absolute;inset:0;z-index:80;padding:12px;background:#04161fb0;backdrop-filter:blur(2px)}
+.modal{max-height:91%;width:min(690px,96%);border:4px solid #e9dcac;outline:3px solid #243c38;outline-offset:-9px;border-radius:4px;background:#233b42;box-shadow:0 14px 50px #000c;font-family:ui-monospace,Consolas,monospace}
+.modal-head{background:#344f48;padding:10px 18px 12px;border-bottom:3px solid #a7bfa0}
+.modal-head h2{font-size:20px;line-height:1.25}.modal-body{padding:12px 18px 18px}
+.modal-layer.dialogue-layer{background:transparent;backdrop-filter:none;display:flex;align-items:flex-end;justify-content:center;padding:0 8% 9%;pointer-events:none}
+.dialogue-layer .modal{width:100%;max-width:800px;max-height:76%;pointer-events:auto;box-shadow:0 4px 0 #1a3334,0 9px 35px #000a}
+.dialogue-layer .modal-head{padding:5px 12px;min-height:33px}
+.dialogue-layer .modal-head h2,.dialogue-layer .modal-head .eyebrow{display:none}
+.dialogue-layer .modal-body{padding:8px 14px 14px}
+.dialogue-layer .modal h3{margin:8px 0 3px;font-size:10px;color:#f8dda6}
+.dialogue-layer .choice{font-size:12px;padding:8px 12px;margin-top:5px}
+.dialogue-pixel{display:flex;align-items:stretch;gap:12px;color:#ffefbd}
+.dialogue-face{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:104px;background:#4d7261;border:3px solid #a3b692;border-radius:3px;box-shadow:inset 0 0 0 3px #385f52;padding:7px 3px}
+.dialogue-face span{font-size:45px;line-height:1.25;image-rendering:pixelated}
+.dialogue-face small{font-size:9px;color:#f4e8ba;text-align:center}
+.dialogue-talk{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.dialogue-speaker{font-weight:900;font-size:16px;color:#e9de98;border-bottom:1px solid #a6b28b99;padding-bottom:5px}
+.dialogue-speaker small{float:right;color:#f4b3ac;font-size:11px}
+.dialogue-copy{min-height:42px;font-size:15px;font-weight:650;line-height:1.5;color:#f7f0da;cursor:pointer}
+.dialogue-copy:after{content:' ▾';color:#d5efb2;animation:blinky .9s step-end infinite}
+.dialogue-gift{font-size:11px;color:#b6d7bb}
+@keyframes blinky{50%{opacity:0}}
+.touch-opacity-slider{width:100%;accent-color:#a5d58f;touch-action:auto;margin:12px 0}
+.mobile-controls,.orientation-advice{display:none}
+.toast-stack{top:20%;z-index:60}
+@media(max-width:730px){
+ .shell{padding:0}.game-frame{border-radius:0;border-width:0;padding:0}
+ .hud-menu{top:16%}.hud-menu button{min-width:40px;min-height:38px;font-size:15px}
+ .hud-stats span{padding:6px;font-size:10px}
+ .hud-location{padding:5px;font-size:10px}
+ .ingame-tools{bottom:1%}.ingame-tool{min-width:34px;height:38px}.ingame-tool span{font-size:16px}
+}
+/* Touch first - the overlay fades until pressed, like mobile shooter games. */
+@media(hover:none) and (pointer:coarse){
+ body{touch-action:pan-x pan-y}
+ .shell{padding:0;max-width:none}
+ .game-frame{border:0;border-radius:0;padding:0;width:100vw}
+ .game-hud{pointer-events:none}
+ .hud-top{top:env(safe-area-inset-top,3px);padding-top:3px;left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right))}
+ .hud-location{padding:4px 7px}.hud-location span:first-child{font-size:9px}.hud-location span:last-child{font-size:8px}
+ .hud-stats span{padding:4px 6px;font-size:10px}.hud-icon{width:31px;height:31px}
+ .hud-menu{top:18%;right:max(7px,env(safe-area-inset-right));flex-direction:column;gap:4px;z-index:1}
+ .hud-menu button{width:42px;min-height:33px;padding:3px;font-size:15px;border-color:#e2ecd158;background:#102933ad}
+ .hud-menu button small{font-size:7px}
+ .ingame-tools{display:none}
+ .mobile-controls{display:flex!important;position:absolute;inset:auto 0 0 0;height:54%;z-index:30;justify-content:space-between;align-items:flex-end;pointer-events:none;padding:0 max(20px,env(safe-area-inset-right)) max(15px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))}
+ .joystick-zone{--stick-size:clamp(108px,22vw,154px);position:relative;flex:none;width:var(--stick-size);height:var(--stick-size);border-radius:50%;touch-action:none;pointer-events:auto;opacity:var(--touch-opacity);transition:opacity .15s;outline:none}
+ .joystick-ring{position:absolute;inset:3px;border:2.5px solid #f8ffd9;border-radius:50%;background:#213f42b5;box-shadow:0 0 0 5px #10202544,inset 0 0 24px #c7e9c022}
+ .joystick-ring:before,.joystick-ring:after{content:'';position:absolute;background:#e1efcf33;left:50%;top:17%;width:1px;height:66%}.joystick-ring:after{transform:rotate(90deg)}
+ .joystick-knob{position:absolute;left:50%;top:50%;width:41%;height:41%;border-radius:50%;background:#d4edc5b4;border:2px solid #f6ffe1;box-shadow:0 2px 12px #060f1255;transform:translate(-50%,-50%);will-change:transform}
+ .joystick-caption{position:absolute;top:100%;left:50%;transform:translate(-50%,2px);font:700 9px monospace;color:#fffbe1;pointer-events:none}
+ .joystick-zone.engaged,.mobile-action-pair button:active,.mobile-tool-picker button:active{opacity:.78}
+ .right-game-controls{pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:6px}
+ .right-game-controls button{pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+ .mobile-tool-picker{display:flex;align-items:center;gap:4px;border-radius:7px;padding:3px 6px;background:#172c317f;opacity:var(--touch-opacity);border:1px solid #d5f2d8a0;pointer-events:auto}
+ .mobile-tool-picker button{width:29px;height:27px;font-size:12px;border:0;background:#527369aa;border-radius:5px;color:white}
+ .mobile-tool-picker span{display:inline-block;min-width:74px;text-align:center;font:bold 11px monospace;color:#fff}
+ .mobile-action-pair{display:flex;gap:14px;align-items:flex-end}
+ .mobile-action-pair button{width:clamp(61px,9vw,85px);height:clamp(61px,9vw,85px);border:3px solid #f5f6df;border-radius:50%;background:#1c3c45d1;color:#f7f5e1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;opacity:var(--touch-opacity);box-shadow:0 2px 12px #080f1666}
+ .mobile-action-pair button b{font-size:22px}.mobile-action-pair button small{font:900 10px monospace}
+ .mobile-action-pair button.action-use{transform:translateY(-25px);border-color:#dbeba9}
+ .modal-layer{z-index:65;padding:6px;background:#06171cbd}
+ .modal{width:93%;max-height:96%;border-width:3px;outline-width:2px}
+ .modal-head{padding:5px 12px}.modal-head h2{font-size:15px}
+ .modal-body{padding:8px 11px;font-size:11px}.modal-item{padding:7px}
+ .modal-item small,.modal p{font-size:10px;line-height:1.4}
+ .dialogue-layer{padding:0 8% 4%}
+ .dialogue-layer .modal{width:100%;max-height:88%}
+ .dialogue-layer .modal-body{padding:7px 10px}
+ .dialogue-face{min-width:69px}.dialogue-face span{font-size:29px}
+ .dialogue-copy{font-size:12px;min-height:31px}.dialogue-speaker{font-size:14px}
+ .dialogue-layer .choice{padding:7px 9px;font-size:11px}
+ .dialogue-layer .modal h3{font-size:9px;margin:5px 0}
+}
+/* Mobile landscape has a full-window canvas with no browser-page scrolling. */
+@media(hover:none) and (pointer:coarse) and (orientation:landscape){
+ html,body{width:100%;height:100%;overflow:hidden}
+ .shell,.layout,.game-column{height:100%;width:100%;padding:0}
+ .game-frame{position:fixed;inset:0;width:100vw;height:100dvh;max-height:none;overflow:hidden;display:grid;place-items:center;background:#0f2928}
+ #game{width:100%;height:100%;aspect-ratio:auto;object-fit:fill}
+ .joystick-zone{--stick-size:clamp(100px,23dvh,155px)}
+ .mobile-controls{height:55%;padding-bottom:max(13px,env(safe-area-inset-bottom))}
+ .right-game-controls{margin-right:5px}
+ .mobile-action-pair button{width:clamp(55px,14dvh,79px);height:clamp(55px,14dvh,79px)}
+ .mobile-action-pair button.action-use{transform:translateY(-17px)}
+ .hud-menu{top:19%}
+}
+@media(hover:none) and (pointer:coarse) and (orientation:portrait){
+ .orientation-advice{display:flex;position:fixed;inset:0;z-index:120;background:#132f31f5;color:#f5eaca;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:28px;gap:15px}
+ .orientation-advice .rotate-icon{font-size:60px;color:#cce4a3;letter-spacing:8px}
+ .orientation-advice strong{font:bold 21px monospace}.orientation-advice p{font-size:13px;line-height:1.5;max-width:300px}
+ .orientation-advice button{padding:12px 16px;background:#456b56;border:2px solid #acd4a6;color:#fff4d2;border-radius:7px;font:700 12px monospace}
+ body.allow-portrait .orientation-advice{display:none}
+ #game{max-height:95vh}
+ .mobile-controls{height:44%;padding:0 15px 19px}
+ .joystick-zone{--stick-size:105px}
+ .mobile-action-pair button{width:55px;height:55px}
+ .right-game-controls{gap:8px}
+}
+@media(max-height:420px) and (orientation:landscape){
+ .hud-menu{top:18%;gap:3px}.hud-menu button{min-height:29px;width:37px;font-size:13px}
+ .hud-menu button small{font-size:7px}
+ .mobile-controls{padding-bottom:9px}
+ .joystick-zone{--stick-size:clamp(93px,34dvh,125px)}
+ .modal-item{padding:5px}
+}
+
+/* v0.3 - GBA dialogue takes only the bottom 30% of the actual game viewport.
+   Choices float separately on the RIGHT, ABOVE the dialogue, never pushing it taller. */
+.modal-layer.dialogue-layer {
+  position:absolute; inset:0; padding:0 1.5% 1.1%;
+  display:flex; align-items:flex-end; justify-content:center;
+  background:transparent; backdrop-filter:none; pointer-events:none; z-index:85;
+}
+.dialogue-layer .modal {
+  box-sizing:border-box; position:relative; flex:none;
+  width:100%; max-width:none; height:30%; min-height:0; max-height:30%;
+  margin:0; padding:0; display:block; overflow:visible; pointer-events:auto;
+  border:3px solid #f4e1a8; outline:2px solid #304b44;
+  outline-offset:-7px; border-radius:5px;
+  background:linear-gradient(165deg,#34564c,#263f42);
+  box-shadow:0 5px 0 #19322c,0 10px 28px #0008;
+}
+.dialogue-layer .modal-head {
+  position:absolute; top:4px; right:5px; width:auto; height:auto; min-height:0;
+  border:0; background:transparent; padding:0; z-index:6;
+}
+.dialogue-layer .modal-head h2,.dialogue-layer .modal-head .eyebrow {display:none}
+.dialogue-layer .modal-head .icon-btn {
+  width:clamp(20px,2.8vw,27px); height:clamp(20px,2.8vw,27px); border-radius:3px;
+  font-size:17px; line-height:1; background:#142c2add; border-color:#d9e0a9a1;
+}
+.dialogue-layer .modal-body {padding:0; width:100%; height:100%; overflow:visible}
+.dialogue-layer .dialogue-pixel {
+  width:100%; height:100%; display:grid;
+  grid-template-columns:clamp(70px,18%,136px) minmax(0,1fr);
+  align-items:stretch; gap:clamp(7px,1.4vw,16px); padding:clamp(5px,.7vw,9px);
+}
+.dialogue-layer .dialogue-face {
+  min-width:0; width:100%; height:100%; padding:2px;
+  display:flex; flex-direction:column; justify-content:center; gap:1px;
+  background:#567c69; border:2px solid #a5b798;
+  box-shadow:inset 0 0 0 2px #365950; overflow:hidden;
+}
+.dialogue-layer .npc-pixel-portrait {
+  display:block; height:calc(100% - 14px); width:100%; min-height:0;
+  image-rendering:pixelated; object-fit:contain;
+}
+.dialogue-layer .dialogue-face small {
+  display:block; font-size:clamp(7px,.85vw,10px); letter-spacing:.3px; white-space:nowrap;
+  text-align:center; color:#fff0bf;
+}
+.dialogue-layer .dialogue-talk {min-width:0; min-height:0; display:flex; flex-direction:column;
+  justify-content:space-between; gap:2px; padding:3px clamp(22px,3.8vw,38px) 2px 0;
+}
+.dialogue-layer .dialogue-speaker {padding:0 0 4px; margin:0; display:flex; gap:8px;
+  justify-content:flex-start; align-items:center; font-size:clamp(11px,1.6vw,16px); line-height:1.1;
+  border-bottom:1px solid #b1b99588;
+}
+.dialogue-layer .dialogue-speaker span {float:none; margin-left:auto; color:#ffc3ad; font-size:clamp(9px,1.1vw,12px)}
+.dialogue-layer .dialogue-copy {
+  flex:1; min-height:0; max-height:100%; padding:3px 0;
+  font-size:clamp(11px,1.38vw,16px); line-height:1.35; font-weight:650;
+  overflow-y:auto; overflow-wrap:break-word; color:#fff8df;
+}
+.dialogue-layer .dialogue-footer {display:flex; align-items:center; justify-content:space-between;
+  gap:6px; font:600 clamp(8px,.93vw,11px)/1.1 monospace; color:#c8e0bd;
+}
+.dialogue-layer .dialogue-choices {
+  position:absolute; bottom:calc(100% + 9px); right:0;
+  width:clamp(165px,28%,290px); max-height:min(56vh,350px);
+  background:#263d43; border:3px solid #f1dba8;
+  border-radius:4px; padding:7px; overflow-y:auto; z-index:8;
+  box-shadow:0 6px 0 #1a2d32,0 8px 28px #000a;
+  overscroll-behavior:contain; scrollbar-width:thin;
+}
+.dialogue-layer .dialogue-option-list {display:flex;flex-direction:column;gap:5px}
+.dialogue-layer .dialogue-option-list[hidden] {display:none!important}
+.dialogue-layer .choices-heading {font:bold clamp(9px,1vw,11px)/1.1 monospace;
+  letter-spacing:.8px;color:#f7e6b7;padding:3px 4px 6px;
+  border-bottom:1px solid #869b8b;
+}
+.dialogue-layer .dialogue-choices .choice {
+  width:100%; margin:0; display:block; text-align:left;
+  padding:clamp(7px,.85vw,10px); min-height:29px;
+  border:1px solid #6e927b;border-radius:3px;background:#355451;
+  font:700 clamp(10px,1.12vw,12px)/1.15 monospace; color:#f8f1d7;
+  touch-action:manipulation;
+}
+.dialogue-layer .dialogue-choices .choice:hover,.dialogue-layer .dialogue-choices .choice:focus-visible {background:#567d64;outline:1px solid #e6f0b9}
+.dialogue-layer .dialogue-choices .choice:disabled {opacity:.48}
+.dialogue-layer .dialogue-choices .dialogue-exit {color:#eadcba;background:#41524e}
+/* On a rotated phone the viewport may only be 320-400px tall. */
+@media (max-height:500px) and (orientation:landscape){
+  .dialogue-layer .dialogue-pixel {grid-template-columns:clamp(65px,15%,108px) minmax(0,1fr); padding:5px;gap:8px}
+  .dialogue-layer .dialogue-speaker {font-size:12px;padding-bottom:2px}
+  .dialogue-layer .dialogue-copy {font-size:clamp(10px,1.7vw,13px);line-height:1.25;padding:1px 0}
+  .dialogue-layer .dialogue-footer {font-size:8px}
+  .dialogue-layer .dialogue-choices {width:clamp(157px,28%,240px);max-height:58vh;padding:5px}
+  .dialogue-layer .dialogue-choices .choice {font-size:10px;padding:7px;min-height:27px}
+  .dialogue-layer .dialogue-face small {display:none}
+  .dialogue-layer .npc-pixel-portrait {height:100%}
+}
+@media (max-width:540px) and (orientation:portrait){
+  .dialogue-layer .dialogue-pixel {grid-template-columns:52px minmax(0,1fr);gap:5px;padding:3px}
+  .dialogue-layer .dialogue-face small,.dialogue-layer .dialogue-footer {display:none}
+  .dialogue-layer .dialogue-copy {font-size:10px}
+  .dialogue-layer .dialogue-speaker {font-size:11px;padding-bottom:2px}
+  .dialogue-layer .dialogue-choices {width:min(180px,58vw);max-height:47vh}
+}
+
+
+/* v0.4: Always place NPC interaction outcomes ABOVE the choice list. */
+.dialogue-layer .dialogue-side {
+  position:absolute; right:0; bottom:calc(100% + 9px);
+  width:clamp(165px,28%,290px); max-height:min(61dvh,400px);
+  display:flex; flex-direction:column; gap:7px;
+  pointer-events:auto; z-index:10;
+}
+.dialogue-layer .dialogue-side .dialogue-choices {
+  position:relative; bottom:auto; right:auto; width:100%;
+  max-height:none; min-height:0; flex:0 1 auto;
+  overflow-y:auto; z-index:1;
+}
+.dialogue-layer .dialogue-result {
+  flex:none; max-height:17dvh; overflow-y:auto;
+  border:2px solid #f3e3ab; background:#244a47;
+  padding:8px 10px; border-radius:4px;
+  box-shadow:0 4px 0 #122d2b,0 7px 22px #0009;
+  font:700 clamp(10px,1.12vw,12px)/1.35 ui-monospace,Consolas,monospace;
+  color:#fff2c5; overflow-wrap:break-word;
+}
+.dialogue-layer .dialogue-result[hidden]{display:none!important}
+/* v0.4: Smaller mission entries, grid layout, and collapsible adventurer records. */
+.modal-layer.quest-layer .modal {
+  width:min(840px,95%); max-width:none; max-height:96%;
+}
+.quest-layer .modal-head{padding:7px 12px;min-height:0}
+.quest-layer .modal-head h2{font-size:clamp(13px,1.7vw,17px);line-height:1.15}
+.quest-layer .modal-head .eyebrow{font-size:8px;letter-spacing:.5px}
+.quest-layer .modal-head .icon-btn{height:26px;width:26px;font-size:17px}
+.quest-layer .modal-body{padding:7px 10px 9px;overscroll-behavior:contain}
+.quest-layer .modal h3{font:800 10px/1.2 ui-monospace,Consolas,monospace;letter-spacing:.4px;margin:3px 0 7px}
+.quest-layer .quest-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.quest-layer .quest-grid .modal-item{padding:5px 7px;gap:6px;min-width:0;border-radius:5px}
+.quest-layer .quest-grid .emoji{font-size:17px;flex:0 0 20px}
+.quest-layer .quest-grid .item-detail strong{font-size:10px;line-height:1.2}
+.quest-layer .quest-grid .item-detail small{font-size:9px;line-height:1.2;margin-top:2px}
+.quest-layer .quest-grid .modal-item button{
+  flex:none;font:800 9px/1.1 ui-monospace,Consolas,monospace;
+  padding:6px 7px;white-space:nowrap;border-radius:4px;
+}
+.quest-layer .quest-records{margin-top:9px;font:700 10px/1.3 ui-monospace,Consolas,monospace}
+.quest-layer .quest-records summary{
+  list-style:revert;cursor:pointer;user-select:none;color:#f5e0ad;
+  border-top:1px solid #648078;padding:7px 3px 3px;
+}
+.quest-layer .quest-records-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;margin:6px 0}
+.quest-layer .quest-records .stat-line{font-size:10px;padding:5px 0}
+@media(max-width:540px){
+  .quest-layer .quest-grid{grid-template-columns:1fr}
+}
+@media(max-height:500px) and (orientation:landscape){
+  .dialogue-layer .dialogue-side{width:clamp(157px,28%,240px);max-height:64dvh;gap:5px}
+  .dialogue-layer .dialogue-result{padding:5px 7px;font-size:10px;max-height:18dvh}
+  .quest-layer .modal-head{padding:4px 10px}
+  .quest-layer .modal-body{padding:5px 8px}
+  .quest-layer .quest-grid{gap:4px}
+  .quest-layer .quest-grid .modal-item{padding:4px 6px}
+  .quest-layer .quest-grid .item-detail strong{font-size:9px}
+  .quest-layer .quest-grid .item-detail small{font-size:8px}
+  .quest-layer .quest-grid .modal-item button{font-size:8px;padding:5px}
+  .quest-layer .quest-records{margin-top:5px}
+}
+@media(max-width:540px) and (orientation:portrait){
+  .dialogue-layer .dialogue-side{width:min(180px,58vw);max-height:min(34vw,36dvh)}
+}
+
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand-mark">✦</div>
+    <div class="brand-copy"><div class="eyebrow">A LITTLE WORLD OF YOUR OWN</div><h1>EVERGROVE <span>⟡</span></h1></div>
+    <div class="top-spacer"></div>
+    <span class="pill offline"><span class="dot"></span> OFFLINE · SOLO</span>
+    <span class="pill muted">v0.4 · Dialogue & Quest Fixes</span>
+    <button id="helpBtn" class="icon-btn" aria-label="How to play" title="How to play">?</button>
+  </header>
+  <main class="layout">
+    <section class="game-column">
+      <div class="world-header">
+        <div><div class="eyebrow">YOUR ADVENTURE</div><h2 id="zoneName">Briarwood Farm</h2></div>
+        <div class="world-details"><span id="dayLabel">Day 1</span><span id="timeLabel">08:00</span><span id="weatherLabel">☀ Clear</span><span id="goldLabel" class="coin">◈ 125g</span></div>
+      </div>
+      <div class="game-frame" id="gameFrame">
+        <canvas id="game" width="960" height="576" aria-label="Top-down 2D browser game. Move using WASD or arrow keys."></canvas>
+        <div class="viewport-badge" id="viewportBadge">✦ BRIARWOOD VALLEY</div>
+        <div class="view-hint" id="contextHint">WASD to move · E to talk · F to use tool</div>
+        <div class="toast-stack" id="toasts" aria-live="polite"></div>
+        <div class="game-hud" aria-label="In-game status and menus">
+          <div class="hud-top">
+            <div class="hud-location"><span id="hudZone">BRIARWOOD FARM</span><span id="hudClock">DAY 1 · 08:00</span></div>
+            <div class="hud-stats"><span id="hudGold">◈ 125g</span><span id="hudHealth">♥ 100</span><span id="hudEnergy">⚡ 100</span></div>
+            <button class="hud-icon" id="fullscreenBtn" title="Full screen" aria-label="Toggle full screen">⛶</button>
+          </div>
+          <div class="hud-menu" aria-label="In-game menu">
+            <button data-game-menu="inventory" title="Inventory">🎒<small>Bag</small></button>
+            <button data-game-menu="craft" title="Crafting">⚒<small>Build</small></button>
+            <button data-game-menu="map" title="World map">⌖<small>Map</small></button>
+            <button data-game-menu="journal" title="Quests">📜<small>Quests</small></button>
+            <button data-game-menu="creatures" title="Creature collection">🐾<small>Pets</small></button>
+            <button data-game-menu="settings" title="Settings and save">⚙<small>Menu</small></button>
+          </div>
+          <div class="ingame-tools" id="ingameTools" aria-label="Select game tool"></div>
+        </div>
+        <div class="mobile-controls" id="mobileControls" aria-label="Touch gaming controls">
+          <div class="joystick-zone" id="joystick" role="application" aria-label="Move: drag joystick in any direction">
+            <div class="joystick-ring"></div><div class="joystick-knob" id="joystickKnob"></div>
+            <span class="joystick-caption">MOVE</span>
+          </div>
+          <div class="right-game-controls">
+            <div class="mobile-tool-picker"><button id="touchToolPrev" aria-label="Previous tool">◀</button><span id="touchToolName">🪴 Hoe</span><button id="touchToolNext" aria-label="Next tool">▶</button></div>
+            <div class="mobile-action-pair"><button id="touchInteract" class="action-talk" aria-label="Talk or interact"><b>✦</b><small>TALK</small></button><button id="touchUse" class="action-use" aria-label="Use selected tool"><b>✧</b><small>USE</small></button></div>
+          </div>
+        </div>
+        <div class="orientation-advice" id="rotationGate" aria-live="polite"><div class="rotate-icon">▯ ↻</div><strong>Turn your phone sideways</strong><p>Evergrove is designed for landscape play with thumb controls.</p><button id="portraitContinue">Play in portrait anyway</button></div>
+        <div id="modalLayer" class="modal-layer hidden" role="presentation"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-head"><div><div id="modalEyebrow" class="eyebrow">EVERGROVE</div><h2 id="modalTitle">Welcome</h2></div><button id="modalClose" class="icon-btn" aria-label="Close">×</button></div><div id="modalBody" class="modal-body"></div></div></div>
+      </div>
+      <div class="tool-row" id="toolRow" aria-label="Game tools"></div>
+      <div class="bottom-row">
+        <div class="bar-group"><label>HEALTH <span id="hpValue">100/100</span></label><div class="meter"><div id="hpMeter" class="fill health"></div></div></div>
+        <div class="bar-group"><label>ENERGY <span id="energyValue">100/100</span></label><div class="meter"><div id="energyMeter" class="fill energy"></div></div></div>
+        <div class="bottom-hint">Select a tool, then <strong>F</strong> in front of you or <strong>click</strong> a nearby tile.</div>
+      </div>
+      <div class="quick-actions">
+        <button id="inventoryBtn">🎒 Inventory</button><button id="craftBtn">⚒ Crafting</button><button id="mapBtn">⌖ World map</button><button id="journalBtn">✧ Journal</button><button id="saveBtn">▣ Save</button><button id="settingsBtn">⚙ Settings</button>
+      </div>
+    </section>
+    <aside class="sidebar">
+      <section class="panel profile-panel"><div class="panel-title"><span>YOUR EXPLORER</span><span class="tiny-chip" id="levelLabel">LEVEL 1</span></div>
+        <div class="profile"><div class="portrait" id="portrait">🙂</div><div><strong>Valley Wanderer</strong><small id="profileLine">A new story begins...</small><div class="xp-track"><div id="xpMeter"></div></div><small id="xpLabel">0 / 100 XP</small></div></div>
+      </section>
+      <section class="panel"><div class="panel-title"><span>✦ ACTIVE QUESTS</span><button class="text-button" id="allQuestsBtn">View all →</button></div><div id="questPreview" class="quest-preview"></div></section>
+      <section class="panel"><div class="panel-title"><span>🎒 YOUR BAG</span><button class="text-button" id="bagBtn">Open →</button></div><div class="inventory-mini" id="inventoryMini"></div></section>
+      <section class="panel companion-panel"><div class="panel-title">✿ CREATURE COMPANION</div><div id="companionPreview" class="companion-preview"><span class="creature-emoji">🥚</span><div><strong>None yet</strong><small>Explore the Whisperwood to find a creature.</small></div></div></section>
+      <section class="panel log-panel"><div class="panel-title"><span>✎ ADVENTURE LOG</span><button id="clearLogBtn" class="text-button">Clear</button></div><div id="gameLog" class="log-content"></div></section>
+    </aside>
+  </main>
+  <footer><span>EVERGROVE · A FREE OFFLINE BROWSER GAME</span><span>Saves remain on this device · Export backups in Settings</span></footer>
+</div>
+<input type="file" id="importFile" accept=".json,application/json" hidden />
+<script>
+/* EVERGROVE v0.5 Web Edition — no frameworks, CDNs or paid services. */
+(() => {
+'use strict';
+const T=32, MW=68, MH=48, W=960, H=576, KEY='evergrove_offline_save_v1';
+const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+const $=id=>document.getElementById(id), clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const hash=(x,y,n=0)=>{let z=((x*73856093)^(y*19349663)^(n*83492791))>>>0;z=Math.imul(z^(z>>>16),0x7feb352d);z=Math.imul(z^(z>>>15),0x846ca68b);return ((z^(z>>>16))>>>0)/4294967295};
+const distance=(x,y,a,b)=>Math.hypot(x-a,y-b);
+const TOOLS=[{id:'hoe',emoji:'🪴',name:'Hoe'},{id:'seeds',emoji:'🌱',name:'Seeds'},{id:'water',emoji:'💧',name:'Water'},{id:'axe',emoji:'🪓',name:'Axe'},{id:'pick',emoji:'⛏️',name:'Pickaxe'},{id:'sword',emoji:'⚔️',name:'Sword'},{id:'orb',emoji:'🔮',name:'Capture'},{id:'build',emoji:'🛠️',name:'Build'}];
+const ITEMS={seed:['🌱','Turnip seeds'],turnip:['🥬','Turnip'],wood:['🪵','Wood'],stone:['🪨','Stone'],berry:['🫐','Berries'],orb:['🔮','Capture orb'],ore:['💎','Iron ore'],flower:['🌸','Wild flower'],fiber:['🌾','Plant fiber'],ring:['💍','Promise ring'],essence:['✨','Spirit essence']};
+const RECIPES={fence:{name:'Wooden fence',emoji:'🪵',cost:{wood:2},desc:'Mark the edges of your home.'},path:{name:'Garden path',emoji:'🟫',cost:{stone:1},desc:'A decorative stone walkway.'},lantern:{name:'Glow lantern',emoji:'🏮',cost:{wood:2,ore:1},desc:'Warm light for your village.'},campfire:{name:'Campfire',emoji:'🔥',cost:{wood:4,stone:3},desc:'A glowing outdoor hearth.'},planter:{name:'Flower planter',emoji:'🌺',cost:{wood:3,flower:2},desc:'A colorful garden decoration.'},orb:{name:'Capture orb ×2',emoji:'🔮',cost:{berry:2,stone:2},desc:'Craft two creature-catching orbs.'},seed:{name:'Turnip seeds ×3',emoji:'🌱',cost:{turnip:1},desc:'Turn one harvested crop into three seeds.'}};
+const MONSTER_TYPES={mossling:{name:'Mossling',emoji:'🍃',color:'#79c787',hp:34,desc:'A playful woodland spirit.'},emberfox:{name:'Emberfox',emoji:'🦊',color:'#ec996a',hp:46,desc:'A quick, fiery forest fox.'},puddlepuff:{name:'Puddlepuff',emoji:'💠',color:'#8ecbe6',hp:38,desc:'A gentle creature of the lakes.'}};
+const HOMES=[{id:'home',x:12,y:16,w:6,h:5,roof:'#d17e65',name:'Your Cottage',kind:'sleep'},{id:'shop',x:30,y:16,w:6,h:5,roof:'#759ece',name:'Willow Market',kind:'shop'},{id:'inn',x:38,y:14,w:6,h:5,roof:'#aa77ae',name:'Moonflower Inn',kind:'inn'},{id:'library',x:30,y:34,w:7,h:5,roof:'#c3a25f',name:'Town Archive',kind:'archive'},{id:'workshop',x:39,y:34,w:7,h:5,roof:'#6ba38d',name:'Crafting Hall',kind:'craft'}];
+const NPCS=[{id:'mira',name:'Mira',title:'Farm keeper',x:24,y:25,emoji:'👩🏻‍🌾',color:'#e8b18f',line:'A good garden begins with one little seed.',favorite:'turnip',romance:true},{id:'theo',name:'Theo',title:'Village merchant',x:33,y:23,emoji:'🧑🏽‍💼',color:'#d1a6a2',line:'Fresh supplies for every adventurer!',favorite:'berry',romance:false},{id:'hana',name:'Hana',title:'Explorer & naturalist',x:42,y:23,emoji:'👩🏻‍🔬',color:'#d8bfe9',line:'I wonder what lives in the Whisperwood...',favorite:'flower',romance:true},{id:'rowan',name:'Rowan',title:'Village artisan',x:43,y:31,emoji:'🧑🏼‍🔧',color:'#c1c68f',line:'Everything you can dream of starts with a tool.',favorite:'ore',romance:false}];
+const SHOP=[{id:'seed',qty:5,price:25},{id:'orb',qty:3,price:60},{id:'berry',qty:3,price:18},{id:'flower',qty:2,price:25},{id:'wood',qty:5,price:45},{id:'stone',qty:5,price:35},{id:'ring',qty:1,price:400}];
+const QUESTS=[{id:'harvest',title:'A Growing Beginning',desc:'Harvest 3 turnips.',target:3,key:'harvested',reward:{gold:75,seed:5}},{id:'creature',title:'A New Friend',desc:'Capture your first wild creature.',target:1,key:'captured',reward:{gold:100,orb:3}},{id:'builder',title:'Home Sweet Home',desc:'Place 2 crafted decorations.',target:2,key:'built',reward:{gold:80,wood:5}},{id:'miner',title:'Sparkling Discoveries',desc:'Mine 3 ore deposits.',target:3,key:'mined',reward:{gold:85}},{id:'explorer',title:'Beyond the Village',desc:'Discover the Whisperwood and Ancient Ruins.',target:2,key:'explored',reward:{gold:100}},{id:'friends',title:'A Friendly Face',desc:'Earn 5 friendship points with villagers.',target:5,key:'friends',reward:{gold:90,flower:2}}];
+const initialState=()=>({version:1,session:{mode:'offline',roomId:null,maxPlayers:10},player:{x:17.5,y:27.5,dir:'up',hp:100,energy:100,gold:125,level:1,xp:0},day:1,time:8*60,weather:'Clear',inventory:{seed:12,turnip:0,wood:14,stone:12,berry:5,orb:7,ore:0,flower:2,fiber:0,ring:0,essence:0},tilled:{},crops:{},removed:{},placed:[],relationships:{},flirtDay:{},spouse:null,collection:[],follower:null,appearance:{name:'Valley Wanderer',color:'#79a8a4'},selected:'hoe',blueprint:'fence',touchOpacity:0.28,questsClaimed:[],visited:{farm:true},flags:{},stats:{harvested:0,captured:0,built:0,mined:0,defeated:0},created:Date.now()});
+let state,trees=[],rocks=[],forages=[],monsters=[],particles=[],input={},pointerTile=null,camera={x:0,y:0};
+let dialogueTick=0, currentModal=null,lastTick=performance.now(),lastSave=0,lastUi=0,elapsed=0,minuteAccumulator=0,activeSound=false,worldBg=null,logItems=[];
+const notify=(msg,type='info')=>{const e=document.createElement('div');e.className='toast'+(type==='error'?' error':'');e.textContent=msg;$('toasts').appendChild(e);setTimeout(()=>e.remove(),2500)};
+const log=(msg)=>{logItems.unshift({day:state?.day||1,msg});logItems=logItems.slice(0,14);$('gameLog').innerHTML=logItems.map(x=>`<div class="log-entry"><b>Day ${x.day}</b> · ${x.msg}</div>`).join('');};
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.version===1&&s.player&&s.inventory&&s.crops){state={...initialState(),...s};state.inventory={...initialState().inventory,...s.inventory};state.appearance={...initialState().appearance,...s.appearance};state.stats={...initialState().stats,...s.stats};state.session={mode:'offline',roomId:null,maxPlayers:10};return true;}}catch(e){console.warn('Save read error:',e)}state=initialState();return false;}
+function save(silent=true){try{localStorage.setItem(KEY,JSON.stringify(state));lastSave=performance.now();if(!silent)notify('💾 Game saved to this browser.');return true}catch(e){if(!silent)notify('Local save failed. Export a backup in Settings.','error');return false}}
+function zone(x=state.player.x,y=state.player.y){if(x>=50&&y>=32)return{id:'ruins',name:'Ancient Ruins',tag:'THE OLD STONES'};if(x>=45&&y<13)return{id:'highland',name:'Starglow Highlands',tag:'AMONG THE MOUNTAINS'};if(x>=45)return{id:'forest',name:'Whisperwood Forest',tag:'THE WILD FRONTIER'};if(x<=28&&y>=35)return{id:'lake',name:'Moonlit Lake',tag:'A QUIET SHORE'};if(x>=27)return{id:'village',name:'Willow Village',tag:'A PLACE TO BELONG'};return{id:'farm',name:'Briarwood Farm',tag:'HOME SWEET HOME'};}
+function typeAt(x,y){if(x<0||y<0||x>=MW||y>=MH)return 'void';const lake=Math.pow((x-17)/11,2)+Math.pow((y-41)/6.25,2);if(lake<1)return 'water';if(x>48&&y<11)return 'mountain';if(x>=50&&y>=33)return 'ruins';if((y===29&&x>=9&&x<=48)||(x===28&&y>=15&&y<=38)||(y===22&&x>=27&&x<=46)||(x===40&&y>=20&&y<=39)||(y===38&&x>=28&&x<=46))return 'path';if(x>=28&&x<=46&&y>=11&&y<=39)return 'village';if(x>=46)return 'forest';if(x<=25&&y>=20&&y<=30)return 'farm';return 'grass';}
+const isWater=(x,y)=>['water','void','mountain'].includes(typeAt(x,y));
+function homeAt(x,y){return HOMES.find(h=>x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h);}
+function door(h){return{x:h.x+Math.floor(h.w/2)+.5,y:h.y+h.h+.5};}
+function sourceKey(x,y){return `${x},${y}`;}
+function initWorld(){trees=[];rocks=[];forages=[];monsters=[];
+  for(let y=2;y<MH-2;y++)for(let x=2;x<MW-2;x++){
+    const bi=typeAt(x,y),r=hash(x,y,5),nearHome=HOMES.some(h=>x>=h.x-2&&x<h.x+h.w+2&&y>=h.y-2&&y<h.y+h.h+3);
+    const blocked=(y>=27&&y<=31&&x<49)||(x>=26&&x<=47&&y>=17&&y<=39)||nearHome||bi==='water';
+    if(blocked)continue;
+    if((bi==='forest'&&r<.29)||(bi==='grass'&&r<.14)||(bi==='farm'&&r<.035))trees.push({x,y,id:'t'+sourceKey(x,y)});
+    else if((bi==='mountain'&&r<.42)||(bi==='ruins'&&r<.19)||(bi==='forest'&&r>.95))rocks.push({x,y,id:'r'+sourceKey(x,y)});
+  }
+  for(let y=7;y<MH-3;y++)for(let x=4;x<MW-3;x++){
+    const bi=typeAt(x,y),v=hash(x,y,31);
+    if(!['grass','farm','forest'].includes(bi)||v>.055||HOMES.some(h=>x>=h.x-1&&x<=h.x+h.w&&y>=h.y-1&&y<=h.y+h.h+1))continue;
+    if(trees.some(t=>t.x===x&&t.y===y)||rocks.some(r=>r.x===x&&r.y===y))continue;
+    forages.push({x,y,id:'f'+sourceKey(x,y),item:v<.017?'berry':v<.037?'flower':'fiber'});
+  }
+  [{x:49,y:19,t:'mossling'},{x:56,y:21,t:'mossling'},{x:61,y:26,t:'emberfox'},{x:53,y:28,t:'emberfox'},{x:49,y:40,t:'puddlepuff'},{x:58,y:42,t:'puddlepuff'},{x:63,y:18,t:'mossling'}].forEach((m,i)=>monsters.push({id:i,x:m.x+.5,y:m.y+.5,spawnX:m.x+.5,spawnY:m.y+.5,type:m.t,hp:MONSTER_TYPES[m.t].hp,alive:true,respawn:0,moveTimer:0,dx:0,dy:0,attackTimer:0}));
+  buildBackground();
+}
+function obstacle(x,y,forNpc=false){const tx=Math.floor(x),ty=Math.floor(y);if(isWater(tx,ty)||homeAt(tx,ty))return true;if(trees.some(a=>Math.abs(a.x+.5-x)<.45&&Math.abs(a.y+.5-y)<.45&&!isRemoved(a)))return true;if(rocks.some(a=>Math.abs(a.x+.5-x)<.43&&Math.abs(a.y+.5-y)<.43&&!isRemoved(a)))return true;if(state.placed.some(p=>p.x===tx&&p.y===ty&&['fence','campfire','planter'].includes(p.type)))return true;return false;}
+function isRemoved(obj){return state.removed[obj.id]&&state.removed[obj.id]>state.day;}
+function blockedPlayer(x,y){const r=.24;return obstacle(x-r,y-r)||obstacle(x+r,y-r)||obstacle(x-r,y+r)||obstacle(x+r,y+r);}
+function rngTile(x,y,off){return hash(x,y,off)}
+function pixelRect(c,x,y,w,h,color){c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
+function renderTile(c,x,y){const xx=x*T,yy=y*T,bi=typeAt(x,y),v=rngTile(x,y,1);
+  const colors={grass:['#75b975','#6daf71','#7dbd77'],farm:['#88bd69','#83b766','#90c270'],village:['#81b879','#78af70','#83b57b'],forest:['#568c66','#639a67','#609467'],mountain:['#818d85','#7b8986','#8a968a'],ruins:['#718c83','#748d85','#7d9187'],water:['#4d97ae','#539eb4','#4c92a8'],path:['#b8a783','#c0b18c','#b4a382']};pixelRect(c,xx,yy,T,T,colors[bi][Math.floor(v*3)]);
+  if(bi==='water'){pixelRect(c,xx+3,yy+7,11,2,'#82c6cf');pixelRect(c,xx+16,yy+21,11,2,'#78b6c7');if(v>.7)pixelRect(c,xx+9,yy+14,4,2,'#b6d6d5');return;}
+  if(bi==='path'||bi==='ruins'||bi==='mountain'){pixelRect(c,xx+1,yy+3,15,1,bi==='path'?'#dfcda4':'#9eaa9c');if(v>.48)pixelRect(c,xx+19,yy+17,9,2,bi==='path'?'#8e8168':'#576b67');if(v>.77)pixelRect(c,xx+4,yy+24,7,2,'#8c977e');return;}
+  if(v>.17){pixelRect(c,xx+5+Math.floor(v*13),yy+5,2,5,bi==='forest'?'#84bb79':'#a1d488');pixelRect(c,xx+7+Math.floor(v*13),yy+7,2,2,'#3d7d5c')}
+  if(v>.88){pixelRect(c,xx+8,yy+17,3,3,'#ffe4a2');pixelRect(c,xx+12,yy+17,3,3,'#fff0c1');pixelRect(c,xx+10,yy+15,3,6,'#f8b8c6');}
+  else if(v<.09){pixelRect(c,xx+21,yy+9,3,3,'#efb3c8');pixelRect(c,xx+25,yy+11,2,2,'#f0e9b8')}
+}
+function buildBackground(){worldBg=document.createElement('canvas');worldBg.width=MW*T;worldBg.height=MH*T;const c=worldBg.getContext('2d');for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)renderTile(c,x,y);}
+function positionFacing(){const p=state.player,add={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[p.dir];return{x:Math.floor(p.x+add[0]*.85),y:Math.floor(p.y+add[1]*.85)};}
+function nearby(max=1.7){const p=state.player;let opts=[];for(const n of NPCS){let d=distance(p.x,p.y,n.x+.5,n.y+.5);if(d<max)opts.push({type:'npc',d,obj:n});}for(const h of HOMES){const a=door(h),d=distance(p.x,p.y,a.x,a.y);if(d<max+0.55)opts.push({type:'home',d,obj:h});}if(distance(p.x,p.y,57.5,40.5)<max+0.5)opts.push({type:'altar',d:0,obj:null});const forage=forages.filter(f=>!isRemoved(f)).map(f=>({type:'forage',d:distance(p.x,p.y,f.x+.5,f.y+.5),obj:f})).filter(v=>v.d<max);opts.push(...forage);const wild=monsters.filter(m=>m.alive).map(m=>({type:'monster',d:distance(p.x,p.y,m.x,m.y),obj:m})).filter(v=>v.d<max);opts.push(...wild);return opts.sort((a,b)=>a.d-b.d)[0]||null;}
+function consumeEnergy(amt){if(state.player.energy<amt){notify('You are exhausted. Rest at your cottage!','error');return false}state.player.energy=Math.max(0,state.player.energy-amt);return true;}
+function give(item,amount){state.inventory[item]=(state.inventory[item]||0)+amount;}
+function hasItems(cost){return Object.entries(cost).every(([id,n])=>(state.inventory[id]||0)>=n)}
+function spendItems(cost){for(const [id,n] of Object.entries(cost))give(id,-n)}
+function earnXP(n){let p=state.player;p.xp+=n;while(p.xp>=100){p.xp-=100;p.level++;p.hp=100;p.energy=100;notify(`⭐ Level ${p.level}! Health and energy restored!`);log(`Reached explorer level ${p.level}.`)}}
+function fx(x,y,emoji){particles.push({x,y,emoji,t:1});}
+function act(tool,tx,ty){const p=state.player,x=clamp(Math.floor(tx),0,MW-1),y=clamp(Math.floor(ty),0,MH-1),id=sourceKey(x,y);if(distance(p.x,p.y,x+.5,y+.5)>2.75){notify('Move closer to use this tool.','error');return;}
+  const bi=typeAt(x,y),crop=state.crops[id],tree=trees.find(o=>o.x===x&&o.y===y&&!isRemoved(o)),rock=rocks.find(o=>o.x===x&&o.y===y&&!isRemoved(o)),monster=monsters.filter(m=>m.alive).sort((a,b)=>distance(a.x,a.y,x+.5,y+.5)-distance(b.x,b.y,x+.5,y+.5))[0];
+  switch(tool){
+    case 'hoe':if(bi!=='farm'&&bi!=='grass'){notify('Till grass or farmland.','error');return;}if(homeAt(x,y)||tree||rock||crop||state.placed.some(o=>o.x===x&&o.y===y)){notify('This space is occupied.','error');return;}if(state.tilled[id]){notify('Soil is already tilled.');return;}if(!consumeEnergy(3))return;state.tilled[id]=true;fx(x+.5,y+.5,'🤎');log('Prepared fresh soil for planting.');break;
+    case 'seeds':if(!state.tilled[id]||crop){notify('Use the hoe on an empty plot first.','error');return;}if(state.inventory.seed<1){notify('No seeds. Buy more or craft them.','error');return;}if(!consumeEnergy(1))return;give('seed',-1);state.crops[id]={stage:0,watered:false,planted:state.day};fx(x+.5,y+.5,'🌱');break;
+    case 'water':if(!crop){notify('Plant a seed in tilled soil first.','error');return;}if(crop.stage>=2){if(!consumeEnergy(2))return;delete state.crops[id];delete state.tilled[id];give('turnip',1);state.stats.harvested++;state.player.gold+=12;earnXP(20);fx(x+.5,y+.5,'🥬');notify('🥬 Harvested turnip · +12g');log('Harvested a ripe turnip.');break;}if(crop.watered){notify('Already watered today.');return;}if(!consumeEnergy(2))return;crop.watered=true;fx(x+.5,y+.5,'💦');break;
+    case 'axe':if(!tree){notify('Aim the axe at a tree.','error');return;}if(!consumeEnergy(5))return;state.removed[tree.id]=state.day+3;give('wood',3);if(hash(x,y,6)>.53)give('fiber',1);earnXP(12);fx(x+.5,y+.5,'🪵');notify('🪵 Collected 3 wood');break;
+    case 'pick':if(!rock){notify('Find a rock to mine.','error');return;}if(!consumeEnergy(6))return;state.removed[rock.id]=state.day+3;give('stone',2);give('ore',1);state.stats.mined++;earnXP(16);fx(x+.5,y+.5,'💎');notify('⛏️ Found 2 stone and 1 ore');break;
+    case 'sword':if(!monster||distance(monster.x,monster.y,x+.5,y+.5)>1.5){notify('Aim at a nearby creature.','error');return;}if(!consumeEnergy(4))return;monster.hp-=17+Math.max(0,p.level-1)*2;fx(monster.x,monster.y,'⚔️');if(monster.hp<=0){monster.alive=false;monster.respawn=35;state.stats.defeated++;give('essence',1);earnXP(24);notify('✨ Creature defeated · Spirit essence +1');}else notify(`${MONSTER_TYPES[monster.type].name}: ${Math.max(0,monster.hp)} HP left`);break;
+    case 'orb':if(!monster||distance(monster.x,monster.y,x+.5,y+.5)>1.5){notify('Aim at a wild creature nearby.','error');return;}if(state.inventory.orb<1){notify('No capture orbs left!','error');return;}give('orb',-1);{const rate=monster.hp<=MONSTER_TYPES[monster.type].hp*.5?.95:.42;if(Math.random()<rate){monster.alive=false;monster.respawn=40;state.collection.push({id:Date.now()+Math.random(),type:monster.type,nickname:MONSTER_TYPES[monster.type].name});state.follower=state.collection.length-1;state.stats.captured++;earnXP(35);fx(monster.x,monster.y,'💖');notify(`🎉 Caught ${MONSTER_TYPES[monster.type].name}!`);log(`Befriended a wild ${MONSTER_TYPES[monster.type].name}.`);}else{notify('The creature escaped! Weaken it with your sword.','error');fx(monster.x,monster.y,'💨');}}break;
+    case 'build':if(!RECIPES[state.blueprint]||['seed','orb'].includes(state.blueprint)){openModal('craft');return;}if(!['farm','grass','village','forest','path','ruins'].includes(bi)||tree||rock||crop||homeAt(x,y)||state.placed.some(o=>o.x===x&&o.y===y)||distance(p.x,p.y,x+.5,y+.5)<.65){notify('Choose a clear space for this structure.','error');return;}if(!hasItems(RECIPES[state.blueprint].cost)){notify('Not enough materials. Open Crafting.','error');return;}spendItems(RECIPES[state.blueprint].cost);state.placed.push({x,y,type:state.blueprint});state.stats.built++;earnXP(18);fx(x+.5,y+.5,'✨');notify(`${RECIPES[state.blueprint].emoji} Placed ${RECIPES[state.blueprint].name}`);break;
+  }
+  updateUI();save();
+}
+function interact(){if(currentModal)return;const target=nearby();if(!target){const t=positionFacing();if(state.crops[sourceKey(t.x,t.y)]?.stage>=2){act('water',t.x,t.y);return;}notify('Nothing nearby to interact with.');return;}
+  if(target.type==='npc')openModal('npc',{id:target.obj.id});
+  else if(target.type==='home'){const h=target.obj;if(h.kind==='sleep')openModal('sleep');else if(h.kind==='shop')openModal('shop');else if(h.kind==='craft')openModal('craft');else if(h.kind==='inn')openModal('inn');else openModal('journal');}
+  else if(target.type==='monster'){notify('Use sword [6] to weaken, then capture orb [7]!');}
+  else if(target.type==='forage'){const a=target.obj;state.removed[a.id]=state.day+2;give(a.item,1);earnXP(5);fx(a.x+.5,a.y+.5,ITEMS[a.item][0]);notify(`${ITEMS[a.item][0]} Gathered ${ITEMS[a.item][1]}`);updateUI();save();}
+  else if(target.type==='altar'){if(!state.flags.altar||state.flags.altar<state.day){state.flags.altar=state.day;give('essence',2);earnXP(15);notify('✨ The ancient stones gift you 2 spirit essence!');log('Touched the ancient altar.');updateUI();save();}else notify('The ancient altar is quiet today.');}
+}
+function useFacing(){const f=positionFacing();act(state.selected,f.x,f.y);}
+function rest(){let growing=0;for(const c of Object.values(state.crops)){if(c.watered||state.weather==='Rain'){c.stage=Math.min(2,c.stage+1);if(c.stage===2)growing++;}c.watered=false;}state.day++;state.time=8*60;state.weather=hash(state.day,7,14)<.28?'Rain':'Clear';state.player.hp=100;state.player.energy=100;monsters.forEach(m=>{if(!m.alive&&m.respawn<=0){m.alive=true;m.hp=MONSTER_TYPES[m.type].hp;m.x=m.spawnX;m.y=m.spawnY;}});notify(`🌅 Day ${state.day} begins! ${growing?'Some crops are ready to harvest.':''}`);log(`Rested. A fresh day begins${state.weather==='Rain'?' with rain':''}.`);updateUI();save();}
+function progress(q){if(q.key==='explored')return Number(!!state.visited.forest)+Number(!!state.visited.ruins);if(q.key==='friends')return Object.values(state.relationships).reduce((n,v)=>n+v,0);return state.stats[q.key]||0;}
+function rewardString(o){return Object.entries(o).map(([k,v])=>k==='gold'?`${v}g`:`${v} ${ITEMS[k]?.[1]||k}`).join(' · ')}
+function claimQuest(id){const q=QUESTS.find(q=>q.id===id);if(!q||state.questsClaimed.includes(q.id)||progress(q)<q.target)return;state.questsClaimed.push(q.id);state.player.gold+=q.reward.gold||0;for(const [k,v] of Object.entries(q.reward))if(k!=='gold')give(k,v);earnXP(45);notify(`🎁 Quest complete! ${q.title}`);log(`Completed quest: ${q.title}.`);updateUI();save();refreshModal();}
+function buy(id){const o=SHOP.find(x=>x.id===id);if(!o)return;if(state.player.gold<o.price){notify('Not enough gold.','error');return;}state.player.gold-=o.price;give(id,o.qty);notify(`Purchased ${o.qty} × ${ITEMS[id][1]}`);updateUI();save();refreshModal();}
+function sell(id){if(!state.inventory[id])return;const prices={turnip:18,berry:5,wood:4,stone:4,ore:16,flower:8,essence:24,fiber:5};if(!prices[id])return;give(id,-1);state.player.gold+=prices[id];notify(`Sold ${ITEMS[id][1]} for ${prices[id]}g`);updateUI();save();refreshModal();}
+function craftOrSelect(id){const r=RECIPES[id];if(!r)return;if(id==='orb'||id==='seed'){if(!hasItems(r.cost)){notify('Not enough ingredients.','error');return;}spendItems(r.cost);give(id,id==='orb'?2:3);notify(`Crafted ${r.name}`);earnXP(10);updateUI();save();refreshModal();return;}state.blueprint=id;state.selected='build';updateUI();closeModal();notify(`Selected ${r.name}. Click a nearby empty tile to build.`);}
+function gift(id,item){const npc=NPCS.find(n=>n.id===id);if(!npc||!state.inventory[item])return;give(item,-1);const gain=item===npc.favorite?3:1;state.relationships[id]=clamp((state.relationships[id]||0)+gain,0,10);earnXP(9);log(`Gave ${npc.name} a thoughtful gift.`);updateUI();save();refreshModal();showDialogueResult(`🎁 ${npc.name} ${gain===3?'loved':'appreciated'} your gift! ♥ Friendship +${gain}`);}
+function flirt(id){const npc=NPCS.find(n=>n.id===id);if(!npc?.romance)return;if(state.flirtDay[id]===state.day){showDialogueResult('You already spent time together today.');return;}state.flirtDay[id]=state.day;state.relationships[id]=clamp((state.relationships[id]||0)+1,0,10);updateUI();save();refreshModal();showDialogueResult(`💗 You spent a lovely afternoon with ${npc.name}. Friendship +1!`);}
+function propose(id){const npc=NPCS.find(n=>n.id===id);if(!npc?.romance||state.spouse||state.inventory.ring<1||(state.relationships[id]||0)<10)return;give('ring',-1);state.spouse=id;log(`Married ${npc.name} in Willow Village!`);earnXP(100);updateUI();save();refreshModal();showDialogueResult(`💍 ${npc.name} said yes! You're married!`);}
+function gameUpdate(dt){if(currentModal)return;
+  elapsed+=dt;let vx=0,vy=0;if(input.ArrowUp||input.KeyW||input.mobileup)vy--;if(input.ArrowDown||input.KeyS||input.mobiledown)vy++;if(input.ArrowLeft||input.KeyA||input.mobileleft)vx--;if(input.ArrowRight||input.KeyD||input.mobileright)vx++;
+  vx+=(input.joyX||0);vy+=(input.joyY||0);if(vx||vy){const l=Math.hypot(vx,vy);if(l>1){vx/=l;vy/=l;}if(Math.abs(vx)>Math.abs(vy))state.player.dir=vx>0?'right':'left';else state.player.dir=vy>0?'down':'up';const speed=(input.ShiftLeft||input.ShiftRight)?4.7:3.1;const nx=state.player.x+vx*speed*dt,ny=state.player.y+vy*speed*dt;if(!blockedPlayer(nx,state.player.y))state.player.x=nx;if(!blockedPlayer(state.player.x,ny))state.player.y=ny;}
+  const loc=zone();if(!state.visited[loc.id]){state.visited[loc.id]=true;log(`Discovered ${loc.name}!`);notify(`🧭 Discovered ${loc.name}`);save();updateUI();}
+  minuteAccumulator+=dt*5.5;if(minuteAccumulator>=1){const n=Math.floor(minuteAccumulator);state.time+=n;minuteAccumulator-=n;if(state.time>=24*60)state.time=23*60+59;}
+  for(const m of monsters){if(!m.alive){m.respawn-=dt;if(m.respawn<0){m.alive=true;m.hp=MONSTER_TYPES[m.type].hp;m.x=m.spawnX;m.y=m.spawnY;}continue;}
+    m.moveTimer-=dt;m.attackTimer-=dt;const d=distance(state.player.x,state.player.y,m.x,m.y);if(d<5.4&&d>1){m.dx=(state.player.x-m.x)/d;m.dy=(state.player.y-m.y)/d;}else if(m.moveTimer<=0){m.moveTimer=2+hash(Math.floor(elapsed),m.id,12)*3;const ang=hash(m.id,Math.floor(elapsed),3)*Math.PI*2;m.dx=Math.cos(ang);m.dy=Math.sin(ang);}
+    const step=(d<5.4?.62:.34)*dt,mx=m.x+m.dx*step,my=m.y+m.dy*step;if(!obstacle(mx,my)&&mx>=46&&mx<MW-1&&my>=12&&my<MH-1){m.x=mx;m.y=my;}
+    if(d<.95&&m.attackTimer<=0){m.attackTimer=2.5;state.player.hp-=5;fx(state.player.x,state.player.y,'💢');if(state.player.hp<=0){state.player.hp=100;state.player.energy=80;state.player.gold=Math.max(0,state.player.gold-15);state.player.x=17.5;state.player.y=27.5;notify('💔 You fainted! Returned home (−15g).','error');log('Fainted during an encounter.');save();}else if(state.player.hp<35)notify('⚠ Low health! Return home to rest.','error');}
+  }
+  particles=particles.filter(p=>(p.t-=dt*.85)>0);
+  if(elapsed-lastUi>0.35){lastUi=elapsed;updateLiveUI();}
+  if(performance.now()-lastSave>18000)save();
+}
+function worldRect(c,x,y,w,h,color){pixelRect(c,x*T-camera.x,y*T-camera.y,w*T,h*T,color)}
+function drawTree(o){const x=Math.round((o.x+.5)*T-camera.x),y=Math.round((o.y+.5)*T-camera.y),c=ctx;
+  pixelRect(c,x-12,y+7,24,7,'#1e5f4e55');pixelRect(c,x-5,y-7,10,27,'#755343');pixelRect(c,x-3,y+5,4,12,'#b98b5a');
+  pixelRect(c,x-16,y-22,32,25,'#2c704d');pixelRect(c,x-21,y-36,42,25,'#377e52');pixelRect(c,x-14,y-46,28,22,'#459363');pixelRect(c,x-8,y-44,9,9,'#69b06c');pixelRect(c,x+8,y-28,7,8,'#6ab577');pixelRect(c,x-16,y-25,8,7,'#5dad6a');pixelRect(c,x+9,y-42,4,4,'#c6dc7a');pixelRect(c,x-9,y-33,4,4,'#e9af91');
+}
+function drawForage(o){const x=Math.round(o.x*T-camera.x),y=Math.round(o.y*T-camera.y),c=ctx;pixelRect(c,x-9,y+7,18,5,'#346f4a');pixelRect(c,x-9,y+0,7,11,'#4a9754');pixelRect(c,x-3,y-7,7,15,'#65b36c');pixelRect(c,x+4,y-2,7,12,'#368753');if(o.item==='berry'){pixelRect(c,x-7,y+0,4,4,'#7279da');pixelRect(c,x+4,y+4,4,4,'#9691f2');}else if(o.item==='flower'){pixelRect(c,x-6,y-3,6,6,'#f7c2d3');pixelRect(c,x+3,y-5,6,6,'#ffe4a7');}else pixelRect(c,x+1,y-3,5,5,'#d3ce81');}
+function drawRock(o){const x=Math.round((o.x+.5)*T-camera.x),y=Math.round((o.y+.5)*T-camera.y),c=ctx;
+  pixelRect(c,x-14,y+10,30,6,'#354e4e66');pixelRect(c,x-13,y-3,24,15,'#6b8582');pixelRect(c,x-8,y-11,18,10,'#99aca3');pixelRect(c,x+6,y+2,8,10,'#465e65');pixelRect(c,x-8,y-9,10,4,'#ccd2b5');pixelRect(c,x-8,y+8,5,2,'#c4bb9b');
+}
+function drawBuilding(h){const x=Math.round(h.x*T-camera.x),y=Math.round(h.y*T-camera.y),w=h.w*T,height=h.h*T,c=ctx;
+  pixelRect(c,x+5,y+height-18,w-10,20,'#425b50');pixelRect(c,x+8,y+56,w-16,height-56,'#e5cea2');pixelRect(c,x+9,y+76,w-18,height-77,'#d1b98e');
+  pixelRect(c,x+7,y+44,w-14,15,'#846d62');pixelRect(c,x+1,y+20,w-2,26,h.roof);pixelRect(c,x+13,y+8,w-26,14,h.roof);pixelRect(c,x+24,y+0,w-48,12,h.roof);pixelRect(c,x+4,y+28,w-8,5,'#f4c8a2');pixelRect(c,x+5,y+53,w-10,4,'#4e6159');pixelRect(c,x+16,y+71,25,25,'#526c7a');pixelRect(c,x+19,y+74,18,17,'#91c8d3');pixelRect(c,x+w-43,y+71,25,25,'#526c7a');pixelRect(c,x+w-40,y+74,18,17,'#91c8d3');pixelRect(c,x+w/2-12,y+height-46,24,47,'#836449');pixelRect(c,x+w/2-7,y+height-40,14,34,'#493e3b');pixelRect(c,x+w/2+3,y+height-25,3,3,'#ead28a');
+  c.save();c.font='bold 11px monospace';c.textAlign='center';c.strokeStyle='#263b32';c.lineWidth=4;c.strokeText(h.name,x+w/2,y-8);c.fillStyle='#fff8d4';c.fillText(h.name,x+w/2,y-8);c.restore();
+  pixelRect(c,x+w/2-15,y+height-1,30,5,'#b5a07a');
+}
+function drawHuman(x,y,color,main=false,dir='down',t=0){const px=Math.round(x*T-camera.x),py=Math.round(y*T-camera.y),c=ctx,bob=main&&Math.sin(t*11)>.3?1:0;
+  pixelRect(c,px-11,py+9,23,5,'#1e3e3c66');pixelRect(c,px-8,py-4+bob,7,13,'#454b66');pixelRect(c,px+2,py-4-bob,7,13,'#394357');pixelRect(c,px-9,py-20,19,18,color);pixelRect(c,px-14,py-17,6,13,'#e6ac80');pixelRect(c,px+10,py-17,6,13,'#e6ac80');pixelRect(c,px-8,py-33,17,15,'#ebb98e');pixelRect(c,px-9,py-36,19,7,'#463d48');pixelRect(c,px-11,py-31,5,11,'#443744');pixelRect(c,px+7,py-33,4,7,'#443744');
+  if(dir!=='up'){pixelRect(c,px-4,py-26,3,3,'#342f33');pixelRect(c,px+4,py-26,3,3,'#342f33');pixelRect(c,px+0,py-21,3,2,'#bc786c');}
+  if(main){pixelRect(c,px-10,py-20,20,4,'#e6c579');pixelRect(c,px-4,py-36,9,3,'#dcd2a0');}
+}
+function drawCreature(x,y,type,small=false,time=0){const c=ctx,info=MONSTER_TYPES[type],px=Math.round(x*T-camera.x),py=Math.round(y*T-camera.y+(Math.sin(time*3+x)*2)),size=small?10:14;
+  pixelRect(c,px-size+2,py+7,size*2,4,'#17393866');pixelRect(c,px-size,py-size+2,size*2,size+7,info.color);pixelRect(c,px-size+3,py-size-4,7,9,info.color);pixelRect(c,px+size-10,py-size-4,7,9,info.color);
+  if(type==='emberfox'){pixelRect(c,px-size-5,py-3,7,8,'#f7c57c');pixelRect(c,px+size-2,py-3,7,8,'#f7c57c');}if(type==='mossling'){pixelRect(c,px-7,py-size-9,7,8,'#a4d686');pixelRect(c,px+2,py-size-7,8,8,'#a4d686');}if(type==='puddlepuff'){pixelRect(c,px-3,py-size-10,6,10,'#bde8f2');}
+  pixelRect(c,px-6,py-4,4,4,'#244a54');pixelRect(c,px+4,py-4,4,4,'#244a54');pixelRect(c,px-2,py+2,4,2,'#f3ebbb');
+}
+function drawCrop(x,y,crop){const px=x*T-camera.x,py=y*T-camera.y;cropsSoil(px,py,crop.watered);const s=crop.stage;if(s===0){pixelRect(ctx,px+15,py+16,3,13,'#539457');pixelRect(ctx,px+10,py+18,6,4,'#7bbe69');pixelRect(ctx,px+17,py+16,7,4,'#7fd374');}if(s===1){pixelRect(ctx,px+13,py+7,6,18,'#519657');pixelRect(ctx,px+5,py+10,13,6,'#7aba74');pixelRect(ctx,px+16,py+9,12,7,'#8acd80');pixelRect(ctx,px+10,py+23,12,7,'#e7dfba');}if(s===2){pixelRect(ctx,px+10,py+16,14,13,'#f0e8c4');pixelRect(ctx,px+14,py+6,5,16,'#438753');pixelRect(ctx,px+7,py+10,10,5,'#65b66a');pixelRect(ctx,px+17,py+8,11,6,'#9bdb83');pixelRect(ctx,px+16,py+18,5,5,'#ffe6a0');}}
+function cropsSoil(x,y,wet){pixelRect(ctx,x+1,y+1,30,30,wet?'#6e6051':'#9c7957');pixelRect(ctx,x+3,y+6,25,3,wet?'#574d49':'#825f48');pixelRect(ctx,x+4,y+17,24,3,wet?'#574d49':'#825f48');pixelRect(ctx,x+4,y+25,24,2,wet?'#574d49':'#825f48');}
+function drawPlacement(p){const x=p.x*T-camera.x,y=p.y*T-camera.y,c=ctx;switch(p.type){
+  case 'fence':pixelRect(c,x+2,y+4,7,27,'#996c4c');pixelRect(c,x+23,y+4,7,27,'#996c4c');pixelRect(c,x,y+10,32,7,'#d5b17a');pixelRect(c,x,y+21,32,7,'#d5b17a');break;
+  case 'path':pixelRect(c,x+3,y+3,26,26,'#c1b6a3');pixelRect(c,x+4,y+4,11,10,'#a7a394');pixelRect(c,x+17,y+15,9,11,'#e1d1b3');break;
+  case 'lantern':pixelRect(c,x+14,y+2,5,28,'#80634a');pixelRect(c,x+7,y+1,20,16,'#7c6b52');pixelRect(c,x+10,y+2,14,13,'#f8dda0');pixelRect(c,x+12,y+5,10,7,'#fff5c0');break;
+  case 'campfire':pixelRect(c,x+3,y+21,26,6,'#684d3e');pixelRect(c,x+5,y+18,22,6,'#998b74');pixelRect(c,x+9,y+9,13,15,'#ffc65b');pixelRect(c,x+13,y+2,8,17,'#f17e43');pixelRect(c,x+15,y+11,5,12,'#fff6c1');break;
+  case 'planter':pixelRect(c,x+6,y+15,22,13,'#bb8968');pixelRect(c,x+8,y+7,19,10,'#457c63');pixelRect(c,x+12,y+4,6,7,'#f9b7c8');pixelRect(c,x+21,y+5,6,7,'#ffdb9a');break;
+}}
+function drawWorld(){const p=state.player;camera.x=clamp(Math.round(p.x*T-W/2),0,MW*T-W);camera.y=clamp(Math.round(p.y*T-H/2),0,MH*T-H);ctx.clearRect(0,0,W,H);
+  ctx.drawImage(worldBg,camera.x,camera.y,W,H,0,0,W,H);
+  const sprites=[];
+  for(const h of HOMES)sprites.push({y:h.y+h.h,draw:()=>drawBuilding(h)});
+  for(const t of trees)if(!isRemoved(t))sprites.push({y:t.y+.9,draw:()=>drawTree(t)});
+  for(const r of rocks)if(!isRemoved(r))sprites.push({y:r.y+.9,draw:()=>drawRock(r)});
+  for(const f of forages)if(!isRemoved(f))sprites.push({y:f.y+.8,draw:()=>drawForage(f)});
+  for(const b of state.placed)sprites.push({y:b.y+.75,draw:()=>drawPlacement(b)});
+  for(const [key,v] of Object.entries(state.tilled)){const [x,y]=key.split(',').map(Number);sprites.push({y:y+.5,draw:()=>v&&(state.crops[key]?drawCrop(x,y,state.crops[key]):cropsSoil(x*T-camera.x,y*T-camera.y,false))});}
+  for(const n of NPCS)sprites.push({y:n.y+.6,draw:()=>{drawHuman(n.x+.5,n.y+.5,n.color,false,'down',elapsed);const sx=Math.round((n.x+.5)*T-camera.x),sy=Math.round(n.y*T-camera.y-45);ctx.font='bold 11px monospace';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='#1a3f37';ctx.strokeText(n.name,sx,sy);ctx.fillStyle='#fff4d1';ctx.fillText(n.name,sx,sy);}});
+  for(const m of monsters)if(m.alive)sprites.push({y:m.y+.1,draw:()=>{drawCreature(m.x,m.y,m.type,false,elapsed);if(m.hp<MONSTER_TYPES[m.type].hp){const px=m.x*T-camera.x;const py=m.y*T-camera.y-26;pixelRect(ctx,px-16,py,32,5,'#593d43');pixelRect(ctx,px-15,py+1,30*m.hp/MONSTER_TYPES[m.type].hp,3,'#b2e591');}}});
+  if(state.follower!==null&&state.collection[state.follower]){const c=state.collection[state.follower],o={up:[.65,.85],down:[-.75,-.55],left:[.9,.6],right:[-.9,.55]}[p.dir];sprites.push({y:p.y+.3,draw:()=>drawCreature(p.x+o[0],p.y+o[1],c.type,true,elapsed)});}
+  sprites.push({y:p.y+.4,draw:()=>drawHuman(p.x,p.y,state.appearance?.color||'#79a8a4',true,p.dir,elapsed)});
+  sprites.sort((a,b)=>a.y-b.y);for(const sprite of sprites)sprite.draw();
+  if(pointerTile&&distance(p.x,p.y,pointerTile.x+.5,pointerTile.y+.5)<2.9){ctx.strokeStyle='#f4edbd';ctx.lineWidth=2;ctx.strokeRect(Math.round(pointerTile.x*T-camera.x)+1,Math.round(pointerTile.y*T-camera.y)+1,T-2,T-2);}
+  for(const fx of particles){ctx.globalAlpha=clamp(fx.t,0,1);ctx.font='22px serif';ctx.fillText(fx.emoji,fx.x*T-camera.x,fx.y*T-camera.y+(1-fx.t)*-34);ctx.globalAlpha=1;}
+  if(state.weather==='Rain'){ctx.fillStyle='#1c487718';ctx.fillRect(0,0,W,H);const seed=Math.floor(elapsed*25);ctx.strokeStyle='#d7e8ed7a';ctx.lineWidth=1;for(let i=0;i<70;i++){const x=(hash(i,7,2)*W+seed*3)%W,y=(hash(i,11,2)*H+seed*7)%H;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-4,y+10);ctx.stroke();}}
+  if(state.time>19*60||state.time<6*60){ctx.fillStyle='#12234474';ctx.fillRect(0,0,W,H);}else if(state.time>17*60){ctx.fillStyle='#965f4424';ctx.fillRect(0,0,W,H);}
+  // A gentle action marker shows which tile F will affect.
+  const front=positionFacing(),sx=Math.round(front.x*T-camera.x),sy=Math.round(front.y*T-camera.y);ctx.strokeStyle='#ffffff44';ctx.lineWidth=1;ctx.strokeRect(sx+6,sy+6,20,20);
+}
+function updateLiveUI(){const p=state.player,loc=zone();$('zoneName').textContent=loc.name;$('viewportBadge').textContent='✦ '+loc.tag;$('dayLabel').textContent='Day '+state.day;const h=Math.floor(state.time/60)%24,m=Math.floor(state.time%60);$('timeLabel').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');$('weatherLabel').textContent=state.weather==='Rain'?'🌧 Rain':'☀ Clear';$('goldLabel').textContent='◈ '+p.gold+'g';$('hpValue').textContent=Math.ceil(p.hp)+'/100';$('hpMeter').style.width=clamp(p.hp,0,100)+'%';$('energyValue').textContent=Math.ceil(p.energy)+'/100';$('energyMeter').style.width=clamp(p.energy,0,100)+'%';const nearest=nearby(2.2);$('hudZone').textContent=loc.name.toUpperCase();$('hudClock').textContent=`DAY ${state.day} · ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} · ${state.weather==='Rain'?'☂':'☀'}`;$('hudGold').textContent='◈ '+p.gold+'g';$('hudHealth').textContent='♥ '+Math.ceil(p.hp);$('hudEnergy').textContent='⚡ '+Math.ceil(p.energy);$('contextHint').textContent=nearest?(nearest.type==='npc'?`E · Talk to ${nearest.obj.name}`:nearest.type==='home'?`E · Enter ${nearest.obj.name}`:nearest.type==='monster'?'6 Sword · 7 Capture':nearest.type==='forage'?`E · Gather ${ITEMS[nearest.obj.item][1]}`:'E · Touch ancient altar'):'WASD to move · E to interact · F to use tool';}
+function updateUI(){const p=state.player;$('ingameTools').innerHTML=TOOLS.map((t,i)=>`<button class="ingame-tool ${state.selected===t.id?'active':''}" data-game-tool="${t.id}" title="${t.name}" aria-label="${t.name}"><span>${t.emoji}</span><small>${i+1}</small></button>`).join('');const activeTool=TOOLS.find(t=>t.id===state.selected)||TOOLS[0];$('touchToolName').textContent=activeTool.emoji+' '+activeTool.name;document.documentElement.style.setProperty('--touch-opacity',String(state.touchOpacity??0.28));$('toolRow').innerHTML=TOOLS.map((t,i)=>`<button class="tool ${state.selected===t.id?'active':''}" data-tool="${t.id}" title="${t.name} (key ${i+1})"><span class="tool-num">${i+1}</span><span class="tool-emoji">${t.emoji}</span><span class="tool-name">${t.id==='build'?RECIPES[state.blueprint]?.name?.split(' ')[0]||'Build':t.name}</span></button>`).join('');
+  $('levelLabel').textContent='LEVEL '+p.level;document.querySelector('.profile strong').textContent=state.appearance?.name||'Valley Wanderer';$('profileLine').textContent=`${p.gold} gold · ${state.collection.length} creatures · ${state.stats.built} built`;$('xpMeter').style.width=p.xp+'%';$('xpLabel').textContent=p.xp+' / 100 XP';
+  const remaining=QUESTS.filter(q=>!state.questsClaimed.includes(q.id));$('questPreview').innerHTML=(remaining.length?remaining.slice(0,3).map(q=>{const v=progress(q);return `<div class="quest-item"><div class="quest-title"><span>${q.title}</span><span>${Math.min(v,q.target)} / ${q.target}${v>=q.target?' ★':''}</span></div><div class="quest-bar"><div style="width:${Math.min(100,100*v/q.target)}%"></div></div></div>`}).join(''):'<small>All quests finished! ✨</small>');
+  const bag=['seed','turnip','wood','stone','orb','ore','berry','flower'];$('inventoryMini').innerHTML=bag.map(id=>`<div class="bag-slot" title="${ITEMS[id][1]}"><span>${ITEMS[id][0]}</span><small>× ${state.inventory[id]||0}</small></div>`).join('');
+  const c=state.collection[state.follower];$('companionPreview').innerHTML=c?`<span class="creature-emoji">${MONSTER_TYPES[c.type].emoji}</span><div><strong>${MONSTER_TYPES[c.type].name}</strong><small>${state.collection.length} creature${state.collection.length===1?'':'s'} collected. Click to swap.</small></div>`:'<span class="creature-emoji">🥚</span><div><strong>None yet</strong><small>Explore Whisperwood Forest to catch a creature.</small></div>';
+  updateLiveUI();}
+function exportSave(){save();const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=`Evergrove_Day${state.day}_Save.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);notify('⬇ Save backup exported!');}
+function importSave(file){if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const s=JSON.parse(String(reader.result));if(s.version!==1||!s.player||typeof s.player.x!=='number'||!s.inventory||!s.crops||!Array.isArray(s.placed))throw new Error('This is not an Evergrove v0.1 save');if(!Number.isFinite(s.player.x)||!Number.isFinite(s.player.y))throw new Error('Invalid save location');state={...initialState(),...s};state.session={mode:'offline',roomId:null,maxPlayers:10};state.inventory={...initialState().inventory,...s.inventory};state.appearance={...initialState().appearance,...s.appearance};state.stats={...initialState().stats,...s.stats};state.player.x=clamp(state.player.x,1,MW-2);state.player.y=clamp(state.player.y,1,MH-2);state.collection=Array.isArray(s.collection)?s.collection:[];state.placed=s.placed.filter(p=>Number.isInteger(p.x)&&Number.isInteger(p.y)&&RECIPES[p.type]);save();log('Imported a saved adventure.');updateUI();closeModal();notify('✅ Save game imported successfully.');}catch(e){notify(`Import failed: ${e.message}`,'error');}};reader.readAsText(file);}
+function escapeText(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function formatCost(cost){return Object.entries(cost).map(([id,n])=>`${ITEMS[id]?.[0]||''} ${n} ${ITEMS[id]?.[1]||id}`).join(' + ')}
+function invCards(){return Object.entries(ITEMS).map(([id,[emoji,name]])=>`<div class="bag-slot" title="${name}"><span>${emoji}</span><strong>${state.inventory[id]||0}</strong><small>${name}</small></div>`).join('')}
+function questCards(){return QUESTS.map(q=>{const p=progress(q),claimed=state.questsClaimed.includes(q.id),ready=p>=q.target;return `<div class="modal-item"><span class="emoji">${claimed?'✅':ready?'🎁':'📜'}</span><div class="item-detail"><strong>${q.title}</strong><small>${q.desc} · ${Math.min(p,q.target)}/${q.target}</small><small>Reward: ${rewardString(q.reward)}</small></div><button ${claimed||!ready?'disabled':''} data-action="claim" data-id="${q.id}">${claimed?'Done':ready?'Claim':'In progress'}</button></div>`}).join('')}
+function drawMap(){const c=$('fullMap');if(!c)return;const x=c.getContext('2d'),sz=8;c.width=MW*sz;c.height=MH*sz;
+  const colors={void:'#172733',water:'#559bc0',mountain:'#939898',ruins:'#8a857d',path:'#c7b492',village:'#93bc83',farm:'#9ccb77',forest:'#427e60',grass:'#79b678'};
+  for(let yy=0;yy<MH;yy++)for(let xx=0;xx<MW;xx++){x.fillStyle=colors[typeAt(xx,yy)]||'#888';x.fillRect(xx*sz,yy*sz,sz,sz)}
+  for(const h of HOMES){x.fillStyle=h.roof;x.fillRect(h.x*sz,h.y*sz,h.w*sz,h.h*sz);x.strokeStyle='#e9e2bb';x.strokeRect(h.x*sz,h.y*sz,h.w*sz,h.h*sz)}
+  x.fillStyle='#ffe7a0';x.font='bold 13px monospace';x.fillText('FARM',70,105);x.fillText('VILLAGE',260,95);x.fillText('FOREST',399,155);x.fillText('RUINS',428,348);x.fillText('LAKE',100,357);
+  x.fillStyle='#fdf1d0';x.strokeStyle='#203e45';x.lineWidth=3;x.beginPath();x.arc(state.player.x*sz,state.player.y*sz,7,0,Math.PI*2);x.stroke();x.fill();x.fillStyle='#244c48';x.beginPath();x.arc(state.player.x*sz,state.player.y*sz,3,0,Math.PI*2);x.fill();}
+function npcPortrait(n){
+  // Original, code-drawn 16-bit character portrait: works fully offline.
+  const palettes={
+    mira:{skin:'#ecc1a0',shade:'#bd8a77',hair:'#724437',coat:'#8fb56e',trim:'#e7e2ad',extra:'#c59754'},
+    theo:{skin:'#cfa082',shade:'#986954',hair:'#3f3031',coat:'#587aaf',trim:'#f6d593',extra:'#e7cb85'},
+    hana:{skin:'#f1c6ae',shade:'#ca9886',hair:'#433b65',coat:'#af83b3',trim:'#c7e6d3',extra:'#d9adbd'},
+    rowan:{skin:'#edc4a3',shade:'#b98c6b',hair:'#6e563b',coat:'#a17758',trim:'#d9bb92',extra:'#b9c4b1'}
+  };
+  const c=palettes[n.id]||palettes.mira;
+  const glasses=n.id==='hana' ? `<rect x="12" y="23" width="11" height="6" fill="none" stroke="#ead9a2" stroke-width="2"/><rect x="26" y="23" width="11" height="6" fill="none" stroke="#ead9a2" stroke-width="2"/><rect x="23" y="24" width="3" height="2" fill="#ead9a2"/>` : '';
+  const accessory=n.id==='mira'?`<rect x="8" y="13" width="31" height="4" fill="#cfaa70"/><rect x="15" y="5" width="18" height="10" fill="#cfaa70"/>`:n.id==='rowan'?`<rect x="13" y="40" width="23" height="6" fill="#b5c1b0"/>`:n.id==='theo'?`<rect x="22" y="39" width="6" height="12" fill="#d4a1a0"/>`:'';
+  return `<svg class="npc-pixel-portrait" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 56" role="img" aria-label="Portrait of ${escapeText(n.name)}" shape-rendering="crispEdges">
+    <rect width="48" height="56" fill="#456b5d"/><rect y="48" width="48" height="8" fill="#385b54"/>
+    <rect x="8" y="42" width="32" height="14" fill="${c.coat}"/><rect x="4" y="50" width="40" height="6" fill="${c.coat}"/>
+    <rect x="21" y="38" width="7" height="10" fill="${c.skin}"/>
+    <rect x="10" y="13" width="28" height="24" fill="${c.hair}"/><rect x="15" y="19" width="19" height="20" fill="${c.skin}"/>
+    <rect x="12" y="24" width="3" height="9" fill="${c.skin}"/><rect x="34" y="24" width="3" height="9" fill="${c.skin}"/>
+    <rect x="11" y="11" width="27" height="9" fill="${c.hair}"/><rect x="10" y="18" width="7" height="10" fill="${c.hair}"/><rect x="32" y="18" width="6" height="10" fill="${c.hair}"/>
+    <rect x="17" y="26" width="4" height="3" fill="#302f35"/><rect x="28" y="26" width="4" height="3" fill="#302f35"/>
+    <rect x="17" y="32" width="3" height="2" fill="${c.shade}"/><rect x="30" y="32" width="3" height="2" fill="${c.shade}"/>
+    <rect x="23" y="34" width="5" height="2" fill="#9e635f"/><rect x="16" y="44" width="16" height="5" fill="${c.trim}"/>
+    ${accessory}${glasses}
+  </svg>`;
+}
+function openModal(type,extra={}){currentModal={type,...extra};$('modalLayer').classList.remove('hidden');$('modalLayer').classList.toggle('dialogue-layer',type==='npc');$('modalLayer').classList.toggle('quest-layer',type==='quests'||type==='journal');refreshModal();}
+function closeModal(){currentModal=null;dialogueTick++;$('modalLayer').classList.add('hidden');$('modalLayer').classList.remove('dialogue-layer','quest-layer');}
+function refreshModal(){if(!currentModal)return;const type=currentModal.type;let title='',eyebrow='EVERGROVE',html='';
+  if(type==='welcome'){
+    title='Welcome to Evergrove!';eyebrow='YOUR STORY STARTS HERE';
+    html=`<div class="notification">🌿 An original pixel-world adventure you can play completely offline. Your progress saves automatically in this browser.</div><p>You have inherited a little cottage near Willow Village. Grow a farm, befriend the townsfolk, explore a living wilderness, capture magical creatures and build a place to call home.</p>
+      <h3>YOUR FIRST STEPS</h3><div class="modal-list">
+      <div class="modal-item"><span class="emoji">🌱</span><div class="item-detail"><strong>Start your farm</strong><small>Use <b>1</b> (hoe) on the grass, <b>2</b> to plant, <b>3</b> to water. Sleep at your cottage to grow crops.</small></div></div>
+      <div class="modal-item"><span class="emoji">🏡</span><div class="item-detail"><strong>Meet the village</strong><small>Move with WASD / arrows. Stand beside a villager or building doorway and press E.</small></div></div>
+      <div class="modal-item"><span class="emoji">🦊</span><div class="item-detail"><strong>Explore & collect creatures</strong><small>Go east into Whisperwood. Attack with sword (6), then catch with orbs (7).</small></div></div>
+      <div class="modal-item"><span class="emoji">🛠️</span><div class="item-detail"><strong>Make the world yours</strong><small>Chop trees, mine rocks, pick a blueprint from Crafting and place it with tool 8.</small></div></div></div>
+      <button class="primary-btn" data-action="close">✦ Begin adventure →</button>`;
+  }
+  else if(type==='help'){
+    title='How to play';eyebrow='CONTROLS & GUIDANCE';
+    html=`<div class="stat-line"><span>Move</span><span>WASD or arrow keys</span></div><div class="stat-line"><span>Choose tool</span><span>Keys 1–8</span></div><div class="stat-line"><span>Use selected tool</span><span>F or Space; or click nearby tile</span></div><div class="stat-line"><span>Talk / enter building</span><span>E (stand by a villager or door)</span></div><div class="stat-line"><span>Sprint</span><span>Hold Shift</span></div><div class="stat-line"><span>Inventory / Craft / Map</span><span>I / C / M</span></div><div class="stat-line"><span>Journal / Creatures</span><span>J / G</span></div><div class="stat-line"><span>Close menus</span><span>Esc</span></div><h3>FARMING LOOP</h3><p>1. Hoe empty grass in your farm. 2. Plant seeds on soil. 3. Water every day. 4. Sleep at Your Cottage to progress the day. 5. After two watered days, use the Water tool on mature crops to harvest.</p><h3>MONSTER COLLECTING</h3><p>Enter the forest to the east. Equip Sword (6), then stand close and attack with F or click the creature. Catch with Capture (7). Lower health gives better capture odds. Your most recently caught creature will follow you.</p><h3>OFFLINE SAVES</h3><p>Your save is stored in this browser. Use Settings → Export backup for a portable JSON file. Clearing browser data may erase local progress.</p>`;
+  }
+  else if(type==='inventory'){
+    title='Traveler’s Satchel';eyebrow='YOUR BACKPACK';html=`<p>Collect materials, grow crops, craft equipment and trade goods in Willow Village.</p><div class="item-grid">${invCards()}</div><h3>YOUR COLLECTION</h3><div class="stat-line"><span>Creatures caught</span><strong>${state.collection.length}</strong></div><div class="stat-line"><span>Decorations placed</span><strong>${state.stats.built}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="creatures">🐾 Creature collection</button><button class="primary-btn" data-action="open" data-id="craft">⚒ Crafting</button></div>`;
+  }
+  else if(type==='craft'){
+    title='Crafting & Construction';eyebrow='SHAPE YOUR WORLD';html=`<p>Craft supplies immediately, or select a construction blueprint and click an empty nearby tile with your Build tool (8).</p><div class="modal-list">${Object.entries(RECIPES).map(([id,r])=>`<div class="modal-item"><span class="emoji">${r.emoji}</span><div class="item-detail"><strong>${r.name} ${state.blueprint===id&&!['orb','seed'].includes(id)?'· selected':''}</strong><small>${r.desc}</small><small>Requires: ${formatCost(r.cost)}</small></div><button data-action="craft" data-id="${id}" ${!hasItems(r.cost)?'disabled':''}>${['orb','seed'].includes(id)?'Craft':'Select'}</button></div>`).join('')}</div>`;
+  }
+  else if(type==='shop'){
+    title='Willow Market';eyebrow='THE VILLAGE GENERAL STORE';html=`<p>Welcome in! Theo has seeds, materials, and little treasures for your next adventure.</p><h3>BUY SUPPLIES</h3><div class="modal-list">${SHOP.map(o=>`<div class="modal-item"><span class="emoji">${ITEMS[o.id][0]}</span><div class="item-detail"><strong>${ITEMS[o.id][1]} × ${o.qty}</strong><small>${o.price} gold · You have ${state.player.gold} gold</small></div><button data-action="buy" data-id="${o.id}" ${state.player.gold<o.price?'disabled':''}>Buy</button></div>`).join('')}</div><h3>SELL GOODS</h3><div class="modal-list">${Object.entries({turnip:18,berry:5,wood:4,stone:4,ore:16,flower:8,essence:24,fiber:5}).map(([id,g])=>`<div class="modal-item"><span class="emoji">${ITEMS[id][0]}</span><div class="item-detail"><strong>${ITEMS[id][1]}</strong><small>Inventory: ${state.inventory[id]||0} · Sale price: ${g} gold each</small></div><button data-action="sell" data-id="${id}" ${!state.inventory[id]?'disabled':''}>Sell 1</button></div>`).join('')}</div>`;
+  }
+  else if(type==='npc'){
+    const n=NPCS.find(n=>n.id===currentModal.id);if(!n){closeModal();return;}
+    title=n.name;eyebrow=n.title.toUpperCase();
+    const pts=state.relationships[n.id]||0;
+    const gifts=Object.entries(state.inventory).filter(([k,v])=>v>0&&['flower','turnip','berry','ore'].includes(k));
+    html=`<div class="dialogue-pixel">
+      <div class="dialogue-face">${npcPortrait(n)}<small>${n.title}</small></div>
+      <div class="dialogue-talk">
+        <div class="dialogue-speaker"><strong>${n.name}</strong><span>♥ ${pts}/10</span></div>
+        <div class="dialogue-copy" data-typewriter="${escapeText(state.spouse===n.id?'My favorite adventurer! Welcome home.':n.line)}" title="Tap to finish text"></div>
+        <div class="dialogue-footer"><span>Favorite: ${ITEMS[n.favorite][0]} ${ITEMS[n.favorite][1]}</span><span>Tap text to skip ▾</span></div>
+      </div>
+    </div>
+    <div class="dialogue-side" aria-label="Conversation and responses">
+      <div class="dialogue-result" id="dialogueResult" role="status" aria-live="polite" hidden></div>
+      <aside class="dialogue-choices" aria-label="Conversation choices">
+      <div class="dialogue-option-list" data-dialogue-pane="main">
+        <div class="choices-heading">✦ WHAT WILL YOU DO?</div>
+        <button class="choice" data-action="talk" data-id="${n.id}" ${state.flags['talk'+n.id]===state.day?'disabled':''}>💬 Chat ${state.flags['talk'+n.id]===state.day?'✓':'♥ +1'}</button>
+        ${n.romance?`<button class="choice" data-action="flirt" data-id="${n.id}" ${state.flirtDay[n.id]===state.day?'disabled':''}>💗 Spend time together</button>`:''}
+        <button class="choice" data-action="dlg-gifts" ${gifts.length?'':'disabled'}>🎁 Give a gift ${gifts.length?'›':'(none)'}</button>
+        ${n.id==='theo'?'<button class="choice" data-action="open" data-id="shop">🛍️ Visit shop</button>':''}
+        ${n.id==='rowan'?'<button class="choice" data-action="open" data-id="craft">🛠️ Crafting workshop</button>':''}
+        ${n.id==='hana'?'<button class="choice" data-action="open" data-id="quests">📜 Discuss quests</button>':''}
+        ${n.romance&&!state.spouse&&pts>=10?`<button class="choice" data-action="propose" data-id="${n.id}" ${state.inventory.ring<1?'disabled':''}>💍 Propose ${state.inventory.ring?'':'(need ring)'}</button>`:''}
+        <button class="choice dialogue-exit" data-action="close">← Goodbye</button>
+      </div>
+      <div class="dialogue-option-list" data-dialogue-pane="gifts" hidden>
+        <div class="choices-heading">🎁 CHOOSE A GIFT</div>
+        ${gifts.length?gifts.map(([k,v])=>`<button class="choice" data-action="gift" data-id="${n.id}" data-item="${k}">${ITEMS[k][0]} ${ITEMS[k][1]} ×${v}</button>`).join(''):'<p>No gifts available.</p>'}
+        <button class="choice dialogue-exit" data-action="dlg-back">← Back</button>
+      </div>
+      </aside>
+    </div>`;
+  }
+  else if(type==='sleep'){
+    title='Your Cozy Cottage';eyebrow='A WARM PLACE TO REST';const watered=Object.values(state.crops).filter(c=>c.watered).length;html=`<p>There is no better feeling than coming home after a long day. Sleep to restore health and energy and begin tomorrow morning.</p><div class="stat-line"><span>Current day</span><strong>${state.day}</strong></div><div class="stat-line"><span>Watered crops</span><strong>${watered}</strong></div><div class="stat-line"><span>Health / Energy</span><strong>${state.player.hp} / ${state.player.energy}</strong></div><p class="subtle">Watered crops grow one stage overnight; mature crops are harvested with tool 3. You may rest repeatedly to advance days.</p><button class="primary-btn" data-action="sleep">🌙 Sleep until tomorrow morning</button>`;
+  }
+  else if(type==='inn'){
+    title='Moonflower Inn';eyebrow='A PLACE FOR TRAVELERS';html=`<p>Soft lanterns glow in the lobby. Travelers from faraway places share stories about curious creatures and ruins beyond the valley.</p><div class="notification">🍵 The host offers you a warm meal.</div><button class="primary-btn" data-action="meal" ${state.player.gold<12?'disabled':''}>Enjoy a meal · 12g · +30 energy and health</button>`;
+  }
+  else if(type==='quests'||type==='journal'){
+    title=type==='journal'?'Adventurer’s Journal':'Quest Board';eyebrow='YOUR STORY & MISSIONS';html=`<h3>ACTIVE MISSIONS · ${state.questsClaimed.length}/${QUESTS.length} COMPLETE</h3><div class="modal-list quest-grid">${questCards()}</div><details class="quest-records"><summary>📖 Explorer records (tap to expand)</summary><div class="quest-records-grid"><div class="stat-line"><span>Days explored</span><strong>${state.day}</strong></div><div class="stat-line"><span>Harvests</span><strong>${state.stats.harvested}</strong></div><div class="stat-line"><span>Creatures captured</span><strong>${state.stats.captured}</strong></div><div class="stat-line"><span>Creatures defeated</span><strong>${state.stats.defeated}</strong></div><div class="stat-line"><span>Ore deposits mined</span><strong>${state.stats.mined}</strong></div><div class="stat-line"><span>Structures built</span><strong>${state.stats.built}</strong></div><div class="stat-line"><span>Regions discovered</span><strong>${Object.values(state.visited).filter(Boolean).length} / 6</strong></div></div></details>`;
+  }
+  else if(type==='creatures'){
+    title='Creature Collection';eyebrow='WILD FRIENDS OF THE VALLEY';html=`<p>Catch creatures in the wilderness. Select one to follow you on your journey. A stronger first attack improves capture odds.</p>${state.collection.length?`<div class="modal-list">${state.collection.map((c,i)=>{const info=MONSTER_TYPES[c.type];return `<div class="modal-item"><span class="emoji">${info.emoji}</span><div class="item-detail"><strong>${info.name}</strong><small>${info.desc}</small></div><button data-action="follow" data-id="${i}">${state.follower===i?'Following':'Follow'}</button></div>`}).join('')}</div><button class="choice" data-action="unfollow">🐾 Travel without a companion</button>`:'<div class="notification">🥚 No creatures yet. Wander east to Whisperwood Forest.</div>'}`;
+  }
+  else if(type==='map'){
+    title='Map of Evergrove';eyebrow='THE VALLEY & BEYOND';html=`<p>Your location is marked with a white dot. Walk east for creatures, south for Moonlit Lake, or north-east for highlands.</p><canvas id="fullMap" class="mini-map" width="544" height="384" aria-label="Map of farm, village, forest, ruins and lake"></canvas><div class="stat-line"><span>Current location</span><strong>${zone().name}</strong></div><div class="stat-line"><span>Visited regions</span><strong>${Object.keys(state.visited).filter(x=>state.visited[x]).length} of 6</strong></div>`;
+  }
+  else if(type==='appearance'){
+    title='Character Customization';eyebrow='MAKE IT YOUR STORY';
+    const colors=[['#79a8a4','Sage'],['#d69393','Rose'],['#86a9d8','Blue'],['#d6b46d','Gold'],['#a78ccc','Violet'],['#b6cb8a','Leaf']];
+    html=`<p>Pick a name and outfit color for your explorer. Changes are applied to your character immediately.</p><div class="stat-line"><span>Explorer name</span><strong>${escapeText(state.appearance?.name||'Valley Wanderer')}</strong></div><button class="primary-btn" data-action="rename">✎ Change character name</button><h3>OUTFIT COLORS</h3><div class="button-line">${colors.map(([hex,label])=>`<button class="primary-btn" data-action="color" data-id="${hex}" style="border-color:${hex};background:${hex}44">${label}${state.appearance?.color===hex?' ✓':''}</button>`).join('')}</div>`;
+  }
+  else if(type==='settings'){
+    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.5 · Web Edition</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
+  }
+  $('modalTitle').textContent=title;$('modalEyebrow').textContent=eyebrow;$('modalBody').innerHTML=html;
+  if(type==='map')drawMap();
+  if(type==='npc')animateDialogue();
+}
+function showDialogueResult(message){
+  const result=$('dialogueResult');
+  if(!result || currentModal?.type!=='npc')return;
+  result.textContent=message;
+  result.hidden=false;
+}
+function setDialoguePane(pane){
+  const result=$('dialogueResult');
+  if(result) result.hidden=true;
+  $('modalBody').querySelectorAll('[data-dialogue-pane]').forEach(section=>{
+    section.hidden=section.dataset.dialoguePane!==pane;
+  });
+}
+function animateDialogue(){
+  const el=document.querySelector('[data-typewriter]');if(!el)return;
+  const message=el.getAttribute('data-typewriter')||'';
+  const ticket=++dialogueTick;let index=0;
+  el.textContent='';
+  const next=()=>{if(ticket!==dialogueTick||!el.isConnected)return;index=Math.min(index+2,message.length);el.textContent=message.slice(0,index);if(index<message.length)setTimeout(next,28);};
+  el.addEventListener('click',()=>{dialogueTick++;el.textContent=message;},{once:true});
+  setTimeout(next,45);
+}
+function cycleTool(step){let i=TOOLS.findIndex(t=>t.id===state.selected);i=(i+step+TOOLS.length)%TOOLS.length;state.selected=TOOLS[i].id;updateUI();}
+async function toggleFullscreen(){
+  const target=$('gameFrame');
+  try{
+    if(document.fullscreenElement){await document.exitFullscreen();return;}
+    if(target.requestFullscreen){await target.requestFullscreen();
+      if(screen.orientation?.lock){try{await screen.orientation.lock('landscape');}catch(_){/* browser/OS controls orientation */}}
+    }else{notify('Use phone landscape mode. Browser does not allow full-screen here.');}
+  }catch(_){notify('Full-screen is controlled by your mobile browser. Landscape view still works.');}
+}
+function attachJoystick(){
+  const area=$('joystick'),knob=$('joystickKnob');let pointer=null;
+  const release=()=>{pointer=null;input.joyX=0;input.joyY=0;knob.style.transform='translate(-50%,-50%)';area.classList.remove('engaged');};
+  const move=e=>{if(pointer!==e.pointerId)return;const r=area.getBoundingClientRect();const radius=Math.min(r.width,r.height)*0.29;
+    const dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),l=Math.hypot(dx,dy),scale=l>radius?radius/l:1;
+    const x=dx*scale,y=dy*scale,strength=Math.hypot(x,y)/radius;
+    input.joyX=strength<.14?0:x/radius;input.joyY=strength<.14?0:y/radius;
+    knob.style.transform=`translate(calc(-50% + ${x}px),calc(-50% + ${y}px))`;
+  };
+  area.addEventListener('pointerdown',e=>{if(pointer!==null||currentModal)return; e.preventDefault();pointer=e.pointerId;area.classList.add('engaged');area.setPointerCapture?.(e.pointerId);move(e)});
+  area.addEventListener('pointermove',e=>{if(pointer!==null){e.preventDefault();move(e)}});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(type=>area.addEventListener(type,e=>{if(pointer===e.pointerId)release()}));
+  window.addEventListener('blur',release);document.addEventListener('visibilitychange',()=>{if(document.hidden)release()});
+}
+function bindEvents(){
+  attachJoystick();
+  $('ingameTools').addEventListener('click',e=>{const b=e.target.closest('[data-game-tool]');if(!b||currentModal)return;state.selected=b.dataset.gameTool;if(state.selected==='build')openModal('craft');updateUI();});
+  document.querySelectorAll('[data-game-menu]').forEach(b=>b.addEventListener('click',()=>openModal(b.dataset.gameMenu)));
+  $('touchToolPrev').addEventListener('click',()=>cycleTool(-1));$('touchToolNext').addEventListener('click',()=>cycleTool(1));
+  $('fullscreenBtn').addEventListener('click',toggleFullscreen);
+  $('portraitContinue').addEventListener('click',()=>document.body.classList.add('allow-portrait'));
+  $('toolRow').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(b){state.selected=b.dataset.tool;if(state.selected==='build')openModal('craft');updateUI();}});
+  const menus={helpBtn:'help',inventoryBtn:'inventory',craftBtn:'craft',mapBtn:'map',journalBtn:'journal',saveBtn:'save',settingsBtn:'settings',allQuestsBtn:'quests',bagBtn:'inventory'};
+  for(const [id,type]of Object.entries(menus))$(id).addEventListener('click',()=>type==='save'?save(false):openModal(type));
+  $('companionPreview').style.cursor='pointer';$('companionPreview').addEventListener('click',()=>openModal('creatures'));
+  $('clearLogBtn').addEventListener('click',()=>{logItems=[];$('gameLog').innerHTML='';});
+  $('modalClose').addEventListener('click',closeModal);$('modalLayer').addEventListener('click',e=>{if(e.target===$('modalLayer'))closeModal()});
+  $('modalBody').addEventListener('input',e=>{if(e.target.id==='touchOpacityRange'){state.touchOpacity=Number(e.target.value)/100;document.documentElement.style.setProperty('--touch-opacity',String(state.touchOpacity));$('opacityValue').textContent=e.target.value+'%';save();}});
+  $('modalBody').addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b||b.disabled)return;const action=b.dataset.action,id=b.dataset.id;
+    switch(action){
+      case 'dlg-gifts':setDialoguePane('gifts');break;case 'dlg-back':setDialoguePane('main');break;
+      case 'close':closeModal();break;case 'open':openModal(id);break;case 'claim':claimQuest(id);break;case 'buy':buy(id);break;case 'sell':sell(id);break;case 'craft':craftOrSelect(id);break;case 'gift':gift(id,b.dataset.item);break;
+      case 'flirt':flirt(id);break;
+      case 'talk':if(state.flags['talk'+id]===state.day){showDialogueResult('You have already chatted today.');break;}state.flags['talk'+id]=state.day;state.relationships[id]=clamp((state.relationships[id]||0)+1,0,10);earnXP(5);updateUI();save();refreshModal();showDialogueResult('💬 A nice chat! Friendship +1.');break;
+      case 'propose':propose(id);break;
+      case 'sleep':rest();closeModal();break;
+      case 'meal':if(state.player.gold>=12){state.player.gold-=12;state.player.hp=clamp(state.player.hp+30,0,100);state.player.energy=clamp(state.player.energy+30,0,100);notify('🍵 Feeling refreshed!');updateUI();save();refreshModal();}break;
+      case 'follow':state.follower=Number(id);notify(`${MONSTER_TYPES[state.collection[state.follower].type].name} is following you!`);updateUI();save();refreshModal();break;
+      case 'unfollow':state.follower=null;updateUI();save();refreshModal();break;
+      case 'rename':{const name=window.prompt('Enter explorer name (up to 22 characters):',state.appearance?.name||'Valley Wanderer');if(name!==null){const cleaned=name.trim().slice(0,22);if(cleaned){state.appearance.name=cleaned;updateUI();save();refreshModal();}}break;}
+      case 'color':state.appearance.color=id;updateUI();save();refreshModal();break;
+      case 'save':save(false);break;case 'export':exportSave();break;case 'import':$('importFile').click();break;
+      case 'reset':if(window.confirm('Start over? This permanently replaces the local save in this browser. Export a backup first if needed.')){state=initialState();initWorld();save();closeModal();log('A new adventure begins.');updateUI();openModal('welcome');}break;
+    }
+  });
+  $('importFile').addEventListener('change',e=>{importSave(e.target.files[0]);e.target.value='';});
+  document.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)&&!e.target.matches('input,textarea,select'))e.preventDefault();if(currentModal){if(e.code==='Escape')closeModal();return;}
+    if(e.code.startsWith('Digit')&&e.code.length===6){const n=+e.code.slice(5);if(n>=1&&n<=8){state.selected=TOOLS[n-1].id;updateUI();if(n===8)openModal('craft');return;}}
+    if(e.repeat&&['KeyE','KeyF','Space','KeyC','KeyI','KeyM','KeyJ','KeyG'].includes(e.code))return;
+    switch(e.code){case 'KeyE':interact();break;case 'KeyF':case 'Space':useFacing();break;case 'KeyI':openModal('inventory');break;case 'KeyC':openModal('craft');break;case 'KeyM':openModal('map');break;case 'KeyJ':openModal('journal');break;case 'KeyG':openModal('creatures');break;case 'Escape':openModal('settings');break;default:input[e.code]=true;}
+  });document.addEventListener('keyup',e=>{input[e.code]=false});window.addEventListener('blur',()=>{input={}});
+  function targetFromEvent(e){const r=canvas.getBoundingClientRect();const px=(e.clientX-r.left)/r.width*W,py=(e.clientY-r.top)/r.height*H;return{x:Math.floor((px+camera.x)/T),y:Math.floor((py+camera.y)/T)}}
+  canvas.addEventListener('mousemove',e=>{pointerTile=targetFromEvent(e)});canvas.addEventListener('mouseleave',()=>pointerTile=null);
+  canvas.addEventListener('click',e=>{if(currentModal)return;const t=targetFromEvent(e);const n=NPCS.find(n=>Math.abs(n.x-t.x)<=1&&Math.abs(n.y-t.y)<=1);const h=HOMES.find(h=>Math.abs(door(h).x-t.x-.5)<1&&Math.abs(door(h).y-t.y-.5)<1);if(n&&distance(state.player.x,state.player.y,n.x+.5,n.y+.5)<2.2){openModal('npc',{id:n.id});return;}if(h&&distance(state.player.x,state.player.y,door(h).x,door(h).y)<2.3){interact();return;}act(state.selected,t.x,t.y);});
+  canvas.addEventListener('contextmenu',e=>{e.preventDefault();interact()});
+  document.querySelectorAll('[data-dir]').forEach(btn=>{const dir='mobile'+btn.dataset.dir;btn.addEventListener('pointerdown',e=>{e.preventDefault();input[dir]=true;try{btn.setPointerCapture(e.pointerId)}catch(_){}});for(const event of ['pointerup','pointercancel','lostpointercapture','pointerleave'])btn.addEventListener(event,()=>input[dir]=false);});
+  $('touchInteract').addEventListener('click',interact);$('touchUse').addEventListener('click',useFacing);
+  window.addEventListener('beforeunload',()=>save());
+  window.addEventListener('orientationchange',()=>{input.joyX=0;input.joyY=0;document.body.classList.remove('allow-portrait')});
+}
+function loop(now){const dt=Math.min((now-lastTick)/1000,.045);lastTick=now;gameUpdate(dt);drawWorld();requestAnimationFrame(loop)}
+function start(){const resumed=load();initWorld();bindEvents();updateUI();if(resumed){log(`Welcome back! Continued Day ${state.day}.`);notify('💾 Saved adventure restored!')}else{log('Inherited a cottage in Briarwood Valley.');log('A new adventure begins!');openModal('welcome');save();}requestAnimationFrame(loop);}
+start();
+})();
+
+</script>
+<script src="./web-updater.js" defer></script>
+</body>
+</html>
