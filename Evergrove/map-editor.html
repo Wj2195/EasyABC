@@ -31,7 +31,7 @@ small.key{font-family:monospace;color:#ffe1ad}
 <section class="group"><h2>World maps</h2><div id="mapList"></div>
 <label>Connect from existing region</label><select id="connectFrom"></select><label>Available side</label><select id="connectSide"></select><button id="addMap">+ Create map on selected side</button><div class="note">All maps have north, east, south and west gateway positions. Connections and return gateways are generated automatically.</div></section>
 <section class="group"><h2>Editing tools</h2><div id="tools" class="grid"></div>
-<p class="muted">Left-click or drag to paint. Right-click to erase. Choose Portal to connect areas.</p></section>
+<p class="muted">Left-click or drag to paint; right-click to erase. Gateways are centered on each map edge and linked automatically.</p></section>
 <section class="group"><h2>Map appearance</h2><div class="grid" id="terrain"></div></section>
 <section class="group"><h2>Zoom</h2><input id="zoom" type="range" min="12" max="40" step="2" value="24"><small id="zoomLabel">24 px per tile</small></section>
 </aside>
@@ -49,13 +49,8 @@ small.key{font-family:monospace;color:#ffe1ad}
 <button class="danger" id="deleteMap">Delete map</button>
 <div class="note">Original Willow Village uses the legacy 68 × 48 map. Its entrance locations can be edited here, but its terrain is not yet editable in this workshop.</div>
 </section>
-<section class="group"><h2>Portal settings</h2>
-<label for="portalTo">Destination map</label><select id="portalTo"></select>
-<div class="grid"><div><label for="arrivalX">Arrival X</label><input id="arrivalX" type="number" min="0" max="160" step=".5" value="7.5"></div>
-<div><label for="arrivalY">Arrival Y</label><input id="arrivalY" type="number" min="0" max="120" step=".5" value="12.5"></div></div>
-<label for="portalLabel">Portal label</label><input id="portalLabel" value="Travel" maxlength="50">
-<div class="note">Select Portal, then click a tile to create or update a doorway. Create a return portal in the destination map too.</div>
-</section>
+<section class="group"><h2>Four gateway sides</h2><div id="edgeStatus" class="note">Click a map to inspect connections.</div>
+<div class="note">Create a map from an available side. Both maps receive a centered gateway automatically.</div></section>
 <section class="group"><h2>Publish & save</h2>
 <button id="saveDraft">💾 Save local draft</button>
 <button id="importBtn">⬆ Import JSON</button><input id="file" type="file" accept=".json,application/json" hidden>
@@ -71,7 +66,7 @@ small.key{font-family:monospace;color:#ffe1ad}
 (()=>{'use strict';
 const $=id=>document.getElementById(id), canvas=$('mapCanvas'),ctx=canvas.getContext('2d');
 const KEY='evergrove_map_workshop_v2', TERRAIN={grass:['Grass','#80b578'],forest:['Forest','#579569'],path:['Road','#c0ac82'],water:['Water','#559bb9'],stone:['Stone','#91a59c'],cliff:['Cliff','#727c84'],farm:['Farmland','#a37c54']};
-const TOOLS={terrain:'🖌️ Terrain',tree:'🌳 Tree',rock:'🪨 Rock',portal:'🌀 Portal',spawn:'📍 Spawn',erase:'✖ Erase'};
+const TOOLS={terrain:'🖌️ Terrain',tree:'🌳 Tree',rock:'🪨 Rock',spawn:'📍 Spawn',erase:'✖ Erase'};
 let data=null,mapId='base',brush='terrain',kind='grass',scale=24,painting=false,undoStack=[],redoStack=[],lastDraw='',localEdited=false;
 const clean=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
 const active=()=>mapId==='base'?null:data?.maps.find(m=>m.id===mapId);
@@ -93,7 +88,7 @@ function draw(){
  }
  for(const o of m?.objects||[]){ctx.textAlign='center';ctx.font=Math.max(12,scale*.78)+'px serif';ctx.fillText(o.type==='tree'?'🌳':'🪨',(o.x+.5)*scale,(o.y+.8)*scale);}
  if(m){ctx.fillStyle='#f4de94';ctx.fillRect(m.spawn.x*scale-5,m.spawn.y*scale-5,10,10);}
- for(const p of listPortals()||[]){ctx.fillStyle='#202b43';ctx.beginPath();ctx.arc((p.x+.5)*scale,(p.y+.5)*scale,Math.max(5,scale*.33),0,7);ctx.fill();ctx.strokeStyle='#ffe9a0';ctx.lineWidth=2;ctx.stroke();}
+ for(const side of grid.DIRECTIONS){const p=grid.point(m||grid.BASE,side),linked=(listPortals()||[]).some(v=>v.side===side);ctx.fillStyle=linked?'#ffe49e':'#526c66';ctx.beginPath();ctx.arc((p.x+.5)*scale,(p.y+.5)*scale,Math.max(5,scale*.33),0,Math.PI*2);ctx.fill();ctx.strokeStyle=linked?'#35584d':'#a5c2b5';ctx.lineWidth=2;ctx.stroke();}
  $('mapTitle').textContent=m?m.name:'Willow Village (entrances only)';
  $('mapSize').textContent=width+' × '+height+' tiles';
 }
@@ -105,11 +100,11 @@ function ui(){
  const m=active();$('mapName').value=m?.name||'Willow Village';$('mapName').disabled=!m;
  $('mapWidth').value=m?.width||68;$('mapHeight').value=m?.height||48;
  for(const id of ['mapWidth','mapHeight','resize','deleteMap'])$(id).disabled=!m;
- $('portalTo').innerHTML=[{id:'base',name:'Willow Village'},...data.maps].filter(t=>t.id!==mapId).map(t=>'<option value="'+clean(t.id)+'">'+clean(t.name)+'</option>').join('');
  const savedFrom=$('connectFrom').value,all=[grid.BASE,...data.maps];
  $('connectFrom').innerHTML=all.map(t=>'<option value="'+clean(t.id)+'">'+clean(t.name)+'</option>').join('');
  $('connectFrom').value=all.some(t=>t.id===savedFrom)?savedFrom:(grid.neighbors(data,mapId).some(n=>n.available)?mapId:all.find(t=>grid.neighbors(data,t.id).some(n=>n.available))?.id||'base');
  updateAvailableSides();
+ $('edgeStatus').textContent=grid.neighbors(data,mapId).map(n=>n.side.toUpperCase()+': '+(n.target?n.target.name:'OPEN')).join(' · ');
  $('zoomLabel').textContent=scale+' px per tile';draw();
 }
 function updateAvailableSides(){
