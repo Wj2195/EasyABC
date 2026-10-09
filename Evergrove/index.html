@@ -362,10 +362,10 @@ body{background:#101b23}
           <div class="key-guide-grid">
             <button data-pad-action="talk" title="Talk / interact / confirm"><kbd>Z</kbd><span>Talk / OK</span></button>
             <button data-pad-action="use" title="Use tool / go back"><kbd>X</kbd><span>Use / Back</span></button>
-            <button data-pad-action="previous" title="Previous tool / choice"><kbd>A</kbd><span>Previous</span></button>
-            <button data-pad-action="next" title="Next tool / choice"><kbd>S</kbd><span>Next</span></button>
+            <button data-pad-action="previous" title="Previous tool / menu choice"><kbd>A</kbd><span>Prev / Up</span></button>
+            <button data-pad-action="next" title="Next tool / menu choice"><kbd>S</kbd><span>Next / Down</span></button>
           </div>
-          <div class="key-guide-foot">ARROWS Move · 1–8 Tools · ESC Menu</div>
+          <div class="key-guide-foot">↑↓ Menu · Z / → OK · X / ← Back</div>
         </aside>
         <div class="mobile-controls" id="mobileControls" aria-label="Touch gaming controls">
           <div class="joystick-zone" id="joystick" role="application" aria-label="Move: drag joystick in any direction">
@@ -404,7 +404,7 @@ body{background:#101b23}
 </div>
 <input type="file" id="importFile" accept=".json,application/json" hidden />
 <script>
-/* EVERGROVE v0.6 Web Edition — no frameworks, CDNs or paid services. */
+/* EVERGROVE v0.7 Web Edition — no frameworks, CDNs or paid services. */
 (() => {
 'use strict';
 const T=32, MW=68, MH=48, H=576, KEY='evergrove_offline_save_v1';
@@ -423,7 +423,7 @@ const SHOP=[{id:'seed',qty:5,price:25},{id:'orb',qty:3,price:60},{id:'berry',qty
 const QUESTS=[{id:'harvest',title:'A Growing Beginning',desc:'Harvest 3 turnips.',target:3,key:'harvested',reward:{gold:75,seed:5}},{id:'creature',title:'A New Friend',desc:'Capture your first wild creature.',target:1,key:'captured',reward:{gold:100,orb:3}},{id:'builder',title:'Home Sweet Home',desc:'Place 2 crafted decorations.',target:2,key:'built',reward:{gold:80,wood:5}},{id:'miner',title:'Sparkling Discoveries',desc:'Mine 3 ore deposits.',target:3,key:'mined',reward:{gold:85}},{id:'explorer',title:'Beyond the Village',desc:'Discover the Whisperwood and Ancient Ruins.',target:2,key:'explored',reward:{gold:100}},{id:'friends',title:'A Friendly Face',desc:'Earn 5 friendship points with villagers.',target:5,key:'friends',reward:{gold:90,flower:2}}];
 const initialState=()=>({version:1,session:{mode:'offline',roomId:null,maxPlayers:10},player:{x:17.5,y:27.5,dir:'up',hp:100,energy:100,gold:125,level:1,xp:0},day:1,time:8*60,weather:'Clear',inventory:{seed:12,turnip:0,wood:14,stone:12,berry:5,orb:7,ore:0,flower:2,fiber:0,ring:0,essence:0},tilled:{},crops:{},removed:{},placed:[],relationships:{},flirtDay:{},spouse:null,collection:[],follower:null,appearance:{name:'Valley Wanderer',color:'#79a8a4'},selected:'hoe',blueprint:'fence',touchOpacity:0.28,questsClaimed:[],visited:{farm:true},flags:{},stats:{harvested:0,captured:0,built:0,mined:0,defeated:0},created:Date.now()});
 let state,trees=[],rocks=[],forages=[],monsters=[],particles=[],input={},pointerTile=null,camera={x:0,y:0};
-let dialogueTick=0, currentModal=null,lastTick=performance.now(),lastSave=0,lastUi=0,elapsed=0,minuteAccumulator=0,activeSound=false,worldBg=null,logItems=[];
+let dialogueTick=0, currentModal=null, modalHistory=[],lastTick=performance.now(),lastSave=0,lastUi=0,elapsed=0,minuteAccumulator=0,activeSound=false,worldBg=null,logItems=[];
 const notify=(msg,type='info')=>{const e=document.createElement('div');e.className='toast'+(type==='error'?' error':'');e.textContent=msg;$('toasts').appendChild(e);setTimeout(()=>e.remove(),2500)};
 const log=(msg)=>{logItems.unshift({day:state?.day||1,msg});logItems=logItems.slice(0,14);$('gameLog').innerHTML=logItems.map(x=>`<div class="log-entry"><b>Day ${x.day}</b> · ${x.msg}</div>`).join('');};
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.version===1&&s.player&&s.inventory&&s.crops){state={...initialState(),...s};state.inventory={...initialState().inventory,...s.inventory};state.appearance={...initialState().appearance,...s.appearance};state.stats={...initialState().stats,...s.stats};state.session={mode:'offline',roomId:null,maxPlayers:10};return true;}}catch(e){console.warn('Save read error:',e)}state=initialState();return false;}
@@ -617,8 +617,28 @@ function npcPortrait(n){
     ${accessory}${glasses}
   </svg>`;
 }
-function openModal(type,extra={}){currentModal={type,...extra};$('modalLayer').classList.remove('hidden');$('modalLayer').classList.toggle('dialogue-layer',type==='npc');$('modalLayer').classList.toggle('quest-layer',type==='quests'||type==='journal');refreshModal();}
-function closeModal(){currentModal=null;dialogueTick++;$('modalLayer').classList.add('hidden');$('modalLayer').classList.remove('dialogue-layer','quest-layer');}
+function showActiveModal(){
+  if(!currentModal)return;
+  const type=currentModal.type;
+  $('modalLayer').classList.remove('hidden');
+  $('modalLayer').classList.toggle('dialogue-layer',type==='npc');
+  $('modalLayer').classList.toggle('quest-layer',type==='quests'||type==='journal');
+  refreshModal();
+}
+function openModal(type,extra={}){
+  if(currentModal&&currentModal.type!==type)modalHistory.push({...currentModal});
+  else if(!currentModal)modalHistory=[];
+  currentModal={type,...extra};showActiveModal();
+}
+function closeModal(){currentModal=null;modalHistory=[];dialogueTick++;$('modalLayer').classList.add('hidden');$('modalLayer').classList.remove('dialogue-layer','quest-layer');}
+function backModal(){
+  if(currentModal?.type==='npc'){
+    const gifts=$('modalBody').querySelector('[data-dialogue-pane="gifts"]');
+    if(gifts&&!gifts.hidden){setDialoguePane('main');return;}
+  }
+  if(modalHistory.length){currentModal=modalHistory.pop();showActiveModal();return;}
+  closeModal();
+}
 function refreshModal(){if(!currentModal)return;const type=currentModal.type;let title='',eyebrow='EVERGROVE',html='';
   if(type==='welcome'){
     title='Welcome to Evergrove!';eyebrow='YOUR STORY STARTS HERE';
@@ -632,7 +652,7 @@ function refreshModal(){if(!currentModal)return;const type=currentModal.type;let
   }
   else if(type==='help'){
     title='How to play';eyebrow='CONTROLS & GUIDANCE';
-    html=`<div class="stat-line"><span>Move</span><span>Arrow keys</span></div><div class="stat-line"><span>Choose tool</span><span>A / S to cycle, or 1–8</span></div><div class="stat-line"><span>Use selected tool</span><span>X (or F / Space / click)</span></div><div class="stat-line"><span>Talk / enter building</span><span>Z (E also works)</span></div><div class="stat-line"><span>Sprint</span><span>Hold Shift</span></div><div class="stat-line"><span>Inventory / Craft / Map</span><span>I / C / M</span></div><div class="stat-line"><span>Journal / Creatures</span><span>J / G</span></div><div class="stat-line"><span>Close menus</span><span>X / Esc</span></div><h3>FARMING LOOP</h3><p>1. Hoe empty grass in your farm. 2. Plant seeds on soil. 3. Water every day. 4. Sleep at Your Cottage to progress the day. 5. After two watered days, use the Water tool on mature crops to harvest.</p><h3>MONSTER COLLECTING</h3><p>Enter the forest to the east. Equip Sword (6), then stand close and attack with F or click the creature. Catch with Capture (7). Lower health gives better capture odds. Your most recently caught creature will follow you.</p><h3>OFFLINE SAVES</h3><p>Your save is stored in this browser. Use Settings → Export backup for a portable JSON file. Clearing browser data may erase local progress.</p>`;
+    html=`<div class="stat-line"><span>Move</span><span>Arrow keys</span></div><div class="stat-line"><span>Choose tool</span><span>A / S to cycle, or 1–8</span></div><div class="stat-line"><span>Use selected tool</span><span>X (or F / Space / click)</span></div><div class="stat-line"><span>Talk / enter building</span><span>Z (E also works)</span></div><div class="stat-line"><span>Sprint</span><span>Hold Shift</span></div><div class="stat-line"><span>Inventory / Craft / Map</span><span>I / C / M</span></div><div class="stat-line"><span>Journal / Creatures</span><span>J / G</span></div><div class="stat-line"><span>Menu navigation</span><span>↑/↓ select · Z/→ confirm · X/← back</span></div><h3>FARMING LOOP</h3><p>1. Hoe empty grass in your farm. 2. Plant seeds on soil. 3. Water every day. 4. Sleep at Your Cottage to progress the day. 5. After two watered days, use the Water tool on mature crops to harvest.</p><h3>MONSTER COLLECTING</h3><p>Enter the forest to the east. Equip Sword (6), then stand close and attack with F or click the creature. Catch with Capture (7). Lower health gives better capture odds. Your most recently caught creature will follow you.</p><h3>OFFLINE SAVES</h3><p>Your save is stored in this browser. Use Settings → Export backup for a portable JSON file. Clearing browser data may erase local progress.</p>`;
   }
   else if(type==='inventory'){
     title='Traveler’s Satchel';eyebrow='YOUR BACKPACK';html=`<p>Collect materials, grow crops, craft equipment and trade goods in Willow Village.</p><div class="item-grid">${invCards()}</div><h3>YOUR COLLECTION</h3><div class="stat-line"><span>Creatures caught</span><strong>${state.collection.length}</strong></div><div class="stat-line"><span>Decorations placed</span><strong>${state.stats.built}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="creatures">🐾 Creature collection</button><button class="primary-btn" data-action="open" data-id="craft">⚒ Crafting</button></div>`;
@@ -699,7 +719,7 @@ function refreshModal(){if(!currentModal)return;const type=currentModal.type;let
     html=`<p>Pick a name and outfit color for your explorer. Changes are applied to your character immediately.</p><div class="stat-line"><span>Explorer name</span><strong>${escapeText(state.appearance?.name||'Valley Wanderer')}</strong></div><button class="primary-btn" data-action="rename">✎ Change character name</button><h3>OUTFIT COLORS</h3><div class="button-line">${colors.map(([hex,label])=>`<button class="primary-btn" data-action="color" data-id="${hex}" style="border-color:${hex};background:${hex}44">${label}${state.appearance?.color===hex?' ✓':''}</button>`).join('')}</div>`;
   }
   else if(type==='settings'){
-    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.6 · Fullscreen & Keyboard</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
+    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.7 · Menu Keyboard Navigation</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
   }
   $('modalTitle').textContent=title;$('modalEyebrow').textContent=eyebrow;$('modalBody').innerHTML=html;
   if(type==='map')drawMap();
@@ -763,7 +783,7 @@ function bindEvents(){
   for(const [id,type]of Object.entries(menus))$(id).addEventListener('click',()=>type==='save'?save(false):openModal(type));
   $('companionPreview').style.cursor='pointer';$('companionPreview').addEventListener('click',()=>openModal('creatures'));
   $('clearLogBtn').addEventListener('click',()=>{logItems=[];$('gameLog').innerHTML='';});
-  $('modalClose').addEventListener('click',closeModal);$('modalLayer').addEventListener('click',e=>{if(e.target===$('modalLayer'))closeModal()});
+  $('modalClose').addEventListener('click',backModal);$('modalLayer').addEventListener('click',e=>{if(e.target===$('modalLayer'))backModal()});
   $('modalBody').addEventListener('input',e=>{if(e.target.id==='touchOpacityRange'){state.touchOpacity=Number(e.target.value)/100;document.documentElement.style.setProperty('--touch-opacity',String(state.touchOpacity));$('opacityValue').textContent=e.target.value+'%';save();}});
   $('modalBody').addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b||b.disabled)return;const action=b.dataset.action,id=b.dataset.id;
     switch(action){
@@ -783,7 +803,7 @@ function bindEvents(){
     }
   });
   $('importFile').addEventListener('change',e=>{importSave(e.target.files[0]);e.target.value='';});
-  document.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)&&!e.target.matches('input,textarea,select'))e.preventDefault();if(currentModal){if(e.code==='Escape')closeModal();return;}
+  document.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)&&!e.target.matches('input,textarea,select'))e.preventDefault();if(currentModal){if(e.code==='Escape')backModal();return;}
     if(e.code.startsWith('Digit')&&e.code.length===6){const n=+e.code.slice(5);if(n>=1&&n<=8){state.selected=TOOLS[n-1].id;updateUI();if(n===8)openModal('craft');return;}}
     if(e.repeat&&['KeyE','KeyF','Space','KeyC','KeyI','KeyM','KeyJ','KeyG'].includes(e.code))return;
     switch(e.code){case 'KeyE':interact();break;case 'KeyF':case 'Space':useFacing();break;case 'KeyI':openModal('inventory');break;case 'KeyC':openModal('craft');break;case 'KeyM':openModal('map');break;case 'KeyJ':openModal('journal');break;case 'KeyG':openModal('creatures');break;case 'Escape':openModal('settings');break;default:input[e.code]=true;}
@@ -811,7 +831,7 @@ start();
 })();
 
 </script>
-<script src="./controls-v0.6.js" defer></script>
+<script src="./controls-v0.7.js" defer></script>
 <script src="./web-updater.js" defer></script>
 </body>
 </html>
