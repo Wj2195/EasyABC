@@ -33,3 +33,16 @@ While a menu or conversation choice panel is open, **Up / Down** (also A / S) mo
 - X / Left returns to the previous menu.
 - Desktop dialogue, HUD, and menu text are larger; phone landscape stays compact.
 - Save data is unchanged. Service worker cache version: evergrove-pages-v0.8.0.
+
+## v0.9 — PC Click-to-Move
+
+- **Left click anywhere in the visible map:** Character automatically walks toward the chosen spot.
+- **Route planning:** Walks around houses, trees, rocks, fences and water using the game's collision rules.
+- **Click a villager or building:** Walk toward them and automatically start talking/open the building when close enough.
+- **Arrow keys:** Instantly interrupt autopilot for direct movement.
+- **Shift + Left Click:** Use the currently selected tool on a nearby tile, as in previous versions.
+- **Right click:** Existing Talk/Interact shortcut still works.
+- **Click another location:** Replaces the earlier walking route.
+- **Touchscreen phones:** Keep the existing virtual joystick controls. Automatic click-to-walk only activates on fine-pointer desktop devices.
+
+No saved-game migration required. GitHub Pages v0.9.0 service worker precaches the click-to-move script for offline play.
