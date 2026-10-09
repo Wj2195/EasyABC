@@ -319,6 +319,7 @@ body{background:#101b23}
 
 </style>
   <link rel="stylesheet" href="./viewport-v0.6.css" />
+  <link rel="stylesheet" href="./world-atlas-v013.css" />
   <link rel="stylesheet" href="./readability-v0.8.css" />
 </head>
 <body>
@@ -351,7 +352,7 @@ body{background:#101b23}
           <div class="hud-menu" aria-label="In-game menu">
             <button data-game-menu="inventory" title="Inventory">🎒<small>Bag</small></button>
             <button data-game-menu="craft" title="Crafting">⚒<small>Build</small></button>
-            <button data-game-menu="map" title="World map">⌖<small>Map</small></button>
+            <button data-game-menu="map" title="World Atlas — view all published maps" aria-label="Open world map atlas">🗺️<small>World</small></button>
             <button data-game-menu="journal" title="Quests">📜<small>Quests</small></button>
             <button data-game-menu="creatures" title="Creature collection">🐾<small>Pets</small></button>
             <button data-game-menu="settings" title="Settings and save">⚙<small>Menu</small></button>
@@ -405,7 +406,7 @@ body{background:#101b23}
 </div>
 <input type="file" id="importFile" accept=".json,application/json" hidden />
 <script>
-/* EVERGROVE v0.12 Web Edition — no frameworks, CDNs or paid services. */
+/* EVERGROVE v0.13 Web Edition — no frameworks, CDNs or paid services. */
 (() => {
 'use strict';
 const T=32, MW=68, MH=48, H=576, KEY='evergrove_offline_save_v1';
@@ -422,7 +423,7 @@ const HOMES=[{id:'home',x:12,y:16,w:6,h:5,roof:'#d17e65',name:'Your Cottage',kin
 const NPCS=[{id:'mira',name:'Mira',title:'Farm keeper',x:24,y:25,emoji:'👩🏻‍🌾',color:'#e8b18f',line:'A good garden begins with one little seed.',favorite:'turnip',romance:true},{id:'theo',name:'Theo',title:'Village merchant',x:33,y:23,emoji:'🧑🏽‍💼',color:'#d1a6a2',line:'Fresh supplies for every adventurer!',favorite:'berry',romance:false},{id:'hana',name:'Hana',title:'Explorer & naturalist',x:42,y:23,emoji:'👩🏻‍🔬',color:'#d8bfe9',line:'I wonder what lives in the Whisperwood...',favorite:'flower',romance:true},{id:'rowan',name:'Rowan',title:'Village artisan',x:43,y:31,emoji:'🧑🏼‍🔧',color:'#c1c68f',line:'Everything you can dream of starts with a tool.',favorite:'ore',romance:false}];
 const SHOP=[{id:'seed',qty:5,price:25},{id:'orb',qty:3,price:60},{id:'berry',qty:3,price:18},{id:'flower',qty:2,price:25},{id:'wood',qty:5,price:45},{id:'stone',qty:5,price:35},{id:'ring',qty:1,price:400}];
 const QUESTS=[{id:'harvest',title:'A Growing Beginning',desc:'Harvest 3 turnips.',target:3,key:'harvested',reward:{gold:75,seed:5}},{id:'creature',title:'A New Friend',desc:'Capture your first wild creature.',target:1,key:'captured',reward:{gold:100,orb:3}},{id:'builder',title:'Home Sweet Home',desc:'Place 2 crafted decorations.',target:2,key:'built',reward:{gold:80,wood:5}},{id:'miner',title:'Sparkling Discoveries',desc:'Mine 3 ore deposits.',target:3,key:'mined',reward:{gold:85}},{id:'explorer',title:'Beyond the Village',desc:'Discover the Whisperwood and Ancient Ruins.',target:2,key:'explored',reward:{gold:100}},{id:'friends',title:'A Friendly Face',desc:'Earn 5 friendship points with villagers.',target:5,key:'friends',reward:{gold:90,flower:2}}];
-const initialState=()=>({version:1,session:{mode:'offline',roomId:null,maxPlayers:10},player:{x:17.5,y:27.5,dir:'up',hp:100,energy:100,gold:125,level:1,xp:0},day:1,time:8*60,weather:'Clear',inventory:{seed:12,turnip:0,wood:14,stone:12,berry:5,orb:7,ore:0,flower:2,fiber:0,ring:0,essence:0},tilled:{},crops:{},removed:{},placed:[],relationships:{},flirtDay:{},spouse:null,collection:[],follower:null,appearance:{name:'Valley Wanderer',color:'#79a8a4'},selected:'hoe',blueprint:'fence',touchOpacity:0.28,questsClaimed:[],visited:{farm:true},flags:{},stats:{harvested:0,captured:0,built:0,mined:0,defeated:0},created:Date.now()});
+const initialState=()=>({version:1,session:{mode:'offline',roomId:null,maxPlayers:10},player:{x:17.5,y:27.5,dir:'up',hp:100,energy:100,gold:125,level:1,xp:0},day:1,time:8*60,weather:'Clear',inventory:{seed:12,turnip:0,wood:14,stone:12,berry:5,orb:7,ore:0,flower:2,fiber:0,ring:0,essence:0},tilled:{},crops:{},removed:{},placed:[],relationships:{},flirtDay:{},spouse:null,collection:[],follower:null,appearance:{name:'Valley Wanderer',color:'#79a8a4'},selected:'hoe',blueprint:'fence',touchOpacity:0.28,questsClaimed:[],visited:{farm:true},flags:{},stats:{harvested:0,captured:0,built:0,mined:0,defeated:0},discoveredMaps:{base:true},created:Date.now()});
 let state,trees=[],rocks=[],forages=[],monsters=[],particles=[],input={},pointerTile=null,camera={x:0,y:0};
 let dialogueTick=0, currentModal=null, modalHistory=[],lastTick=performance.now(),lastSave=0,lastUi=0,elapsed=0,minuteAccumulator=0,activeSound=false,worldBg=null,logItems=[];
 const notify=(msg,type='info')=>{const e=document.createElement('div');e.className='toast'+(type==='error'?' error':'');e.textContent=msg;$('toasts').appendChild(e);setTimeout(()=>e.remove(),2500)};
@@ -594,7 +595,7 @@ function drawMap(){const c=$('fullMap');if(!c)return;const x=c.getContext('2d'),
   for(let yy=0;yy<MH;yy++)for(let xx=0;xx<MW;xx++){x.fillStyle=colors[typeAt(xx,yy)]||'#888';x.fillRect(xx*sz,yy*sz,sz,sz)}
   for(const h of HOMES){x.fillStyle=h.roof;x.fillRect(h.x*sz,h.y*sz,h.w*sz,h.h*sz);x.strokeStyle='#e9e2bb';x.strokeRect(h.x*sz,h.y*sz,h.w*sz,h.h*sz)}
   x.fillStyle='#ffe7a0';x.font='bold 13px monospace';x.fillText('FARM',70,105);x.fillText('VILLAGE',260,95);x.fillText('FOREST',399,155);x.fillText('RUINS',428,348);x.fillText('LAKE',100,357);
-  x.fillStyle='#fdf1d0';x.strokeStyle='#203e45';x.lineWidth=3;x.beginPath();x.arc(state.player.x*sz,state.player.y*sz,7,0,Math.PI*2);x.stroke();x.fill();x.fillStyle='#244c48';x.beginPath();x.arc(state.player.x*sz,state.player.y*sz,3,0,Math.PI*2);x.fill();}
+  if(!window.EvergroveExpansion?.active()){x.fillStyle='#fdf1d0';x.strokeStyle='#203e45';x.lineWidth=3;x.beginPath();x.arc(state.player.x*sz,state.player.y*sz,7,0,Math.PI*2);x.stroke();x.fill();x.fillStyle='#244c48';x.beginPath();x.arc(state.player.x*sz,state.player.y*sz,3,0,Math.PI*2);x.fill();}}
 function npcPortrait(n){
   // Original, code-drawn 16-bit character portrait: works fully offline.
   const palettes={
@@ -625,6 +626,7 @@ function showActiveModal(){
   $('modalLayer').classList.remove('hidden');
   $('modalLayer').classList.toggle('dialogue-layer',type==='npc');
   $('modalLayer').classList.toggle('quest-layer',type==='quests'||type==='journal');
+  $('modalLayer').classList.toggle('atlas-layer',type==='map');
   refreshModal();
 }
 function openModal(type,extra={}){
@@ -632,7 +634,7 @@ function openModal(type,extra={}){
   else if(!currentModal)modalHistory=[];
   currentModal={type,...extra};showActiveModal();
 }
-function closeModal(){currentModal=null;modalHistory=[];dialogueTick++;$('modalLayer').classList.add('hidden');$('modalLayer').classList.remove('dialogue-layer','quest-layer');}
+function closeModal(){currentModal=null;modalHistory=[];dialogueTick++;$('modalLayer').classList.add('hidden');$('modalLayer').classList.remove('dialogue-layer','quest-layer','atlas-layer');}
 function backModal(){
   if(currentModal?.type==='npc'){
     const giftPane=$('modalBody').querySelector('[data-dialogue-pane="gifts"]');
@@ -713,7 +715,7 @@ function refreshModal(){if(!currentModal)return;const type=currentModal.type;let
     title='Creature Collection';eyebrow='WILD FRIENDS OF THE VALLEY';html=`<p>Catch creatures in the wilderness. Select one to follow you on your journey. A stronger first attack improves capture odds.</p>${state.collection.length?`<div class="modal-list">${state.collection.map((c,i)=>{const info=MONSTER_TYPES[c.type];return `<div class="modal-item"><span class="emoji">${info.emoji}</span><div class="item-detail"><strong>${info.name}</strong><small>${info.desc}</small></div><button data-action="follow" data-id="${i}">${state.follower===i?'Following':'Follow'}</button></div>`}).join('')}</div><button class="choice" data-action="unfollow">🐾 Travel without a companion</button>`:'<div class="notification">🥚 No creatures yet. Wander east to Whisperwood Forest.</div>'}`;
   }
   else if(type==='map'){
-    title='Map of Evergrove';eyebrow='THE VALLEY & BEYOND';html=`<p>Your location is marked with a white dot. Walk east for creatures, south for Moonlit Lake, or north-east for highlands.</p><canvas id="fullMap" class="mini-map" width="544" height="384" aria-label="Map of farm, village, forest, ruins and lake"></canvas><div class="stat-line"><span>Current location</span><strong>${zone().name}</strong></div><div class="stat-line"><span>Visited regions</span><strong>${Object.keys(state.visited).filter(x=>state.visited[x]).length} of 6</strong></div>`;
+    title=window.EvergroveAtlas?'World Atlas':'Map of Evergrove';eyebrow='EVERY REGION TO EXPLORE';html=window.EvergroveAtlas?.markup() || `<p>Your location is marked with a white dot. Walk east for creatures, south for Moonlit Lake, or north-east for highlands.</p><canvas id="fullMap" class="mini-map" width="544" height="384" aria-label="Map of farm, village, forest, ruins and lake"></canvas><div class="stat-line"><span>Current location</span><strong>${zone().name}</strong></div><div class="stat-line"><span>Visited regions</span><strong>${Object.keys(state.visited).filter(x=>state.visited[x]).length} of 6</strong></div>`;
   }
   else if(type==='appearance'){
     title='Character Customization';eyebrow='MAKE IT YOUR STORY';
@@ -721,10 +723,10 @@ function refreshModal(){if(!currentModal)return;const type=currentModal.type;let
     html=`<p>Pick a name and outfit color for your explorer. Changes are applied to your character immediately.</p><div class="stat-line"><span>Explorer name</span><strong>${escapeText(state.appearance?.name||'Valley Wanderer')}</strong></div><button class="primary-btn" data-action="rename">✎ Change character name</button><h3>OUTFIT COLORS</h3><div class="button-line">${colors.map(([hex,label])=>`<button class="primary-btn" data-action="color" data-id="${hex}" style="border-color:${hex};background:${hex}44">${label}${state.appearance?.color===hex?' ✓':''}</button>`).join('')}</div>`;
   }
   else if(type==='settings'){
-    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.12 · Expandable Map System</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
+    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.13 · World Atlas</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
   }
   $('modalTitle').textContent=title;$('modalEyebrow').textContent=eyebrow;$('modalBody').innerHTML=html;
-  if(type==='map')drawMap();
+  if(type==='map'){if(window.EvergroveAtlas)window.EvergroveAtlas.mount();else drawMap();}
   if(type==='npc')animateDialogue();
 }
 function showDialogueResult(message){
@@ -836,7 +838,7 @@ window.EvergroveNavGame={
  blocked:(x,y)=>blockedPlayer(x,y),useTool:(x,y)=>act(state.selected,x,y),
  openNPC:id=>openModal('npc',{id}),
  openHome:id=>{const h=HOMES.find(o=>o.id===id);if(h)openModal(({sleep:'sleep',shop:'shop',craft:'craft',inn:'inn',archive:'journal'})[h.kind]||'journal');},
- notify
+ notify,drawBaseMap:drawMap,baseZone:()=>zone().name
 };
 start();
 })();
@@ -845,6 +847,7 @@ start();
 <script src="./controls-v0.8.js" defer></script>
 <script src="./evergrove_navigation_v012.js" defer></script>
 <script src="./expansion-v012.js" defer></script>
+<script src="./world-atlas-v013.js" defer></script>
 <script src="./web-updater.js" defer></script>
 </body>
 </html>
