@@ -207,3 +207,31 @@ Game: https://wj2195.github.io/EasyABC/Evergrove/
 **New data-only master plan, not yet playable:** [60-level progression registry](./maps/progression-60.json) · [full design guide](./maps/progression-60-guide.md) · [loader and validator](./maps/progression-loader-v1.js).
 
 Willow Valley respawn and safe town → three exploration maps → a safe town → repeat through **Level 60** and **Crownspire Capital**. This master plan includes **81 maps** (60 levels plus 21 safe towns), all **68 × 48 tiles**, ten standard service types in each town, 24 exterior buildings per safe town, detailed biome themes and reciprocal travel links. The new manifest has **no monster spawning** anywhere. The existing playable five-map registry, old hunting grounds and save data remain unchanged until the new generator and travel system are built.
+
+## v0.18.1 — Playable 81-map journey (60 levels + 21 safe towns)
+
+The 81-map foundation is now **integrated into the browser game** instead of remaining JSON-only. The starting town Willow Valley uses the existing HD renderer and farming/relationship systems. A new expedition portal appears at approximately **tile (34, 41)**, south of Willow Valley's plaza. Walk into the portal to enter **Level 1 — Mosspath Meadow**. It is separate from the four original legacy world portals, which remain available.
+
+### Gameplay
+
+- All **60 exploration levels** are rendered as real 68 × 48 playable terrain with their assigned biome: forests, frozen paths, sandy dunes, lake crossings, abandoned cities, canyons, volcanic routes, ruins, coastal roads and more.
+- Each level has a **north exit to the next map** and a **south return gate**. The route forms Level 1 → 2 → 3 → Oakcross Village, repeating through Level 60 → Crownspire Capital. Both directions work; no teleportation via atlas selection.
+- All **20 progression towns** display roads, a central plaza, and **24 adjacent original-code pixel-drawn buildings** per town (Hospital, Coffee Shop, Bar, Weapon Shop, Seed Shop, Town Hall, Inn, Hostel, Brothel [exterior only], Restaurant plus 14 residences). Doors and services are visual placeholders: interiors are intentionally not enterable or operational yet.
+- **All 21 safe areas, including Willow Valley, are monster-free.** The new 60 progression levels are also monster-free, and combat damage is disabled in the new maps. Legacy, separately accessible older expansion hunting grounds are not part of the new 81-map route and still have their previous gameplay.
+- Every map generates a seeded tile scene with open gateway lanes and a guaranteed accessible main route. Dense town buildings block walking; hovering/highlighting and click-to-run route around obstacles.
+- Movement works with arrow keys, Shift-to-run, mobile joystick, and PC click-to-run. On a new map, open **World → 🧭 Explore 81-map World** to select a chapter, inspect its full map preview, see visited areas and find the next/previous gate. **Go to gate** on your current area starts a guided walk.
+- Local saves remain under `evergrove_offline_save_v1`. A saved `activeMap: "level-22"` / `"town-08"`, etc. is now recognized and restored correctly on reload or import. Previous four expansion maps remain supported by `worlds.json`.
+
+### Architecture
+
+- `maps/progression-60.json`: source manifest of 81 records.
+- `maps/progression-loader-v1.js`: strict read-only validation + navigation API.
+- `progression-world-v018.js`: reusable procedural scene builder, scene painter, collisions, 2D canvas camera, town sprite caching, gate travel, nav pathfinding, atlas and save restoration.
+- `progression-world-v018.css`: responsive map/chapter selector, map previews and gate controls.
+- `sw.js`: v0.18.1 offline cache includes all new files, plus the 81-map JSON.
+
+### Validation
+
+Game-engine simulations checked all 81 generated maps had walkable connected north/south entrances and all 80 consecutive transitions starting from Willow Valley through Crownspire Capital. Also checked the path back to Level 60, pixel rendering, safe-town service layouts, zero new monster spawns, and restoration of a saved game at Level 22.
+
+The new maps are **procedurally themed first-pass exteriors**, not the same level of bespoke HD pixel art as the Willow Valley showcase. NPCs, interiors, fully interactive shops, battles and further authored scene decoration are later stages. Testing was performed by script/simulated canvas; actual browser/phone visual QA is still recommended.
