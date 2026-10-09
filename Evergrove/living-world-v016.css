@@ -1,0 +1,17 @@
+/* Evergrove v0.16 — original farming and sword HUD */
+.living-badge{
+ position:absolute;z-index:33;top:clamp(9px,2vh,18px);left:50%;transform:translateX(-50%);
+ display:inline-flex;justify-content:center;align-items:center;
+ max-width:min(56vw,440px);min-height:32px;padding:7px 11px;
+ border:2px solid #9bbd84;border-radius:8px;background:#193a34de;color:#f4ecc5;
+ box-shadow:0 3px 14px #0007;backdrop-filter:blur(3px);
+ font:800 clamp(10px,.85vw,13px)/1.25 ui-monospace,Consolas,monospace;
+ text-align:center;cursor:pointer;white-space:normal;touch-action:manipulation;
+}
+.living-badge:hover,.living-badge:focus-visible{border-color:#f0da9a;background:#355745;outline:2px solid #d5e4a0}
+@media (hover:none) and (pointer:coarse) {
+ .living-badge{z-index:34;top:9px;left:49%;max-width:45vw;min-height:24px;padding:4px 7px;font-size:9px;border-width:1px}
+}
+@media(max-height:450px){
+ .living-badge{top:3px;min-height:21px;max-width:37vw;padding:3px 6px;font-size:9px}
+}
