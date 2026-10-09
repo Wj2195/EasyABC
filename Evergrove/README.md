@@ -140,3 +140,40 @@ In v0.14, portals were drawn at the outermost tile (for example, north y=0, west
 **To enter a different area:** play, open **🗺️ World (M)**, select the **current area**, and click its **Go to gateway** button for the desired destination. The atlas closes and the character runs to the corresponding portal. Alternatively, walk to the glowing gateway with normal movement controls.
 
 These changes are in GitHub as version 0.15. The offline worker cache version is `evergrove-pages-v0.15.0`. Accept the **Save & update** prompt or reload after publication. GitHub Pages publication may lag GitHub commits.
+
+
+## v0.16 — Original farming and adventure mechanics inspired by classic GBA games
+
+This is an original Evergrove gameplay upgrade informed by the high-level mechanics of *Harvest Moon: Friends of Mineral Town* and *The Legend of Zelda: The Minish Cap*. **No original ROM sprites, audio, proprietary code, text/dialogue, characters or map layouts were copied into this repository.**
+
+### Farming
+- Original seed-pouch types: Turnip (Spring / Autumn; 4 watered days), Carrot (Spring / Autumn; 6 days), Sun Corn (Summer; 8 days with three-day regrowth), Moon Pumpkin (Autumn; 9 days).
+- Prepare individual soil plots with Hoe **1**. One seed bag can scatter seeds to **up to nine prepared tiles** in a 3 × 3 area using tool **2**. One seed bag is spent for the patch.
+- Use Water **3** once per day (or let rainy weather water the crops), sleep at your cottage to grow crops, then use Water or interact to harvest them.
+- **R** cycles the seed bag on PC. The visible in-game season/seed button also cycles seeds on phones. You can buy seed bags at Willow Market and sell harvested produce.
+- The game uses 30-day seasons. Existing crop saves are migrated lazily to the new growth fields.
+
+### Living NPCs and town atmosphere
+- Original new villagers Elara (market gardener), Bram (village guard), and Sora (herbalist) join the existing NPCs.
+- NPCs have daytime destinations and navigate around buildings using basic route planning; character facing and walking animation are updated.
+- Added original pixel-drawn market stalls, lanterns, a produce cart and a sign to the Willow Valley town square.
+- Dialogue/friendship, gift preferences and existing NPC interaction remain integrated with the old systems.
+
+### Sword combat
+- Equip Sword **6** and **tap X, F, Space or mobile USE** for a forward slash.
+- **Hold for at least 0.8 seconds and release** for a circular spin slash. Charging shows an indicator, and the spin can hit multiple nearby enemies.
+- Sword attacks use an arc/radius hit area, consume stamina, and produce original slash/spin effects.
+- Enemy AI patrols, detects the player, pursues, shows a visible red warning circle during wind-up, then strikes after a delay. Enemies can be defeated for XP and drops, with respawn and recovery mechanics.
+
+### Hunting grounds and original monsters
+- **Autumn Grove — Bramble Hollow:** Bramble Treants, wood, mushrooms and herbs.
+- **Starglow Highlands — Stonefall Ridge:** Craglings, herbs and ore.
+- **Sunmeadow Plains — Thornbush Trail:** Thornboars, berries and wild plants.
+- **Moonlit Coast — Silverwater Shore:** Tide Wisps, shells and herbs.
+- Exploration, gathering and combat use the existing five-map travel system. Tree/rock gathering in expansions persists temporarily in the browser save and refreshes after two game days.
+- This is the first implementation, not a full recreation of either reference game. Festivals, livestock, fishing, complex town schedules, bosses, advanced equipment upgrades and new NPC shops in expansions are not yet implemented.
+
+### Compatibility and publishing
+- Continues using `evergrove_offline_save_v1` and the existing GitHub Pages URL.
+- New JavaScript: `living-world-v016.js`. New CSS: `living-world-v016.css`.
+- Service worker release: `evergrove-pages-v0.16.0`. Players may need to accept **Save & update** once.
