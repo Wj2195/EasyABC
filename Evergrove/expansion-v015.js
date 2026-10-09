@@ -6,7 +6,7 @@ let worlds=null,current=null,background=null,route=[],cameraX=0,cameraY=0,locked
 const idTile=(x,y)=>x+','+y,lerp=Math.hypot, clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const inside=(x,y,m=current)=>m&&x>=0&&y>=0&&x<m.width&&y<m.height;
 const terrain=(m,x,y)=>m.terrain?.[idTile(x,y)]||m.defaultTerrain||'grass';
-const objAt=(m,x,y)=>m.objects?.find(o=>o.x===x&&o.y===y);
+const objAt=(m,x,y)=>m.objects?.find(o=>o.x===x&&o.y===y&&window.EvergroveLiving?.isResourceVisible?.(m,o)!==false);
 const passable=(m,x,y)=>inside(x,y,m)&&!['water','cliff'].includes(terrain(m,x,y))&&!objAt(m,x,y);
 const canStand=(x,y)=>{const r=.24;return [[-r,-r],[r,-r],[-r,r],[r,r]].every(([dx,dy])=>{const tx=Math.floor(x+dx),ty=Math.floor(y+dy);return passable(current,tx,ty);});};
 const clearRoute=()=>{route=[];};
@@ -108,6 +108,7 @@ function checkPortal(){
 }
 function update(dt){
  if(!current||api.modal())return;
+ window.EvergroveLiving?.updateExpansion?.(dt,current);
  const input=api.getInput(),p=api.player();
  let dx=Number(!!(input.ArrowRight||input.mobileright))-Number(!!(input.ArrowLeft||input.mobileleft));
  let dy=Number(!!(input.ArrowDown||input.mobiledown))-Number(!!(input.ArrowUp||input.mobileup));
@@ -139,10 +140,11 @@ function draw(){
  const cam=api.camera();cam.x=cameraX;cam.y=cameraY;
  ctx.imageSmoothingEnabled=false;ctx.fillStyle='#203b36';ctx.fillRect(0,0,W,H);
  ctx.drawImage(background,-cameraX,-cameraY);
- const objects=(current.objects||[]).map(o=>({y:o.y+.8,draw:()=>o.type==='tree'?api.drawTree(o):api.drawRock(o)}));
+ const objects=(current.objects||[]).filter(o=>window.EvergroveLiving?.isResourceVisible?.(current,o)!==false).map(o=>({y:o.y+.8,draw:()=>o.type==='tree'?api.drawTree(o):api.drawRock(o)}));
  objects.push({y:p.y+.4,draw:()=>api.drawPlayer()});
  objects.sort((a,b)=>a.y-b.y).forEach(o=>o.draw());
  drawSideGateways(current,current.portals||[]);
+ window.EvergroveLiving?.drawExpansion?.(current,ctx,cameraX,cameraY);
  if(route.length){ctx.save();ctx.lineWidth=2;ctx.strokeStyle='#ffe9b0';ctx.setLineDash([6,6]);ctx.beginPath();ctx.moveTo(p.x*T-cameraX,p.y*T-cameraY);for(const v of route)ctx.lineTo(v.x*T-cameraX,v.y*T-cameraY);ctx.stroke();ctx.restore();}
  showZone();
 }
@@ -200,6 +202,6 @@ async function load(){
  }catch(e){console.warn('Evergrove expansion unavailable',e);}
 }
 window.EvergroveExpansion={active:()=>!!current,update,draw,checkBasePortal,drawBasePortal,cancel:clearRoute,
-travel,ready:()=>!!worlds,registry:()=>worlds,routeToGate:(p)=>current&&plan(p.x,p.y)};
+travel,ready:()=>!!worlds,registry:()=>worlds,currentMap:()=>current,routeToGate:(p)=>current&&plan(p.x,p.y)};
 load();
 })();
