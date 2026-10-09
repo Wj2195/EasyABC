@@ -179,3 +179,25 @@ This is an original Evergrove gameplay upgrade informed by the high-level mechan
 - Service worker release: `evergrove-pages-v0.16.1`. Players may need to accept **Save & update** once.
 
 The v0.16.1 release also includes individually designed NPC outfits, city stalls and walkable placement of all 16 wilderness monster spawns and 12 forage sites. A local logic test validated 3×3 sowing, crop maturity, directional and charged attacks, expansion wood collection, wild mushroom gathering and enemy pursuit/telegraphed attacks.
+
+## v0.17.1 — Willow Valley layered pixel-art redesign
+
+A substantial **playable, original-code** visual redesign was applied to the legacy Willow Valley town. The previous 68 × 48 collision map, five building positions/functional doorways, farming plots, NPCs, enemies, tools, portals, and save key are preserved.
+
+### Layered drawing architecture
+- `willow-hd-v017.js`: new procedural Canvas 2D renderer, with **one-time cached 2,176 × 1,536 terrain canvas**, textured grass and stone, dense paths, flowers, water highlights, and a concentric stone plaza.
+- Unique per-building **cached pixel-art facades** and red, blue, violet, ochre and teal shingle roofs for cottage, market, inn, archive and crafting hall. Existing interactions use unchanged building IDs and doors.
+- Improved cached trees and rocks; y-depth-sorted lanterns, banners, produce stalls, gardens, castle towers and a fortified open southern arch.
+- A glowing central crystal fountain with a real collision footprint and particle-style light animation.
+- `drawBackground`, `drawBuilding`, `drawTree`, `drawRock`, `propSprites`, `foreground`, `collision`, and `drawMiniMap` exposed through `window.EvergroveHD`. The existing game engine delegates selectively with a legacy fallback.
+- World Atlas previews now show the redesigned terrain when high-detail mode is active.
+- No external sprites, ROM assets or third-party game illustrations were copied into the shipped game. The user's sample image is used strictly as an aesthetic reference.
+
+### Visual performance and saved progress
+- The HD renderer and its resource sprites are lazily generated/cached and render via the existing Canvas at the same logical tile scale.
+- **Settings → HD Pixel Art** toggles ON/OFF without changing gameplay or losing progress; the old renderer remains available on slower phones.
+- On first HD draw, a player saved on the fountain footprint is relocated to a clear adjacent square and saved automatically.
+- v0.17.1 service worker precaches `willow-hd-v017.js` and `willow-hd-v017.css` for offline play.
+- This is a visual-first renderer, not a pixel-perfect recreation of the concept screenshot. Richer animated sprite sheets, elaborate water systems and fully editable authored art tiles can be added later.
+
+Game: https://wj2195.github.io/EasyABC/Evergrove/
