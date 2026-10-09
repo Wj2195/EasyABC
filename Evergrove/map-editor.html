@@ -102,7 +102,7 @@ function ui(){
  for(const id of ['mapWidth','mapHeight','resize','deleteMap'])$(id).disabled=!m;
  const savedFrom=$('connectFrom').value,all=[grid.BASE,...data.maps];
  $('connectFrom').innerHTML=all.map(t=>'<option value="'+clean(t.id)+'">'+clean(t.name)+'</option>').join('');
- $('connectFrom').value=all.some(t=>t.id===savedFrom)?savedFrom:(grid.neighbors(data,mapId).some(n=>n.available)?mapId:all.find(t=>grid.neighbors(data,t.id).some(n=>n.available))?.id||'base');
+ $('connectFrom').value=all.some(t=>t.id===savedFrom&&grid.neighbors(data,t.id).some(n=>n.available))?savedFrom:(grid.neighbors(data,mapId).some(n=>n.available)?mapId:all.find(t=>grid.neighbors(data,t.id).some(n=>n.available))?.id||'base');
  updateAvailableSides();
  $('edgeStatus').textContent=grid.neighbors(data,mapId).map(n=>n.side.toUpperCase()+': '+(n.target?n.target.name:'OPEN')).join(' · ');
  $('zoomLabel').textContent=scale+' px per tile';draw();
