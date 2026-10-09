@@ -114,10 +114,9 @@ function update(){
  $('atlasStats').innerHTML='<span>↔ '+map.width+' × '+map.height+' tiles</span><span>▦ '+(map.width*map.height).toLocaleString()+' tiles</span>'+
  '<span>◉ '+portalList(map.id).length+' gateways</span>';
  const portals=portalList(map.id);
- const pc=typeof matchMedia==='function'&&matchMedia('(hover: hover) and (pointer: fine)').matches;
  $('atlasPortals').innerHTML=portals.length?portals.map(p=>
    '<button type="button" class="atlas-gateway" data-atlas-region="'+escapeHTML(p.to)+'" title="Preview connected area">◉ '+escapeHTML(p.side?.toUpperCase()||'GATE')+' → '+escapeHTML(nameFor(p.to))+'</button>'+
-   (now&&pc?'<button type="button" class="atlas-gateway atlas-guide" data-atlas-go="'+escapeHTML(p.side||'')+'" title="Run automatically to this entrance">🏃 Run to gate</button>':'')
+   (now?'<button type="button" class="atlas-gateway atlas-guide" data-atlas-go="'+escapeHTML(p.side||'')+'" title="Automatically walk to this gateway">🏃 Go to gateway</button>':'')
  ).join(''):'<span class="atlas-footnote">No connected gates are published for this region yet.</span>';
  const currentWorld=registry(),gridApi=grid(),open=currentWorld&&gridApi?gridApi.neighbors(currentWorld,map.id).filter(s=>s.available).map(s=>s.side.toUpperCase()):[];
  $('atlasNote').textContent=(now?'Your current region. ':'Preview only — ')+'Linked gateways are at the middle of each map edge. '+(open.length?'Free sides: '+open.join(', ')+'.':'All four sides connected.')+' Travel only through portals in-game.';
@@ -131,7 +130,7 @@ function guide(side){
  const portal=portalList(currentId()).find(p=>p.side===side);
  if(!portal)return;
  api.closeModal?.();
- if(currentId()==='base')window.EvergroveNavigation?.go({x:portal.x+.5,y:portal.y+.5},null);
+ if(currentId()==='base')window.EvergroveNavigation?.go({x:portal.x+.5,y:portal.y+.5},null,true);
  else window.EvergroveExpansion?.routeToGate?.(portal);
 }
 function mount(){
