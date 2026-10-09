@@ -21,7 +21,7 @@ const HOUSE_THEMES={
  workshop:{roof:'#327e77',shade:'#245853',hi:'#83b6a0',wall:'#e9d5b0',wood:'#84674e',sign:'FORGE',symbol:'⚒'}
 };
 const CANVASES=new Map(),PREFETCH=new Map();
-let ground=null,frame=0;
+let ground=null,frame=0,positionChecked=false;
 const rnd=(x,y,seed=1)=>{
  let z=Math.imul((x|0)+674,73856093)^Math.imul((y|0)+123,19349663)^Math.imul(seed+17,83492791);
  z=Math.imul(z^(z>>>13),1274126177);return (z>>>0)/4294967296;
@@ -277,6 +277,16 @@ function collision(x,y){
  const dx=x-36.5,dy=y-28.5;return dx*dx+dy*dy<1.3*1.3;
 }
 function drawBackground(ctx,camera,w,h){
+ if(!positionChecked){
+  positionChecked=true;
+  // An old save may have been parked on the new fountain's footprint.
+  const p=g.player();
+  if(collision(p.x,p.y)){
+   for(const safe of [{x:39.5,y:28.5},{x:36.5,y:31.5},{x:33.5,y:28.5},{x:36.5,y:25.5}]){
+    if(!g.blocked(safe.x,safe.y)){p.x=safe.x;p.y=safe.y;g.save();break;}
+   }
+  }
+ }
  if(!ground)ground=drawGround();
  ctx.imageSmoothingEnabled=false;
  const left=Math.max(0,Math.floor(camera.x)),top=Math.max(0,Math.floor(camera.y));
