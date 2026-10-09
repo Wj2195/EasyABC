@@ -1,0 +1,51 @@
+/* Evergrove v0.8: selected choices remain visible when unavailable. */
+.keyboard-selected{outline:3px solid #f8e2a0!important;outline-offset:1px!important;background:#547c62!important;box-shadow:0 0 0 2px #203e38,0 0 16px #f6dc8f70!important}
+.choice.keyboard-selected{position:relative!important;padding-left:28px!important}
+.choice.keyboard-selected::before{content:'▶';position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#ffe7a2}
+.choice.keyboard-selected:disabled{opacity:.82!important;background:#445650!important;border-color:#f0d09b!important;color:#dcd4be!important;cursor:not-allowed}
+.choice.keyboard-selected:disabled::after{content:'  · LOCKED';font-size:.72em;letter-spacing:.2px;color:#f6caaa}
+.keyboard-choice-status{position:absolute;z-index:90;top:11%;left:50%;transform:translateX(-50%);max-width:80%;padding:10px 16px;background:#25473f;border:2px solid #f3deab;border-radius:7px;color:#fff1c6;font:700 13px/1.35 ui-monospace,Consolas,monospace;box-shadow:0 6px 15px #0008;pointer-events:none}
+.keyboard-choice-status[hidden]{display:none}
+@media (hover:hover) and (min-width:900px) and (min-height:510px){
+.hud-location span:first-child{font-size:15px}
+.hud-location span:last-child{font-size:13px}
+.hud-stats span{font-size:15px;padding:9px 12px}
+.hud-menu button{min-width:58px;min-height:51px;font-size:22px}
+.hud-menu button small{font-size:12px}
+.ingame-tool{height:53px;min-width:54px}
+.ingame-tool span{font-size:25px}
+.ingame-tool small{font-size:11px}
+.desktop-key-guide{font-size:12px;padding:11px 12px}
+.desktop-key-guide button{font-size:12px;padding:5px 7px;min-width:125px}
+.desktop-key-guide .key-guide-heading,.desktop-key-guide .key-guide-foot{font-size:11px}
+.dialogue-layer .dialogue-speaker{font-size:clamp(17px,1.3vw,22px)}
+.dialogue-layer .dialogue-speaker span{font-size:14px}
+.dialogue-layer .dialogue-copy{font-size:clamp(16px,1.2vw,21px);line-height:1.35}
+.dialogue-layer .dialogue-footer{font-size:13px}
+.dialogue-layer .dialogue-face small{font-size:12px}
+.dialogue-layer .dialogue-side{width:clamp(275px,23vw,365px);max-height:60dvh}
+.dialogue-layer .choices-heading{font-size:14px;padding:6px 6px 9px}
+.dialogue-layer .dialogue-choices .choice{font-size:15px;line-height:1.25;padding:10px 11px;min-height:39px}
+.dialogue-layer .dialogue-option-list{gap:7px}
+.dialogue-layer .dialogue-result{font-size:15px;max-height:18dvh}
+.modal-layer:not(.dialogue-layer) .modal{width:min(820px,95%)}
+.modal-layer:not(.dialogue-layer) .modal-head h2{font-size:23px}
+.modal-layer:not(.dialogue-layer) .modal-head .eyebrow{font-size:12px}
+.modal-layer:not(.dialogue-layer) .modal p{font-size:15px;line-height:1.5}
+.modal-layer:not(.dialogue-layer) .modal h3{font-size:15px}
+.modal-layer:not(.dialogue-layer) .modal-item strong{font-size:15px}
+.modal-layer:not(.dialogue-layer) .modal-item small{font-size:13px}
+.modal-layer:not(.dialogue-layer) .modal-item button,.modal-layer:not(.dialogue-layer) .primary-btn,.modal-layer:not(.dialogue-layer) .choice{font-size:14px}
+.modal-layer:not(.dialogue-layer) .stat-line{font-size:14px}
+.quest-layer .modal-head h2{font-size:20px}
+.quest-layer .quest-grid .item-detail strong{font-size:13px}
+.quest-layer .quest-grid .item-detail small{font-size:11px}
+.quest-layer .quest-grid .modal-item button{font-size:11px}
+.quest-layer .quest-records,.quest-layer .quest-records .stat-line{font-size:12px}
+}
+@media (hover:none) and (pointer:coarse){
+.keyboard-selected{outline:initial!important;box-shadow:none!important}
+.choice.keyboard-selected{padding-left:8px!important}
+.choice.keyboard-selected::before{content:none!important}
+.keyboard-choice-status{font-size:11px}
+}
