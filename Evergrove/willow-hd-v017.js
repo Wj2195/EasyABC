@@ -210,7 +210,7 @@ function propSprites(list){
   {x:29,y:27,type:'lamp'},{x:44,y:27,type:'lamp'},{x:29,y:33,type:'lamp'},{x:44,y:33,type:'lamp'},
   {x:37,y:35,type:'banner'},{x:28,y:23,type:'banner'},{x:45,y:23,type:'banner'},
   {x:34,y:32,type:'crate'},{x:44,y:30,type:'stall'},{x:40,y:32,type:'flowers'},
-  {x:33,y:42,type:'tower'},{x:40,y:42,type:'tower'},
+  {x:33,y:42,type:'tower'},{x:40,y:42,type:'tower'},{x:36.5,y:42.25,type:'arch'},
   {x:18,y:21,type:'planter'},{x:27,y:36,type:'flowers'},
   {x:31,y:39,type:'lamp'},{x:45,y:39,type:'lamp'}
  ];
@@ -237,6 +237,20 @@ function drawProp(p){
  if(p.type==='stall'){r(c,x-46,y-14,95,39,'#795c40');r(c,x-43,y-16,86,19,'#b7ab81');
   for(let i=0;i<6;i++)r(c,x-43+i*14,y-43,14,28,i%2?'#f4ead6':'#b74847');
   for(let i=0;i<9;i++)r(c,x-39+i*9,y-13,6,6,i%3?'#e5ad54':'#93bd66');return;}
+ if(p.type==='arch'){
+  // Battlements framing a walkable central castle gateway.
+  r(c,x-144,y-69,82,56,'#74857d');r(c,x+65,y-69,80,56,'#74857d');
+  for(const sx of [x-144,x+65])for(let j=0;j<5;j++){
+   r(c,sx+j*15,y-76,11,13,'#9ba69c');r(c,sx+2+j*15,y-65,13,3,'#c7c8b2');
+  }
+  r(c,x-69,y-79,138,18,'#4e6863');
+  for(let i=0;i<10;i++){r(c,x-64+i*13,y-84,9,12,'#849a8e');}
+  r(c,x-68,y-66,24,61,'#839790');r(c,x+44,y-66,24,61,'#839790');
+  r(c,x-63,y-55,14,45,'#b4b5a4');r(c,x+49,y-55,14,45,'#b4b5a4');
+  r(c,x-12,y-76,25,39,'#2d669c');r(c,x-8,y-74,16,4,'#f5d7a3');
+  r(c,x-3,y-67,6,17,'#f9e9a6');
+  return;
+ }
  if(p.type==='tower'){
   r(c,x-22,y-64,43,76,'#737d76');
   for(let yy=-60;yy<8;yy+=12)for(let xx=-18;xx<18;xx+=18){r(c,x+xx+(yy%2?6:0),y+yy,16,2,'#c6c6af');}
