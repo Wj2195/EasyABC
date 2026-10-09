@@ -176,4 +176,6 @@ This is an original Evergrove gameplay upgrade informed by the high-level mechan
 ### Compatibility and publishing
 - Continues using `evergrove_offline_save_v1` and the existing GitHub Pages URL.
 - New JavaScript: `living-world-v016.js`. New CSS: `living-world-v016.css`.
-- Service worker release: `evergrove-pages-v0.16.0`. Players may need to accept **Save & update** once.
+- Service worker release: `evergrove-pages-v0.16.1`. Players may need to accept **Save & update** once.
+
+The v0.16.1 release also includes individually designed NPC outfits, city stalls and walkable placement of all 16 wilderness monster spawns and 12 forage sites. A local logic test validated 3×3 sowing, crop maturity, directional and charged attacks, expansion wood collection, wild mushroom gathering and enemy pursuit/telegraphed attacks.
