@@ -405,7 +405,7 @@ body{background:#101b23}
 </div>
 <input type="file" id="importFile" accept=".json,application/json" hidden />
 <script>
-/* EVERGROVE v0.11 Web Edition — no frameworks, CDNs or paid services. */
+/* EVERGROVE v0.12 Web Edition — no frameworks, CDNs or paid services. */
 (() => {
 'use strict';
 const T=32, MW=68, MH=48, H=576, KEY='evergrove_offline_save_v1';
@@ -474,7 +474,7 @@ function hasItems(cost){return Object.entries(cost).every(([id,n])=>(state.inven
 function spendItems(cost){for(const [id,n] of Object.entries(cost))give(id,-n)}
 function earnXP(n){let p=state.player;p.xp+=n;while(p.xp>=100){p.xp-=100;p.level++;p.hp=100;p.energy=100;notify(`⭐ Level ${p.level}! Health and energy restored!`);log(`Reached explorer level ${p.level}.`)}}
 function fx(x,y,emoji){particles.push({x,y,emoji,t:1});}
-function act(tool,tx,ty){const p=state.player,x=clamp(Math.floor(tx),0,MW-1),y=clamp(Math.floor(ty),0,MH-1),id=sourceKey(x,y);if(distance(p.x,p.y,x+.5,y+.5)>2.75){notify('Move closer to use this tool.','error');return;}
+function act(tool,tx,ty){if(window.EvergroveExpansion?.active()){notify('This expansion currently supports exploration and travel. Additional activities are planned.');return;}const p=state.player,x=clamp(Math.floor(tx),0,MW-1),y=clamp(Math.floor(ty),0,MH-1),id=sourceKey(x,y);if(distance(p.x,p.y,x+.5,y+.5)>2.75){notify('Move closer to use this tool.','error');return;}
   const bi=typeAt(x,y),crop=state.crops[id],tree=trees.find(o=>o.x===x&&o.y===y&&!isRemoved(o)),rock=rocks.find(o=>o.x===x&&o.y===y&&!isRemoved(o)),monster=monsters.filter(m=>m.alive).sort((a,b)=>distance(a.x,a.y,x+.5,y+.5)-distance(b.x,b.y,x+.5,y+.5))[0];
   switch(tool){
     case 'hoe':if(bi!=='farm'&&bi!=='grass'){notify('Till grass or farmland.','error');return;}if(homeAt(x,y)||tree||rock||crop||state.placed.some(o=>o.x===x&&o.y===y)){notify('This space is occupied.','error');return;}if(state.tilled[id]){notify('Soil is already tilled.');return;}if(!consumeEnergy(3))return;state.tilled[id]=true;fx(x+.5,y+.5,'🤎');log('Prepared fresh soil for planting.');break;
@@ -488,7 +488,7 @@ function act(tool,tx,ty){const p=state.player,x=clamp(Math.floor(tx),0,MW-1),y=c
   }
   updateUI();save();
 }
-function interact(){if(currentModal)return;const target=nearby();if(!target){const t=positionFacing();if(state.crops[sourceKey(t.x,t.y)]?.stage>=2){act('water',t.x,t.y);return;}notify('Nothing nearby to interact with.');return;}
+function interact(){if(currentModal)return;if(window.EvergroveExpansion?.active()){notify('Walk onto a glowing gateway to travel between maps.');return;}const target=nearby();if(!target){const t=positionFacing();if(state.crops[sourceKey(t.x,t.y)]?.stage>=2){act('water',t.x,t.y);return;}notify('Nothing nearby to interact with.');return;}
   if(target.type==='npc')openModal('npc',{id:target.obj.id});
   else if(target.type==='home'){const h=target.obj;if(h.kind==='sleep')openModal('sleep');else if(h.kind==='shop')openModal('shop');else if(h.kind==='craft')openModal('craft');else if(h.kind==='inn')openModal('inn');else openModal('journal');}
   else if(target.type==='monster'){notify('Use sword [6] to weaken, then capture orb [7]!');}
@@ -506,7 +506,7 @@ function craftOrSelect(id){const r=RECIPES[id];if(!r)return;if(id==='orb'||id===
 function gift(id,item){const npc=NPCS.find(n=>n.id===id);if(!npc||!state.inventory[item])return;give(item,-1);const gain=item===npc.favorite?3:1;state.relationships[id]=clamp((state.relationships[id]||0)+gain,0,10);earnXP(9);log(`Gave ${npc.name} a thoughtful gift.`);updateUI();save();refreshModal();showDialogueResult(`🎁 ${npc.name} ${gain===3?'loved':'appreciated'} your gift! ♥ Friendship +${gain}`);}
 function flirt(id){const npc=NPCS.find(n=>n.id===id);if(!npc?.romance)return;if(state.flirtDay[id]===state.day){showDialogueResult('You already spent time together today.');return;}state.flirtDay[id]=state.day;state.relationships[id]=clamp((state.relationships[id]||0)+1,0,10);updateUI();save();refreshModal();showDialogueResult(`💗 You spent a lovely afternoon with ${npc.name}. Friendship +1!`);}
 function propose(id){const npc=NPCS.find(n=>n.id===id);if(!npc?.romance||state.spouse||state.inventory.ring<1||(state.relationships[id]||0)<10)return;give('ring',-1);state.spouse=id;log(`Married ${npc.name} in Willow Village!`);earnXP(100);updateUI();save();refreshModal();showDialogueResult(`💍 ${npc.name} said yes! You're married!`);}
-function gameUpdate(dt){if(currentModal)return;
+function gameUpdate(dt){if(currentModal)return;if(window.EvergroveExpansion?.active()){window.EvergroveExpansion.update(dt);return;}
   elapsed+=dt;let vx=0,vy=0;if(input.ArrowUp||input.mobileup)vy--;if(input.ArrowDown||input.mobiledown)vy++;if(input.ArrowLeft||input.mobileleft)vx--;if(input.ArrowRight||input.mobileright)vx++;
   vx+=(input.joyX||0);vy+=(input.joyY||0);if(vx||vy){const l=Math.hypot(vx,vy);if(l>1){vx/=l;vy/=l;}if(Math.abs(vx)>Math.abs(vy))state.player.dir=vx>0?'right':'left';else state.player.dir=vy>0?'down':'up';const speed=(input.ShiftLeft||input.ShiftRight)?4.7:3.1;const nx=state.player.x+vx*speed*dt,ny=state.player.y+vy*speed*dt;if(!blockedPlayer(nx,state.player.y))state.player.x=nx;if(!blockedPlayer(state.player.x,ny))state.player.y=ny;}
   const loc=zone();if(!state.visited[loc.id]){state.visited[loc.id]=true;log(`Discovered ${loc.name}!`);notify(`🧭 Discovered ${loc.name}`);save();updateUI();}
@@ -554,7 +554,7 @@ function drawPlacement(p){const x=p.x*T-camera.x,y=p.y*T-camera.y,c=ctx;switch(p
   case 'campfire':pixelRect(c,x+3,y+21,26,6,'#684d3e');pixelRect(c,x+5,y+18,22,6,'#998b74');pixelRect(c,x+9,y+9,13,15,'#ffc65b');pixelRect(c,x+13,y+2,8,17,'#f17e43');pixelRect(c,x+15,y+11,5,12,'#fff6c1');break;
   case 'planter':pixelRect(c,x+6,y+15,22,13,'#bb8968');pixelRect(c,x+8,y+7,19,10,'#457c63');pixelRect(c,x+12,y+4,6,7,'#f9b7c8');pixelRect(c,x+21,y+5,6,7,'#ffdb9a');break;
 }}
-function drawWorld(){const p=state.player;camera.x=clamp(Math.round(p.x*T-W/2),0,MW*T-W);camera.y=clamp(Math.round(p.y*T-H/2),0,MH*T-H);ctx.clearRect(0,0,W,H);
+function drawWorld(){if(window.EvergroveExpansion?.active()){window.EvergroveExpansion.draw();return;}const p=state.player;camera.x=clamp(Math.round(p.x*T-W/2),0,MW*T-W);camera.y=clamp(Math.round(p.y*T-H/2),0,MH*T-H);ctx.clearRect(0,0,W,H);
   ctx.drawImage(worldBg,camera.x,camera.y,W,H,0,0,W,H);
   const sprites=[];
   for(const h of HOMES)sprites.push({y:h.y+h.h,draw:()=>drawBuilding(h)});
@@ -574,6 +574,7 @@ function drawWorld(){const p=state.player;camera.x=clamp(Math.round(p.x*T-W/2),0
   if(state.time>19*60||state.time<6*60){ctx.fillStyle='#12234474';ctx.fillRect(0,0,W,H);}else if(state.time>17*60){ctx.fillStyle='#965f4424';ctx.fillRect(0,0,W,H);}
   // A gentle action marker shows which tile F will affect.
   const front=positionFacing(),sx=Math.round(front.x*T-camera.x),sy=Math.round(front.y*T-camera.y);ctx.strokeStyle='#ffffff44';ctx.lineWidth=1;ctx.strokeRect(sx+6,sy+6,20,20);
+  window.EvergroveExpansion?.drawBasePortal();
 }
 function updateLiveUI(){const p=state.player,loc=zone();$('zoneName').textContent=loc.name;$('viewportBadge').textContent='✦ '+loc.tag;$('dayLabel').textContent='Day '+state.day;const h=Math.floor(state.time/60)%24,m=Math.floor(state.time%60);$('timeLabel').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');$('weatherLabel').textContent=state.weather==='Rain'?'🌧 Rain':'☀ Clear';$('goldLabel').textContent='◈ '+p.gold+'g';$('hpValue').textContent=Math.ceil(p.hp)+'/100';$('hpMeter').style.width=clamp(p.hp,0,100)+'%';$('energyValue').textContent=Math.ceil(p.energy)+'/100';$('energyMeter').style.width=clamp(p.energy,0,100)+'%';const nearest=nearby(2.2);$('hudZone').textContent=loc.name.toUpperCase();$('hudClock').textContent=`DAY ${state.day} · ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} · ${state.weather==='Rain'?'☂':'☀'}`;$('hudGold').textContent='◈ '+p.gold+'g';$('hudHealth').textContent='♥ '+Math.ceil(p.hp);$('hudEnergy').textContent='⚡ '+Math.ceil(p.energy);$('contextHint').textContent=nearest?(nearest.type==='npc'?`Z · Talk to ${nearest.obj.name}`:nearest.type==='home'?`Z · Enter ${nearest.obj.name}`:nearest.type==='monster'?'6 Sword · 7 Capture':nearest.type==='forage'?`Z · Gather ${ITEMS[nearest.obj.item][1]}`:'Z · Touch ancient altar'):'Arrow keys move · Z talk · X use · A/S tools';}
 function updateUI(){const p=state.player;$('ingameTools').innerHTML=TOOLS.map((t,i)=>`<button class="ingame-tool ${state.selected===t.id?'active':''}" data-game-tool="${t.id}" title="${t.name}" aria-label="${t.name}"><span>${t.emoji}</span><small>${i+1}</small></button>`).join('');const activeTool=TOOLS.find(t=>t.id===state.selected)||TOOLS[0];$('touchToolName').textContent=activeTool.emoji+' '+activeTool.name;document.documentElement.style.setProperty('--touch-opacity',String(state.touchOpacity??0.28));$('toolRow').innerHTML=TOOLS.map((t,i)=>`<button class="tool ${state.selected===t.id?'active':''}" data-tool="${t.id}" title="${t.name} (key ${i+1})"><span class="tool-num">${i+1}</span><span class="tool-emoji">${t.emoji}</span><span class="tool-name">${t.id==='build'?RECIPES[state.blueprint]?.name?.split(' ')[0]||'Build':t.name}</span></button>`).join('');
@@ -720,7 +721,7 @@ function refreshModal(){if(!currentModal)return;const type=currentModal.type;let
     html=`<p>Pick a name and outfit color for your explorer. Changes are applied to your character immediately.</p><div class="stat-line"><span>Explorer name</span><strong>${escapeText(state.appearance?.name||'Valley Wanderer')}</strong></div><button class="primary-btn" data-action="rename">✎ Change character name</button><h3>OUTFIT COLORS</h3><div class="button-line">${colors.map(([hex,label])=>`<button class="primary-btn" data-action="color" data-id="${hex}" style="border-color:${hex};background:${hex}44">${label}${state.appearance?.color===hex?' ✓':''}</button>`).join('')}</div>`;
   }
   else if(type==='settings'){
-    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.11 · Matching Run Speeds</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
+    title='Game & Save Settings';eyebrow='OFFLINE BY DESIGN';html=`<div class="notification">✅ Offline-capable · No account · No server · No subscription</div><p>Progress saves automatically on this device and website. You can play offline after the first successful online visit. Export a backup before changing devices, clearing website data, or moving from a downloaded HTML file to this website.</p><div class="stat-line"><span>Version</span><strong>Evergrove v0.12 · Expandable Map System</strong></div><div class="stat-line"><span>Game mode</span><strong>Offline single-player</strong></div><div class="stat-line"><span>Future multiplayer room capacity</span><strong>2–10 players (not enabled yet)</strong></div><div class="stat-line"><span>Last in-game day</span><strong>Day ${state.day}</strong></div><div class="button-line"><button class="primary-btn" data-action="open" data-id="appearance">🎨 Customize explorer</button></div><div class="button-line"><button class="primary-btn" data-action="save">💾 Save now</button><button class="primary-btn" data-action="export">⬇ Export save backup</button><button class="primary-btn" data-action="import">⬆ Import saved game</button></div><h3>MOBILE TOUCH CONTROLS</h3><p>Transparent left-side joystick controls movement; TALK and USE are on the right. Rotate to landscape for a full-screen view. A browser may not support forced rotation.</p><div class="stat-line"><span>Controller visibility</span><strong id="opacityValue">${Math.round((state.touchOpacity??0.28)*100)}%</strong></div><input id="touchOpacityRange" class="touch-opacity-slider" aria-label="Controller visibility" type="range" min="10" max="80" step="5" value="${Math.round((state.touchOpacity??0.28)*100)}"><h3>NEW GAME</h3><p class="subtle">Reset clears this browser's current game. Export your backup first if you want to keep the old world.</p><button class="danger-btn" data-action="reset">✕ Start a fresh adventure</button>`;
   }
   $('modalTitle').textContent=title;$('modalEyebrow').textContent=eyebrow;$('modalBody').innerHTML=html;
   if(type==='map')drawMap();
@@ -811,14 +812,14 @@ function bindEvents(){
   });document.addEventListener('keyup',e=>{input[e.code]=false});window.addEventListener('blur',()=>{input={}});
   function targetFromEvent(e){const r=canvas.getBoundingClientRect();const px=(e.clientX-r.left)/r.width*W,py=(e.clientY-r.top)/r.height*H;return{x:Math.floor((px+camera.x)/T),y:Math.floor((py+camera.y)/T)}}
   canvas.addEventListener('mousemove',e=>{pointerTile=targetFromEvent(e)});canvas.addEventListener('mouseleave',()=>pointerTile=null);
-  canvas.addEventListener('click',e=>{if(currentModal)return;const t=targetFromEvent(e);const n=NPCS.find(n=>Math.abs(n.x-t.x)<=1&&Math.abs(n.y-t.y)<=1);const h=HOMES.find(h=>Math.abs(door(h).x-t.x-.5)<1&&Math.abs(door(h).y-t.y-.5)<1);if(n&&distance(state.player.x,state.player.y,n.x+.5,n.y+.5)<2.2){openModal('npc',{id:n.id});return;}if(h&&distance(state.player.x,state.player.y,door(h).x,door(h).y)<2.3){interact();return;}act(state.selected,t.x,t.y);});
-  $('gameFrame').addEventListener('contextmenu',e=>{if(!matchMedia('(hover: hover) and (pointer: fine)').matches)return;e.preventDefault();if(currentModal)backModal();else window.EvergroveNavigation?.cancel();});
+  canvas.addEventListener('click',e=>{if(currentModal||window.EvergroveExpansion?.active())return;const t=targetFromEvent(e);const n=NPCS.find(n=>Math.abs(n.x-t.x)<=1&&Math.abs(n.y-t.y)<=1);const h=HOMES.find(h=>Math.abs(door(h).x-t.x-.5)<1&&Math.abs(door(h).y-t.y-.5)<1);if(n&&distance(state.player.x,state.player.y,n.x+.5,n.y+.5)<2.2){openModal('npc',{id:n.id});return;}if(h&&distance(state.player.x,state.player.y,door(h).x,door(h).y)<2.3){interact();return;}act(state.selected,t.x,t.y);});
+  $('gameFrame').addEventListener('contextmenu',e=>{if(!matchMedia('(hover: hover) and (pointer: fine)').matches)return;e.preventDefault();if(currentModal)backModal();else window.EvergroveNavigation?.cancel();window.EvergroveExpansion?.cancel();});
   document.querySelectorAll('[data-dir]').forEach(btn=>{const dir='mobile'+btn.dataset.dir;btn.addEventListener('pointerdown',e=>{e.preventDefault();input[dir]=true;try{btn.setPointerCapture(e.pointerId)}catch(_){}});for(const event of ['pointerup','pointercancel','lostpointercapture','pointerleave'])btn.addEventListener(event,()=>input[dir]=false);});
   $('touchInteract').addEventListener('click',interact);$('touchUse').addEventListener('click',useFacing);
   window.addEventListener('beforeunload',()=>save());
   window.addEventListener('orientationchange',()=>{input.joyX=0;input.joyY=0;document.body.classList.remove('allow-portrait')});
 }
-function loop(now){const dt=Math.min((now-lastTick)/1000,.045);lastTick=now;window.EvergroveNavigation?.step(dt);gameUpdate(dt);drawWorld();window.EvergroveNavigation?.draw();requestAnimationFrame(loop)}
+function loop(now){const dt=Math.min((now-lastTick)/1000,.045);lastTick=now;window.EvergroveNavigation?.step(dt);gameUpdate(dt);window.EvergroveExpansion?.checkBasePortal();drawWorld();if(!window.EvergroveExpansion?.active())window.EvergroveNavigation?.draw();requestAnimationFrame(loop)}
 function resizeGame(){
   const frame=$('gameFrame');if(!frame)return;
   const r=frame.getBoundingClientRect();if(!r.width||!r.height)return;
@@ -830,7 +831,8 @@ function resizeGame(){
 function start(){const resumed=load();initWorld();resizeGame();window.addEventListener('resize',resizeGame,{passive:true});window.addEventListener('orientationchange',()=>setTimeout(resizeGame,120),{passive:true});bindEvents();updateUI();if(resumed){log(`Welcome back! Continued Day ${state.day}.`);notify('💾 Saved adventure restored!')}else{log('Inherited a cottage in Briarwood Valley.');log('A new adventure begins!');openModal('welcome');save();}requestAnimationFrame(loop);}
 window.EvergroveNavGame={
  canvas,ctx,T,MW,MH,npcs:NPCS,homes:HOMES,door,
- player:()=>state.player, camera:()=>camera, modal:()=>!!currentModal,
+ player:()=>state.player, state:()=>state, getInput:()=>input, save:()=>save(),camera:()=>camera, modal:()=>!!currentModal,
+ drawPlayer:()=>drawHuman(state.player.x,state.player.y,state.appearance?.color||'#79a8a4',true,state.player.dir,elapsed),drawTree,drawRock,
  blocked:(x,y)=>blockedPlayer(x,y),useTool:(x,y)=>act(state.selected,x,y),
  openNPC:id=>openModal('npc',{id}),
  openHome:id=>{const h=HOMES.find(o=>o.id===id);if(h)openModal(({sleep:'sleep',shop:'shop',craft:'craft',inn:'inn',archive:'journal'})[h.kind]||'journal');},
@@ -842,6 +844,7 @@ start();
 </script>
 <script src="./controls-v0.8.js" defer></script>
 <script src="./evergrove_navigation_v011.js" defer></script>
+<script src="./expansion-v012.js" defer></script>
 <script src="./web-updater.js" defer></script>
 </body>
 </html>
