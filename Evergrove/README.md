@@ -60,3 +60,29 @@ No saved-game migration required. GitHub Pages v0.9.0 service worker precaches t
 ## v0.11 — Equal running speeds
 
 Option A: PC left-click auto-run speed is **4.7 tiles/second**, matching **Shift + Arrow Keys** exactly. Ordinary arrow keys still walk at **3.1 tiles/second**. Right-click remains Back in menus or Stop during movement; Shift + Left Click still uses the current tool. Previous saves remain compatible.
+
+## v0.12 — Expandable maps and browser map workshop
+
+### World sizes
+- Original **Willow Valley**: 68 × 48 tiles (3,264 tiles), each 32 × 32 pixels. The original handcrafted map is not resized by the editor.
+- First connected expansion **Autumn Grove**: 42 × 30 tiles (1,260 tiles).
+- Total initial connected world: 4,524 tiles across two separately rendered maps.
+- New expansion maps can be resized from 12 × 12 to 160 × 120 tiles in the workshop. Large maps can consume significant memory on phones.
+
+### Browser map workshop
+Open: https://wj2195.github.io/EasyABC/Evergrove/map-editor.html
+
+Functions: create/delete maps, rename, resize, paint terrain (grass/forest/path/water/stone/cliff/farm), place/remove trees and rocks, set spawn, add/change portals, edit original-world entrances, undo/redo, local drafts, JSON import/export.
+
+Maps are stored in `Evergrove/maps/worlds.json`, rather than being hard-coded in the game. You can add multiple connected maps in this registry. Keep map IDs stable to avoid disrupting old saves.
+
+### Publish changes (GitHub authorization)
+1. Open Map Workshop, make changes, use **Export maps JSON**.
+2. In your connected GitHub repo `Wj2195/EasyABC`, replace `Evergrove/maps/worlds.json` with the exported file and commit it. This requires GitHub **write access**.
+3. Increment `CACHE_NAME` in `Evergrove/sw.js` to the next version so offline browsers reliably install the updated map file.
+4. Return to the game and accept **Save & update**.
+
+The workshop page itself is publicly viewable on GitHub Pages. A visitor may create a draft or download JSON locally, but **cannot publish it to your GitHub repository without write permissions**. Never place GitHub passwords or personal access tokens in public HTML/JavaScript.
+
+### Expansion gameplay in v0.12
+The current expansion prototype supports exploring painted terrain, blocked water/cliffs/trees/rocks, keyboard or joystick movement, mouse click-to-run, and glowing doorways between maps. The original Willow Village continues supporting farming, NPCs, monsters and other prior gameplay. New-map NPC placement, in-map farming, monster spawning, shops and building interiors are future features.
