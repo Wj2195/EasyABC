@@ -19,3 +19,8 @@ PC displays the key guide inside the full-screen game viewport. Mobile landscape
 The page is served by GitHub Pages from this folder in the EasyABC repository. For updates, change the game files and increment the version in sw.js (currently evergrove-pages-v0.6.0). The updater offers a Save & Update prompt when new service worker content is ready.
 
 Save data remains local to each browser using key `evergrove_offline_save_v1`. Export JSON backup in Settings before switching devices or clearing browser data. GitHub Pages hosting is free, subject to GitHub usage policies.
+
+
+## Keyboard menu navigation (v0.7)
+
+While a menu or conversation choice panel is open, **Up / Down** (also A / S) moves the highlighted choice, **Z / Right** confirms it and **X / Left / Escape** goes back. When no menu is open, the arrow keys move the character. Returning from a nested menu such as quests or gifts preserves the previous conversation.
