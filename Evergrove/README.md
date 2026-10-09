@@ -56,3 +56,7 @@ No saved-game migration required. GitHub Pages v0.9.0 service worker precaches t
 - **Shift + Left Click:** Use the selected tool on a nearby tile.
 - **Mobile controls:** Unchanged, still use the in-game joystick and touch buttons.
 - **Save data:** Unchanged; offline service worker cache version v0.10.0.
+
+## v0.11 — Equal running speeds
+
+Option A: PC left-click auto-run speed is **4.7 tiles/second**, matching **Shift + Arrow Keys** exactly. Ordinary arrow keys still walk at **3.1 tiles/second**. Right-click remains Back in menus or Stop during movement; Shift + Left Click still uses the current tool. Previous saves remain compatible.
