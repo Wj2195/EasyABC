@@ -65,7 +65,7 @@ function travel(to,arrival){
  const map=worlds.maps.find(m=>m.id===to);if(!map){api.notify('This destination has not been published yet.');return false;}
  if(!current)state.basePosition={x:p.x,y:p.y};
  current=map;background=paint(map);clearRoute();
- state.activeMap=map.id;const next=safeArrival(map,arrival||map.spawn||{x:4.5,y:4.5});
+ state.activeMap=map.id;state.discoveredMaps={...(state.discoveredMaps||{}),base:true,[map.id]:true};const next=safeArrival(map,arrival||map.spawn||{x:4.5,y:4.5});
  p.x=next.x;p.y=next.y;lockedUntil=performance.now()+1000;
  api.save();api.notify('🧭 Entered '+map.name);showZone();return true;
 }
@@ -159,9 +159,10 @@ async function load(){
   const response=await fetch('./maps/worlds.json',{cache:'no-cache'});if(!response.ok)throw Error('Map registry '+response.status);
   const data=await response.json();if(data.schema!==1||!Array.isArray(data.maps))throw Error('Unexpected map format');
   worlds=data;
+  window.dispatchEvent(new Event('evergrove:maps-ready'));
   const state=api.state();if(state.activeMap&&state.activeMap!=='base'){
    const m=data.maps.find(m=>m.id===state.activeMap);
-   if(m){current=m;background=paint(m);if(!canStand(api.player().x,api.player().y)){
+   if(m){current=m;state.discoveredMaps={...(state.discoveredMaps||{}),base:true,[m.id]:true};background=paint(m);if(!canStand(api.player().x,api.player().y)){
     const pos=safeArrival(m,m.spawn||{x:4.5,y:4.5});api.player().x=pos.x;api.player().y=pos.y;}showZone();}
    else{state.activeMap='base';api.player().x=28.5;api.player().y=27.5;}
   }
