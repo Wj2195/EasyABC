@@ -23,15 +23,15 @@ const MONSTER_DEFS={
 };
 const HUNTS={
  'autumn-grove':{title:'Bramble Hollow',type:'treant',spots:[[17,11],[52,12],[16,37],[55,37]]},
- 'starglow-highlands':{title:'Stonefall Ridge',type:'cragling',spots:[[15,11],[52,13],[20,37],[49,36]]},
- 'sunmeadow-plains':{title:'Thornbush Trail',type:'thornboar',spots:[[13,15],[51,12],[18,36],[49,36]]},
- 'moonlit-coast':{title:'Silverwater Shore',type:'tidewisp',spots:[[15,11],[52,13],[18,36],[47,36]]}
+ 'starglow-highlands':{title:'Stonefall Ridge',type:'cragling',spots:[[12,11],[52,15],[20,37],[49,36]]},
+ 'sunmeadow-plains':{title:'Thornbush Trail',type:'thornboar',spots:[[13,15],[51,12],[18,36],[49,35]]},
+ 'moonlit-coast':{title:'Silverwater Shore',type:'tidewisp',spots:[[15,11],[52,13],[18,36],[47,40]]}
 };
 const GATHER_SPOTS={
- 'autumn-grove':[[21,17,'mushroom'],[47,32,'herb'],[13,34,'mushroom']],
+ 'autumn-grove':[[21,17,'mushroom'],[47,35,'herb'],[13,34,'mushroom']],
  'starglow-highlands':[[17,19,'herb'],[51,30,'ore'],[18,36,'herb']],
  'sunmeadow-plains':[[20,16,'berry'],[49,34,'herb'],[13,36,'berry']],
- 'moonlit-coast':[[16,19,'seashell'],[51,33,'seashell'],[20,37,'herb']]
+ 'moonlit-coast':[[16,19,'seashell'],[51,31,'seashell'],[20,37,'herb']]
 };
 const VILLAGERS=[
  {id:'elara',name:'Elara',title:'Market gardener',x:26,y:24,color:'#d8aa89',emoji:'👩🏽‍🌾',favorite:'carrot',romance:true,line:'I bring fresh produce into town every morning.'},
