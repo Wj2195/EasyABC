@@ -316,9 +316,17 @@ function drawCombat(){
   const x=p.x*T-cam.x,y=p.y*T-cam.y-6;
   c.save();c.strokeStyle=attack.kind==='spin'?'#fff2b0':'#d9f7ff';c.lineWidth=6;c.shadowColor='#e4f2b8';c.shadowBlur=11;
   c.beginPath();
-  if(attack.kind==='spin')c.arc(x,y,52,0,Math.PI*2);
-  else c.arc(x,y,46,attack.angle-.70,attack.angle+.70);
-  c.stroke();c.restore();
+  if(attack.kind==='spin'){
+   const phase=(1-attack.until/.5)*Math.PI*2,theta=attack.angle+phase;
+   c.strokeStyle='#e0f1cb88';c.lineWidth=2;c.arc(x,y,49,0,Math.PI*2);c.stroke();c.beginPath();
+   c.strokeStyle='#fff2b0';c.lineWidth=8;c.arc(x,y,52,theta-.88,theta+.12);
+  }else c.arc(x,y,46,attack.angle-.70,attack.angle+.70);
+  c.stroke();
+  if(attack.kind==='spin'){
+   const theta=attack.angle+(1-attack.until/.5)*Math.PI*2;
+   c.fillStyle='#f7faff';c.fillRect(x+Math.cos(theta)*55-4,y+Math.sin(theta)*55-4,8,8);
+  }
+  c.restore();
  }
  if(!window.EvergroveExpansion?.active()){
   for(const m of game.monsters()){if(!m.alive||m.windup<=0)continue;
