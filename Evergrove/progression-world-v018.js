@@ -21,6 +21,7 @@ const T=api.T,W=68,H=48,STAGE_W=W*T,STAGE_H=H*T,ENTER={x:34,y:41},
 };
 const DIR={north:{x:34,y:2},south:{x:34,y:45}};
 let data=null,map=null,scene=null,paint=null,route=[],holdUntil=0,previousTime=0,initialized=false,loadingError=null,launchVisible=false,openedTab='expedition',chapter=1,focusId='level-01';
+let buildingArt=new Map();
 const normId=v=>typeof v==='string'&&(v==='base'||/^level-(0[1-9]|[1-5][0-9]|60)$/.test(v)||/^town-(0[1-9]|1[0-9]|20)$/.test(v));
 const planned=v=>v!=='base'&&normId(v);
 const state=()=>api.state(),p=()=>api.player(),random=(x,y,s=1)=>{let v=Math.imul(x+284,73856093)^Math.imul(y+739,19349663)^Math.imul(s+29,83492791);v=Math.imul(v^(v>>>13),1274126177);return(v>>>0)/4294967296;};
@@ -161,6 +162,19 @@ function drawStructure(b,c,cx,cy,t){
  c.fillStyle='#fff3d2';c.font='bold 9px monospace';c.textAlign='center';
  c.fillText(b.label.length>14?b.label.slice(0,13)+'…':b.label,x+w/2,y+51);
 }
+function drawCachedStructure(b,c,camX,camY,m){
+ let sprite=buildingArt.get(b.id);
+ if(!sprite){
+  const f=b.footprint;
+  sprite=document.createElement('canvas');sprite.width=f.width*T+40;sprite.height=f.height*T+60;
+  const surface=sprite.getContext('2d');surface.imageSmoothingEnabled=false;
+  drawStructure(b,surface,f.x*T-20,f.y*T-20,m);
+  buildingArt.set(b.id,sprite);
+ }
+ const f=b.footprint,x=f.x*T-camX-20,y=f.y*T-camY-20;
+ if(x>api.canvas.width||y>api.canvas.height||x+sprite.width<0||y+sprite.height<0)return;
+ c.drawImage(sprite,x,y);
+}
 function drawProp(ob,c,cx,cy,m){
  const x=ob.x*T-cx,y=ob.y*T-cy;
  if(ob.type==='tree'){
@@ -197,7 +211,7 @@ function enter(to,side='south',force=false){
  if(!data||!registry.get(to))return false;
  const selected=registry.get(to);
  if(to==='base'){
-  map=null;scene=null;paint=null;route=[];const st=state();st.activeMap='base';
+  map=null;scene=null;paint=null;route=[];buildingArt=new Map();const st=state();st.activeMap='base';
   let pos={x:34.5,y:39.5};
   if(api.blocked(pos.x,pos.y)){pos={x:28.5,y:29.5};}
   p().x=pos.x;p().y=pos.y;
@@ -205,7 +219,7 @@ function enter(to,side='south',force=false){
   st.progressionLocation='base';holdUntil=performance.now()+1350;api.save();
   api.notify('🏡 Returned safely to Willow Valley');return true;
  }
- map=selected;scene=build(map);paint=drawBackground();route=[];
+ map=selected;scene=build(map);paint=drawBackground();route=[];buildingArt=new Map();
  const st=state();st.activeMap=to;st.progressionLocation=to;
  st.progressionLastTown=map.flags.safeZone?to:(st.progressionLastTown||'base');
  st.progressionVisited={...(st.progressionVisited||{}),[to]:true};
@@ -307,7 +321,7 @@ function draw(){
  c.imageSmoothingEnabled=false;c.fillStyle='#19342c';c.fillRect(0,0,cw,ch);
  c.drawImage(paint,-cam.x,-cam.y);
  const arr=[...scene.objects.map(o=>({y:o.y+.8,draw:()=>drawProp(o,c,cam.x,cam.y,map)}))];
- for(const b of scene.buildings)arr.push({y:b.footprint.y+b.footprint.height+.05,draw:()=>drawStructure(b,c,cam.x,cam.y,map)});
+ for(const b of scene.buildings)arr.push({y:b.footprint.y+b.footprint.height+.05,draw:()=>drawCachedStructure(b,c,cam.x,cam.y,map)});
  arr.push({y:pl.y+.35,draw:()=>api.drawPlayer()});
  arr.sort((a,b)=>a.y-b.y);for(const a of arr)a.draw();
  drawGates(c,cam.x,cam.y);
@@ -329,17 +343,25 @@ function onPointerClick(event){
  plan(tx,ty);
 }
 function fallbackWhenNoData(){const st=state();if(!isActive())return;st.activeMap='base';st.progressionLocation='base';p().x=17.5;p().y=27.5;api.save();api.notify('⚠ Progression maps are unavailable; returned to Willow Valley.');}
+function restore(){
+ if(!data)return false;
+ const st=state(),saved=st.activeMap;
+ if(!planned(saved)){
+  map=null;scene=null;paint=null;route=[];buildingArt=new Map();
+  return true;
+ }
+ const selected=registry.get(saved);
+ if(!selected){fallbackWhenNoData();return false;}
+ map=selected;scene=build(selected);paint=drawBackground();route=[];buildingArt=new Map();
+ const pos=nearest(scene,p().x,p().y);p().x=pos.x;p().y=pos.y;
+ holdUntil=performance.now()+1250;
+ st.progressionVisited={...(st.progressionVisited||{}),[saved]:true};
+ showHUD();api.save();return true;
+}
 async function load(){
  try{
-  data=await registry.load();
-  initialized=true;
-  const st=state(),saved=st.activeMap;
-  if(planned(saved)){
-   const selected=registry.get(saved);
-   if(selected){map=selected;scene=build(selected);paint=drawBackground();const at=nearest(scene,p().x,p().y);p().x=at.x;p().y=at.y;
-    holdUntil=performance.now()+1200;st.progressionVisited={...(st.progressionVisited||{}),[saved]:true};showHUD();api.save();}
-   else fallbackWhenNoData();
-  }
+  data=await registry.load();initialized=true;
+  restore();
   window.dispatchEvent(new Event('evergrove:journey-ready'));
  }catch(error){loadingError=error?.message||String(error);console.warn('Evergrove progression unavailable',error);fallbackWhenNoData();}
 }
@@ -431,6 +453,6 @@ function mountAtlas(){
 }
 document.addEventListener('click',onPointerClick,true);
 document.addEventListener('keydown',e=>{if(isActive()&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&!api.modal())route=[];},true);
-window.EvergroveJourney={active:isActive,ready:()=>!!data,update,draw,checkBaseEntrance:checkGate,drawBaseEntrance:drawBasePortal,walkTo,go:enter,scene:()=>scene,map:()=>map,registry:()=>data,mountAtlas,openAtlas,html,passable:pass,generate:build,plan};
+window.EvergroveJourney={active:isActive,ready:()=>!!data,update,draw,checkBaseEntrance:checkGate,drawBaseEntrance:drawBasePortal,walkTo,go:enter,scene:()=>scene,map:()=>map,registry:()=>data,mountAtlas,openAtlas,html,passable:pass,generate:build,plan,restore};
 load();
 })();
