@@ -14,14 +14,15 @@
 1. Run `kahwin/supabase/schema.sql` in the EasyABC Supabase SQL Editor. If the tables already exist but you see `permission denied for table kahwin_members`, run just `kahwin/supabase/fix_permissions.sql` in the SQL Editor. The fix grants the minimum authenticated role privileges, while RLS still restricts data to the correct couple.
 2. Register two distinct accounts at `https://wj2195.github.io/EasyABC/kahwin/`; confirm email if enabled.
 3. On phone A create a couple space and generate a 48-hour invite. On phone B join using the code.
-4. Payments remain **disabled** until a trusted backend creates ToyyibPay bills and independently confirms each transaction. The backend then calls the restricted `kahwin_apply_payment(payment_id, provider_reference)` RPC through the service role. Do not expose the service role key or ToyyibPay secret to browsers. Do not trust redirect parameters as payment confirmation.
-5. For testing only, a Supabase administrator can grant a test subscription from SQL Editor:
+4. **Test without making a payment:** In `kahwin/supabase/enable_7_day_test.sql`, replace `YOUR_LOGIN_EMAIL@example.com` with the account email that originally created the couple. Run the script in the Supabase SQL Editor. It activates 7 days of editing for that one couple, without collecting money, and will not overwrite an existing active subscription. Both partners can then test expenses and tasks. This administrator-only action should not be wired to the public app.
+5. Payments remain **disabled** until a trusted backend creates ToyyibPay bills and independently confirms each transaction. The backend then calls the restricted `kahwin_apply_payment(payment_id, provider_reference)` RPC through the service role. Do not expose the service role key or ToyyibPay secret to browsers. Do not trust redirect parameters as payment confirmation.
+6. For manual SQL testing, a Supabase administrator can grant a test subscription from SQL Editor:
    ```sql
    insert into public.kahwin_subscriptions(couple_id,plan,period_end)
    values ('COUPLE_UUID_HERE','monthly',now()+interval '1 month')
    on conflict(couple_id) do update set plan=excluded.plan,period_end=excluded.period_end;
    ```
-6. To distribute a real downloadable Android APK: wrap the web app in Capacitor or implement the client in Flutter; configure auth redirects/deep links, Android signing, file hosting and app updates. **No APK has been compiled.**
-7. Before customer launch, implement robust payment webhooks with independent verification, rate limits for invites, account/workspace deletion, privacy notice, backup/export, cancellation/renewal handling, and suitable commercial hosting. GitHub Pages should not be used as your paid SaaS production store.
+7. To distribute a real downloadable Android APK: wrap the web app in Capacitor or implement the client in Flutter; configure auth redirects/deep links, Android signing, file hosting and app updates. **No APK has been compiled.**
+8. Before customer launch, implement robust payment webhooks with independent verification, rate limits for invites, account/workspace deletion, privacy notice, backup/export, cancellation/renewal handling, and suitable commercial hosting. GitHub Pages should not be used as your paid SaaS production store.
 
 Do not add a one-time download product for the subscription, since the existing EasyABC checkout processes downloadable products differently from renewable subscription access.
