@@ -201,5 +201,23 @@ begin
     then alter publication supabase_realtime add table public.kahwin_subscriptions; end if;
 end $$;
 
+
+-- Explicit Supabase/PostgREST permissions (RLS policies alone are not enough).
+-- Existing installations can use kahwin/supabase/fix_permissions.sql instead.
+grant usage on schema public to authenticated;
+revoke all on table
+  public.kahwin_couples, public.kahwin_members, public.kahwin_invites,
+  public.kahwin_subscriptions, public.kahwin_payments,
+  public.kahwin_budgets, public.kahwin_expenses, public.kahwin_tasks
+from public, anon, authenticated;
+grant select on table
+  public.kahwin_couples, public.kahwin_members,
+  public.kahwin_subscriptions, public.kahwin_payments,
+  public.kahwin_budgets, public.kahwin_expenses, public.kahwin_tasks
+to authenticated;
+grant insert, update on public.kahwin_budgets to authenticated;
+grant insert, delete on public.kahwin_expenses to authenticated;
+grant insert, update, delete on public.kahwin_tasks to authenticated;
+
 -- Refresh PostgREST's table/function metadata immediately after applying the migration.
 notify pgrst, 'reload schema';
