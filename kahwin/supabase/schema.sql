@@ -200,3 +200,6 @@ begin
   if not exists (select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='kahwin_subscriptions')
     then alter publication supabase_realtime add table public.kahwin_subscriptions; end if;
 end $$;
+
+-- Refresh PostgREST's table/function metadata immediately after applying the migration.
+notify pgrst, 'reload schema';
