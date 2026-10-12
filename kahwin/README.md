@@ -11,7 +11,7 @@
 - Payment schema for monthly (500 sen) and annual (5000 sen) plans; subscriptions are server-controlled.
 
 ## To activate
-1. Run `kahwin/supabase/schema.sql` in the EasyABC Supabase SQL Editor.
+1. Run `kahwin/supabase/schema.sql` in the EasyABC Supabase SQL Editor. If the tables already exist but you see `permission denied for table kahwin_members`, run just `kahwin/supabase/fix_permissions.sql` in the SQL Editor. The fix grants the minimum authenticated role privileges, while RLS still restricts data to the correct couple.
 2. Register two distinct accounts at `https://wj2195.github.io/EasyABC/kahwin/`; confirm email if enabled.
 3. On phone A create a couple space and generate a 48-hour invite. On phone B join using the code.
 4. Payments remain **disabled** until a trusted backend creates ToyyibPay bills and independently confirms each transaction. The backend then calls the restricted `kahwin_apply_payment(payment_id, provider_reference)` RPC through the service role. Do not expose the service role key or ToyyibPay secret to browsers. Do not trust redirect parameters as payment confirmation.
