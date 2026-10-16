@@ -20,6 +20,8 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Extract Android source
         run: mkdir -p lenspro && tar -xJf lenspro-source.tar.xz -C lenspro
+      - name: Add EXIF image rotation library
+        run: sed -i "/implementation 'androidx.appcompat:appcompat:1.7.0'/a\\    implementation 'androidx.exifinterface:exifinterface:1.3.7'" lenspro/app/build.gradle
       - name: Build APK
         working-directory: lenspro
         run: gradle :app:assembleDebug --no-daemon --stacktrace
