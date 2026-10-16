@@ -1,4 +1,4 @@
-name: Build EasyABC Lens Pro V1.2 APK
+name: Build EasyABC Lens Pro V1.3 APK
 on:
   push:
     branches: [lens-pro-apk-build]
@@ -17,29 +17,36 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
-      - name: Install required Android SDK packages
+      - name: Install Android SDK
         run: |
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' | sort -V | tail -n 1)"
           test -n "$SDKMANAGER"
           "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
-      - name: Extract updated Android application
+      - name: Extract Android source
         run: mkdir -p lenspro && tar -xJf lenspro-source.tar.xz -C lenspro
-      - name: Verify precisely 40 locked presets in four categories
+      - name: Verify 40 distinct locked Lightroom-style recipes
         run: |
-          test "$(grep -c 'out.add(p(' lenspro/app/src/main/java/com/easyabc/lenspro/FilterPreset.java)" -eq 40
-          test "$(grep -c 'out.add(p(.*"PEOPLE"' lenspro/app/src/main/java/com/easyabc/lenspro/FilterPreset.java)" -eq 10
-          test "$(grep -c 'out.add(p(.*"SCENERY"' lenspro/app/src/main/java/com/easyabc/lenspro/FilterPreset.java)" -eq 10
-          test "$(grep -c 'out.add(p(.*"CITY VIEW"' lenspro/app/src/main/java/com/easyabc/lenspro/FilterPreset.java)" -eq 10
-          test "$(grep -c 'out.add(p(.*"FOOD & DRINKS"' lenspro/app/src/main/java/com/easyabc/lenspro/FilterPreset.java)" -eq 10
-          grep -q 'PhotoGrader.apply(input,savedFilter)' lenspro/app/src/main/java/com/easyabc/lenspro/MainActivity.java
-          ! grep -q 'setBlueScale' lenspro/app/src/main/java/com/easyabc/lenspro/MainActivity.java
-      - name: Build and sign test APK
+          python - <<'PY'
+          import json
+          p=json.load(open('lenspro/app/src/main/assets/official_presets.json'))
+          items=p['presets']
+          assert len(items)==40
+          assert len({x['id'] for x in items})==40
+          assert {c:sum(x['category']==c for x in items) for c in ('PEOPLE','SCENERY','CITY VIEW','FOOD & DRINKS')} == {'PEOPLE':10,'SCENERY':10,'CITY VIEW':10,'FOOD & DRINKS':10}
+          required={'isoMin','isoMax','shutterGuide','whiteBalanceK','exposureEv','contrast','highlights','shadows','saturation','vibrance','clarity','grain','vignette','direction','hslHue','hslSat'}
+          assert all(required.issubset(x) for x in items)
+          print('40 locked recipes validated.')
+          PY
+          grep -q 'openGalleryPhoto' lenspro/app/src/main/java/com/easyabc/lenspro/MainActivity.java
+          grep -q 'saveGalleryPhoto' lenspro/app/src/main/java/com/easyabc/lenspro/MainActivity.java
+          grep -q 'PhotoGrader.apply' lenspro/app/src/main/java/com/easyabc/lenspro/MainActivity.java
+      - name: Build APK
         working-directory: lenspro
         run: gradle :app:assembleDebug --no-daemon --stacktrace
-      - name: Upload test APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: EasyABC-Lens-Pro-V1.2-40-Filters-APK
+          name: EasyABC-Lens-Pro-V1.3-Lightroom-40-Gallery-APK
           path: lenspro/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 90
