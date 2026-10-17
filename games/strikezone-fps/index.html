@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition</title>
+  <meta name="theme-color" content="#0b1019"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v1.2</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -21,6 +21,7 @@
 @media(max-width:1140px){.trainingOptions{right:14px;top:80px;width:210px;padding:12px}.optionHead{font-size:10px}.careerStats strong{font-size:16px}}
 @media(max-width:800px){.trainingOptions{top:77px;right:8px;width:160px;padding:8px}.trainingOptions p,.optionHead span{display:none}.optionHead{font-size:9px}.optionLabel{font-size:8px;margin:6px 0 4px}.diffBtn{font-size:7px;padding:5px 2px}.careerStats>div{padding:3px}.careerStats strong{font-size:12px}.careerStats small{font-size:7px}}
 @media(max-height:650px){.trainingOptions{top:62px}.trainingOptions p{display:none}}
+#pauseBtn{pointer-events:auto;position:relative;z-index:12}
 </style>
 </head>
 <body>
@@ -49,14 +50,14 @@
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V1.1</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V1.2</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
  <canvas id="minimap" width="164" height="164"></canvas><div class="mapLabel">THE SUNKEN OUTPOST</div>
  <div id="feed" class="killFeed"></div><div id="crosshair"><span class="cTop"></span><span class="cRight"></span><span class="cBottom"></span><span class="cLeft"></span><i></i></div><div id="hitmarker">✕</div><div id="damageDirection"></div>
  <div class="bottomHUD"><div class="healthPanel"><div class="unit">OPERATIVE <b>ALPHA 01</b></div><div class="hpRow"><span class="hpIcon">✚</span><strong id="hpText">100</strong><div class="hpTrack"><div id="hpFill"></div></div></div><div class="subStat"><span>ARMOR ▰▰▰</span><span id="killStat">0 KILLS · 0 DEATHS</span></div></div><div class="weaponPanel"><div class="weaponLabel"><span id="weaponType">ASSAULT RIFLE</span><span id="weaponName">VORTEX AR</span></div><div class="ammoRow"><strong id="ammoCount">30</strong><span class="ammoSlash">/</span><span id="reserveCount">150</span><span class="ammoBullet">▥</span></div><div id="reloadDisplay">R TO RELOAD</div></div></div>
- <div class="keyHints"><span>[SHIFT] SPRINT</span><span>[SPACE] JUMP</span><span>[R] RELOAD</span><span>[1–3] WEAPON</span><span>[P] SCOREBOARD</span></div>
+ <div class="keyHints"><span>[SHIFT] SPRINT</span><span>[SPACE] JUMP</span><span>[R] RELOAD</span><span>[1–5] WEAPON</span><span>[P] SCOREBOARD</span></div>
  <div id="announcement" class="announcement"></div>
  <div id="respawnScreen" class="hidden"><div>YOU WERE ELIMINATED</div><strong id="respawnCountdown">3</strong><small>REDEPLOYMENT IN PROGRESS</small></div>
  <div id="mobileControls"><div id="joyBase"><div id="joyNub"></div></div><div id="lookZone"></div><button id="mobileFire">● <small>FIRE</small></button><button id="mobileAds">◎<small>AIM</small></button><button id="mobileJump">⬆<small>JUMP</small></button><button id="mobileReload">↻<small>RELOAD</small></button><button id="mobileSwitch">⇄<small>SWAP</small></button></div>
@@ -66,9 +67,10 @@
 /* STRIKEZONE FPS — original, dependency-free WebGL browser prototype. */
 (() => {
 'use strict';
-const $=id=>document.getElementById(id), canvas=$('arena'), hud=$('hud');
-const gl=canvas.getContext('webgl',{antialias:true,alpha:false,depth:true,powerPreference:'high-performance'});
-if(!gl){$('mainMenu').innerHTML='<div style="padding:13vw 8vw;background:#101c28;color:white"><h1>WebGL is required</h1><p>Enable hardware acceleration in Chrome, Edge or Firefox and reopen this game.</p></div>';return;}
+const $=id=>document.getElementById(id); let canvas=$('arena'); const hud=$('hud');
+let gl=null,softCtx=null,graphicsWarning='';
+try{gl=canvas.getContext('webgl',{antialias:true,alpha:false,depth:true,powerPreference:'default'});}catch(e){graphicsWarning=String(e?.message||e);}
+
 const VS=`attribute vec3 aPos;attribute vec3 aNormal;attribute float aMat;uniform vec3 uCamera;uniform float uYaw;uniform float uPitch;uniform float uAspect;uniform float uFov;uniform float uWeapon;varying vec3 vWorld;varying vec3 vNormal;varying float vMat;varying float vDistance;
 void main(){vec3 delta=aPos-uCamera;vec3 right=vec3(cos(uYaw),0.0,-sin(uYaw));vec3 front=vec3(sin(uYaw),0.0,cos(uYaw));float px;float py;float pz;if(uWeapon>0.5){px=aPos.x;py=aPos.y;pz=aPos.z;}else{px=dot(delta,right);float z=dot(delta,front);py=delta.y*cos(uPitch)-z*sin(uPitch);pz=delta.y*sin(uPitch)+z*cos(uPitch);}float f=1.0/tan(uFov*0.5);float near=0.045;float far=125.0;gl_Position=vec4(px*f/uAspect,py*f,pz*(far+near)/(far-near)-2.0*far*near/(far-near),pz);vWorld=aPos;vNormal=aNormal;vMat=aMat;vDistance=pz;}`;
 const FS=`precision mediump float;varying vec3 vWorld;varying vec3 vNormal;varying float vMat;varying float vDistance;uniform float uWeapon;uniform float uTime;uniform vec3 uCamera;
@@ -78,10 +80,14 @@ if(m<3.0){float n=hash(vWorld*5.0);c*=.94+n*.095;vec3 p=vWorld;if(abs(vNormal.y)
 if(m>3.5 && m<4.5){float wood=sin(vWorld.y*21.0+vWorld.x*2.0)*.06;c*=.98+wood;}if(m>5.5&&m<6.5){c*=.78+hash(vWorld*2.5)*.34;}
 if(m>16.5&&m<17.5)c*=.6;if(m>17.5&&m<18.5)c*=1.3;
 if(uWeapon<.5){float fog=clamp((vDistance-24.0)/95.0,.0,.63);c=mix(c,vec3(.70,.72,.67),fog);}gl_FragColor=vec4(pow(max(c,0.0),vec3(.88)),1.0);}`;
-function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
-const prog=gl.createProgram();gl.attachShader(prog,shader(gl.VERTEX_SHADER,VS));gl.attachShader(prog,shader(gl.FRAGMENT_SHADER,FS));gl.linkProgram(prog);if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(prog));gl.useProgram(prog);
-const loc={pos:gl.getAttribLocation(prog,'aPos'),normal:gl.getAttribLocation(prog,'aNormal'),mat:gl.getAttribLocation(prog,'aMat'),camera:gl.getUniformLocation(prog,'uCamera'),yaw:gl.getUniformLocation(prog,'uYaw'),pitch:gl.getUniformLocation(prog,'uPitch'),aspect:gl.getUniformLocation(prog,'uAspect'),fov:gl.getUniformLocation(prog,'uFov'),weapon:gl.getUniformLocation(prog,'uWeapon'),time:gl.getUniformLocation(prog,'uTime')};
-function makeBuffer(){return gl.createBuffer()}const staticBuffer=makeBuffer(),movingBuffer=makeBuffer(),gunBuffer=makeBuffer();
+function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s)||'Shader compile failed');return s;}
+let prog=null,loc={};
+if(gl){try{
+ prog=gl.createProgram();gl.attachShader(prog,shader(gl.VERTEX_SHADER,VS));gl.attachShader(prog,shader(gl.FRAGMENT_SHADER,FS));gl.linkProgram(prog);if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(prog)||'Shader link failed');gl.useProgram(prog);
+ loc={pos:gl.getAttribLocation(prog,'aPos'),normal:gl.getAttribLocation(prog,'aNormal'),mat:gl.getAttribLocation(prog,'aMat'),camera:gl.getUniformLocation(prog,'uCamera'),yaw:gl.getUniformLocation(prog,'uYaw'),pitch:gl.getUniformLocation(prog,'uPitch'),aspect:gl.getUniformLocation(prog,'uAspect'),fov:gl.getUniformLocation(prog,'uFov'),weapon:gl.getUniformLocation(prog,'uWeapon'),time:gl.getUniformLocation(prog,'uTime')};
+}catch(e){graphicsWarning=String(e?.message||e);gl=null;}}
+if(!gl){const replacement=document.createElement('canvas');replacement.id='arena';canvas.replaceWith(replacement);canvas=replacement;softCtx=canvas.getContext('2d',{alpha:false});if(!softCtx){$('mainMenu').insertAdjacentHTML('beforeend','<div style="position:absolute;inset:35% 15%;z-index:50;background:#631b20;color:white;padding:30px">Graphics unavailable. Enable browser hardware acceleration or try another browser.</div>');return;}const note=document.createElement('div');note.id='renderNotice';note.textContent='COMPATIBILITY RENDERER · SOFTWARE 3D';note.style.cssText='position:fixed;bottom:15px;right:16px;z-index:16;padding:7px 10px;background:#0c1c29da;border:1px solid #456;color:#c3d5e0;font:10px Arial;letter-spacing:1px;pointer-events:none';document.body.appendChild(note);console.warn('STRIKEZONE: WebGL unavailable, using software renderer.',graphicsWarning);}
+function makeBuffer(){return gl?gl.createBuffer():null}const staticBuffer=makeBuffer(),movingBuffer=makeBuffer(),gunBuffer=makeBuffer();
 const STATIC=[],colliders=[],botNames=['VIPER','PHANTOM','ROGUE','MERCURY','BISHOP','REAPER','HUNTER','TALON','RAZOR','GHOST','AXIOM','NOVA'];
 function vert(out,p,n,mat,rot=0,originX=0,originZ=0){let x=p[0],z=p[2],nx=n[0],nz=n[2];if(rot){const c=Math.cos(rot),s=Math.sin(rot);const px=x-originX,pz=z-originZ;x=originX+px*c+pz*s;z=originZ-px*s+pz*c;nx=n[0]*c+n[2]*s;nz=-n[0]*s+n[2]*c;}out.push(x,p[1],z,nx,n[1],nz,mat);}
 function quad(out,a,b,c,d,n,mat,rot=0,ox=0,oz=0){vert(out,a,n,mat,rot,ox,oz);vert(out,b,n,mat,rot,ox,oz);vert(out,c,n,mat,rot,ox,oz);vert(out,a,n,mat,rot,ox,oz);vert(out,c,n,mat,rot,ox,oz);vert(out,d,n,mat,rot,ox,oz);}
@@ -108,8 +114,8 @@ for(const [x,z] of [[-8,-8],[8,8],[-10,9],[10,-9]]){cube(x,3.2,z,.17,6.4,.17,9);
 cube(-6.9,4.1,0,.1,1.8,2.8,11);cube(6.9,4.1,0,.1,1.8,2.8,12);for(const x of [-7,7])for(const z of [-11,11])cube(x,.02,z,3,.04,.18,19);
 }
 generateMap();
-gl.bindBuffer(gl.ARRAY_BUFFER,staticBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(STATIC),gl.STATIC_DRAW);const staticCount=STATIC.length/7;
-function drawBuffer(buffer,data,count,dynamic=true){gl.bindBuffer(gl.ARRAY_BUFFER,buffer);if(data)gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),dynamic?gl.DYNAMIC_DRAW:gl.STATIC_DRAW);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,28,0);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.normal,3,gl.FLOAT,false,28,12);gl.enableVertexAttribArray(loc.normal);gl.vertexAttribPointer(loc.mat,1,gl.FLOAT,false,28,24);gl.enableVertexAttribArray(loc.mat);gl.drawArrays(gl.TRIANGLES,0,count);}
+if(gl){gl.bindBuffer(gl.ARRAY_BUFFER,staticBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(STATIC),gl.STATIC_DRAW);}const staticCount=STATIC.length/7;
+function drawBuffer(buffer,data,count,dynamic=true){if(!gl)return;gl.bindBuffer(gl.ARRAY_BUFFER,buffer);if(data)gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),dynamic?gl.DYNAMIC_DRAW:gl.STATIC_DRAW);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,28,0);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.normal,3,gl.FLOAT,false,28,12);gl.enableVertexAttribArray(loc.normal);gl.vertexAttribPointer(loc.mat,1,gl.FLOAT,false,28,24);gl.enableVertexAttribArray(loc.mat);gl.drawArrays(gl.TRIANGLES,0,count);}
 const weapons=[{name:'VORTEX AR',type:'ASSAULT RIFLE',mag:30,reserve:150,damage:27,rate:610,spread:.015,reload:1.8,range:65},{name:'RAPTOR SMG',type:'SUBMACHINE GUN',mag:40,reserve:200,damage:19,rate:860,spread:.026,reload:1.45,range:38},{name:'RANGER DMR',type:'MARKSMAN RIFLE',mag:12,reserve:72,damage:62,rate:210,spread:.004,reload:2.35,range:90}];
 weapons.push({name:'JUDGE 12',type:'COMBAT SHOTGUN',mag:8,reserve:48,damage:95,rate:95,spread:.068,reload:2.35,range:26},{name:'SPECTRE P9',type:'SIDEARM',mag:18,reserve:108,damage:35,rate:390,spread:.018,reload:1.20,range:52});
 const player={x:0,z:-17,y:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:[30,40,12],reserves:[150,200,72],lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0};
@@ -183,7 +189,7 @@ if(player.flash>0){B(0,.045,i===2?2.45:1.9,.37,.37,.22,18);B(0,.045,i===2?2.67:2
 function drawMinimap(){const can=$('minimap'),ctx=can.getContext('2d'),W=can.width,H=can.height,s=W/68;ctx.clearRect(0,0,W,H);ctx.fillStyle='#12202c';ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2,H/2);ctx.scale(s,s);ctx.fillStyle='#b5a68b';ctx.fillRect(-31.7,-31.7,63.4,63.4);ctx.fillStyle='#8e8975';for(const c of colliders){let w=c.X-c.x,d=c.Z-c.z;if(w>15&&d>15)continue;ctx.fillRect(c.x,c.z,w,d);}ctx.fillStyle='#6b88a6';ctx.fillRect(-7,-7,14,14);
 for(const b of bots){if(!b.alive)continue;ctx.fillStyle=b.team===0&&mode==='tdm'?'#60c2ff':'#f65750';ctx.beginPath();ctx.arc(b.x,b.z,.7,0,Math.PI*2);ctx.fill();}
 ctx.translate(player.x,player.z);ctx.rotate(-player.yaw);ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(0,1.6);ctx.lineTo(-1.1,-1.25);ctx.lineTo(1.1,-1.25);ctx.closePath();ctx.fill();ctx.restore();}
-function renderScene(dt){const px=player.x,pz=player.z,eye=player.crouch?.98:1.72;let cx=px,cy=player.y+eye,cz=pz,yaw=player.yaw,pitch=player.pitch;
+function renderScene(dt){if(!gl){softwareScene(dt);return;}const px=player.x,pz=player.z,eye=player.crouch?.98:1.72;let cx=px,cy=player.y+eye,cz=pz,yaw=player.yaw,pitch=player.pitch;
 if(!running){const t=nowSec*.12;cx=Math.cos(t)*17;cz=Math.sin(t)*21;cy=7.2;yaw=Math.atan2(-cx,-cz);pitch=Math.atan2(2.3-cy,Math.hypot(cx,cz));}
 if(!player.alive&&running){cy=1.45;pitch=-.10;}
 const DPR=Math.min(devicePixelRatio||1,1.6),W=Math.floor(innerWidth*DPR),H=Math.floor(innerHeight*DPR);if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;gl.viewport(0,0,W,H);}
@@ -191,6 +197,25 @@ gl.clearColor(.71,.79,.78,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);g
 drawBuffer(staticBuffer,null,staticCount,false);
 const actors=[];for(const b of bots)if(b.alive)botShape(actors,b);for(const t of tracers){t.ttl-=dt;if(t.ttl>0)addTracer(actors,t);}for(let i=tracers.length-1;i>=0;i--)if(tracers[i].ttl<=0)tracers.splice(i,1);for(let i=impactParticles.length-1;i>=0;i--){const p=impactParticles[i];p.ttl-=dt;if(p.ttl<=0){impactParticles.splice(i,1);continue;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vy-=7*dt;box(actors,p.x,p.y,p.z,.04,.04,.04,p.mat);}if(actors.length)drawBuffer(movingBuffer,actors,actors.length/7);
 if(running&&player.alive){gl.clear(gl.DEPTH_BUFFER_BIT);gl.uniform1f(loc.weapon,1);gl.uniform1f(loc.fov,73*Math.PI/180);const mesh=[];weaponShape(mesh);drawBuffer(gunBuffer,mesh,mesh.length/7);}
+}
+
+// Compatibility renderer: projected original 3D mesh using Canvas 2D when WebGL or a shader is blocked.
+// Does not use any third-party libraries and keeps AI, controls, scoring and weapons operational.
+const palette=[[170,144,110],[185,152,112],[213,198,163],[77,84,87],[110,72,44],[150,61,43],[57,102,51],[112,77,47],[110,128,133],[27,36,46],[54,107,145],[46,110,176],[170,56,46],[97,110,82],[184,138,97],[240,176,74],[38,178,107],[64,51,41],[239,115,48],[220,225,207],[12,17,22]];
+function makeFaces(data){const faces=[];for(let i=0;i+41<data.length;i+=42){const v=[0,7,14,35].map(o=>[data[i+o],data[i+o+1],data[i+o+2]]);const x=(v[0][0]+v[2][0])*.5,z=(v[0][2]+v[2][2])*.5;faces.push({v,x,z,mat:Math.max(0,Math.min(20,Math.round(data[i+6]))),shade:.52+.48*Math.max(0,data[i+4]*.77-data[i+3]*.51+data[i+5]*.38)});}return faces;}
+const staticFaces=makeFaces(STATIC);
+let softLastPaint=0;
+function softwareScene(dt){const W=Math.max(1,innerWidth),H=Math.max(1,innerHeight),DPR=Math.min(devicePixelRatio||1,1.3);if(canvas.width!==Math.round(W*DPR)||canvas.height!==Math.round(H*DPR)){canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);}const ctx=softCtx;ctx.setTransform(DPR,0,0,DPR,0,0);
+ const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#78999f');sky.addColorStop(.66,'#bed0c3');sky.addColorStop(1,'#c7b695');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+ let cx=player.x,cy=player.y+(player.crouch?.98:1.72),cz=player.z,yaw=player.yaw,pitch=player.pitch;
+ if(!running){const t=nowSec*.12;cx=Math.cos(t)*17;cz=Math.sin(t)*21;cy=7.2;yaw=Math.atan2(-cx,-cz);pitch=Math.atan2(2.3-cy,Math.hypot(cx,cz));}
+ if(!player.alive&&running){cy=1.45;pitch=-.10;}
+ const sy=Math.sin(yaw),co=Math.cos(yaw),sp=Math.sin(pitch),cp=Math.cos(pitch),f=(H*.5)/Math.tan(((player.ads&&running)?53:78)*Math.PI/360);
+ function paint(faces,isGun=false){const objects=[];for(const face of faces){if(!isGun&&Math.abs(face.x-cx)>84&&Math.abs(face.z-cz)>84)continue;const vv=[];let valid=true,depth=0;for(const p of face.v){let ax,ay,az;if(isGun){ax=p[0];ay=p[1];az=p[2];}else{const dx=p[0]-cx,dz=p[2]-cz,dy=p[1]-cy,k=dx*sy+dz*co;ax=dx*co-dz*sy;ay=dy*cp-k*sp;az=dy*sp+k*cp;}if(az<=.045){valid=false;break;}const xx=W*.5+ax*f/az,yy=H*.5-ay*f/az;vv.push([Math.max(-W*2,Math.min(W*3,xx)),Math.max(-H*2,Math.min(H*3,yy))]);depth+=az;}if(!valid)continue;depth*=.25;const xs=vv.map(p=>p[0]),ys=vv.map(p=>p[1]);if(Math.max(...xs)<-3||Math.min(...xs)>W+3||Math.max(...ys)<-3||Math.min(...ys)>H+3)continue;objects.push({vv,depth,shade:face.shade,mat:face.mat});}
+ objects.sort((a,b)=>b.depth-a.depth);for(const o of objects){const c=palette[o.mat],fog=isGun?0:Math.min(.60,Math.max(0,(o.depth-24)/95)),shade=o.shade;ctx.fillStyle=`rgb(${Math.round(c[0]*shade*(1-fog)+176*fog)},${Math.round(c[1]*shade*(1-fog)+183*fog)},${Math.round(c[2]*shade*(1-fog)+170*fog)})`;ctx.beginPath();ctx.moveTo(...o.vv[0]);for(let i=1;i<4;i++)ctx.lineTo(...o.vv[i]);ctx.closePath();ctx.fill();}}
+ paint(staticFaces);
+ const actors=[];for(const b of bots)if(b.alive)botShape(actors,b);for(const t of tracers){t.ttl-=dt;if(t.ttl>0)addTracer(actors,t);}for(let i=tracers.length-1;i>=0;i--)if(tracers[i].ttl<=0)tracers.splice(i,1);for(let i=impactParticles.length-1;i>=0;i--){const p=impactParticles[i];p.ttl-=dt;if(p.ttl<=0){impactParticles.splice(i,1);continue;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vy-=7*dt;box(actors,p.x,p.y,p.z,.04,.04,.04,p.mat);}if(actors.length)paint(makeFaces(actors));
+ if(running&&player.alive){const mesh=[];weaponShape(mesh);paint(makeFaces(mesh),true);}
 }
 function formatTime(t){let n=Math.max(0,Math.ceil(t));return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;}
 function tick(stamp){const sec=stamp/1000;let dt=Math.min(.045,sec-(last||sec));last=sec;nowSec=sec;frame++;if(sec-fpsMark>=1){fps=Math.round(frame/(sec-fpsMark));$('fpsCounter').textContent=`${fps} FPS`;frame=0;fpsMark=sec;}
