@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v1.6 — Contrast & Collision</title>
+  <meta name="theme-color" content="#0b1019"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v2.0 — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -69,17 +69,44 @@ body{background:#08121c}#arena{filter:contrast(1.04) saturate(1.06)}
 #renderNotice{font-family:Arial,sans-serif!important;letter-spacing:.75px!important;font-size:10px!important;max-width:min(84vw,420px);line-height:1.45}
 #unstuckTip{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);font:bold 11px Arial;color:#d9eaf4;background:#0b1a27d9;border:1px solid #799baf70;padding:10px 14px;pointer-events:none;opacity:0;transition:opacity .2s;white-space:nowrap;z-index:7}
 
+
+/* v2.0 modern renderer UI */
+#arena{z-index:0}#vignette,#damageOverlay{z-index:3}#renderNotice{display:none!important}
+#modernCanvas{position:absolute!important;inset:0;z-index:2;display:block;width:100%;height:100%;pointer-events:none;touch-action:none}
+.qualityBtns{display:flex;gap:4px;margin:9px 0 8px}.qualityBtns button{flex:1;padding:9px 5px;border:1px solid #435968;background:#1b2b38;color:#9baeba;font-size:9px;font-weight:800;letter-spacing:.5px}.qualityBtns button:hover,.qualityBtns button.active{border-color:#59bddd;background:#254c60;color:#fff}
+.rendererState{font-size:9px;line-height:1.4;color:#80d5dc;margin:7px 0 12px;min-height:12px}
+#gfxTag{position:absolute;bottom:20px;right:17px;z-index:7;padding:7px 11px;border:1px solid #5e93a48a;border-radius:5px;background:#071a28ca;color:#b2e5ea;font-size:9px;letter-spacing:.8px;pointer-events:none;text-align:right;max-width:285px}
+#hud .topHUD{background:linear-gradient(180deg,rgba(0,10,19,.81),rgba(0,10,19,0))}
+.menuContent h1{filter:drop-shadow(0 8px 26px #041017a0)}
+#mainMenu .trainingOptions{max-height:calc(100vh - 142px);overflow-y:auto;scrollbar-width:thin}
+@media(max-height:760px){#mainMenu .trainingOptions{top:110px}.optionHead{margin-bottom:6px}}
+
+.menuFooter{pointer-events:none}
+@media (max-height:715px) and (min-width:801px){
+ #mainMenu{overflow:auto}
+ #mainMenu .menuHeader{position:sticky;top:0;height:63px}
+ #mainMenu .menuContent{position:relative;top:auto;left:auto;transform:none;margin:25px 0 35px 4vw;width:min(670px,calc(100vw - 290px));padding-bottom:32px}
+ #mainMenu .menuContent h1{font-size:clamp(42px,5.8vw,74px);margin:10px 0 8px}
+ #mainMenu .modeSelect{margin-top:13px}
+ #mainMenu .modeCard{min-height:72px}
+ #mainMenu .menuActions{margin-top:12px}
+ #mainMenu .menuFooter{position:relative;padding:12px 4vw}
+ #mainMenu .trainingOptions{top:75px;right:2vw}
+}
 </style>
 </head>
 <body>
 <canvas id="arena" aria-label="3D first-person shooter game"></canvas>
-<div id="vignette"></div><div id="damageOverlay"></div><div id="unstuckTip">PRESS U TO REPOSITION FROM OBSTACLE</div>
+<div id="gfxTag">SMART GRAPHICS · LOADING</div><div id="vignette"></div><div id="damageOverlay"></div><div id="unstuckTip">PRESS U TO REPOSITION FROM OBSTACLE</div>
 <div id="mainMenu" class="screen">
   <header class="menuHeader"><div class="brand"><div class="brandIcon">SZ</div><div>STRIKE<span>ZONE</span><small>TACTICAL ARENA</small></div></div><div class="headerRight"><div class="onlineBadge"><i></i> OFFLINE TRAINING BUILD</div><div class="pilot">◈ &nbsp; <span id="pilotRank">GUEST OPERATIVE</span></div></div></header>
   <aside class="trainingOptions" aria-label="Single-player difficulty">
     <div class="optionHead">FIELD TRAINING <span>SOLO / OFFLINE</span></div>
     <div class="optionLabel">BOT DIFFICULTY</div>
     <div class="difficultyBtns" id="difficultyBtns"><button class="diffBtn" data-diff="rookie">ROOKIE</button><button class="diffBtn active" data-diff="regular">REGULAR</button><button class="diffBtn" data-diff="veteran">VETERAN</button></div>
+    <div class="optionLabel" style="margin-top:17px">GRAPHICS QUALITY</div>
+    <div class="qualityBtns" id="qualityBtns"><button type="button" data-quality="performance">FAST</button><button type="button" data-quality="high" class="active">HIGH</button><button type="button" data-quality="ultra">ULTRA</button></div>
+    <div id="rendererState" class="rendererState" aria-live="polite">Graphics engine: initializing</div>
     <div class="optionLabel">YOUR TRAINING RECORD</div>
     <div class="careerStats"><div><strong id="careerMatches">0</strong><small>MATCHES</small></div><div><strong id="careerKills">0</strong><small>KILLS</small></div><div><strong id="careerXp">0</strong><small>XP</small></div></div>
     <p>Progress is saved on this browser only. No accounts or online opponents.</p>
@@ -97,7 +124,7 @@ body{background:#08121c}#arena{filter:contrast(1.04) saturate(1.06)}
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V1.6 — CONTRAST & COLLISION</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V2.0 — ENGINE UPGRADE</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
@@ -111,7 +138,7 @@ body{background:#08121c}#arena{filter:contrast(1.04) saturate(1.06)}
 </div>
 <div id="modal" class="hidden"><div class="modalBox"><div class="modalTop"><span id="modalEyebrow">COMBAT DATA //</span><button id="closeModal" title="Close">✕</button></div><h2 id="modalTitle">PAUSED</h2><p id="modalSubtitle">You are temporarily out of combat.</p><div id="modalContent"></div><div id="modalActions"><button id="resumeBtn" class="primaryBtn">RESUME MATCH ▶</button><button id="menuBtn" class="secondaryBtn">BACK TO MENU</button></div></div></div>
 <script>
-/* STRIKEZONE FPS v1.6 — Contrast / spawn / collision update. Original solo browser shooter. */
+/* STRIKEZONE FPS v2.0 — Advanced graphics pipeline with safe software fallback. Original solo browser shooter. */
 (() => {
 'use strict';
 const $=id=>document.getElementById(id); let canvas=$('arena'); const hud=$('hud');
@@ -151,7 +178,7 @@ if(gl){try{
  prog=gl.createProgram();gl.attachShader(prog,shader(gl.VERTEX_SHADER,VS));gl.attachShader(prog,shader(gl.FRAGMENT_SHADER,FS));gl.linkProgram(prog);if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(prog)||'Shader link failed');gl.useProgram(prog);
  loc={pos:gl.getAttribLocation(prog,'aPos'),normal:gl.getAttribLocation(prog,'aNormal'),mat:gl.getAttribLocation(prog,'aMat'),camera:gl.getUniformLocation(prog,'uCamera'),yaw:gl.getUniformLocation(prog,'uYaw'),pitch:gl.getUniformLocation(prog,'uPitch'),aspect:gl.getUniformLocation(prog,'uAspect'),fov:gl.getUniformLocation(prog,'uFov'),weapon:gl.getUniformLocation(prog,'uWeapon'),time:gl.getUniformLocation(prog,'uTime')};
 }catch(e){graphicsWarning='WebGL shader: '+String(e?.message||e);console.error('STRIKEZONE graphics initialization:',graphicsWarning);gl=null;}}
-if(!gl){if(!graphicsWarning)graphicsWarning='Browser WebGL context unavailable';const replacement=document.createElement('canvas');replacement.id='arena';canvas.replaceWith(replacement);canvas=replacement;softCtx=canvas.getContext('2d',{alpha:false});if(!softCtx){$('mainMenu').insertAdjacentHTML('beforeend','<div style="position:absolute;inset:35% 15%;z-index:50;background:#631b20;color:white;padding:30px">Graphics unavailable. Enable browser hardware acceleration or try another browser.</div>');return;}const note=document.createElement('div');note.id='renderNotice';note.textContent='SOFTWARE GRAPHICS MODE · ENABLE CHROME GRAPHICS ACCELERATION FOR 3D SHADING';note.style.cssText='position:fixed;bottom:15px;right:16px;z-index:16;padding:7px 10px;background:#0c1c29da;border:1px solid #456;color:#c3d5e0;font:10px Arial;letter-spacing:1px;pointer-events:none';document.body.appendChild(note);console.warn('STRIKEZONE: WebGL unavailable, using software renderer.',graphicsWarning);}
+if(!gl){if(!graphicsWarning)graphicsWarning='Browser WebGL context unavailable';const replacement=document.createElement('canvas');replacement.id='arena';canvas.replaceWith(replacement);canvas=replacement;softCtx=canvas.getContext('2d',{alpha:false});if(!softCtx){$('mainMenu').insertAdjacentHTML('beforeend','<div style="position:absolute;inset:35% 15%;z-index:50;background:#631b20;color:white;padding:30px">Graphics unavailable. Enable browser hardware acceleration or try another browser.</div>');return;}const note=document.createElement('div');note.id='renderNotice';note.textContent='SOFTWARE GRAPHICS MODE · ENABLE CHROME GRAPHICS ACCELERATION FOR 3D SHADING';note.style.cssText='position:fixed;bottom:15px;right:16px;z-index:16;padding:7px 10px;background:#0c1c29da;border:1px solid #456;color:#c3d5e0;font:10px Arial;letter-spacing:1px;pointer-events:none';document.body.appendChild(note);console.warn('STRIKEZONE: WebGL unavailable, using software renderer.',graphicsWarning);document.getElementById('gfxTag').textContent='SOFTWARE MODE · ENABLE GPU FOR ULTRA';}
 function makeBuffer(){return gl?gl.createBuffer():null}const staticBuffer=makeBuffer(),movingBuffer=makeBuffer(),gunBuffer=makeBuffer();
 const STATIC=[],colliders=[],botNames=['VIPER','PHANTOM','ROGUE','MERCURY','BISHOP','REAPER','HUNTER','TALON','RAZOR','GHOST','AXIOM','NOVA'];
 function vert(out,p,n,mat,rot=0,originX=0,originZ=0){let x=p[0],z=p[2],nx=n[0],nz=n[2];if(rot){const c=Math.cos(rot),s=Math.sin(rot);const px=x-originX,pz=z-originZ;x=originX+px*c+pz*s;z=originZ-px*s+pz*c;nx=n[0]*c+n[2]*s;nz=-n[0]*s+n[2]*c;}out.push(x,p[1],z,nx,n[1],nz,mat);}
@@ -319,7 +346,56 @@ function contrastDetail(){
   for(let i=-1;i<=1;i++)cube(x+i*.74,.025,z,.32,.028,.42,24);
  }
 }
-generateMap();phase2MapDetail();contrastDetail();
+
+// Phase 3: readable architecture: painted wayfinding, recessed panels, piping, step trim,
+// warehouse shutters and fluorescent fixtures. All details are non-collidable decoration.
+function phase3MapDetail(){
+ const B=(x,y,z,w,h,d,m)=>cube(x,y,z,w,h,d,m,false);
+ // Temple columns: layered capitals, reinforced bands and alternating color insets.
+ for(const z of [-5.7,5.7])for(const x of [-5.7,-1.8,1.8,5.7]){
+   for(const h of [1.05,2.12,3.2,4.24])B(x,h,z,.98,.10,.98,h>3?23:26);
+   B(x,4.78,z,.87,.10,.87,21);B(x,4.83,z,.60,.075,.62,24);
+ }
+ // Main temple floor wayfinding, no collision geometry.
+ for(let i=-6;i<=6;i+=3){B(i,.608,-.02,.19,.018,12,26);B(.02,.608,i,12,.018,.19,26);}
+ for(const z of [-7.6,7.6])for(const x of [-4.8,0,4.8]){
+   B(x,3.45,z,.98,.95,.11,21);B(x,3.45,z+(z>0?.065:-.065),.72,.59,.03,x===0?24:25);
+ }
+ // Building paint zones with distinct navy blue loading entries, sandstone walls, trim, and hazard corners.
+ for(const [x,z,w,d,h,side] of [[-23,-13,9,13,7,11],[23,13,9,13,7,12],[22,-19,11,10,5.4,11],[-22,20,10,9,5.8,12],[0,26,12,7,5.5,11],[0,-27,12,7,5.5,12]]){
+   const front=z+d/2+.13,back=z-d/2-.13;
+   for(let k=0;k<3;k++){
+     const xx=x-w/2+1.2+k*(w-2.4)/2;
+     B(xx,2.13,front,.53,2.78,.06,21);B(xx,2.13,front+.04,.38,2.45,.045,k===1?side:9);
+     B(xx,2.13,back,.53,2.78,.06,21);B(xx,2.13,back-.04,.38,2.45,.045,k===1?25:9);
+     B(xx,h-.68,front,.78,.11,.08,24);
+   }
+   B(x,h-.37,front,Math.min(w-1.4,6.5),.23,.09,21);
+   for(const t of [-1,1]){
+     B(x+t*(w/2-.32),1.5,front,.11,2.8,.09,24);
+   }
+   for(let k=0;k<5;k++)B(x-w/2+.9+k*(w-1.8)/4,.035,z, .09,.028,d-.65,23);
+ }
+ // Graphic-friendly contrasting warehouse markings and crates.
+ for(const [x,z] of [[-10,-15],[-9,16],[11,-13],[13,16],[-2,-16],[2,16],[-25,-1],[26,0]]){
+   B(x,1.96,z,1.45,.055,1.5,23);
+   B(x,2.03,z,.85,.045,.09,24);
+   B(x+1.08,.85,z, .07,1.25,.08,21);
+ }
+ // Architectural light fixtures with warm housings, avoiding player walk plane.
+ for(const [x,z] of [[-7,-7],[7,-7],[-7,7],[7,7],[-18,10],[18,-10]]){
+   B(x,5.53,z,.5,.09,.72,21);B(x,5.47,z,.37,.035,.53,19);
+ }
+ // Painted ground hazard markers signal navigable corridors.
+ for(const z of [-18,18])for(const x of [-15,-12,-9,9,12,15])B(x,.04,z,.95,.022,.14,24);
+ // Slender metal roof services, light stands and antennas above roof collision boxes.
+ for(const [x,z,h] of [[-23,-13,7],[23,13,7],[22,-19,5.4],[-22,20,5.8]]){
+   B(x+.96,h+.88,z,.14,1.76,.14,21);B(x+.96,h+1.77,z,.56,.1,.56,23);
+   B(x-1.5,h+.28,z,.88,.44,.83,9);B(x-1.5,h+.56,z,1.2,.13,.93,25);
+ }
+}
+
+generateMap();phase2MapDetail();phase3MapDetail();contrastDetail();
 if(gl){gl.bindBuffer(gl.ARRAY_BUFFER,staticBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(STATIC),gl.STATIC_DRAW);}const staticCount=STATIC.length/7;
 function drawBuffer(buffer,data,count,dynamic=true){if(!gl)return;gl.bindBuffer(gl.ARRAY_BUFFER,buffer);if(data)gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),dynamic?gl.DYNAMIC_DRAW:gl.STATIC_DRAW);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,28,0);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.normal,3,gl.FLOAT,false,28,12);gl.enableVertexAttribArray(loc.normal);gl.vertexAttribPointer(loc.mat,1,gl.FLOAT,false,28,24);gl.enableVertexAttribArray(loc.mat);gl.drawArrays(gl.TRIANGLES,0,count);}
 const weapons=[{name:'VORTEX AR',type:'ASSAULT RIFLE',mag:30,reserve:150,damage:27,rate:610,spread:.015,reload:1.8,range:65},{name:'RAPTOR SMG',type:'SUBMACHINE GUN',mag:40,reserve:200,damage:19,rate:860,spread:.026,reload:1.45,range:38},{name:'RANGER DMR',type:'MARKSMAN RIFLE',mag:12,reserve:72,damage:62,rate:210,spread:.004,reload:2.35,range:90}];
@@ -571,7 +647,7 @@ function drawWeaponFlash(ctx,W,H){
  ctx.restore();
 }
 
-function renderScene(dt){if(!gl){softwareScene(dt);return;}const px=player.x,pz=player.z,eye=player.crouch?.98:1.72;let cx=px,cy=player.y+eye-player.landBob,cz=pz,yaw=player.yaw,pitch=player.pitch+Math.sin(player.bob*1.6)*player.landBob*.12;
+function renderScene(dt){if(window.__strike3DActive){tickEffectsForModern(dt);return;}if(!gl){softwareScene(dt);return;}const px=player.x,pz=player.z,eye=player.crouch?.98:1.72;let cx=px,cy=player.y+eye-player.landBob,cz=pz,yaw=player.yaw,pitch=player.pitch+Math.sin(player.bob*1.6)*player.landBob*.12;
 if(!running){const t=nowSec*.12;cx=Math.cos(t)*17;cz=Math.sin(t)*21;cy=7.2;yaw=Math.atan2(-cx,-cz);pitch=Math.atan2(2.3-cy,Math.hypot(cx,cz));}
 if(!player.alive&&running){cy=1.45;pitch=-.10;}
 const DPR=Math.min(devicePixelRatio||1,1.6),W=Math.floor(innerWidth*DPR),H=Math.floor(innerHeight*DPR);if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;gl.viewport(0,0,W,H);}
@@ -769,7 +845,35 @@ shoot=function(){const prev=player.lastShot;baseShoot();if(prev!==player.lastSho
 const baseUpdatePlayer=updatePlayer;
 updatePlayer=function(dt){baseUpdatePlayer(dt);const cross=$('crosshair');const moving=keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD;const scale=(player.ads?.65:1)+(player.recoil*1.25)+(moving?.08:0);cross.style.transform=`translate(-50%,-50%) scale(${scale.toFixed(2)})`;cross.style.opacity=player.ads?'.53':'1';};
 
+// Graphics bridge: read-only scene data for the optional enhanced WebGL2 engine.
+window.StrikeZoneRenderBridge={
+ geometry:()=>STATIC,
+ materials:()=>palette,
+ actorGeometry:()=>{const data=[];for(const b of bots)if(b.alive)botShape(data,b);return data;},
+ weaponGeometry:()=>{if(!running||!player.alive)return [];const data=[];weaponShape(data);return data;},
+ tracerData:()=>tracers.map(t=>({x:t.x,y:t.y,z:t.z,X:t.X,Y:t.Y,Z:t.Z,friendly:t.friendly})),
+ botData:()=>bots.filter(b=>b.alive).map(b=>({x:b.x,z:b.z,team:b.team,yaw:b.yaw,phase:b.phase,walk:b.walk})),
+ state:()=>({x:player.x,z:player.z,y:player.y,yaw:player.yaw,pitch:player.pitch,ads:player.ads,crouch:player.crouch,alive:player.alive,flash:player.flash,bob:player.bob,landBob:player.landBob,recoil:player.recoil,nowSec,running,paused,ended,weapon:player.weapon,matchRemaining}),
+ availableGPU:()=>!!gl,
+ quality:'high'
+};
+function tickEffectsForModern(dt){
+ for(let i=tracers.length-1;i>=0;i--){tracers[i].ttl-=dt;if(tracers[i].ttl<=0)tracers.splice(i,1);}
+ for(let i=impactParticles.length-1;i>=0;i--){const p=impactParticles[i];p.ttl-=dt;if(p.ttl<=0){impactParticles.splice(i,1);continue;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vy-=7*dt;}
+}
+window.addEventListener('strike-zone-graphics',(ev)=>{
+  const profile=ev?.detail?.profile;
+  if(['performance','high','ultra'].includes(profile))window.StrikeZoneRenderBridge.quality=profile;
+});
+document.querySelectorAll('#qualityBtns button').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('#qualityBtns button').forEach(b=>b.classList.toggle('active',b===btn));
+  window.StrikeZoneRenderBridge.quality=btn.dataset.quality;
+  window.dispatchEvent(new CustomEvent('strike-zone-graphics',{detail:{profile:btn.dataset.quality}}));
+}));
+if(!document.getElementById('rendererState').textContent.includes('renderer'))document.getElementById('rendererState').textContent='SMART RENDERER · Loading enhanced engine';
+
 })();
 
 </script>
+<script type="module" src="./ultra-renderer.js"></script>
 </body></html>
