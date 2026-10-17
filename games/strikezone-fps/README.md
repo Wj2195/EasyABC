@@ -41,3 +41,16 @@ The bottom-right **ENHANCED WEBGL2** label is now an interactive graphics contro
 You can also press **P/Esc** to pause and select FAST, HIGH or ULTRA with visible buttons, or use the lobby graphics options. Quality preference is saved in this browser.
 
 ULTRA now uses genuine 2x internal pixel-resolution scaling (rather than being capped by devicePixelRatio on 1x displays), 2048px directional-shadow maps, and extra GPU work. HIGH uses 1.5x resolution and 1024px shadow maps. FAST disables dynamic shadows and uses 0.95x resolution. If the enhanced WebGL2 engine is unavailable, these GPU-only upgrades cannot take effect; the game shows an explicit message instead of silently failing.
+
+
+## v3.0 major art upgrade (October 2026)
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.0
+
+The enhanced WebGL2 scene now has bump-relief masonry, wood and metal materials; additional illuminated fixtures; elevated fabric awnings; rooftop ventilation and antenna details; distant palms and suspended cables; more detailed enemy helmets, armor packs, knee pads, and team markings; first-person optic and rail details; and pooled weapon tracers.
+
+These visual objects are decorative, **not extra collision boxes**. The existing safe-spawn and movement system remain unchanged. The corrected desktop mouse directions, A/D strafe, graphics-mode keyboard shortcut (**G**), live graphics status button, and pause-menu quality controls are preserved.
+
+**GPU mode:** FAST (0.95x, shadows off), HIGH (1.5x, 1024px shadows), ULTRA (2.0x, 2048px shadows). The enhanced scene uses Three.js 0.160.1 loaded from public CDN endpoints when WebGL2 is available. If that code cannot load, the classic renderer remains the fallback, which will not show the new Three.js scenery. No multiplayer is included.
+
+**Validation:** After GitHub upload, the HTML and renderer module were fetched back successfully and inspected for the new art code and existing control fixes. A full visual WebGL2 playtest on the user's GPU is still outstanding.
