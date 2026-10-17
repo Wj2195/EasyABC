@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v2.3 — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v2.4 — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -75,7 +75,7 @@ body{background:#08121c}#arena{filter:contrast(1.04) saturate(1.06)}
 #modernCanvas{position:absolute!important;inset:0;z-index:2;display:block;width:100%;height:100%;pointer-events:none;touch-action:none}
 .qualityBtns{display:flex;gap:4px;margin:9px 0 8px}.qualityBtns button{flex:1;padding:9px 5px;border:1px solid #435968;background:#1b2b38;color:#9baeba;font-size:9px;font-weight:800;letter-spacing:.5px}.qualityBtns button:hover,.qualityBtns button.active{border-color:#59bddd;background:#254c60;color:#fff}
 .rendererState{font-size:9px;line-height:1.4;color:#80d5dc;margin:7px 0 12px;min-height:12px}
-#gfxTag{position:absolute;bottom:20px;right:17px;z-index:7;padding:7px 11px;border:1px solid #5e93a48a;border-radius:5px;background:#071a28ca;color:#b2e5ea;font-size:9px;letter-spacing:.8px;pointer-events:none;text-align:right;max-width:285px}
+#gfxTag{position:absolute;bottom:20px;right:17px;z-index:7;padding:7px 11px;border:1px solid #5e93a48a;border-radius:5px;background:#071a28eb;color:#b2e5ea;font-size:9px;letter-spacing:.8px;pointer-events:auto;cursor:pointer;text-align:right;max-width:330px;box-shadow:0 8px 18px #0006}#gfxTag:hover,#gfxTag:focus-visible{border-color:#7df0ec;color:#fff;background:#143444;outline:2px solid #64bad777;outline-offset:1px}.gfxPauseWrap{margin:18px 0 3px;padding:13px 12px;border:1px solid #54748599;background:#071826b9}.gfxPauseWrap strong{font-size:11px;letter-spacing:1.3px}.gfxPauseWrap p{font-size:11px;line-height:1.55;color:#a8c6d3;margin:8px 0 0}.modalBox{max-height:calc(100vh - 30px);overflow-y:auto}
 #hud .topHUD{background:linear-gradient(180deg,rgba(0,10,19,.81),rgba(0,10,19,0))}
 .menuContent h1{filter:drop-shadow(0 8px 26px #041017a0)}
 #mainMenu .trainingOptions{max-height:calc(100vh - 142px);overflow-y:auto;scrollbar-width:thin}
@@ -99,7 +99,7 @@ body{background:#08121c}#arena{filter:contrast(1.04) saturate(1.06)}
 </head>
 <body>
 <canvas id="arena" aria-label="3D first-person shooter game"></canvas>
-<div id="gfxTag">SMART GRAPHICS · LOADING</div><div id="vignette"></div><div id="damageOverlay"></div><div id="unstuckTip">PRESS U TO REPOSITION FROM OBSTACLE</div>
+<button type="button" id="gfxTag" title="Click to cycle FAST / HIGH / ULTRA (press G while playing)" aria-label="Graphics quality: press G or click to change">SMART GRAPHICS · LOADING</button><div id="vignette"></div><div id="damageOverlay"></div><div id="unstuckTip">PRESS U TO REPOSITION FROM OBSTACLE</div>
 <div id="mainMenu" class="screen">
   <header class="menuHeader"><div class="brand"><div class="brandIcon">SZ</div><div>STRIKE<span>ZONE</span><small>TACTICAL ARENA</small></div></div><div class="headerRight"><div class="onlineBadge"><i></i> OFFLINE TRAINING BUILD</div><div class="pilot">◈ &nbsp; <span id="pilotRank">GUEST OPERATIVE</span></div></div></header>
   <aside class="trainingOptions" aria-label="Single-player difficulty">
@@ -128,7 +128,7 @@ body{background:#08121c}#arena{filter:contrast(1.04) saturate(1.06)}
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V2.3 — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V2.4 — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
@@ -760,14 +760,19 @@ if(running&&!paused&&!ended){matchRemaining-=dt;if(matchRemaining<=0){matchRemai
 renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
 function startGame(){mode=document.querySelector('.modeCard.selected')?.dataset.mode||'tdm';resetGame();running=true;paused=false;ended=false;$('mainMenu').classList.add('hidden');hud.classList.remove('hidden');$('modal').classList.add('hidden');$('matchMode').textContent=mode==='tdm'?'TEAM DEATHMATCH':mode==='ffa'?'FREE FOR ALL':'GUN RACE';$('feed').innerHTML='';canvas.requestPointerLock?.();announce('MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
 function goMenu(){running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
-const helpEntries=[['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['1 / 2 / 3','CHANGE WEAPON'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
+const helpEntries=[['G','CYCLE GRAPHICS FAST / HIGH / ULTRA'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['1 / 2 / 3','CHANGE WEAPON'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
 function openModal(kind,title,subtitle){modalType=kind;if(running)paused=true;player.shoot=false;$('modalEyebrow').textContent=kind==='help'?'FIELD MANUAL //':kind==='result'?'AFTER ACTION REPORT //':'TACTICAL INTERFACE //';$('modalTitle').textContent=title;$('modalSubtitle').textContent=subtitle;
 const content=$('modalContent');if(kind==='help'){content.innerHTML='<div class="controlsGrid">'+helpEntries.map(([a,b])=>`<div>${b}<b>${a}</b></div>`).join('')+'</div><p>Mobile: left joystick to move, swipe the right side to aim, and use the on-screen action buttons.</p>';}else{const others=bots.map(b=>({name:b.name,kills:b.kills,team:b.team})).sort((a,b)=>b.kills-a.kills).slice(0,5);content.innerHTML=`<div class="modalStat"><div><strong>${player.kills}</strong><small>KILLS</small></div><div><strong>${player.deaths}</strong><small>DEATHS</small></div><div><strong>${Math.max(0,Math.round(player.kills*100+player.kills*50))}</strong><small>XP EARNED</small></div></div><p style="margin:20px 0 7px;font-weight:bold">SCOREBOARD</p>${[['YOU',player.kills],...others.map(b=>[b.name,b.kills])].map(([n,v])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ffffff1c;padding:8px 0;color:#d8e6ed;font-size:12px"><span>${n}</span><b>${v} ELIMINATIONS</b></div>`).join('')}`;}
+if(kind==='pause'){
+ content.insertAdjacentHTML('beforeend',`<section class="gfxPauseWrap"><strong>GRAPHICS QUALITY</strong><div class="qualityBtns"><button type="button" data-pause-quality="performance">FAST</button><button type="button" data-pause-quality="high">HIGH</button><button type="button" data-pause-quality="ultra">ULTRA</button></div><p>Choose here, click the bottom-right status badge after releasing the cursor, or press <b>G</b> during play. ULTRA uses more GPU power.</p></section>`);
+ content.querySelectorAll('[data-pause-quality]').forEach(b=>b.addEventListener('click',()=>selectGraphicsQuality(b.dataset.pauseQuality)));
+ refreshGraphicsButtons();
+}
 $('modal').classList.remove('hidden');$('resumeBtn').textContent=kind==='result'?'PLAY AGAIN ▶':kind==='help'&&!running?'BACK TO LOBBY':'RESUME MATCH ▶';$('resumeBtn').onclick=()=>{if(kind==='result')startGame();else closeModal();};$('menuBtn').textContent=running?'BACK TO MENU':'CLOSE';$('menuBtn').onclick=()=>running?goMenu():closeModal();document.exitPointerLock?.();}
 function closeModal(){if(modalType==='result')return;$('modal').classList.add('hidden');if(running){paused=false;if(!matchRemaining||ended)return;canvas.requestPointerLock?.();}else paused=false;}
 function pauseGame(){if(!running||ended)return;if(!$('modal').classList.contains('hidden'))closeModal();else openModal('pause','MATCH PAUSED','Take a moment, check the scoreboard, or return to the lobby.');}
 $('deploy').addEventListener('click',startGame);$('howTo').addEventListener('click',()=>openModal('help','CONTROLS & TACTICS','Master these controls before deploying into the arena.'));document.querySelectorAll('.modeCard').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.modeCard').forEach(c=>c.classList.remove('selected'));b.classList.add('selected');beep('switch');}));$('pauseBtn').addEventListener('click',pauseGame);$('closeModal').addEventListener('click',closeModal);$('resumeBtn').addEventListener('click',closeModal);$('menuBtn').addEventListener('click',goMenu);
-window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='KeyV')player.ads=!player.ads;});window.addEventListener('keyup',e=>{keys[e.code]=false;});
+window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyG'&&!e.repeat){e.preventDefault();cycleGraphicsQuality();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='KeyV')player.ads=!player.ads;});window.addEventListener('keyup',e=>{keys[e.code]=false;});
 canvas.addEventListener('click',()=>{if(running&&!paused&&!ended&&document.pointerLockElement!==canvas&&matchRemaining>0)canvas.requestPointerLock?.();});canvas.addEventListener('mousedown',e=>{if(running&&!paused){if(e.button===0)player.shoot=true;if(e.button===2)player.ads=true;}});window.addEventListener('mouseup',e=>{if(e.button===0)player.shoot=false;if(e.button===2)player.ads=false;});canvas.addEventListener('contextmenu',e=>e.preventDefault());// v2.1: corrected look is the reverse of the previous build's X/Y mapping.
 let lookDirection='corrected';
 try{lookDirection=localStorage.getItem('strikezone-look-v21')==='original'?'original':'corrected';}catch(e){}
@@ -890,11 +895,48 @@ window.addEventListener('strike-zone-graphics',(ev)=>{
   const profile=ev?.detail?.profile;
   if(['performance','high','ultra'].includes(profile))window.StrikeZoneRenderBridge.quality=profile;
 });
-document.querySelectorAll('#qualityBtns button').forEach(btn=>btn.addEventListener('click',()=>{
-  document.querySelectorAll('#qualityBtns button').forEach(b=>b.classList.toggle('active',b===btn));
-  window.StrikeZoneRenderBridge.quality=btn.dataset.quality;
-  window.dispatchEvent(new CustomEvent('strike-zone-graphics',{detail:{profile:btn.dataset.quality}}));
-}));
+// v2.4: shared quality control for lobby, paused match, shortcut, and on-screen badge.
+const graphicsProfiles=['performance','high','ultra'];
+const graphicsBadge=$('gfxTag');
+function refreshGraphicsButtons(){
+ const quality=window.StrikeZoneRenderBridge.quality;
+ document.querySelectorAll('[data-quality],[data-pause-quality]').forEach(b=>{
+  const profile=b.dataset.quality||b.dataset.pauseQuality;
+  b.classList.toggle('active',profile===quality);
+  b.setAttribute('aria-pressed',String(profile===quality));
+ });
+ graphicsBadge.title='Click after releasing the mouse with Esc; press G during play. Current: '+quality.toUpperCase();
+ graphicsBadge.setAttribute('aria-label','Graphics '+quality+'; press G or click to change');
+}
+function selectGraphicsQuality(profile){
+ if(!graphicsProfiles.includes(profile))return;
+ window.StrikeZoneRenderBridge.quality=profile;
+ try{localStorage.setItem('strikezone-quality-v24',profile);}catch(e){}
+ refreshGraphicsButtons();
+ window.dispatchEvent(new CustomEvent('strike-zone-graphics',{detail:{profile}}));
+ if(running&&window.__strike3DActive)announce('GRAPHICS: '+(profile==='performance'?'FAST':profile.toUpperCase()),1.3);
+ if(!window.__strike3DActive){
+  const status=$('rendererState');
+  if(status&&running)status.textContent='GPU ENHANCED RENDERER UNAVAILABLE · PROFILE WILL APPLY WHEN WEBGL2 STARTS';
+  if(running)announce('GPU ENHANCED GRAPHICS UNAVAILABLE',1.6);
+ }
+}
+function cycleGraphicsQuality(){
+ if(!window.__strike3DActive){
+  if(running)announce('GPU ENHANCED GRAPHICS UNAVAILABLE',1.6);
+  else $('rendererState').textContent='GPU ENHANCED RENDERER UNAVAILABLE · ENABLE GRAPHICS ACCELERATION';
+  return;
+ }
+ const current=window.StrikeZoneRenderBridge.quality;
+ selectGraphicsQuality(graphicsProfiles[(graphicsProfiles.indexOf(current)+1)%graphicsProfiles.length]);
+}
+for(const btn of document.querySelectorAll('#qualityBtns button'))btn.addEventListener('click',()=>selectGraphicsQuality(btn.dataset.quality));
+graphicsBadge.addEventListener('click',cycleGraphicsQuality);
+let savedQuality=null;
+try{savedQuality=localStorage.getItem('strikezone-quality-v24');}catch(e){}
+if(graphicsProfiles.includes(savedQuality))window.StrikeZoneRenderBridge.quality=savedQuality;
+refreshGraphicsButtons();
+window.StrikeZoneGraphicsTest={selectGraphicsQuality,cycleGraphicsQuality,getQuality:()=>window.StrikeZoneRenderBridge.quality};
 if(!document.getElementById('rendererState').textContent.includes('renderer'))document.getElementById('rendererState').textContent='SMART RENDERER · Loading enhanced engine';
 
 })();
