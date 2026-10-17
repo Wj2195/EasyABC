@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.1 — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.2 — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -130,18 +130,32 @@ html,body{height:100%;height:100dvh;overscroll-behavior:none;-webkit-user-select
  .topHUD .scoreHead{transform:skew(-8deg) scale(.78);transform-origin:top center}
  #minimap{width:75px;height:75px;top:69px}
 }
+
+/* v3.2: graphics selection belongs in the lobby dashboard, never the combat HUD */
+#gfxTag{display:none!important;visibility:hidden!important;pointer-events:none!important}
+.ammoRow strong{font-size:38px!important;line-height:1.0}
+.ammoRow #reserveCount{font-size:19px!important}
+.ammoSlash{font-size:18px!important}
+.ammoBullet{font-size:15px!important}
+@media(max-width:800px),(hover:none) and (pointer:coarse){
+ .ammoRow strong{font-size:27px!important;line-height:1.0}
+ .ammoRow #reserveCount{font-size:14px!important}
+ .ammoSlash{font-size:13px!important}
+ .ammoBullet{font-size:12px!important;margin-left:3px}
+ .weaponPanel{padding:9px 11px}
+}
 </style>
 </head>
 <body>
 <canvas id="arena" aria-label="3D first-person shooter game"></canvas>
-<button type="button" id="gfxTag" title="Click to cycle FAST / HIGH / ULTRA (press G while playing)" aria-label="Graphics quality: press G or click to change">SMART GRAPHICS · LOADING</button><div id="vignette"></div><div id="damageOverlay"></div><div id="unstuckTip">PRESS U TO REPOSITION FROM OBSTACLE</div>
+<span id="gfxTag" aria-hidden="true" hidden>SMART GRAPHICS · LOADING</span><div id="vignette"></div><div id="damageOverlay"></div><div id="unstuckTip">PRESS U TO REPOSITION FROM OBSTACLE</div>
 <div id="gameToast" role="status" aria-live="polite"></div><div id="mobileRotateHint" aria-hidden="true">↻ ROTATE TO LANDSCAPE FOR BETTER CONTROLS</div><div id="mainMenu" class="screen">
   <header class="menuHeader"><div class="brand"><div class="brandIcon">SZ</div><div>STRIKE<span>ZONE</span><small>TACTICAL ARENA</small></div></div><div class="headerRight"><div class="onlineBadge"><i></i> OFFLINE TRAINING BUILD</div><div class="pilot">◈ &nbsp; <span id="pilotRank">GUEST OPERATIVE</span></div></div></header>
   <aside class="trainingOptions" aria-label="Single-player difficulty">
     <div class="optionHead">FIELD TRAINING <span>SOLO / OFFLINE</span></div>
     <div class="optionLabel">BOT DIFFICULTY</div>
     <div class="difficultyBtns" id="difficultyBtns"><button class="diffBtn" data-diff="rookie">ROOKIE</button><button class="diffBtn active" data-diff="regular">REGULAR</button><button class="diffBtn" data-diff="veteran">VETERAN</button></div>
-    <div class="optionLabel" style="margin-top:17px">GRAPHICS QUALITY · V3.0</div>
+    <div class="optionLabel" style="margin-top:17px">GRAPHICS QUALITY · MENU SETTINGS</div>
     <div class="qualityBtns" id="qualityBtns"><button type="button" data-quality="performance">FAST</button><button type="button" data-quality="high" class="active">HIGH</button><button type="button" data-quality="ultra">ULTRA</button></div>
     <div id="rendererState" class="rendererState" aria-live="polite">Graphics engine: initializing</div>
     <div class="optionLabel" style="margin-top:10px">HORIZONTAL LOOK</div>
@@ -163,7 +177,7 @@ html,body{height:100%;height:100dvh;overscroll-behavior:none;-webkit-user-select
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.1 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.2 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button type="button" id="hudSound" title="Mute / unmute sound" aria-label="Sound on">♪</button><button type="button" id="hudFullscreen" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
@@ -867,19 +881,14 @@ if(running&&!paused&&!ended){matchRemaining-=dt;if(matchRemaining<=0){matchRemai
 renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
 function startGame(){document.body.classList.add('playing');ensureAudio();mode=document.querySelector('.modeCard.selected')?.dataset.mode||'tdm';resetGame();running=true;paused=false;ended=false;$('mainMenu').classList.add('hidden');hud.classList.remove('hidden');$('modal').classList.add('hidden');$('matchMode').textContent=mode==='tdm'?'TEAM DEATHMATCH':mode==='ffa'?'FREE FOR ALL':'GUN RACE';$('feed').innerHTML='';canvas.requestPointerLock?.();announce('MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
 function goMenu(){document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
-const helpEntries=[['F','TOGGLE FULLSCREEN'],['G','CYCLE GRAPHICS FAST / HIGH / ULTRA'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['1 / 2 / 3','CHANGE WEAPON'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
+const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['1 / 2 / 3','CHANGE WEAPON'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
 function openModal(kind,title,subtitle){modalType=kind;if(running)paused=true;player.shoot=false;$('modalEyebrow').textContent=kind==='help'?'FIELD MANUAL //':kind==='result'?'AFTER ACTION REPORT //':'TACTICAL INTERFACE //';$('modalTitle').textContent=title;$('modalSubtitle').textContent=subtitle;
 const content=$('modalContent');if(kind==='help'){content.innerHTML='<div class="controlsGrid">'+helpEntries.map(([a,b])=>`<div>${b}<b>${a}</b></div>`).join('')+'</div><p>Mobile: left joystick to move, swipe the right side to aim, and use the on-screen action buttons.</p>';}else{const others=bots.map(b=>({name:b.name,kills:b.kills,team:b.team})).sort((a,b)=>b.kills-a.kills).slice(0,5);content.innerHTML=`<div class="modalStat"><div><strong>${player.kills}</strong><small>KILLS</small></div><div><strong>${player.deaths}</strong><small>DEATHS</small></div><div><strong>${Math.max(0,Math.round(player.kills*100+player.kills*50))}</strong><small>XP EARNED</small></div></div><p style="margin:20px 0 7px;font-weight:bold">SCOREBOARD</p>${[['YOU',player.kills],...others.map(b=>[b.name,b.kills])].map(([n,v])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ffffff1c;padding:8px 0;color:#d8e6ed;font-size:12px"><span>${n}</span><b>${v} ELIMINATIONS</b></div>`).join('')}`;}
-if(kind==='pause'){
- content.insertAdjacentHTML('beforeend',`<section class="gfxPauseWrap"><strong>GRAPHICS QUALITY</strong><div class="qualityBtns"><button type="button" data-pause-quality="performance">FAST</button><button type="button" data-pause-quality="high">HIGH</button><button type="button" data-pause-quality="ultra">ULTRA</button></div><p>Choose here, click the bottom-right status badge after releasing the cursor, or press <b>G</b> during play. ULTRA uses more GPU power.</p></section>`);
- content.querySelectorAll('[data-pause-quality]').forEach(b=>b.addEventListener('click',()=>selectGraphicsQuality(b.dataset.pauseQuality)));
- refreshGraphicsButtons();
-}
 $('modal').classList.remove('hidden');$('resumeBtn').textContent=kind==='result'?'PLAY AGAIN ▶':kind==='help'&&!running?'BACK TO LOBBY':'RESUME MATCH ▶';$('resumeBtn').onclick=()=>{if(kind==='result')startGame();else closeModal();};$('menuBtn').textContent=running?'BACK TO MENU':'CLOSE';$('menuBtn').onclick=()=>running?goMenu():closeModal();document.exitPointerLock?.();}
 function closeModal(){if(modalType==='result')return;$('modal').classList.add('hidden');if(running){paused=false;if(!matchRemaining||ended)return;canvas.requestPointerLock?.();}else paused=false;}
 function pauseGame(){if(!running||ended)return;if(!$('modal').classList.contains('hidden'))closeModal();else openModal('pause','MATCH PAUSED','Take a moment, check the scoreboard, or return to the lobby.');}
 $('deploy').addEventListener('click',startGame);$('howTo').addEventListener('click',()=>openModal('help','CONTROLS & TACTICS','Master these controls before deploying into the arena.'));document.querySelectorAll('.modeCard').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.modeCard').forEach(c=>c.classList.remove('selected'));b.classList.add('selected');beep('switch');}));$('pauseBtn').addEventListener('click',pauseGame);$('closeModal').addEventListener('click',closeModal);$('resumeBtn').addEventListener('click',closeModal);$('menuBtn').addEventListener('click',goMenu);
-window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyG'&&!e.repeat){e.preventDefault();cycleGraphicsQuality();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='KeyV')player.ads=!player.ads;});window.addEventListener('keyup',e=>{keys[e.code]=false;});
+window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='KeyV')player.ads=!player.ads;});window.addEventListener('keyup',e=>{keys[e.code]=false;});
 canvas.addEventListener('click',()=>{if(running&&!paused&&!ended&&document.pointerLockElement!==canvas&&matchRemaining>0)canvas.requestPointerLock?.();});canvas.addEventListener('mousedown',e=>{if(running&&!paused){if(e.button===0)player.shoot=true;if(e.button===2)player.ads=true;}});window.addEventListener('mouseup',e=>{if(e.button===0)player.shoot=false;if(e.button===2)player.ads=false;});canvas.addEventListener('contextmenu',e=>e.preventDefault());// v2.1: corrected look is the reverse of the previous build's X/Y mapping.
 let lookDirection='corrected';
 try{lookDirection=localStorage.getItem('strikezone-look-v21')==='original'?'original':'corrected';}catch(e){}
@@ -1080,8 +1089,8 @@ function refreshGraphicsButtons(){
   b.classList.toggle('active',profile===quality);
   b.setAttribute('aria-pressed',String(profile===quality));
  });
- graphicsBadge.title='Click after releasing the mouse with Esc; press G during play. Current: '+quality.toUpperCase();
- graphicsBadge.setAttribute('aria-label','Graphics '+quality+'; press G or click to change');
+ graphicsBadge.title='Graphics quality (change from the main lobby dashboard): '+quality.toUpperCase();
+ graphicsBadge.setAttribute('aria-label','Graphics '+quality+'; set from main lobby dashboard');
 }
 function selectGraphicsQuality(profile){
  if(!graphicsProfiles.includes(profile))return;
@@ -1106,7 +1115,7 @@ function cycleGraphicsQuality(){
  selectGraphicsQuality(graphicsProfiles[(graphicsProfiles.indexOf(current)+1)%graphicsProfiles.length]);
 }
 for(const btn of document.querySelectorAll('#qualityBtns button'))btn.addEventListener('click',()=>selectGraphicsQuality(btn.dataset.quality));
-graphicsBadge.addEventListener('click',cycleGraphicsQuality);
+
 let savedQuality=null;
 try{savedQuality=localStorage.getItem('strikezone-quality-v24');}catch(e){}
 if(graphicsProfiles.includes(savedQuality))window.StrikeZoneRenderBridge.quality=savedQuality;
