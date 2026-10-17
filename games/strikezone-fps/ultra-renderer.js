@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v2.0 | optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.0 | major art overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -100,7 +100,7 @@ async function startModernRenderer(THREE){
     const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;
     map.wrapS=map.wrapT=THREE.RepeatWrapping;map.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
     const m=new THREE.MeshStandardMaterial({color:neutral[id]||0xc2b2a0,map,roughness:glass?.24:metal?.52:wood?.88:.94,
-      metalness:metal?.53:glass?.18:.02,side:THREE.DoubleSide,emissive:light?new THREE.Color(neutral[id]||0xffffff):new THREE.Color(0x000000),
+      metalness:metal?.53:glass?.18:.02,side:THREE.DoubleSide,bumpMap:(stone||wood||metal)?map:null,bumpScale:stone?.036:wood?.025:metal?.016:0,emissive:light?new THREE.Color(neutral[id]||0xffffff):new THREE.Color(0x000000),
       emissiveIntensity:light?.16:0,depthWrite:true});
     mats.set(id,m);return m;
   };
@@ -180,6 +180,113 @@ async function startModernRenderer(THREE){
   dustGeo.setAttribute('position',new THREE.Float32BufferAttribute(dustPos,3));
   const dust=new THREE.Points(dustGeo,new THREE.PointsMaterial({color:0xfbe2ac,size:.055,transparent:true,opacity:.25,depthWrite:false}));scene.add(dust);
 
+
+  // V3.0 art pass: decorative meshes are intentionally nonblocking.
+  // All playable collision geometry continues to come from index.html.
+  const art=new THREE.Group();scene.add(art);
+  const artStone=new THREE.MeshStandardMaterial({color:0xe0cbaa,roughness:.87,bumpMap:matFor(1).map,bumpScale:.024});
+  const artDark=new THREE.MeshStandardMaterial({color:0x273b46,metalness:.60,roughness:.42});
+  const artBronze=new THREE.MeshStandardMaterial({color:0xa97842,metalness:.45,roughness:.48});
+  const artWood=new THREE.MeshStandardMaterial({color:0xa76437,map:matFor(4).map,roughness:.78});
+  const artLeaf=new THREE.MeshStandardMaterial({color:0x3d7359,roughness:.91,side:THREE.DoubleSide});
+  const artCloth=new THREE.MeshStandardMaterial({color:0x4a989a,roughness:.97,side:THREE.DoubleSide});
+  const artRedCloth=new THREE.MeshStandardMaterial({color:0xb75c4b,roughness:.96,side:THREE.DoubleSide});
+  const artLight=new THREE.MeshStandardMaterial({color:0x82e1e7,emissive:0x3ca8b6,emissiveIntensity:1.6,roughness:.26});
+  function decorBox(x,y,z,w,h,d,mat,ry=0){
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+    m.position.set(x,y,z);m.rotation.y=ry;m.castShadow=true;m.receiveShadow=true;art.add(m);return m;
+  }
+  function decorCylinder(x,y,z,r,h,mat,sides=12){
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,sides),mat);
+    m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;art.add(m);return m;
+  }
+  function cable(ax,ay,az,bx,by,bz){
+    const pts=[];for(let j=0;j<=10;j++){const t=j/10;pts.push(new THREE.Vector3(ax+(bx-ax)*t,ay+(by-ay)*t-Math.sin(t*Math.PI)*.48,az+(bz-az)*t));}
+    const m=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),24,.026,5,false),artDark);
+    m.castShadow=true;art.add(m);
+  }
+  function palm(x,z,size){
+    decorCylinder(x,2*size,z,.15*size,4*size,artWood,8);
+    for(let i=0;i<7;i++){
+      const a=i*Math.PI*2/7;
+      const l=new THREE.Mesh(new THREE.ConeGeometry(.42*size,3.8*size,3),artLeaf);
+      l.position.set(x+Math.cos(a)*1.10*size,3.9*size,z+Math.sin(a)*1.10*size);
+      l.rotation.set(Math.PI/2-.27,0,-a);l.castShadow=true;art.add(l);
+    }
+  }
+  // High-set market awnings and rooftop equipment make building silhouettes distinct.
+  for(const [x,z,w,d,mat] of [[-18,-6,5.2,2.6,artCloth],[17,5,4.8,2.4,artRedCloth],[0,23,5.5,2.6,artCloth]]){
+    decorBox(x,4.8,z,w,.095,d,mat);
+    for(const side of [-1,1])decorBox(x+side*w*.46,4.57,z,.08,.43,d,mat);
+    decorBox(x,4.90,z-d*.48,w+.06,.10,.12,artBronze);
+  }
+  for(const [x,z,h] of [[-23,-13,7],[23,13,7],[22,-19,5.4],[-22,20,5.8],[0,26,5.5],[0,-27,5.5]]){
+    decorBox(x,h+.48,z,2.55,.26,1.75,artDark);
+    decorBox(x,h+.66,z,2.22,.08,1.46,artBronze);
+    for(const v of [-.68,.68])decorBox(x+v,h+.85,z,.11,.34,1.25,artDark);
+    decorCylinder(x+.65,h+1.20,z-.55,.16,.65,artDark);
+    decorBox(x-.65,h+.94,z+.48,1.25,.22,.42,artStone);
+  }
+  // Street furniture and distant palms are decorative; player movement is never blocked by them.
+  for(const [x,z,k] of [[-28,-25,1.0],[28,25,.92],[-28,25,.86],[28,-25,1.05]])palm(x,z,k);
+  for(const [x,z] of [[-27,-12],[27,14],[-26,17],[26,-13]]){
+    decorCylinder(x,3,z,.07,6,artDark);
+    decorBox(x,5.95,z,.60,.25,.44,artBronze);
+    const lamp=new THREE.Mesh(new THREE.SphereGeometry(.13,10,8),artLight);lamp.position.set(x,5.70,z);art.add(lamp);
+  }
+  cable(-27,5.8,-12,-26,5.8,17);
+  cable(27,5.8,14,26,5.8,-13);
+  // More recognizable supply containers, overhead signboards and red / blue markers.
+  for(const [x,z] of [[-22,5],[23,-3],[-17,25],[17,-25]]){
+    decorBox(x,3.72,z,2.9,.88,.12,artDark);
+    for(const side of [-1,1])decorBox(x+side*1.32,3.70,z,.10,.92,.17,artBronze);
+    decorBox(x,3.72,z+.095,2.45,.15,.07,artLight);
+  }
+  // Higher-detail muzzle and sight for the existing first-person weapon meshes.
+  const gunAccents=new THREE.Group();gunScene.add(gunAccents);
+  const accentMetal=new THREE.MeshStandardMaterial({color:0x242e38,metalness:.82,roughness:.25});
+  const accentRubber=new THREE.MeshStandardMaterial({color:0x10151a,metalness:.18,roughness:.82});
+  const accentLens=new THREE.MeshStandardMaterial({color:0x1c8f9d,emissive:0x17616b,emissiveIntensity:.24,metalness:.42,roughness:.14});
+  function gunPart(w,h,d,x,y,z,mat){
+    const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+    o.position.set(x,y,z);gunAccents.add(o);return o;
+  }
+  gunPart(.21,.12,.39,.40,-.18,-.72,accentMetal);
+  gunPart(.28,.15,.31,.40,-.18,-.91,accentRubber);
+  gunPart(.055,.035,.55,.40,-.04,-1.00,accentMetal);
+  gunPart(.05,.05,.08,.40,-.01,-1.38,accentLens);
+  gunPart(.08,.18,.22,.53,-.35,-.83,accentRubber);
+  const muzzleGlow=new THREE.PointLight(0xffb55d,0,2.3,2);muzzleGlow.position.set(.4,-.24,-1.57);gunScene.add(muzzleGlow);
+  // Soldier silhouettes gain rounded helmets, armor plates, pouches and team patches.
+  const armorBlue=new THREE.MeshStandardMaterial({color:0x2c6a90,metalness:.18,roughness:.72});
+  const armorRed=new THREE.MeshStandardMaterial({color:0xa54837,metalness:.15,roughness:.76});
+  const armorDark=new THREE.MeshStandardMaterial({color:0x2a3239,metalness:.19,roughness:.79});
+  const teamPatches=[];
+  for(const root of botHelmets){
+    const plate=(w,h,d,x,y,z,mat)=>{
+      const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;root.add(m);return m;
+    };
+    plate(.59,.43,.16,0,1.20,.27,armorDark);
+    plate(.44,.52,.20,0,1.23,-.31,armorDark);
+    for(const k of [-1,1]){
+      plate(.22,.17,.31,k*.52,1.37,.04,armorDark);
+      plate(.17,.22,.15,k*.20,.53,.16,armorDark);
+      plate(.20,.31,.17,k*.37,1.03,.30,armorDark);
+    }
+    plate(.36,.11,.24,0,1.83,.12,armorDark);
+    plate(.42,.10,.08,0,1.75,.36,accentLens);
+    teamPatches.push(plate(.46,.15,.045,0,1.27,.38,armorBlue));
+  }
+  // Pooled tracer meshes avoid creating GPU buffers for each hit.
+  const tracerPool=[];
+  const tracerGeom=new THREE.CylinderGeometry(.010,.016,1,5);
+  const tracerFriendly=new THREE.MeshBasicMaterial({color:0xffecb2});
+  const tracerEnemy=new THREE.MeshBasicMaterial({color:0xff7563});
+  const upAxis=new THREE.Vector3(0,1,0);
+  for(let i=0;i<14;i++){
+    const m=new THREE.Mesh(tracerGeom,tracerFriendly);m.visible=false;m.frustumCulled=false;scene.add(m);tracerPool.push(m);
+  }
+
   let quality=bridge.quality||'high',sizeW=0,sizeH=0,shadowSize=0,activeActors=[],activeGun=[];
   let lastActors=-1,lastGun=-1,started=false;
   const cleanup=(meshes)=>{for(const m of meshes){m.parent?.remove(m);m.geometry.dispose();}};
@@ -214,9 +321,21 @@ async function startModernRenderer(THREE){
       dust.position.y=Math.sin(s.nowSec*.35)*.13;
       const elapsed=stamp*.001;
       if(elapsed-lastActors>.046){cleanup(activeActors);activeActors=grouped(bridge.actorGeometry(),{dynamic:true});for(const m of activeActors)actorGroup.add(m);lastActors=elapsed;
-        const b=bridge.botData();for(let i=0;i<botHelmets.length;i++){const g=botHelmets[i],bot=b[i];g.visible=!!bot;if(bot){g.position.set(bot.x,0,bot.z);g.rotation.y=-bot.yaw;}}}
+        const b=bridge.botData();for(let i=0;i<botHelmets.length;i++){const g=botHelmets[i],bot=b[i];g.visible=!!bot;if(bot){g.position.set(bot.x,Math.sin(bot.walk)*.012,bot.z);g.rotation.y=-bot.yaw;teamPatches[i].material=bot.team===0?armorBlue:armorRed;}}}
       if(elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
+      for(let i=0;i<tracerPool.length;i++){
+        const o=tracerPool[i],t=bridge.tracerData()[i];
+        o.visible=!!t;if(!t)continue;
+        const delta=new THREE.Vector3(t.X-t.x,t.Y-t.y,t.Z-t.z);
+        const length=delta.length();if(length<.002){o.visible=false;continue;}
+        o.position.set((t.x+t.X)*.5,(t.y+t.Y)*.5,(t.z+t.Z)*.5);
+        o.scale.y=length;o.material=t.friendly?tracerFriendly:tracerEnemy;
+        o.quaternion.setFromUnitVectors(upAxis,delta.normalize());
+      }
       const playerVisible=s.running&&s.alive;
+      gunAccents.visible=playerVisible&&s.weapon<4;
+      gunAccents.position.y=s.recoil*.09;
+      muzzleGlow.intensity=playerVisible&&s.flash>.01?Math.min(8,s.flash*16):0;
       gunGroup.visible=playerVisible;
       renderer.autoClear=false;renderer.clear(true,true,true);renderer.render(scene,camera);
       if(playerVisible){renderer.clearDepth();renderer.render(gunScene,gunCam);}
