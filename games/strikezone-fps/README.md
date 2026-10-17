@@ -32,3 +32,12 @@ WASD move, mouse look, LMB fire, RMB aim, Shift sprint, Space jump, C crouch, R 
 ## Test status
 
 The core game, menus and legacy renderer have been checked in automated Chromium in software mode, including 65 randomized safe spawn tests across desktop and smaller viewport sizes, with zero errors. Both game JS files pass syntax checks. The optional Three.js GPU engine could not be fully tested in the test environment because of network and WebGL2 restrictions; validate it on a WebGL2-enabled device after deployment.
+
+
+## v2.4 graphics control fix
+
+The bottom-right **ENHANCED WEBGL2** label is now an interactive graphics control whenever the mouse cursor is available. During pointer-lock shooting, the cursor is captured by the game, so **press G** instead. Each press cycles **FAST → HIGH → ULTRA → FAST**; from HIGH a single press selects ULTRA.
+
+You can also press **P/Esc** to pause and select FAST, HIGH or ULTRA with visible buttons, or use the lobby graphics options. Quality preference is saved in this browser.
+
+ULTRA now uses genuine 2x internal pixel-resolution scaling (rather than being capped by devicePixelRatio on 1x displays), 2048px directional-shadow maps, and extra GPU work. HIGH uses 1.5x resolution and 1024px shadow maps. FAST disables dynamic shadows and uses 0.95x resolution. If the enhanced WebGL2 engine is unavailable, these GPU-only upgrades cannot take effect; the game shows an explicit message instead of silently failing.
