@@ -6,7 +6,7 @@ const bridge = window.StrikeZoneRenderBridge;
 const status = document.getElementById('rendererState');
 const tag = document.getElementById('gfxTag');
 const updateStatus=(s)=>{if(status)status.textContent=s;};
-const updateTag=(s)=>{if(tag)tag.textContent=s;};
+const updateTag=(s)=>{if(tag){tag.textContent=s+(s.startsWith('ENHANCED WEBGL2')?' · PRESS G TO CHANGE':'');tag.dataset.rendererLabel=s;}};
 
 if (!bridge) {
   updateStatus('Graphics bridge unavailable — classic renderer active');
@@ -186,13 +186,13 @@ async function startModernRenderer(THREE){
   function setQuality(profile){quality=profile;
     const settings=profile==='performance'?{dpr:.95,shadow:0,shadowSize:512,exposure:1.40}:
       profile==='ultra'?{dpr:2,shadow:1,shadowSize:2048,exposure:1.52}:{dpr:1.5,shadow:1,shadowSize:1024,exposure:1.46};
-    const dpr=Math.min(settings.dpr,devicePixelRatio||1);
+    const dpr=settings.dpr; // ULTRA supersamples on 1x displays for visibly higher detail.
     renderer.setPixelRatio(dpr);renderer.toneMappingExposure=settings.exposure;
     renderer.shadowMap.enabled=!!settings.shadow;
     if(shadowSize!==settings.shadowSize){sun.shadow.mapSize.set(settings.shadowSize,settings.shadowSize);
       sun.shadow.map?.dispose();sun.shadow.map=null;shadowSize=settings.shadowSize;}
     sizeW=0;sizeH=0;
-    updateStatus(`ENHANCED 3D · ${profile.toUpperCase()} · PBR MATERIALS · SHADOWS ${settings.shadow?'ON':'OFF'}`);
+    updateStatus(`ENHANCED 3D · ${profile.toUpperCase()} · ${dpr.toFixed(2)}x RESOLUTION · SHADOWS ${settings.shadow?'ON':'OFF'} (${settings.shadowSize}px)`);
     updateTag(`ENHANCED WEBGL2 · ${profile.toUpperCase()} QUALITY`);
   }
   setQuality(quality);
