@@ -1,30 +1,34 @@
-# STRIKEZONE FPS — v1.6 (Contrast & Collision)
+# STRIKEZONE FPS — Solo Training v2.0 (Graphics Engine Upgrade)
 
-Original browser-based single-player FPS against AI bots. No multiplayer, backend, or external art assets.
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=2.0
 
-## Play
+Original browser-based 3D FPS for one human player against AI bots. Multiplayer is not included.
 
-https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=1.6
+## Graphics v2.0
 
-## Changes in v1.6
+- Optional modern WebGL2 rendering layer using [Three.js](https://threejs.org/) r160.1 (MIT license) loaded from jsDelivr, with unpkg backup. The game remains playable even if the CDN module is unavailable.
+- High-quality procedural texture materials with stone masonry, timber, metal, tinted windows and map signage. No commercial game meshes or copyrighted art assets are used.
+- Hemisphere lighting, directional sunlight, physically based materials (metalness/roughness), soft shadows, tone mapping, atmospheric fog, sky dome, and additional soldier helmets and accessories when WebGL2 is available.
+- Graphics quality selector: FAST / HIGH / ULTRA controls GPU resolution and shadow settings. If hardware acceleration is disabled, the selector is unavailable and the proven software renderer remains active.
+- Better-differentiated temple walls, building facade colors, illuminated equipment, marked lanes, industrial props and roof fixtures in **both** renderer paths.
+- Preserves v1.6 safe spawn points, wall sliding, manual U unstick, and all three AI modes.
 
-- Prevents player and AI respawns inside walls, buildings, sandbags or other solid objects by searching for sufficiently clear spawn points.
-- Replaces the old movement resolution with a circle-based collision test, small sweep steps, and smooth axis sliding along walls and barricades.
-- Adds **U** as an emergency position-recovery key, with a prompt after sustained blocked movement.
-- Introduces greater visual contrast: light textured masonry, blue window panels, dark industrial steel, brown wooden crates, yellow caution decals, and stronger outline separation.
-- Adds procedural cached Canvas textures in the software fallback and updates WebGL material shading.
-- Adds backface culling and texture budgets for better performance in the software rendering mode.
+## Enable enhanced graphics
+
+Modern browser graphics need **WebGL2** and an internet connection for loading the Three.js module. In Chrome, use **Settings > System > Use graphics acceleration when available**, restart Chrome, then refresh this page. Browser privacy policy, drivers and device limitations can still prevent WebGL2 from working. If the tag at bottom right says `SOFTWARE GRAPHICS`, the game is in compatibility mode. HIGH / ULTRA rendering needs the tag to say `ENHANCED WEBGL2`.
+
+## Performance
+
+- FAST: fewer shadows, lower internal GPU resolution.
+- HIGH: GPU physically based materials plus 1024 px shadow map.
+- ULTRA: higher resolution with up to 2048 px shadow map (best for desktop GPUs).
+
+High settings can significantly reduce FPS on modest graphics hardware. These are engine improvements, not photorealistic AAA game assets.
 
 ## Controls
 
-WASD move, mouse look, left click fire, right click aim, Shift sprint, Space jump, C crouch, R reload, number keys 1–5 switch weapon, P or Esc pause, **U** unstick / recover.
+WASD move, mouse look, LMB fire, RMB aim, Shift sprint, Space jump, C crouch, R reload, 1–5 weapons, P/Esc pause, U force unstick. Mobile touch controls are preliminary.
 
-## Why the game may still look low-poly
+## Test status
 
-The browser automatically uses a software renderer when it cannot initialize WebGL. If a banner says **SOFTWARE GRAPHICS MODE**, try enabling Chrome Settings > System > Use graphics acceleration when available, restart Chrome and ensure graphics drivers are up to date. WebGL may be unavailable on some devices or restricted browsers.
-
-The software renderer is a compatibility mode and cannot match modern engine rendering quality. This remains a procedural, low-poly FPS prototype.
-
-## Checks
-
-Tested in automated Chromium without WebGL: three game modes, start/pause/menu/weapon controls and 120 forced player respawns with no spawn collisions; wall-sliding remained outside collision bounds. JavaScript had no uncaught errors. WebGL visual testing on a hardware-accelerated PC is still needed.
+The core game, menus and legacy renderer have been checked in automated Chromium in software mode, including 65 randomized safe spawn tests across desktop and smaller viewport sizes, with zero errors. Both game JS files pass syntax checks. The optional Three.js GPU engine could not be fully tested in the test environment because of network and WebGL2 restrictions; validate it on a WebGL2-enabled device after deployment.
