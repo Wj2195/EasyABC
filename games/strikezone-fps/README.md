@@ -1,25 +1,30 @@
-# STRIKEZONE FPS — Solo AI Edition · Phase 2 (v1.4)
+# STRIKEZONE FPS — v1.6 (Contrast & Collision)
 
-Original browser FPS prototype inspired by the arena-shooter genre. Single-player versus AI bots only — no online matchmaking or multiplayer server.
+Original browser-based single-player FPS against AI bots. No multiplayer, backend, or external art assets.
 
 ## Play
-https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=1.4
 
-## Features
-- Three AI game modes: Team Deathmatch, Free for All, Gun Race
-- Five weapons: VORTEX AR, RAPTOR SMG, RANGER DMR, JUDGE 12, SPECTRE P9
-- Rookie, Regular and Veteran bot difficulty, browser-local XP and training record
-- Phase 2 procedural 3D arena detail: temple reliefs, stonework, towers, floodlights, barrels, pallets, rocks, rooftop details and ridges
-- Enhanced soldier models with armor, helmets, goggles, equipment and procedural walking motion
-- Detailed weapon rails, optics, grips, muzzle hardware, upgraded sparks, new shading and sky
-- Canvas 2D compatibility rendering now clips geometry near the camera and depth-sorts actors with scenery, improving occlusion behind walls
-- No third-party art required; everything lives in one HTML file
+https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=1.6
+
+## Changes in v1.6
+
+- Prevents player and AI respawns inside walls, buildings, sandbags or other solid objects by searching for sufficiently clear spawn points.
+- Replaces the old movement resolution with a circle-based collision test, small sweep steps, and smooth axis sliding along walls and barricades.
+- Adds **U** as an emergency position-recovery key, with a prompt after sustained blocked movement.
+- Introduces greater visual contrast: light textured masonry, blue window panels, dark industrial steel, brown wooden crates, yellow caution decals, and stronger outline separation.
+- Adds procedural cached Canvas textures in the software fallback and updates WebGL material shading.
+- Adds backface culling and texture budgets for better performance in the software rendering mode.
 
 ## Controls
-WASD to move, mouse to look, left mouse to fire, right mouse to aim, Shift sprint, Space jump, C crouch, R reload, 1–5 change weapon, P or Esc pause.
 
-## Browser compatibility
-The game attempts WebGL first, automatically falling back to a slower software-based renderer if WebGL is unavailable. Browser tests passed for the compatibility renderer; the available test environment could not provide a WebGL context for an end-to-end WebGL visual test. Graphics remain stylized low-poly, rather than AAA photorealistic. Mobile controls are preliminary.
+WASD move, mouse look, left click fire, right click aim, Shift sprint, Space jump, C crouch, R reload, number keys 1–5 switch weapon, P or Esc pause, **U** unstick / recover.
 
-## Local save
-Training progress is stored on this browser only and can be lost if site data is cleared.
+## Why the game may still look low-poly
+
+The browser automatically uses a software renderer when it cannot initialize WebGL. If a banner says **SOFTWARE GRAPHICS MODE**, try enabling Chrome Settings > System > Use graphics acceleration when available, restart Chrome and ensure graphics drivers are up to date. WebGL may be unavailable on some devices or restricted browsers.
+
+The software renderer is a compatibility mode and cannot match modern engine rendering quality. This remains a procedural, low-poly FPS prototype.
+
+## Checks
+
+Tested in automated Chromium without WebGL: three game modes, start/pause/menu/weapon controls and 120 forced player respawns with no spawn collisions; wall-sliding remained outside collision bounds. JavaScript had no uncaught errors. WebGL visual testing on a hardware-accelerated PC is still needed.
