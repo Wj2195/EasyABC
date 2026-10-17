@@ -54,3 +54,17 @@ These visual objects are decorative, **not extra collision boxes**. The existing
 **GPU mode:** FAST (0.95x, shadows off), HIGH (1.5x, 1024px shadows), ULTRA (2.0x, 2048px shadows). The enhanced scene uses Three.js 0.160.1 loaded from public CDN endpoints when WebGL2 is available. If that code cannot load, the classic renderer remains the fallback, which will not show the new Three.js scenery. No multiplayer is included.
 
 **Validation:** After GitHub upload, the HTML and renderer module were fetched back successfully and inspected for the new art code and existing control fixes. A full visual WebGL2 playtest on the user's GPU is still outstanding.
+
+
+## v3.1 Mobile fullscreen, controls and sound
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.1
+
+- Fullscreen buttons are available in the lobby and top-right in a match. Keyboard **F** also toggles fullscreen on compatible browsers.
+- On Android Chrome, tap FULLSCREEN and rotate the phone to landscape. The game attempts to lock landscape when permitted.
+- On **iPhone Safari**, ordinary browser tabs may not allow page fullscreen. Tap Safari **Share → Add to Home Screen**, then open STRIKEZONE from its home-screen icon for a standalone, app-like display. A manifest and SVG icon are included; behavior depends on iOS version and browser.
+- Right-half touch swipe now matches the corrected PC camera direction. Swipe right to look right, up to look up. Camera and joystick gestures are independently captured so players can aim and move with two thumbs; both reset when gestures are interrupted or the device rotates.
+- Web Audio synthesizes weapon-dependent gunshots, magazine manipulation and the final reload click. Sound is on by default; SOUND buttons in the lobby and HUD can mute it. Mobile audio is unlocked by a user gesture when the game starts or FIRE is tapped.
+- Existing keyboard mouse, safe respawn, A/D strafe and graphics quality controls are unchanged.
+
+**Testing:** GitHub source integrity, JavaScript syntax and the directional math were checked. Actual fullscreen behavior and audio volume must be tested on the target phone. No online multiplayer is included.
