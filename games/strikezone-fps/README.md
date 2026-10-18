@@ -68,3 +68,15 @@ These visual objects are decorative, **not extra collision boxes**. The existing
 - Existing keyboard mouse, safe respawn, A/D strafe and graphics quality controls are unchanged.
 
 **Testing:** GitHub source integrity, JavaScript syntax and the directional math were checked. Actual fullscreen behavior and audio volume must be tested on the target phone. No online multiplayer is included.
+
+## v3.3 — Mobile combat layout and health regeneration
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.3
+
+- Ammo count reduced to 27 px on desktop and 19 px on touch devices; reserve numbers and icons are also more compact.
+- On touch devices, JUMP and CROUCH appear side-by-side near the bottom center. **Tap CROUCH once to crouch; tap again to stand.** CROUCH resets on respawn.
+- AIM is positioned next to FIRE on the right, with RELOAD and WEAPON SWAP nearby. The mobile controls use safe-area padding and have an independent look-swipe zone.
+- Health begins restoring **4 seconds after the most recent hit**, at **10 HP per second**, stopping at 100 HP. Taking another hit restarts the delay; health does not restore while dead or paused.
+- Preserves fullscreen, Web Audio effects, safe spawns, keyboard aiming/strafe corrections, and graphics selection on the main dashboard only.
+
+**Verification:** Repository file contents were fetched back and checked for the new control layout, regenerated health logic and preserved features. JavaScript parsed successfully and regeneration timing was simulated. In-device layout and gameplay should still be checked on your phone.
