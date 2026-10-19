@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.18 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.19 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -58,8 +58,8 @@ async function startModernRenderer(THREE){
   const gunFill=new THREE.DirectionalLight(0xa4cce5,1.15);gunFill.position.set(3,1,2);gunScene.add(gunFill);
   const hemi=new THREE.HemisphereLight(0xd7edff,0x66533b,2.0);scene.add(hemi);
   const sun=new THREE.DirectionalLight(0xffdfb6,3.4);
-  sun.position.set(-65,95,-38);sun.target.position.set(0,0,0);sun.castShadow=true;
-  sun.shadow.camera.left=-61;sun.shadow.camera.right=61;sun.shadow.camera.top=61;sun.shadow.camera.bottom=-61;
+  sun.position.set(-86,130,-52);sun.target.position.set(0,0,0);sun.castShadow=true;
+  sun.shadow.camera.left=-126;sun.shadow.camera.right=126;sun.shadow.camera.top=126;sun.shadow.camera.bottom=-126;
   sun.shadow.camera.near=.8;sun.shadow.camera.far=260;sun.shadow.bias=-.00028;sun.shadow.normalBias=.028;
   scene.add(sun,sun.target);
   const rim=new THREE.DirectionalLight(0x66b6d6,.82);rim.position.set(48,22,45);scene.add(rim);
@@ -149,10 +149,11 @@ async function startModernRenderer(THREE){
     const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
   };
   const signs=[
-    {label:'OUTPOST 06',sub:'NORTH COMMAND',color:'#eea849',pos:[-23,4.15,-6.25],yaw:0},
-    {label:'ALPHA / ENTRY',sub:'AUTHORIZED PERSONNEL',color:'#29b7da',pos:[22,3.8,-13.88],yaw:0},
-    {label:'TACTICAL ZONE',sub:'KEEP MOVING · FIND COVER',color:'#ec6d53',pos:[0,3.8,29.68],yaw:Math.PI},
-    {label:'STORAGE',sub:'CAUTION · HEAVY EQUIPMENT',color:'#ddc052',pos:[-22,4.0,24.6],yaw:Math.PI},
+    {label:'BLUE BASE',sub:'NORTH DEPLOYMENT',color:'#39bef2',pos:[0,3.55,-80.9],yaw:0},
+    {label:'RED BASE',sub:'SOUTH DEPLOYMENT',color:'#f3744f',pos:[0,3.55,80.9],yaw:Math.PI},
+    {label:'WEST MAZE',sub:'MULTIPLE ROUTES',color:'#b065d1',pos:[-24,3.9,-44.1],yaw:0},
+    {label:'EAST MAZE',sub:'CLEAR YOUR CORNERS',color:'#b065d1',pos:[24,3.9,44.1],yaw:Math.PI},
+    {label:'CENTRAL HUB',sub:'CROSS-LANE CONTROL',color:'#e8b860',pos:[0,4.2,-9.1],yaw:0},
   ];
   for(const sign of signs){
     const tex=signTex(sign.label,sign.sub,sign.color);const m=new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,fog:false});
