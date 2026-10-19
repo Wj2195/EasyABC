@@ -6,7 +6,9 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "TradeLens/**"
+      - "TradeLens/scan.py"
+      - "TradeLens/config.json"
+      - "TradeLens/index.html"
       - ".github/workflows/tradelens-scan.yml"
 permissions:
   contents: write
@@ -18,7 +20,7 @@ concurrency:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 16
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,15 +33,50 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python TradeLens/scan.py
-      - name: Save snapshot and dedupe alert state
+      - name: Save snapshot and dedupe alert state safely
+        shell: bash
         run: |
+          set -euo pipefail
+          cp TradeLens/data/snapshot.json "$RUNNER_TEMP/tradelens_snapshot.json"
+          cp TradeLens/state/state.json "$RUNNER_TEMP/tradelens_state.json"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add TradeLens/data/snapshot.json TradeLens/state/state.json
-          if ! git diff --cached --quiet; then
-            git commit -m "data: TradeLens snapshot [skip ci]"
-            git push
-          fi
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            git reset --hard origin/main
+            if python - <<'PY'
+          import json, os
+          from pathlib import Path
+          current = Path(os.environ['RUNNER_TEMP']) / 'tradelens_snapshot.json'
+          published = Path('TradeLens/data/snapshot.json')
+          try:
+              new_time = json.loads(current.read_text()).get('updated_at', '')
+              published_time = json.loads(published.read_text()).get('updated_at', '')
+              raise SystemExit(0 if published_time >= new_time else 1)
+          except (OSError, ValueError):
+              raise SystemExit(1)
+          PY
+            then
+              echo 'A newer or equal snapshot is already published; avoiding rollback.'
+              exit 0
+            fi
+            cp "$RUNNER_TEMP/tradelens_snapshot.json" TradeLens/data/snapshot.json
+            cp "$RUNNER_TEMP/tradelens_state.json" TradeLens/state/state.json
+            git add TradeLens/data/snapshot.json TradeLens/state/state.json
+            if git diff --cached --quiet; then
+              echo 'Snapshot unchanged.'
+              exit 0
+            fi
+            git commit -m 'data: TradeLens multi-TF snapshot [skip ci]'
+            if git push origin HEAD:main; then
+              echo 'Snapshot pushed successfully.'
+              exit 0
+            fi
+            echo "Push contention on attempt $attempt; retrying on newest main."
+            sleep "$((attempt * 2))"
+          done
+          echo 'Unable to push snapshot after retries' >&2
+          exit 1
       - uses: actions/upload-pages-artifact@v4
         with:
           path: .
