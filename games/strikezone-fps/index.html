@@ -2262,7 +2262,7 @@ function updateBots(dt){
   const withdrawing=b.aiMode==='retreat'||b.aiMode==='recover';
   // A target behind a wall on the other side of the map should not draw every
   // bot down the same middle lane. Until contact, fan out around the map.
-  const seeking=!!tar&&(visible||dist<21||nowSec-b.lastSeenAt<4);
+  const seeking=!!tar&&(mode==='zombie'||visible||dist<21||nowSec-b.lastSeenAt<4);
   if(!withdrawing&&!seeking){
    b.aiMode='patrol';
    if(!b.patrolGoal||nowSec>b.patrolUntil||
@@ -3289,6 +3289,7 @@ window.StrikeZoneRenderBridge={
  return data;},
  weaponGeometry:()=>{if(!running||!player.alive)return [];const data=[];weaponShape(data);return data;},
  tracerData:()=>tracers.map(t=>({x:t.x,y:t.y,z:t.z,X:t.X,Y:t.Y,Z:t.Z,friendly:t.friendly})),
+ monsterAttack:()=>boss?.alive?{until:boss.attackPulse||0,now:nowSec}:null,
  monsterData:()=>mode==='zombie'?aliveMonsters().map(m=>({
   id:m.id,x:m.x,z:m.z,yaw:m.yaw||0,hp:m.hp,maxHP:m.maxHP,
   boss:!!m.boss,agile:!!m.agile,phase:m.phase||0
