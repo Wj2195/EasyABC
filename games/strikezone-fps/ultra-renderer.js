@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.19 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.20 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -74,8 +74,8 @@ async function startModernRenderer(THREE){
     if(mats.has(id))return mats.get(id);
     const rng=randomSeed(id);
     const canvas=document.createElement('canvas');canvas.width=canvas.height=256;const c=canvas.getContext('2d');
-    const stone=[0,1,2,23,26,28].includes(id),wood=[4,7,14].includes(id),metal=[3,8,9,20,21,25].includes(id);
-    const glass=[10,25].includes(id),light=[15,18,19,24].includes(id);
+    const stone=[0,1,2,23,26,28,32,36,39].includes(id),wood=[4,7,14].includes(id),metal=[3,8,9,20,21,25,31,33,37,38].includes(id);
+    const glass=[10,25,35,40].includes(id),light=[15,18,19,24,34].includes(id);
     const masonryColor=stone?'#bfc0ae':wood?'#d2c19b':metal?'#b7c4ce':glass?'#accbd5':'#f0ede0';
     c.fillStyle=masonryColor;c.fillRect(0,0,256,256);
     if(stone){
@@ -91,9 +91,45 @@ async function startModernRenderer(THREE){
     }else if(metal){
       for(let y=0;y<=256;y+=34){c.fillStyle='rgba(11,25,40,.36)';c.fillRect(0,y,256,2);c.fillStyle='rgba(252,255,255,.13)';c.fillRect(0,y+4,256,1);}
       for(let x=12;x<256;x+=36)for(let y=10;y<256;y+=34){c.beginPath();c.arc(x,y,2.3,0,Math.PI*2);c.fillStyle='rgba(11,25,40,.45)';c.fill();}
-      if(id===25){const g=c.createLinearGradient(0,0,256,256);g.addColorStop(0,'#345e74');g.addColorStop(.48,'#6ca2ba');g.addColorStop(1,'#1f374f');c.fillStyle=g;c.globalAlpha=.78;c.fillRect(0,0,256,256);c.globalAlpha=1;}
+      if(id===25||id===35){const g=c.createLinearGradient(0,0,256,256);g.addColorStop(0,'#345e74');g.addColorStop(.48,'#6ca2ba');g.addColorStop(1,'#1f374f');c.fillStyle=g;c.globalAlpha=.78;c.fillRect(0,0,256,256);c.globalAlpha=1;}
     }else if(id===0){
       for(let j=0;j<900;j++){c.fillStyle=rng()>.5?'rgba(81,54,23,.1)':'rgba(255,255,225,.1)';c.fillRect(rng()*256,rng()*256,2+rng()*5,2+rng()*5);}
+    }
+
+    // Grime, serial plates, rolling shutter seams and weather staining create
+    // a more believable urban material scale than uniformly colored cubes.
+    if([31,37,38].includes(id)){
+      for(let y=0;y<256;y+=11){
+        c.fillStyle='rgba(0,0,0,.19)';c.fillRect(0,y,256,1.4);
+        c.fillStyle='rgba(255,255,255,.045)';c.fillRect(0,y+2,256,1);
+      }
+      for(let j=0;j<23;j++){
+        const x=rng()*256,y=rng()*256;
+        c.fillStyle=id===38?'rgba(115,39,20,.20)':'rgba(16,24,28,.16)';
+        c.fillRect(x,y,3+rng()*21,2+rng()*7);
+      }
+    }
+    if(id===32||id===36){
+      for(let j=0;j<180;j++){
+        const x=rng()*256,y=rng()*256;
+        c.fillStyle='rgba(24,22,20,.08)';c.fillRect(x,y,1+rng()*13,1+rng()*5);
+      }
+      for(const lineY of [34,92,152,213]){
+        c.strokeStyle='rgba(20,33,33,.21)';c.lineWidth=1.5;
+        c.beginPath();c.moveTo(0,lineY);c.lineTo(256,lineY+4*rng());c.stroke();
+      }
+    }
+    if(id===39){
+      for(let x=0;x<256;x+=38)for(let y=0;y<256;y+=38){
+        c.strokeStyle='rgba(43,54,62,.22)';c.lineWidth=2;
+        c.strokeRect(x,y,38,38);
+      }
+    }
+    if(id===34){
+      c.fillStyle='rgba(17,26,26,.42)';
+      for(let x=-256;x<450;x+=48){
+        c.save();c.translate(x,0);c.rotate(-.30);c.fillRect(0,-40,13,410);c.restore();
+      }
     }
     for(let i=0;i<1350;i++){
       const a=rng();c.fillStyle=a>.52?'rgba(255,255,255,.09)':'rgba(23,31,36,.07)';
@@ -151,14 +187,73 @@ async function startModernRenderer(THREE){
   const signs=[
     {label:'BLUE BASE',sub:'NORTH DEPLOYMENT',color:'#39bef2',pos:[0,3.55,-80.9],yaw:0},
     {label:'RED BASE',sub:'SOUTH DEPLOYMENT',color:'#f3744f',pos:[0,3.55,80.9],yaw:Math.PI},
-    {label:'WEST MAZE',sub:'MULTIPLE ROUTES',color:'#b065d1',pos:[-24,3.9,-44.1],yaw:0},
-    {label:'EAST MAZE',sub:'CLEAR YOUR CORNERS',color:'#b065d1',pos:[24,3.9,44.1],yaw:Math.PI},
-    {label:'CENTRAL HUB',sub:'CROSS-LANE CONTROL',color:'#e8b860',pos:[0,4.2,-9.1],yaw:0},
+    {label:'CENTRAL HUB',sub:'CROSS-LANE CONTROL',color:'#e8b860',pos:[0,4.2,-9.1],yaw:Math.PI},
   ];
+  // Distinct readable signs on the eight buildings (the same signs on both
+  // north- and south-facing entrances so players can orient while flanking).
+  const buildingNames=[
+    ['FREIGHT DEPOT','UNIT 01 · CARGO', '#e3a654'],
+    ['COMMS CENTER','UNIT 02 · SIGNALS', '#56b7d8'],
+    ['VEHICLE GARAGE','UNIT 03 · MOTORPOOL','#deae59'],
+    ['FIELD CLINIC','UNIT 04 · MEDICAL','#50d7c4'],
+    ['OPS OFFICES','UNIT 05 · SECURITY','#6da2d2'],
+    ['NIGHT MARKET','UNIT 06 · STOREFRONT','#e6a25f'],
+    ['BARRACKS','UNIT 07 · LIVING QUARTERS','#91ad79'],
+    ['POWER STATION','UNIT 08 · GENERATORS','#e3bd65']
+  ];
+  let buildingId=0;
+  for(const z of [-35,-12,12,35])for(const x of [-24,24]){
+    const [label,sub,color]=buildingNames[buildingId++];
+    signs.push({label,sub,color,pos:[x,4.52,z-8.99],yaw:Math.PI});
+    signs.push({label,sub,color,pos:[x,4.52,z+8.99],yaw:0});
+  }
   for(const sign of signs){
     const tex=signTex(sign.label,sign.sub,sign.color);const m=new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,fog:false});
     const mesh=new THREE.Mesh(new THREE.PlaneGeometry(3.9,.98),m);
     mesh.position.set(...sign.pos);mesh.rotation.y=sign.yaw;scene.add(mesh);
+  }
+  // Genuine openings: the panes are translucent rather than opaque wall boxes.
+  // Physically, gameplay collisions come only from the sills, so bullets can
+  // pass through windows in both renderer profiles.
+  const paneMaterial=new THREE.MeshPhysicalMaterial({color:0x83b6c9,transparent:true,
+    opacity:.16,metalness:.25,roughness:.17,depthWrite:false,side:THREE.DoubleSide});
+  const paneGeoH=new THREE.PlaneGeometry(1.70,1.45),paneGeoV=new THREE.PlaneGeometry(1.57,1.45);
+  let blockIndex=0;
+  for(const z of [-35,-12,12,35])for(const x of [-24,24]){
+    const odd=blockIndex%2===1;
+    for(const [side,windowX] of [[-1,x+(odd?-4.3:4.5)],[1,x+(odd?4.4:-4.3)]]){
+      const p=new THREE.Mesh(paneGeoH,paneMaterial);
+      p.position.set(windowX,1.9,z+side*8.79);scene.add(p);
+    }
+    for(const [side,windowZ] of [[-1,z+(odd?-4.5:4.5)],[1,z+(odd?4.5:-4.5)]]){
+      const p=new THREE.Mesh(paneGeoV,paneMaterial);
+      p.rotation.y=Math.PI/2;p.position.set(x+side*8.75,1.9,windowZ);scene.add(p);
+    }
+    blockIndex++;
+  }
+  // Curved ducts, ventilation fans and power hardware break up box silhouettes
+  // in the enhanced GPU renderer. All are decorative above walking height.
+  const ductMetal=new THREE.MeshStandardMaterial({color:0x56666d,metalness:.72,roughness:.42});
+  const darkIron=new THREE.MeshStandardMaterial({color:0x26353f,metalness:.56,roughness:.48});
+  const rotorMat=new THREE.MeshStandardMaterial({color:0x9ca6a5,metalness:.56,roughness:.47});
+  let roofIndex=0;
+  for(const z of [-35,-12,12,35])for(const x of [-24,24]){
+    const h=[5.6,5.3,5.8,5.4,5.45,5.15,5.4,5.9][roofIndex],
+          sign=roofIndex%2?-1:1;
+    const fan=new THREE.Mesh(new THREE.CylinderGeometry(.77,.77,.22,24),darkIron);
+    fan.position.set(x+sign*5.65,h+1.13,z-3.5);scene.add(fan);
+    const grate=new THREE.Mesh(new THREE.TorusGeometry(.58,.045,8,28),rotorMat);
+    grate.position.set(x+sign*5.65,h+1.28,z-3.5);grate.rotation.x=-Math.PI/2;scene.add(grate);
+    for(let j=0;j<4;j++){
+      const blade=new THREE.Mesh(new THREE.BoxGeometry(.95,.06,.15),rotorMat);
+      blade.position.set(x+sign*5.65,h+1.28,z-3.5);
+      blade.rotation.y=j*Math.PI/4;scene.add(blade);
+    }
+    const tubing=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,3.7,10),ductMetal);
+    tubing.position.set(x-sign*5.7,h+1.96,z+3.8);scene.add(tubing);
+    const cap=new THREE.Mesh(new THREE.CylinderGeometry(.46,.25,.14,16),darkIron);
+    cap.position.set(x-sign*5.7,h+3.84,z+3.8);scene.add(cap);
+    roofIndex++;
   }
   // Visible industrial accents, pipes and illuminated signal panels.
   const darkSteel=new THREE.MeshStandardMaterial({color:0x172a36,metalness:.62,roughness:.42});
