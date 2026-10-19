@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo Tactical Training v3.29
+# STRIKEZONE FPS — Solo + Online Multiplayer v3.30
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.29
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.30
 
 Original browser-based 3D FPS for one human player against AI bots. Multiplayer is not included.
 
@@ -438,3 +438,22 @@ The fourth operation is a **two-team Overlord boss race** on the existing 13-bui
 - The prior behavior remains: random boss spawning, 48 zombies (10 agile), bot rapid-fire defense, ammo drops, Blue vs Red PvP, chain lightning across up to four exposed soldiers and final-boss-hit victory.
 
 **Validation:** JavaScript parses; unit simulations confirmed a bot selects close zombie and rival threats but refocuses on the Overlord when they are distant; its path destination remains the boss while shooting an immediate zombie; enhanced graphics module passes syntax validation. Full browser gameplay/visual testing remains recommended.
+
+
+## v3.30 — Online Multiplayer Beta (room-code matchmaking, browser-to-browser)
+
+An initial **free 2–6 human player private-room Team Deathmatch** is available inside the same browser game. The lobby features CREATE PRIVATE ROOM, six-character room codes, copyable invite URLs, JOIN ROOM and HOST START.
+
+- **Host:** opens Online Room, creates a private room, shares its room code/link, waits for up to five friends, then clicks START ONLINE MATCH. Hosting relies on keeping the host browser connected.
+- **Guests:** use the same GitHub Pages link, enter the code (or open the host's invite link) and select JOIN ROOM; match starts when the host clicks START. The game assigns teams automatically, and friends replace AI soldier slots. Existing AI fills vacant slots.
+- **Synchronized:** host controls AI, movement snapshots, player/bot avatars, hits, HP and destructible shield, ammunition/reload counts, respawns, red/blue scores and end-of-match results. Guests send their own movement and fire commands; host resolves damage. Weapon options include melee/light saber and the energy weapon (currently instant launch for online guests rather than an authoritative charge sequence).
+- **Network:** the online system uses PeerJS 1.5.5 and the public free PeerServer cloud for signaling, plus encrypted WebRTC data channels for browser-to-browser real-time gameplay. No account signup, paid server or installed game client required. PeerJS loads only when the user opens a room, so solo/offline play does not depend on the service.
+- **Limitations:** Beta is **private online Team Deathmatch only**. The Zombie & Monster boss operation remains offline while its 48 zombies, boss fight, projectiles and AI require a future authoritative multiplayer synchronization pass. There is no public matchmaking, reconnect/resume, dedicated server, cross-NAT TURN relay, competitive anti-cheat, or server-host migration. Some corporate/mobile/router networks may block peer connections. Online results require two distinct browsers/devices to test live.
+- **Controls:** when a guest's match launches remotely, click the game canvas once if the browser has not yet granted mouse pointer lock.
+
+### Validation
+- Main game HTML/JavaScript parsed successfully.
+- Mocked room host test: remote slot assignment, movement replication, PvP hit to the host and world snapshot passed.
+- Mocked room guest test: welcome/start, synced bot + host avatar, fire transmission, death and health/ammo restored on respawn passed.
+- No two-device WebRTC gameplay test has been performed by ChatGPT; treat this as a functional beta requiring real player testing.
+
