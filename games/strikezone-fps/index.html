@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.10 — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.11 — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -239,6 +239,17 @@ font:bold 11px Arial;border-radius:3px;padding:9px 10px;min-width:175px;max-widt
  #scopeZoomControls small{display:none}
  #sniperScope .scopeMark{font-size:7px;letter-spacing:.3px}
 }
+
+/* v3.11: DMR optic leaves peripheral vision visible and never paints a solid disk. */
+#sniperScope.dmr-scope .scopeLens{
+  width:min(56vmin,600px);
+  box-shadow:0 0 0 110vmax rgba(0,7,12,.18),inset 0 0 0 2px #a3b6bc55,inset 0 0 17px #06101957;
+  border-color:#506e77;
+}
+#sniperScope.dmr-scope .scopeMark{font-size:9px;opacity:.84}
+@media(hover:none) and (pointer:coarse){
+  #sniperScope.dmr-scope .scopeLens{width:min(61vmin,540px)}
+}
 </style>
 </head>
 <body>
@@ -273,7 +284,7 @@ font:bold 11px Arial;border-radius:3px;padding:9px 10px;min-width:175px;max-widt
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.10 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.11 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button type="button" id="hudSound" title="Mute / unmute sound" aria-label="Sound on">♪</button><button type="button" id="hudFullscreen" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
@@ -288,7 +299,7 @@ font:bold 11px Arial;border-radius:3px;padding:9px 10px;min-width:175px;max-widt
     <circle cx="300" cy="300" r="3.5" fill="#f27167"/>
     <circle cx="300" cy="300" r="29" fill="none" stroke="#d9ecf2" stroke-opacity=".45" stroke-width="1"/>
    </svg>
-   <span class="scopeMark scopeMarkTL">PHANTOM SR / TACTICAL</span><span class="scopeMark scopeMarkBR" id="scopeReadout">4× MAG</span>
+   <span class="scopeMark scopeMarkTL" id="scopeWeaponLabel">PHANTOM SR / TACTICAL</span><span class="scopeMark scopeMarkBR" id="scopeReadout">4× MAG</span>
   </div>
   <div id="scopeZoomControls"><button id="scopeZoomOut" type="button" aria-label="Zoom out scope">−</button>
     <strong id="scopeZoomLabel">4×</strong><button id="scopeZoomIn" type="button" aria-label="Zoom in scope">+</button>
@@ -635,30 +646,40 @@ function forceUnstuck(){
 function clearPath(x,z,X,Z){const dx=X-x,dz=Z-z,n=Math.ceil(Math.hypot(dx,dz)/.38);for(let i=1;i<n;i++){const f=i/n;if(overlaps(x+dx*f,z+dz*f,.18))return false;}return true;}
 function spawnPoint(team){return findOpenSpawn(team);}
 
+// v3.11: DMR and sniper both use an unobstructed scoped camera,
+ // never a closed 3D cylinder in front of the first-person camera.
 const SNIPER_ZOOMS=[{label:'2×',fov:36},{label:'4×',fov:20},{label:'8×',fov:11}];
-function sniperScoped(){return running&&!paused&&!ended&&player.alive&&player.weapon===5&&player.ads;}
-function scopeFov(){return sniperScoped()?SNIPER_ZOOMS[player.scopeZoom].fov:(player.ads&&running?53:78);}
+const DMR_ZOOMS=[{label:'1.5×',fov:47},{label:'2×',fov:35},{label:'4×',fov:20}];
+function precisionScoped(){
+ return running&&!paused&&!ended&&player.alive&&player.ads&&(player.weapon===2||player.weapon===5);
+}
+function sniperScoped(){return precisionScoped();} // preserved renderer/legacy compatibility
+function scopeLevels(){return player.weapon===2?DMR_ZOOMS:SNIPER_ZOOMS;}
+function scopeFov(){return precisionScoped()?scopeLevels()[player.scopeZoom].fov:(player.ads&&running?53:78);}
 function syncSniperScope(){
- const active=sniperScoped(),element=$('sniperScope');
+ const active=precisionScoped(),element=$('sniperScope');
  element.classList.toggle('hidden',!active);
  element.setAttribute('aria-hidden',String(!active));
+ element.classList.toggle('dmr-scope',active&&player.weapon===2);
  hud.classList.toggle('sniper-scoped',active);
  if(!active)return;
- const zoom=SNIPER_ZOOMS[player.scopeZoom].label;
- $('scopeZoomLabel').textContent=zoom;$('scopeReadout').textContent=zoom+' MAG';
+ const levels=scopeLevels(),zoom=levels[player.scopeZoom].label;
+ $('scopeWeaponLabel').textContent=player.weapon===2?'RANGER DMR / PRECISION':'PHANTOM SR / TACTICAL';
+ $('scopeZoomLabel').textContent=zoom;
+ $('scopeReadout').textContent=zoom+' MAG';
  $('scopeZoomOut').disabled=player.scopeZoom<=0;
- $('scopeZoomIn').disabled=player.scopeZoom>=SNIPER_ZOOMS.length-1;
+ $('scopeZoomIn').disabled=player.scopeZoom>=levels.length-1;
 }
 function changeScopeZoom(direction){
- if(!sniperScoped())return;
- const value=clamp(player.scopeZoom+direction,0,SNIPER_ZOOMS.length-1);
+ if(!precisionScoped())return;
+ const value=clamp(player.scopeZoom+direction,0,scopeLevels().length-1);
  if(value!==player.scopeZoom){player.scopeZoom=value;beep('switch');}
  syncSniperScope();
 }
 $('scopeZoomIn').addEventListener('click',e=>{e.preventDefault();changeScopeZoom(1);});
 $('scopeZoomOut').addEventListener('click',e=>{e.preventDefault();changeScopeZoom(-1);});
 window.addEventListener('wheel',e=>{
- if(!sniperScoped())return;
+ if(!precisionScoped())return;
  e.preventDefault();if(Math.abs(e.deltaY)>1)changeScopeZoom(e.deltaY<0?1:-1);
 },{passive:false});
 function spawnPlayer(){
@@ -1275,7 +1296,7 @@ if(running&&!paused&&!ended){matchRemaining-=dt;if(matchRemaining<=0){matchRemai
 syncSniperScope();renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
 function startGame(){document.body.classList.add('playing');ensureAudio();mode=document.querySelector('.modeCard.selected')?.dataset.mode||'tdm';resetGame();running=true;paused=false;ended=false;$('mainMenu').classList.add('hidden');hud.classList.remove('hidden');$('modal').classList.add('hidden');$('matchMode').textContent=mode==='tdm'?'TEAM DEATHMATCH':mode==='ffa'?'FREE FOR ALL':'GUN RACE';$('feed').innerHTML='';canvas.requestPointerLock?.();announce('MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
 function goMenu(){hud.classList.remove('sniper-scoped');$('sniperScope').classList.add('hidden');document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
-const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['SNIPER Z / X / SCROLL','ZOOM IN / OUT'],['1 TO 6 / MOBILE SWAP','CHANGE WEAPON'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
+const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['DMR / SNIPER: Z / X / SCROLL','ZOOM IN / OUT'],['1 TO 6 / MOBILE SWAP','CHANGE WEAPON'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
 function openModal(kind,title,subtitle){modalType=kind;if(running)paused=true;player.shoot=false;$('modalEyebrow').textContent=kind==='help'?'FIELD MANUAL //':kind==='result'?'AFTER ACTION REPORT //':'TACTICAL INTERFACE //';$('modalTitle').textContent=title;$('modalSubtitle').textContent=subtitle;
 const content=$('modalContent');if(kind==='help'){content.innerHTML='<div class="controlsGrid">'+helpEntries.map(([a,b])=>`<div>${b}<b>${a}</b></div>`).join('')+'</div><p>Mobile: move with the left joystick; swipe on the right to look; AIM and FIRE are together on the right, while JUMP and tap-to-toggle CROUCH are at the bottom center.</p>';}else{const others=bots.map(b=>({name:b.name,kills:b.kills,team:b.team})).sort((a,b)=>b.kills-a.kills).slice(0,5);content.innerHTML=`<div class="modalStat"><div><strong>${player.kills}</strong><small>KILLS</small></div><div><strong>${player.deaths}</strong><small>DEATHS</small></div><div><strong>${Math.max(0,Math.round(player.kills*100+player.kills*50))}</strong><small>XP EARNED</small></div></div><p style="margin:20px 0 7px;font-weight:bold">SCOREBOARD</p>${[['YOU',player.kills],...others.map(b=>[b.name,b.kills])].map(([n,v])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ffffff1c;padding:8px 0;color:#d8e6ed;font-size:12px"><span>${n}</span><b>${v} ELIMINATIONS</b></div>`).join('')}`;}
 $('modal').classList.remove('hidden');$('resumeBtn').textContent=kind==='result'?'PLAY AGAIN ▶':kind==='help'&&!running?'BACK TO LOBBY':'RESUME MATCH ▶';$('resumeBtn').onclick=()=>{if(kind==='result')startGame();else closeModal();};$('menuBtn').textContent=running?'BACK TO MENU':'CLOSE';$('menuBtn').onclick=()=>running?goMenu():closeModal();document.exitPointerLock?.();}
@@ -1531,5 +1552,5 @@ if(!document.getElementById('rendererState').textContent.includes('renderer'))do
 })();
 
 </script>
-<script type="module" src="./ultra-renderer.js?v=3.10"></script>
+<script type="module" src="./ultra-renderer.js?v=3.11"></script>
 </body></html>
