@@ -317,3 +317,40 @@ Inspired by the supplied sketch: a compact **blue team spawn base at the north e
 - Confirmed sample bot routes between both team bases, all four room rows and both flank corridors.
 - Enhanced renderer updated for expanded shadows, map signage and draw distance.
 - Actual gameplay, device frame rate, and mobile browser touch-control testing remain to be verified in a real browser.
+
+
+## v3.20 — Map 001 Urban Warfare Rebuild
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.20
+
+The size and two-end team spawn layout of v3.19 are unchanged. The main arena has been visually and structurally rebuilt to evoke a dense, modern military FPS city district instead of repetitive toy-like square rooms. This is original artwork/geometry rather than copied Call of Duty assets or maps.
+
+### Eight enterable buildings
+
+Each former empty square now has themed facade colors, 4 usable entrances, true window openings at weapon sight height, interior walls/partition routes, floor materials, raised roof detail, cornices, signage, overhead ventilation and distinctive cover:
+
+1. **Freight Depot:** loading racks, shelving and generators.
+2. **Comms Center:** tactical workstations, consoles, monitors and security lockers.
+3. **Vehicle Garage:** original modeled military utility vehicle, rack storage and repair equipment.
+4. **Field Clinic:** beds, treatment screens and storage.
+5. **Operations Offices:** partitioned offices, desks, cabinets and computers.
+6. **Night Market:** shop stalls, striped awnings, counters and cafe-style kitchen.
+7. **Barracks:** bunks, lockers and troop storage.
+8. **Power Station:** diesel generators, pipework, machine housings and service racks.
+
+Buildings are all on the existing **ground-floor play plane**; roof terraces and elevated bridges are architectural details rather than enterable upper floors. Doorways are physically open and wide enough for player/bot movement. Window openings expose firing lanes above low sills; upper trim/awnings are visual-only to avoid invisible movement blockers.
+
+### Surrounding streets and GPU graphics
+
+- Long decorated facade rows with window openings, pilasters and weathered plaster/brick.
+- Streetlights, footpaths, curb and crossing paint, checkpoint barricades, service corridors, storefront canopies, external AC units, rooftop fans and pipework.
+- New original material IDs for slate, pale plaster, tactical olive, safety yellow, glass, brick, tar roofing, rust, tiled floors and teal.
+- Canvas-generated worn masonry, stained plaster, ribbed steel and safety-striping textures in enhanced WebGL2; fallback WebGL palette also updated.
+- Distinct labeled signs at both ends of all eight buildings and translucent glass panes in the GPU renderer. Transparent panes are visual and do not prevent bullets from passing through an aperture.
+- Static scenery is batched in the existing renderer; no additional third-party game assets, textures or accounts required.
+
+### Navigation and compatibility
+
+The full footprint is still roughly **108×164 game units**, with **Blue** and **Red** spawning at opposite ends, 6-minute matches, and the 85×85 AI grid. A static simulation generated **329 obstacle colliders** and **2,536 architecture/detail pieces**; all **2,946 walkable grid cells** formed one connected navigable area. Both team bases reached all eight building centers in path tests. Existing eight weapons, intelligent burst-fire bots, shield mechanics, scope aiming, mobile controls and 2-second fallen-body persistence are retained.
+
+**Limitations:** Code parsing and collision/navigation simulation were verified. Final visual quality, frame rates and touch performance should be tested in a Chrome/Android browser. This upgrade adds original detailed procedural 3D geometry; it is not a fully photorealistic AAA asset/lighting pipeline.
