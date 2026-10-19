@@ -87,11 +87,19 @@ export function createWeaponRig(THREE, scene){
   }
   function optic(parent,z,y,large=false){
     const rad=large?.114:.076,len=large?.48:.27;
-    tube(parent,0,y,z,rad,len,darkMetal);
-    tube(parent,0,y,z-len*.47,rad*.80,.022,glass,rad*.8,24);
-    tube(parent,0,y,z+len*.47,rad*.94,.043,metal,rad*.94,20);
+    // Real hollow tube: old CylinderGeometry endcaps were opaque black discs.
+    // Keep an open center through both optic rings, even in hip/ADS view.
+    for(const side of [-1,1]){
+      const endZ=z+side*len*.47;
+      mesh(parent,new THREE.TorusGeometry(rad*.82,rad*.16,8,24),side===-1?metal:darkMetal,[0,y,endZ]);
+    }
+    for(let n=0;n<4;n++){
+      const angle=n*Math.PI/2;
+      const ox=Math.cos(angle)*rad*.85,oy=Math.sin(angle)*rad*.85;
+      rod(parent,[ox, y+oy,z-len*.44],[ox,y+oy,z+len*.44],rad*.12,darkMetal);
+    }
     for(const ofs of [-len*.22,len*.22]){
-      box(parent,0,y-rad-.042,z+ofs,.075,.10,.048,metal,.012);
+      box(parent,0,y-rad-.043,z+ofs,.072,.082,.046,metal,.012);
     }
     box(parent,0,y-rad-.12,z,.09,.038,.13,metal,.011);
     if(large){
@@ -296,7 +304,7 @@ export function createWeaponRig(THREE, scene){
     const g=groups[i],aim=!!s.ads,weapon=i;
     // Visibility must be set every living frame, not only when weapon index changes.
     // When using the sniper scope, keep the rifle out of the sight picture.
-    g.visible=!(i===5&&aim);
+    g.visible=!((i===2||i===5)&&aim);
     const gait=Math.sin(s.bob||0)*.009;
     const shake=Math.abs(Math.sin((s.bob||0)*.8))*.007;
     // Place optical sight nearer the crosshair in ADS; preserve a right-hand hip position.
@@ -326,5 +334,5 @@ export function createWeaponRig(THREE, scene){
     for(const m of mats)m.dispose();
     for(const t of textures)t.dispose();
   }
-  return {update,dispose,weaponCount:groups.length,version:'3.10-respawn-scope-rig'};
+  return {update,dispose,weaponCount:groups.length,version:'3.11-clear-dmr-optics'};
 }
