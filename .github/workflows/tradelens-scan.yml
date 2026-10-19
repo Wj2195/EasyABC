@@ -1,0 +1,54 @@
+name: TradeLens Forex scanner
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "TradeLens/**"
+      - ".github/workflows/tradelens-scan.yml"
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: tradelens-scan
+  cancel-in-progress: false
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install scanner dependencies
+        run: python -m pip install -r TradeLens/requirements.txt
+      - name: Scan technical signals and send Telegram alerts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python TradeLens/scan.py
+      - name: Save snapshot and dedupe alert state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add TradeLens/data/snapshot.json TradeLens/state/state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data: TradeLens snapshot [skip ci]"
+            git push
+          fi
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+  deploy:
+    needs: scan
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publish.outputs.page_url }}
+    steps:
+      - id: publish
+        uses: actions/deploy-pages@v4
