@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.20 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.21 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -187,7 +187,11 @@ async function startModernRenderer(THREE){
   const signs=[
     {label:'BLUE BASE',sub:'NORTH DEPLOYMENT',color:'#39bef2',pos:[0,3.55,-80.9],yaw:0},
     {label:'RED BASE',sub:'SOUTH DEPLOYMENT',color:'#f3744f',pos:[0,3.55,80.9],yaw:Math.PI},
-    {label:'CENTRAL HUB',sub:'CROSS-LANE CONTROL',color:'#e8b860',pos:[0,4.2,-9.1],yaw:Math.PI},
+    {label:'NORTH CHECKPOINT',sub:'SECURE CORRIDOR · BLUE APPROACH',color:'#c9bd9e',pos:[0,4.6,-52.66],yaw:Math.PI},
+    {label:'ARMORY & STORES',sub:'INDOOR COMBAT · UNIT 09',color:'#c7ad80',pos:[0,4.6,-29.65],yaw:Math.PI},
+    {label:'TACTICAL COMMAND',sub:'CONTROL ROOM · UNIT 10',color:'#d7b95e',pos:[0,4.5,-7.65],yaw:Math.PI},
+    {label:'MAINTENANCE',sub:'SERVICE WORKSHOP · UNIT 11',color:'#a9bea4',pos:[0,4.6,14.35],yaw:Math.PI},
+    {label:'SOUTH CHECKPOINT',sub:'SECURE CORRIDOR · RED APPROACH',color:'#c9bd9e',pos:[0,4.6,37.34],yaw:Math.PI},
   ];
   // Distinct readable signs on the eight buildings (the same signs on both
   // north- and south-facing entrances so players can orient while flanking).
@@ -212,6 +216,42 @@ async function startModernRenderer(THREE){
     const mesh=new THREE.Mesh(new THREE.PlaneGeometry(3.9,.98),m);
     mesh.position.set(...sign.pos);mesh.rotation.y=sign.yaw;scene.add(mesh);
   }
+  // Architectural cues for the five additional enterable interiors.
+  // Rounded ductwork, fluorescent strips and true panes add environmental detail.
+  const roofMetal=new THREE.MeshStandardMaterial({color:0x53636a,roughness:.51,metalness:.52});
+  const fluorescent=new THREE.MeshBasicMaterial({color:0xd7e9d7});
+  const glazing=new THREE.MeshPhysicalMaterial({color:0x96c0bf,transparent:true,
+      opacity:.15,metalness:.16,roughness:.19,depthWrite:false,side:THREE.DoubleSide});
+  const sectorZ=[-45,-22,0,22,45];
+  const sectorLight=new THREE.BoxGeometry(2.3,.11,.33);
+  const ductGeo=new THREE.CylinderGeometry(.15,.15,5.1,10);
+  const windowGeo=new THREE.PlaneGeometry(1.83,1.47);
+  sectorZ.forEach((z,i)=>{
+    for(const x of [-7.3,0,7.3]){
+      const fixture=new THREE.Mesh(sectorLight,fluorescent);
+      fixture.position.set(x,5.20+(i%2)*.65,z+1.25);
+      scene.add(fixture);
+      const housing=new THREE.Mesh(new THREE.BoxGeometry(2.52,.17,.49),roofMetal);
+      housing.position.set(x,5.31+(i%2)*.65,z+1.25);scene.add(housing);
+    }
+    for(const side of [-1,1]){
+      const pipe=new THREE.Mesh(ductGeo,roofMetal);
+      pipe.rotation.x=Math.PI/2;
+      pipe.position.set(side*9.75,5.33+(i%2)*.65,z);scene.add(pipe);
+      for(const windowZ of [z-3.6,z+3.7]){
+        const glassPane=new THREE.Mesh(windowGeo,glazing);
+        glassPane.rotation.y=Math.PI/2;
+        glassPane.position.set(side*11.53,1.89,windowZ);
+        scene.add(glassPane);
+      }
+      const sideSign=signTex(i%2?'RESTRICTED':'TACTICAL ACCESS',
+        i%2?'AUTHORIZED PERSONNEL':'SECURE SECTION',i%2?'#e1b97b':'#aed3cb');
+      const plaque=new THREE.Mesh(new THREE.PlaneGeometry(2.5,.63),
+        new THREE.MeshBasicMaterial({map:sideSign,side:THREE.DoubleSide,fog:false}));
+      plaque.position.set(side*11.86,3.90,z);
+      plaque.rotation.y=Math.PI/2;scene.add(plaque);
+    }
+  });
   // Genuine openings: the panes are translucent rather than opaque wall boxes.
   // Physically, gameplay collisions come only from the sills, so bullets can
   // pass through windows in both renderer profiles.
