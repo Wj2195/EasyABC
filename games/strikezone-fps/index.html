@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.6 — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.7 — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -229,7 +229,7 @@ html,body{height:100%;height:100dvh;overscroll-behavior:none;-webkit-user-select
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.6 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.7 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button type="button" id="hudSound" title="Mute / unmute sound" aria-label="Sound on">♪</button><button type="button" id="hudFullscreen" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
@@ -505,7 +505,7 @@ if(gl){gl.bindBuffer(gl.ARRAY_BUFFER,staticBuffer);gl.bufferData(gl.ARRAY_BUFFER
 function drawBuffer(buffer,data,count,dynamic=true){if(!gl)return;gl.bindBuffer(gl.ARRAY_BUFFER,buffer);if(data)gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),dynamic?gl.DYNAMIC_DRAW:gl.STATIC_DRAW);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,28,0);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.normal,3,gl.FLOAT,false,28,12);gl.enableVertexAttribArray(loc.normal);gl.vertexAttribPointer(loc.mat,1,gl.FLOAT,false,28,24);gl.enableVertexAttribArray(loc.mat);gl.drawArrays(gl.TRIANGLES,0,count);}
 const weapons=[{name:'VORTEX AR',type:'ASSAULT RIFLE',mag:30,reserve:150,damage:27,rate:610,spread:.015,reload:1.8,range:65},{name:'RAPTOR SMG',type:'SUBMACHINE GUN',mag:40,reserve:200,damage:19,rate:860,spread:.026,reload:1.45,range:38},{name:'RANGER DMR',type:'MARKSMAN RIFLE',mag:12,reserve:72,damage:62,rate:210,spread:.004,reload:2.35,range:90}];
 weapons.push({name:'JUDGE 12',type:'COMBAT SHOTGUN',mag:8,reserve:48,damage:95,rate:95,spread:.068,reload:2.35,range:26},{name:'SPECTRE P9',type:'SIDEARM',mag:18,reserve:108,damage:35,rate:390,spread:.018,reload:1.20,range:52});
-const player={x:0,z:-17,y:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:[30,40,12],reserves:[150,200,72],lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99};
+const player={x:0,z:-17,y:0,groundY:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:[30,40,12],reserves:[150,200,72],lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99};
 let mode='tdm',running=false,paused=false,ended=false,showHelp=false,matchRemaining=240,blue=0,red=0,bots=[],keys={},last=0,frame=0,fpsMark=0,fps=60,nowSec=0,finishTime=0,announceUntil=0,gunLast=0,modalType='',touchMove={x:0,y:0},audioCtx=null,mobileCrouched=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),hypot=(x,z)=>Math.hypot(x,z),rand=(a,b)=>a+Math.random()*(b-a);
 function overlaps(x,z,r=.37){if(x<-30.6+r||x>30.6-r||z<-30.6+r||z>30.6-r)return true;for(const o of colliders){if(x+r>o.x&&x-r<o.X&&z+r>o.z&&z-r<o.Z)return true;}return false;}
@@ -546,17 +546,30 @@ function findOpenSpawn(team){
  for(let z=-27;z<=27;z+=2.5)for(let x=-27;x<=27;x+=2.5)if(safeForSpawn(x,z)&&(team===0?z<0:z>0))return {x,z};
  return {x:0,z:team===0?-15:15};
 }
+// v3.7 — shared player floor elevation (world Y). The temple slab is raised 0.6m.
+function floorSurfaceAt(x,z){
+ let y=0;if(Math.abs(x)<=7&&Math.abs(z)<=7)y=.60;
+ for(const side of [-1,1])for(let k=0;k<3;k++){
+  const cz=side*(8.4-k*.58),half=(10.4-k*.85)*.5;
+  if(Math.abs(x)<=half&&Math.abs(z-cz)<=.9)y=Math.max(y,.405+k*.12);
+ }return y;
+}
+function playerFloorAt(x,z){
+ return Math.max(floorSurfaceAt(x,z),floorSurfaceAt(x-.15,z-.15),
+  floorSurfaceAt(x+.15,z-.15),floorSurfaceAt(x-.15,z+.15),floorSurfaceAt(x+.15,z+.15));
+}
 function forceUnstuck(){
  const safe=resolvePosition(player.x,player.z,.65);
  if(!collidesCircle(safe.x,safe.z,.65)){player.x=safe.x;player.z=safe.z;player.lastSafeX=safe.x;player.lastSafeZ=safe.z;}
  else{const p=findOpenSpawn(0);player.x=p.x;player.z=p.z;player.lastSafeX=p.x;player.lastSafeZ=p.z;}
+ player.groundY=playerFloorAt(player.x,player.z);player.y=player.groundY;player.yVel=0;
  player.stuckTimer=0;announce('POSITION RECOVERED',1.2);
 }
 function clearPath(x,z,X,Z){const dx=X-x,dz=Z-z,n=Math.ceil(Math.hypot(dx,dz)/.38);for(let i=1;i<n;i++){const f=i/n;if(overlaps(x+dx*f,z+dz*f,.18))return false;}return true;}
 function spawnPoint(team){return findOpenSpawn(team);}
 function spawnPlayer(){
  const p=findOpenSpawn(0);player.x=p.x;player.z=p.z;player.lastSafeX=p.x;player.lastSafeZ=p.z;
- player.stuckTimer=0;player.y=0;player.yVel=0;player.yaw=teamFacingDirection(p);player.pitch=0;
+ player.stuckTimer=0;player.groundY=playerFloorAt(p.x,p.z);player.y=player.groundY;player.yVel=0;player.yaw=teamFacingDirection(p);player.pitch=0;
  player.hp=100;player.alive=true;player.reloadUntil=0;player.hurt=0;player.shoot=false;player.ads=false;player.lastDamage=nowSec;mobileCrouched=false;$('mobileCrouch').classList.remove('active');$('mobileCrouch').setAttribute('aria-pressed','false');
  keys={};touchMove.x=0;touchMove.y=0;
  $('respawnScreen').classList.add('hidden');updateHud();announce('SAFE REDEPLOYMENT',1.15);
@@ -734,9 +747,19 @@ function updatePlayer(dt){
  const tip=$('unstuckTip');if(tip)tip.style.opacity=player.stuckTimer>1.3?'1':'0';
  if(keys.KeyU&&!keys._unstuckLock){forceUnstuck();keys._unstuckLock=true;}
  if(!keys.KeyU)keys._unstuckLock=false;
- if((keys.Space)&&player.y<=.01){player.yVel=6;beep('jump');}
- player.yVel-=17*dt;const prevY=player.y;player.y=Math.max(0,player.y+player.yVel*dt);
- if(player.y<=0){if(prevY>.02&&player.yVel<-.2)player.landBob=.16;player.yVel=0;}
+ // Stand on the real surface: temple platform, entry steps or ground.
+ // World-space player.y automatically aligns the camera, muzzle and renderers.
+ const newGround=playerFloorAt(player.x,player.z);
+ const wasStanding=player.y<=player.groundY+.035&&player.yVel<=0;
+ if(wasStanding&&newGround>player.y)player.y=newGround;
+ player.groundY=newGround;
+ if(keys.Space&&player.y<=newGround+.025&&player.yVel<=0){player.yVel=6;beep('jump');}
+ player.yVel-=17*dt;
+ const prevY=player.y;player.y+=player.yVel*dt;
+ if(player.y<=newGround){
+  if(prevY>newGround+.025&&player.yVel<-.2)player.landBob=.16;
+  player.y=newGround;player.yVel=0;
+ }
  player.landBob=Math.max(0,player.landBob-dt*.75);
  player.recoil=Math.max(0,player.recoil-dt*.8);player.flash=Math.max(0,player.flash-dt);
  if(player.hurt>0){player.hurt-=dt;$('damageOverlay').style.opacity=String(Math.max(0,player.hurt*.75));}
@@ -1163,7 +1186,7 @@ window.addEventListener('orientationchange',()=>{stopStick();resetTouchLook();})
 window.addEventListener('blur',()=>{stopStick();resetTouchLook();});
 window.__SZMobileControlsTest={isFullscreen:isGameFullscreen,fullscreen:toggleGameFullscreen,audio:()=>({enabled:soundEnabled,context:audioCtx?.state||'off'}),toggleSound,look:()=>({lookId,lastLook})};
 
-window.__SZDebug={getSpawn:()=>spawnPoint(0),forceRespawn:()=>spawnPlayer(),blocked:(x,z,r=.34)=>collidesCircle(x,z,r),getState:()=>({x:player.x,z:player.z,stuckTimer:player.stuckTimer,y:player.y,lastSafeX:player.lastSafeX,lastSafeZ:player.lastSafeZ,weapon:player.weapon,hp:player.hp}),resolveMovement:(x,z,dx,dz,r=.34)=>resolveMovement(x,z,dx,dz,r),resolvePosition:(x,z,r=.34)=>resolvePosition(x,z,r),colliders};
+window.__SZDebug={getSpawn:()=>spawnPoint(0),forceRespawn:()=>spawnPlayer(),blocked:(x,z,r=.34)=>collidesCircle(x,z,r),getFloor:(x,z)=>playerFloorAt(x,z),getState:()=>({x:player.x,z:player.z,stuckTimer:player.stuckTimer,y:player.y,groundY:player.groundY,lastSafeX:player.lastSafeX,lastSafeZ:player.lastSafeZ,weapon:player.weapon,hp:player.hp}),resolveMovement:(x,z,dx,dz,r=.34)=>resolveMovement(x,z,dx,dz,r),resolvePosition:(x,z,r=.34)=>resolvePosition(x,z,r),colliders};
 // V1.1: original solo-training expansion. All state stays on the current device.
 let difficulty='regular';
 let career={matches:0,kills:0,deaths:0,xp:0,best:0};
@@ -1305,5 +1328,5 @@ if(!document.getElementById('rendererState').textContent.includes('renderer'))do
 })();
 
 </script>
-<script type="module" src="./ultra-renderer.js?v=3.6"></script>
+<script type="module" src="./ultra-renderer.js?v=3.7"></script>
 </body></html>
