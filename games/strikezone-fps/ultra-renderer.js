@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.0 | major art overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.5 | semi-realistic tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -277,6 +277,168 @@ async function startModernRenderer(THREE){
     plate(.42,.10,.08,0,1.75,.36,accentLens);
     teamPatches.push(plate(.46,.15,.045,0,1.27,.38,armorBlue));
   }
+
+  // v3.5: anatomically proportioned tactical operators — original procedural assets.
+  // Full models are GPU-only. The original block soldiers remain a safe renderer fallback.
+  function createOperatorSystem(){
+    const sphereG=new THREE.SphereGeometry(1,14,11);
+    const cylinderG=new THREE.CylinderGeometry(1,1,1,10);
+    const boxG=new THREE.BoxGeometry(1,1,1);
+    const skin=new THREE.MeshStandardMaterial({color:0xcaa585,roughness:.88});
+    const helmet=new THREE.MeshStandardMaterial({color:0x595d55,roughness:.84});
+    const gear=new THREE.MeshStandardMaterial({color:0x343c39,roughness:.82,metalness:.08});
+    const plates=new THREE.MeshStandardMaterial({color:0x7c8278,roughness:.85});
+    const dark=new THREE.MeshStandardMaterial({color:0x1a2429,roughness:.62,metalness:.28});
+    const glass=new THREE.MeshStandardMaterial({color:0x233c45,roughness:.18,metalness:.34});
+    const boots=new THREE.MeshStandardMaterial({color:0x1b201e,roughness:.94});
+    const steel=new THREE.MeshStandardMaterial({color:0x212a2b,roughness:.42,metalness:.65});
+    const wood=new THREE.MeshStandardMaterial({color:0x79412d,roughness:.66});
+    const allied=new THREE.MeshStandardMaterial({color:0x2589ad,roughness:.65});
+    const enemy=new THREE.MeshStandardMaterial({color:0xc65045,roughness:.65});
+    function camo(colors,seed){
+      let v=seed>>>0;const rnd=()=>{v=(v*1664525+1013904223)>>>0;return v/4294967295;};
+      const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+      x.fillStyle=colors[0];x.fillRect(0,0,256,256);
+      for(let i=0;i<190;i++){
+        const xx=rnd()*272-8,yy=rnd()*272-8,r=3+rnd()*27;
+        x.fillStyle=colors[1+Math.floor(rnd()*(colors.length-1))];x.beginPath();x.moveTo(xx-r,yy);
+        for(let j=0;j<7;j++){const a=j*Math.PI*2/7,sz=r*(.5+rnd()*.65);x.lineTo(xx+Math.cos(a)*sz,yy+Math.sin(a)*sz*.65);}
+        x.closePath();x.fill();
+      }
+      for(let i=0;i<1000;i++){x.fillStyle=rnd()>.5?'#ffffff08':'#00000008';x.fillRect(rnd()*256,rnd()*256,2+rnd()*3,2+rnd()*3);}
+      const tex=new THREE.CanvasTexture(c);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=4;return tex;
+    }
+    const uniforms=[
+      new THREE.MeshStandardMaterial({color:0xd9d8d0,map:camo(['#677678','#435a61','#9da19b','#404b51','#808c83'],305),roughness:.97}),
+      new THREE.MeshStandardMaterial({color:0xcdc8b8,map:camo(['#7d8273','#434f48','#aba89b','#646552','#9c967e'],607),roughness:.97})
+    ];
+    const sphere=(parent,p,sz,mat)=>{
+      const m=new THREE.Mesh(sphereG,mat);m.position.set(...p);m.scale.set(...sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+    };
+    const cube=(parent,p,sz,mat)=>{
+      const m=new THREE.Mesh(boxG,mat);m.position.set(...p);m.scale.set(...sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+    };
+    function link(parent,a,b,r,mat){
+      const from=new THREE.Vector3(...a),to=new THREE.Vector3(...b),dif=to.clone().sub(from);
+      const mesh=new THREE.Mesh(cylinderG,mat);
+      mesh.position.copy(from).add(to).multiplyScalar(.5);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dif.clone().normalize());
+      mesh.scale.set(r,dif.length(),r);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+    }
+    function build(){
+      const root=new THREE.Group(),torso=new THREE.Group();root.visible=false;root.add(torso);scene.add(root);
+      const cloth=uniforms[1],clothes=[];
+      const garment=(parent,p,sz)=>{const o=sphere(parent,p,sz,cloth);clothes.push(o);return o;};
+      // Tapered neck, jacket, waist and recognizable human face.
+      garment(torso,[0,1.30,0],[.282,.342,.177]);
+      garment(torso,[0,1.03,0],[.211,.177,.144]);
+      sphere(torso,[0,.94,0],[.238,.139,.150],gear);
+      sphere(torso,[0,1.552,0],[.073,.095,.077],skin);
+      sphere(torso,[0,1.724,.016],[.144,.173,.134],skin);
+      sphere(torso,[0,1.649,.139],[.104,.066,.024],helmet);
+      for(const side of [-1,1]){
+        sphere(torso,[side*.064,1.743,.145],[.056,.037,.023],glass);
+        sphere(torso,[side*.15,1.727,.015],[.031,.054,.048],dark);
+      }
+      cube(torso,[0,1.741,.156],[.133,.017,.029],gear);
+      // Fabric cap, hard ear cups, brim, short microphone.
+      sphere(torso,[0,1.853,-.008],[.163,.105,.162],helmet);
+      cube(torso,[0,1.809,.171],[.315,.018,.170],helmet);
+      for(const side of [-1,1])cube(torso,[side*.177,1.738,.01],[.057,.139,.091],dark);
+      link(torso,[.176,1.729,.01],[.129,1.614,.124],.011,steel);
+      sphere(torso,[.128,1.616,.129],[.023,.018,.020],dark);
+      // Layered tactical carrier and MOLLE pouches.
+      sphere(torso,[0,1.319,.174],[.258,.296,.083],gear);
+      sphere(torso,[0,1.310,-.173],[.236,.272,.084],gear);
+      for(const side of [-1,1]){
+        cube(torso,[side*.191,1.476,.109],[.062,.192,.064],plates);
+        cube(torso,[side*.241,1.295,.130],[.080,.323,.095],plates);
+        cube(torso,[side*.235,1.040,.052],[.081,.139,.123],gear);
+      }
+      for(const y of [1.40,1.32,1.245])for(const x of [-.15,-.05,.05,.15])cube(torso,[x,y,.253],[.069,.018,.018],plates);
+      for(const x of [-.155,0,.155]){
+        cube(torso,[x,1.169,.275],[.112,.182,.101],plates);
+        cube(torso,[x,1.225,.33],[.093,.028,.018],gear);
+      }
+      cube(torso,[-.303,1.264,.035],[.093,.236,.135],dark);
+      cube(torso,[.295,1.230,.028],[.082,.169,.121],gear);
+      cube(torso,[0,.968,.149],[.434,.075,.075],gear);
+      cube(torso,[0,.968,.194],[.113,.070,.038],plates);
+      const patch=cube(torso,[.246,1.386,.211],[.079,.040,.024],enemy);
+      // Jointed legs have moving hips and knees, shaped cloth and knee protection.
+      const legs=[];
+      for(const side of [-1,1]){
+        const hip=new THREE.Group();hip.position.set(side*.145,.924,0);root.add(hip);
+        garment(hip,[0,-.204,.014],[.127,.227,.124]);
+        const knee=new THREE.Group();knee.position.set(0,-.396,.016);hip.add(knee);
+        sphere(knee,[0,0,.025],[.114,.093,.125],plates);
+        garment(knee,[0,-.179,-.008],[.102,.204,.113]);
+        sphere(knee,[0,-.342,.02],[.115,.10,.129],boots);
+        sphere(knee,[0,-.419,.095],[.132,.068,.207],boots);
+        cube(knee,[0,-.420,.227],[.210,.028,.028],gear);
+        legs.push({hip,knee});
+      }
+      // Anatomically separate shoulders, elbows, hands and forearms.
+      const arms=[];
+      for(const side of [-1,1]){
+        const shoulder=new THREE.Group();shoulder.position.set(side*.305,1.496,0);torso.add(shoulder);
+        garment(shoulder,[side*.020,-.026,0],[.124,.117,.116]);
+        link(shoulder,[0,-.06,.004],[side*.076,-.298,.138],.093,cloth);
+        sphere(shoulder,[side*.078,-.302,.140],[.090,.088,.084],plates);
+        const elbow=new THREE.Group();elbow.position.set(side*.078,-.30,.144);shoulder.add(elbow);
+        link(elbow,[0,0,0],[-side*.138,-.078,.209],.076,cloth);
+        sphere(elbow,[-side*.137,-.074,.211],[.081,.077,.075],boots);
+        arms.push({shoulder,elbow});
+      }
+      // Recognizable tactical rifle: stock, receiver, rails, curved magazine and barrel.
+      const gun=new THREE.Group();gun.position.set(.022,1.238,.273);gun.rotation.set(0,-.14,-.08);torso.add(gun);
+      cube(gun,[0,0,.139],[.21,.145,.413],steel);
+      cube(gun,[0,.015,.468],[.147,.125,.430],gear);
+      const barrel=cube(gun,[0,.014,.828],[.048,.048,.465],steel);
+      cube(gun,[0,.014,1.077],[.07,.068,.127],dark);
+      cube(gun,[0,-.063,-.183],[.200,.173,.326],wood);
+      cube(gun,[0,-.233,.066],[.133,.326,.157],steel);
+      cube(gun,[.01,-.253,.091],[.101,.268,.130],plates);
+      cube(gun,[0,.113,.143],[.102,.044,.412],dark);
+      cube(gun,[0,.162,.14],[.151,.071,.171],steel);
+      cube(gun,[0,.174,.18],[.093,.049,.080],glass);
+      cube(gun,[0,-.050,.568],[.205,.093,.266],wood);
+      cube(gun,[0,-.10,-.333],[.254,.241,.096],dark);
+      for(const side of [-1,1])sphere(torso,[side*.206,1.086,.437],[.082,.071,.089],boots);
+      const shadow=new THREE.Mesh(new THREE.CircleGeometry(.36,20),new THREE.MeshBasicMaterial({color:0x151714,transparent:true,opacity:.15,depthWrite:false}));
+      shadow.position.y=.012;shadow.rotation.x=-Math.PI/2;root.add(shadow);
+      return {root,torso,clothes,legs,arms,patch,material:null};
+    }
+    const units=Array.from({length:10},build);
+    let currentCount=0;
+    return {
+      update(bots){
+        currentCount=Math.min(units.length,bots.length);
+        for(let i=0;i<units.length;i++){
+          const u=units[i],b=bots[i];u.root.visible=!!b;if(!b)continue;
+          u.root.position.set(b.x,Math.abs(Math.sin(b.walk+b.phase))*.009,b.z);
+          u.root.rotation.y=-b.yaw;
+          const cloth=b.team===0?uniforms[0]:uniforms[1];
+          if(u.material!==cloth){u.clothes.forEach(m=>m.material=cloth);u.patch.material=b.team===0?allied:enemy;u.material=cloth;}
+          const gait=Math.sin(b.walk+b.phase),wave=Math.cos(b.walk+b.phase);
+          for(let k=0;k<2;k++){
+            const sign=k===0?1:-1;
+            u.legs[k].hip.rotation.x=sign*gait*.40;
+            u.legs[k].knee.rotation.x=Math.max(0,-sign*gait)*.40;
+            u.arms[k].shoulder.rotation.x=sign*gait*.045;
+            u.arms[k].elbow.rotation.x=.02+Math.max(0,-sign*gait)*.02;
+          }
+          u.torso.rotation.z=gait*.014;
+          u.torso.rotation.x=.014+Math.abs(wave)*.015;
+        }
+      },
+      get count(){return currentCount;}
+    };
+  }
+  let humanoidSystem=null;
+  try{humanoidSystem=createOperatorSystem();}
+  catch(err){console.warn('STRIKEZONE: humanoid model failed, using existing soldier graphics.',err);humanoidSystem=null;}
+
   // Pooled tracer meshes avoid creating GPU buffers for each hit.
   const tracerPool=[];
   const tracerGeom=new THREE.CylinderGeometry(.010,.016,1,5);
@@ -320,8 +482,10 @@ async function startModernRenderer(THREE){
       dome.position.copy(camera.position);skyMat.uniforms.t.value=s.nowSec;
       dust.position.y=Math.sin(s.nowSec*.35)*.13;
       const elapsed=stamp*.001;
-      if(elapsed-lastActors>.046){cleanup(activeActors);activeActors=grouped(bridge.actorGeometry(),{dynamic:true});for(const m of activeActors)actorGroup.add(m);lastActors=elapsed;
-        const b=bridge.botData();for(let i=0;i<botHelmets.length;i++){const g=botHelmets[i],bot=b[i];g.visible=!!bot;if(bot){g.position.set(bot.x,Math.sin(bot.walk)*.012,bot.z);g.rotation.y=-bot.yaw;teamPatches[i].material=bot.team===0?armorBlue:armorRed;}}}
+      // New anatomical soldier rigs replace the cube-based enemies only on WebGL2.
+      if(elapsed-lastActors>.046){cleanup(activeActors);activeActors=humanoidSystem?[]:grouped(bridge.actorGeometry(),{dynamic:true});for(const m of activeActors)actorGroup.add(m);lastActors=elapsed;
+        const b=bridge.botData();for(let i=0;i<botHelmets.length;i++){const g=botHelmets[i],bot=b[i];g.visible=!humanoidSystem&&!!bot;if(!humanoidSystem&&bot){g.position.set(bot.x,Math.sin(bot.walk)*.012,bot.z);g.rotation.y=-bot.yaw;teamPatches[i].material=bot.team===0?armorBlue:armorRed;}}}
+      if(humanoidSystem)humanoidSystem.update(bridge.botData());
       if(elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
       for(let i=0;i<tracerPool.length;i++){
         const o=tracerPool[i],t=bridge.tracerData()[i];
