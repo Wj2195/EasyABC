@@ -424,6 +424,24 @@ async function startModernRenderer(THREE){
       cube(gun,[0,.174,.18],[.093,.049,.080],glass);
       cube(gun,[0,-.050,.568],[.205,.093,.266],wood);
       cube(gun,[0,-.10,-.333],[.254,.241,.096],dark);
+      // Bot-equipment silhouettes adapt to the current AI weapon.
+      const pistol=new THREE.Group();pistol.position.set(.08,1.21,.30);torso.add(pistol);
+      cube(pistol,[0,0,.20],[.16,.13,.36],steel);
+      cube(pistol,[0,.11,.19],[.17,.035,.37],dark);
+      cube(pistol,[0,-.17,.08],[.12,.30,.14],gear);
+      cube(pistol,[0,.02,.44],[.05,.04,.18],steel);
+      pistol.visible=false;
+      const energyCannon=new THREE.Group();energyCannon.position.set(.018,1.22,.30);torso.add(energyCannon);
+      cube(energyCannon,[0,0,.34],[.31,.26,.75],steel);
+      cube(energyCannon,[0,0,.82],[.22,.21,.52],gear);
+      const energyTrim=new THREE.MeshBasicMaterial({color:0x4cdbef});
+      for(const side of [-1,1]){
+        cube(energyCannon,[side*.20,.03,.82],[.08,.27,.77],steel);
+        cube(energyCannon,[side*.22,.10,.80],[.045,.12,.55],energyTrim);
+      }
+      cube(energyCannon,[0,.02,1.23],[.23,.23,.27],glass);
+      cube(energyCannon,[0,-.20,.26],[.14,.24,.16],gear);
+      energyCannon.visible=false;
       for(const side of [-1,1])sphere(torso,[side*.206,1.086,.437],[.082,.071,.089],boots);
       // Police-style AEGIS raised shield for AI bots, colored viewplate and reinforced frame.
       const shield=new THREE.Group();shield.position.set(0,1.14,.53);torso.add(shield);
@@ -445,7 +463,7 @@ async function startModernRenderer(THREE){
         const maxDim=Math.max(m.scale.x,m.scale.y,m.scale.z);
         if(maxDim<.17&&m!==patch){smallDetails.push(m);m.castShadow=false;}
       });
-      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,gun};
+      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,gun,pistol,energyCannon};
     }
     const units=Array.from({length:10},build);
     let currentCount=0;
@@ -457,8 +475,13 @@ async function startModernRenderer(THREE){
           // Feet will be placed against world floor after the walking pose is evaluated.
           u.root.position.set(b.x,0,b.z);
           u.root.rotation.y=-b.yaw;
-          u.shield.visible=b.weapon===7&&b.shieldHP>0;
-          u.gun.visible=b.weapon!==7;
+          u.shield.visible=b.weapon===7;
+          u.pistol.visible=b.weapon===4;
+          u.energyCannon.visible=b.weapon===6;
+          u.gun.visible=![4,6,7].includes(b.weapon);
+          const gunScale=b.weapon===1?[.92,.95,.73]:b.weapon===2?[1,1,1.28]:
+            b.weapon===3?[1.16,1.12,.9]:b.weapon===5?[1,1,1.55]:[1,1,1];
+          u.gun.scale.set(...gunScale);
           const far=viewpoint&&((b.x-viewpoint.x)**2+(b.z-viewpoint.z)**2)>19*19;
           for(const item of u.smallDetails)item.visible=!far;
           const shirt=b.team===0?uniforms[0]:uniforms[1];
