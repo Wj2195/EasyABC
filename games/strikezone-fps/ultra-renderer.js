@@ -383,10 +383,10 @@ async function startModernRenderer(THREE){
       for(const side of [-1,1]){
         const shoulder=new THREE.Group();shoulder.position.set(side*.305,1.496,0);torso.add(shoulder);
         garment(shoulder,[side*.020,-.026,0],[.124,.117,.116]);
-        link(shoulder,[0,-.06,.004],[side*.076,-.298,.138],.093,cloth);
+        clothes.push(link(shoulder,[0,-.06,.004],[side*.076,-.298,.138],.093,cloth));
         sphere(shoulder,[side*.078,-.302,.140],[.090,.088,.084],plates);
         const elbow=new THREE.Group();elbow.position.set(side*.078,-.30,.144);shoulder.add(elbow);
-        link(elbow,[0,0,0],[-side*.138,-.078,.209],.076,cloth);
+        clothes.push(link(elbow,[0,0,0],[-side*.138,-.078,.209],.076,cloth));
         sphere(elbow,[-side*.137,-.074,.211],[.081,.077,.075],boots);
         arms.push({shoulder,elbow});
       }
@@ -407,17 +407,26 @@ async function startModernRenderer(THREE){
       for(const side of [-1,1])sphere(torso,[side*.206,1.086,.437],[.082,.071,.089],boots);
       const shadow=new THREE.Mesh(new THREE.CircleGeometry(.36,20),new THREE.MeshBasicMaterial({color:0x151714,transparent:true,opacity:.15,depthWrite:false}));
       shadow.position.y=.012;shadow.rotation.x=-Math.PI/2;root.add(shadow);
-      return {root,torso,clothes,legs,arms,patch,material:null};
+      // Distance-aware accessory details: keep silhouettes but suppress tiny parts far away.
+      const smallDetails=[];
+      root.traverse(m=>{
+        if(!m.isMesh)return;
+        const maxDim=Math.max(m.scale.x,m.scale.y,m.scale.z);
+        if(maxDim<.17&&m!==patch){smallDetails.push(m);m.castShadow=false;}
+      });
+      return {root,torso,clothes,legs,arms,patch,smallDetails,material:null};
     }
     const units=Array.from({length:10},build);
     let currentCount=0;
     return {
-      update(bots){
+      update(bots,viewpoint){
         currentCount=Math.min(units.length,bots.length);
         for(let i=0;i<units.length;i++){
           const u=units[i],b=bots[i];u.root.visible=!!b;if(!b)continue;
           u.root.position.set(b.x,Math.abs(Math.sin(b.walk+b.phase))*.009,b.z);
           u.root.rotation.y=-b.yaw;
+          const far=viewpoint&&((b.x-viewpoint.x)**2+(b.z-viewpoint.z)**2)>19*19;
+          for(const item of u.smallDetails)item.visible=!far;
           const cloth=b.team===0?uniforms[0]:uniforms[1];
           if(u.material!==cloth){u.clothes.forEach(m=>m.material=cloth);u.patch.material=b.team===0?allied:enemy;u.material=cloth;}
           const gait=Math.sin(b.walk+b.phase),wave=Math.cos(b.walk+b.phase);
@@ -485,7 +494,7 @@ async function startModernRenderer(THREE){
       // New anatomical soldier rigs replace the cube-based enemies only on WebGL2.
       if(elapsed-lastActors>.046){cleanup(activeActors);activeActors=humanoidSystem?[]:grouped(bridge.actorGeometry(),{dynamic:true});for(const m of activeActors)actorGroup.add(m);lastActors=elapsed;
         const b=bridge.botData();for(let i=0;i<botHelmets.length;i++){const g=botHelmets[i],bot=b[i];g.visible=!humanoidSystem&&!!bot;if(!humanoidSystem&&bot){g.position.set(bot.x,Math.sin(bot.walk)*.012,bot.z);g.rotation.y=-bot.yaw;teamPatches[i].material=bot.team===0?armorBlue:armorRed;}}}
-      if(humanoidSystem)humanoidSystem.update(bridge.botData());
+      if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position);
       if(elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
       for(let i=0;i<tracerPool.length;i++){
         const o=tracerPool[i],t=bridge.tracerData()[i];
