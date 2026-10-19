@@ -1493,7 +1493,7 @@ window.StrikeZoneRenderBridge={
  weaponGeometry:()=>{if(!running||!player.alive)return [];const data=[];weaponShape(data);return data;},
  tracerData:()=>tracers.map(t=>({x:t.x,y:t.y,z:t.z,X:t.X,Y:t.Y,Z:t.Z,friendly:t.friendly})),
  botData:()=>bots.filter(b=>b.alive).map(b=>({x:b.x,z:b.z,team:b.team,yaw:b.yaw,phase:b.phase,walk:b.walk})),
- state:()=>({x:player.x,z:player.z,y:player.y,yaw:player.yaw,pitch:player.pitch,ads:player.ads,sniperScoped:sniperScoped(),scopeFov:scopeFov(),scopeZoom:player.scopeZoom,crouch:player.crouch,alive:player.alive,flash:player.flash,bob:player.bob,landBob:player.landBob,recoil:player.recoil,nowSec,running,paused,ended,weapon:player.weapon,reloadRemaining:Math.max(0,player.reloadUntil-nowSec),reloadDuration:weapons[player.weapon].reload,matchRemaining}),
+ state:()=>({x:player.x,z:player.z,y:player.y,yaw:player.yaw,pitch:player.pitch,ads:player.ads,precisionScoped:precisionScoped(),sniperScoped:sniperScoped(),scopeFov:scopeFov(),scopeZoom:player.scopeZoom,crouch:player.crouch,alive:player.alive,flash:player.flash,bob:player.bob,landBob:player.landBob,recoil:player.recoil,nowSec,running,paused,ended,weapon:player.weapon,reloadRemaining:Math.max(0,player.reloadUntil-nowSec),reloadDuration:weapons[player.weapon].reload,matchRemaining}),
  availableGPU:()=>!!gl,
  quality:'high'
 };
