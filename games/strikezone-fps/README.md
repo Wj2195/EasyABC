@@ -126,3 +126,17 @@ Six independent firearm profiles are selectable using number keys **1–6**, the
 Each gunshot consumes one round. Shotgun shells fire eight independently aimed pellets and total their damage on each target. Projectiles compare the nearest hit zone with the nearest solid wall, and the temporary feedback displays HEADSHOT!, ARMOR HIT, BODY HIT, ARM HIT or LEG HIT with damage points.
 
 All six guns have unique weapon silhouettes. The change preserves gun race, bots, solo matches, PC and mobile controls, health regeneration, audio and graphics. Verification included Javascript parsing, anatomical ray tests (including raised temple ground) and scripted firing/damage tests for all six guns. A full visual GPU playtest on the user's machine is still needed.
+
+
+## v3.9 — Realistic tactical weapon graphics
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.9
+
+- Six new original 3D first-person firearms replace the flat box models in enhanced WebGL2 mode: VORTEX AR, RAPTOR SMG, RANGER DMR, JUDGE 12, SPECTRE P9, and PHANTOM SR.
+- Gun-specific geometry includes metallic receivers and ejection ports, barrel and muzzle attachments, stocks, tactical rails, optics/scopes, grips, magazines (or under-barrel shotgun tube), vent slots, screws and detailed silhouette shaping. Gloved hands/arms hold the weapons.
+- Procedural PBR material maps give polymer, brushed metal, rubber, tan/olive finishes, and skin/gloves more visible contrast. A new opposing light improves readability.
+- The new graphics module has persistent/cached models; it does not regenerate triangle meshes per frame. ADS aligns sights with the crosshair; gun motion follows recoil, walking and reloading. Muzzle flash is modeled separately for the active gun.
+- Graphics load from weapon-rig.js (version 3.9.1). If the new module fails to load or the browser cannot support enhanced WebGL2, the original lightweight weapon model remains the fallback.
+- Damage profiles, headshot zones, ammo, gun race, bots, phone controls, floor physics, and sound effects remain unchanged.
+
+**Verification:** Six weapon meshes initialized (559 model components), switched, aimed, reloaded and disposed in a mocked renderer runtime. JavaScript and integration checks passed. The final appearance and frame rate should be confirmed on the target PC and phone with the WebGL2 renderer.
