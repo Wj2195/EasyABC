@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.24 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.25 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -276,7 +276,14 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
     <div class="optionHead">FIELD TRAINING <span>SOLO / OFFLINE</span></div>
     <div class="optionLabel">BOT DIFFICULTY</div>
     <div class="difficultyBtns" id="difficultyBtns"><button class="diffBtn" data-diff="rookie">ROOKIE</button><button class="diffBtn active" data-diff="regular">REGULAR</button><button class="diffBtn" data-diff="veteran">VETERAN</button></div>
-    <div class="optionLabel" style="margin-top:17px">GRAPHICS QUALITY · MENU SETTINGS</div>
+    <div class="optionLabel" style="margin-top:13px">SHIELD DURABILITY</div>
+    <div class="difficultyBtns" id="shieldDurabilityBtns" aria-label="Shield durability setting">
+      <button type="button" class="diffBtn" data-shield="light">LIGHT</button>
+      <button type="button" class="diffBtn active" data-shield="standard">STANDARD</button>
+      <button type="button" class="diffBtn" data-shield="heavy">HEAVY</button>
+    </div>
+    <div id="shieldDurabilityInfo" style="font-size:9px;margin-top:5px;color:#a3c6d9">STANDARD · 200 HP</div>
+    <div class="optionLabel" style="margin-top:14px">GRAPHICS QUALITY · MENU SETTINGS</div>
     <div class="qualityBtns" id="qualityBtns"><button type="button" data-quality="performance">FAST</button><button type="button" data-quality="high" class="active">HIGH</button><button type="button" data-quality="ultra">ULTRA</button></div>
     <div id="rendererState" class="rendererState" aria-live="polite">Graphics engine: initializing</div>
     <div class="optionLabel" style="margin-top:10px">HORIZONTAL LOOK</div>
@@ -321,7 +328,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
     <small>MOUSE WHEEL OR Z / X</small>
   </div>
 </div><div id="hitmarker">✕</div><div id="combatFeedback" role="status" aria-live="polite"></div><div id="damageDirection"></div>
- <div class="bottomHUD"><div class="healthPanel"><div class="unit">OPERATIVE <b>ALPHA 01</b></div><div class="hpRow"><span class="hpIcon">✚</span><strong id="hpText">100</strong><div class="hpTrack"><div id="hpFill"></div></div></div><div class="subStat"><span>ARMOR ▰▰▰</span><span id="killStat">0 KILLS · 0 DEATHS</span></div></div><div class="weaponPanel"><div class="weaponLabel"><span id="weaponType">ASSAULT RIFLE</span><span id="weaponName">VORTEX AR</span></div><div class="ammoRow"><strong id="ammoCount">30</strong><span class="ammoSlash">/</span><span id="reserveCount">150</span><span class="ammoBullet">▥</span></div><div id="reloadDisplay">R TO RELOAD</div></div></div>
+ <div class="bottomHUD"><div class="healthPanel"><div class="unit">OPERATIVE <b>ALPHA 01</b></div><div class="hpRow"><span class="hpIcon">✚</span><strong id="hpText">100</strong><div class="hpTrack"><div id="hpFill"></div></div></div><div class="subStat"><span id="shieldStatus">SHIELD READY</span><span id="killStat">0 KILLS · 0 DEATHS</span></div></div><div class="weaponPanel"><div class="weaponLabel"><span id="weaponType">ASSAULT RIFLE</span><span id="weaponName">VORTEX AR</span></div><div class="ammoRow"><strong id="ammoCount">30</strong><span class="ammoSlash">/</span><span id="reserveCount">150</span><span class="ammoBullet">▥</span></div><div id="reloadDisplay">R TO RELOAD</div></div></div>
  <div class="keyHints"><span>[SHIFT] SPRINT</span><span>[SPACE] JUMP</span><span>[R] RELOAD</span><span>[1–8] WEAPON</span><span>[U] UNSTUCK</span><span>[P] SCOREBOARD</span></div>
  <div id="energyChargeHUD" class="hidden"><span id="energyChargeText">HOLD FIRE 2s</span><div class="chargeMeter"><div id="energyChargeFill"></div></div></div>
 <div id="announcement" class="announcement"></div>
@@ -1070,7 +1077,7 @@ function urbanStreetDetails(){
 }
 
 
-// MAP 001 v3.24: five additional fully traversable center buildings, sectional
+// MAP 001 v3.25: five additional fully traversable center buildings, sectional
 // airlock walls, and street-scale architectural obstacles. A wall has collision
 // ONLY if it touches the ground; door voids are true player/bot openings.
 const MAP_ONE_SECTORS=[
@@ -1253,8 +1260,32 @@ const weapons=[
 {name:'SPECTRE P9',type:'SIDEARM',mag:18,reserve:108,damage:35,rate:390,spread:.019,reload:1.20,range:55,headMult:2.1,falloffStart:24,falloffRate:.010},
 {name:'PHANTOM SR',type:'SNIPER RIFLE',mag:5,reserve:30,damage:85,rate:55,spread:.0025,reload:2.70,range:130,headMult:2.6,falloffStart:100,falloffRate:.002},
 {name:'NOVA PULSE',type:'ENERGY CANNON',mag:4,reserve:20,damage:40,rate:50,spread:0,reload:3.3,range:80,headMult:1,falloffStart:80,falloffRate:0,energy:true,charge:2,projectileSpeed:39,blastRadius:5.4,blastDamage:24,knockback:10.5},
-{name:'AEGIS S8',type:'BALLISTIC SHIELD',mag:1,reserve:0,damage:23,rate:56,spread:0,reload:0,range:1.9,headMult:1,falloffStart:5,falloffRate:0,shield:true,shieldHP:360,block:1}
+{name:'AEGIS S8',type:'BALLISTIC SHIELD',mag:1,reserve:0,damage:23,rate:56,spread:0,reload:0,range:1.9,headMult:1,falloffStart:5,falloffRate:0,shield:true,shieldHP:200,block:1}
 ];
+const SHIELD_DURABILITY={light:120,standard:200,heavy:340};
+let shieldSetting='standard';
+try{
+ const saved=localStorage.getItem('strikezone-shield-strength-v325');
+ if(Object.prototype.hasOwnProperty.call(SHIELD_DURABILITY,saved))shieldSetting=saved;
+}catch(e){}
+function shieldMaxHP(){return SHIELD_DURABILITY[shieldSetting];}
+function updateShieldMenu(){
+ for(const btn of document.querySelectorAll('#shieldDurabilityBtns button')){
+  const active=btn.dataset.shield===shieldSetting;
+  btn.classList.toggle('active',active);
+  btn.setAttribute('aria-pressed',String(active));
+ }
+ const info=$('shieldDurabilityInfo');
+ if(info)info.textContent=shieldSetting.toUpperCase()+' · '+shieldMaxHP()+' HP · BOTH TEAMS';
+}
+document.querySelectorAll('#shieldDurabilityBtns button').forEach(btn=>btn.addEventListener('click',()=>{
+ shieldSetting=btn.dataset.shield;
+ try{localStorage.setItem('strikezone-shield-strength-v325',shieldSetting);}catch(e){}
+ weapons[7].shieldHP=shieldMaxHP();
+ updateShieldMenu();beep('switch');
+}));
+weapons[7].shieldHP=shieldMaxHP();
+updateShieldMenu();
 const player={x:0,z:-17,y:0,groundY:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),scopeZoom:1,lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99,energyChargeStart:-1,energyReady:false,shockVX:0,shockVZ:0,shieldHP:360,shieldLastDamage:-99};
 let mode='tdm',running=false,paused=false,ended=false,showHelp=false,matchRemaining=240,blue=0,red=0,bots=[],keys={},last=0,frame=0,fpsMark=0,fps=60,nowSec=0,finishTime=0,announceUntil=0,gunLast=0,modalType='',touchMove={x:0,y:0},audioCtx=null,mobileCrouched=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),hypot=(x,z)=>Math.hypot(x,z),rand=(a,b)=>a+Math.random()*(b-a);
@@ -1356,7 +1387,7 @@ window.addEventListener('wheel',e=>{
 function spawnPlayer(){
  const p=findOpenSpawn(0);player.x=p.x;player.z=p.z;player.lastSafeX=p.x;player.lastSafeZ=p.z;
  player.stuckTimer=0;player.groundY=playerFloorAt(p.x,p.z);player.y=player.groundY;player.yVel=0;player.yaw=teamFacingDirection(p);player.pitch=0;
- player.hp=100;player.shieldHP=weapons[7].shieldHP;player.shieldLastDamage=-99;player.alive=true;player.reloadUntil=0;player.hurt=0;player.shoot=false;player.energyChargeStart=-1;player.energyReady=false;player.shockVX=player.shockVZ=0;player.ads=false;player.scopeZoom=1;player.lastDamage=nowSec;mobileCrouched=false;$('mobileCrouch').classList.remove('active');$('mobileCrouch').setAttribute('aria-pressed','false');
+ player.hp=100;player.shieldHP=shieldMaxHP();player.shieldLastDamage=-99;player.alive=true;player.reloadUntil=0;player.hurt=0;player.shoot=false;player.energyChargeStart=-1;player.energyReady=false;player.shockVX=player.shockVZ=0;player.ads=false;player.scopeZoom=1;player.lastDamage=nowSec;mobileCrouched=false;$('mobileCrouch').classList.remove('active');$('mobileCrouch').setAttribute('aria-pressed','false');
  keys={};touchMove.x=0;touchMove.y=0;
  $('respawnScreen').classList.add('hidden');updateHud();announce('SAFE REDEPLOYMENT',1.15);
 }
@@ -1368,7 +1399,7 @@ function createBots(){bots=[];const count=mode==='tdm'?9:8;
  target:null,targetRefresh:0,path:[],pathRefresh:0,shootCD:rand(.4,1.5),speed:rand(2.5,3.3),
  phase:rand(0,6.28),walk:0,weapon,preferredWeapon:weapon,
  ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),reloadUntil:0,
- shieldHP:weapons[7].shieldHP,shieldLastDamage:-99,chargeStart:-1,weaponHoldUntil:nowSec+6,
+ shieldHP:shieldMaxHP(),shieldLastDamage:-99,chargeStart:-1,weaponHoldUntil:nowSec+6,
  burstShots:0,burstPauseUntil:0,burstTarget:null,burstIndex:0,lastFiredAt:-99,fireSide:1,
  aiMode:'patrol',lastDamageAt:-99,damageWindowStart:-99,damageWindow:0,lastAttacker:null,
  retreatUntil:0,retreatCooldown:0,retreatGoal:null,retreatReplan:0,recoverGoal:84,
@@ -1388,7 +1419,7 @@ for(let i=0;i<weapons.length;i++){
 }
 function refreshLoadout(){
  const w=weapons[startingWeapon];loadoutSelect.value=String(startingWeapon);
- loadoutInfo.textContent=w.shield?'FRONT & SIDES: NO DAMAGE · HEAD & REAR EXPOSED · FIRE TO BASH':w.energy?'HOLD '+w.charge+'s · RELEASE · '+w.blastRadius+'m SHOCKWAVE':w.damage+' BASE DMG · '+w.headMult.toFixed(2)+'× HEAD · '+(w.pellets||1)+' PROJECTILE'+(w.pellets?'S':'');
+ loadoutInfo.textContent=w.shield?'AEGIS '+shieldMaxHP()+' HP · HEAD & REAR EXPOSED · FIRE TO BASH':w.energy?'HOLD '+w.charge+'s · RELEASE · '+w.blastRadius+'m SHOCKWAVE':w.damage+' BASE DMG · '+w.headMult.toFixed(2)+'× HEAD · '+(w.pellets||1)+' PROJECTILE'+(w.pellets?'S':'');
 }
 loadoutSelect.addEventListener('change',()=>{startingWeapon=Number(loadoutSelect.value);
  try{localStorage.setItem('strikezone-start-weapon-v38',String(startingWeapon));}catch(_){}
@@ -1500,8 +1531,9 @@ function hitDamage(w,zone,dist){
 function showCombatFeedback(zone,damage){
  const el=$('combatFeedback'),marker=$('hitmarker');
  if(!el)return;
- const text={head:'HEADSHOT!',chest:'ARMOR HIT',abdomen:'BODY HIT',arm:'ARM HIT',leg:'LEG HIT',shield:'SHIELD BLOCKED'};
- el.textContent=(text[zone]||'HIT')+'  +'+Math.round(damage)+' DMG';
+ const text={head:'HEADSHOT!',chest:'ARMOR HIT',abdomen:'BODY HIT',arm:'ARM HIT',leg:'LEG HIT',shield:'SHIELD HIT',shieldbreak:'SHIELD BROKEN!'};
+ el.textContent=(text[zone]||'HIT')+(zone==='shield'||zone==='shieldbreak'?
+  '  -'+Math.round(damage)+' HP':'  +'+Math.round(damage)+' DMG');
  el.className=zone+' visible';clearTimeout(showCombatFeedback.timer);
  showCombatFeedback.timer=setTimeout(()=>el.classList.remove('visible'),1100);
  marker.style.opacity='1';marker.classList.toggle('head',zone==='head');
@@ -1552,13 +1584,39 @@ function shieldFacingDefender(defender,attacker){
  return toward>=-.08; // front and direct sides block; rear quarters/back are vulnerable
 }
 function shieldIntercepts(defender,attacker,zone='chest'){
- return defender.weapon===7&&zone!=='head'&&shieldFacingDefender(defender,attacker);
+ return defender.weapon===7&&defender.shieldHP>0&&zone!=='head'&&
+  shieldFacingDefender(defender,attacker);
+}
+function onShieldBroken(defender,attacker){
+ defender.shieldHP=0;defender.shieldBrokenAt=nowSec;
+ defender.shieldLastDamage=nowSec;
+ if(defender===player){
+  // Only respawn restores shield equipment; the player falls back to the AR.
+  cancelEnergyCharge();player.weapon=0;player.reloadUntil=0;
+  player.lastShot=nowSec-.25;
+  announce('AEGIS SHIELD BROKEN · SWITCHED TO RIFLE',1.6);
+  beep('hurt');updateHud();
+ }else{
+  // Drop shield immediately and switch to the preferred gun (or AR).
+  defender.weapon=defender.preferredWeapon===7?0:defender.preferredWeapon;
+  defender.weaponHoldUntil=nowSec+1.8;
+  defender.chargeStart=-1;defender.reloadUntil=0;
+  resetBotBurst(defender);defender.aimReadyAt=nowSec+.23;
+  if(attacker===player)announce(defender.name+' · SHIELD DESTROYED',1.1);
+ }
 }
 function applyShieldDefense(defender,damage,attacker,zone='chest'){
- if(shieldIntercepts(defender,attacker,zone))return 0;
- return damage;
+ const incoming=Math.max(0,damage);
+ if(!shieldIntercepts(defender,attacker,zone))return incoming;
+ const blocked=Math.min(incoming,defender.shieldHP);
+ defender.shieldHP=Math.max(0,defender.shieldHP-blocked);
+ defender.shieldLastDamage=nowSec;
+ // The final bullet can break the plate AND damage the body with the remainder.
+ if(defender.shieldHP<=0)onShieldBroken(defender,attacker);
+ return Math.max(0,incoming-blocked);
 }
 function shieldBashPlayer(){
+ if(player.shieldHP<=0)return;
  const w=weapons[7];
  if(nowSec-player.lastShot<60/w.rate)return;
  player.lastShot=nowSec;player.recoil=.21;beep('shieldBash');
@@ -1584,7 +1642,7 @@ function pickTarget(bot){
  }
  return best;
 }
-// v3.24: cover discovery works across the FULL map, not just the old +/-29 arena.
+// v3.25: cover discovery works across the FULL map, not just the old +/-29 arena.
 function chooseCoverPoint(bot,tar){
  if(!tar)return null;
  const candidates=[];
@@ -1630,7 +1688,7 @@ function tacticalVector(b,tar,visible,dist,go){
 }
 
 
-// v3.24 — squad decision system: varied building patrols, shield retreat,
+// v3.25 — squad decision system: varied building patrols, shield retreat,
 // safe health recovery, and deliberate re-engagement.
 // All landmarks are world positions inside the existing Map 1 geometry.
 const AI_PATROL_POINTS=[
@@ -1676,14 +1734,16 @@ function botStartRetreat(b,threat){
  b.retreatReplan=0;b.retreatGoal=null;
  b.coverPoint=null;b.path=[];b.pathRefresh=0;
  b.recoverGoal=rand(79,88);b.chargeStart=-1;b.reloadUntil=0;
- b.weapon=7;b.weaponHoldUntil=0;resetBotBurst(b);
+ b.weapon=b.shieldHP>0?7:(b.preferredWeapon===7?0:b.preferredWeapon);
+ b.weaponHoldUntil=0;resetBotBurst(b);
  b.aimReadyAt=nowSec+.2;b.lastAttacker=threat||b.lastAttacker;
 }
 function botEndRetreat(b){
  b.aiMode='patrol';b.retreatGoal=null;b.path=[];b.pathRefresh=0;
  b.retreatCooldown=nowSec+rand(12,17);
  b.damageWindow=0;b.damageWindowStart=nowSec;
- b.weapon=b.preferredWeapon;b.weaponHoldUntil=nowSec+1.5;
+ b.weapon=b.preferredWeapon===7&&b.shieldHP<=0?0:b.preferredWeapon;
+ b.weaponHoldUntil=nowSec+1.5;
  b.patrolGoal=null;b.patrolUntil=0;b.coverPoint=null;
  b.chargeStart=-1;resetBotBurst(b);
 }
@@ -1699,8 +1759,11 @@ function botRecoveryDecision(b,threat,visible,dt){
   (b.hp<=32||(b.hp<67&&underFire&&(damageBurst>=24||losing)));
  if(!recovering&&shouldRetreat){botStartRetreat(b,threat);return;}
  if(!recovering)return;
- // No attack, re-equipping or crossfire while withdrawing/healing.
- if(b.weapon!==7){b.weapon=7;b.weaponHoldUntil=0;resetBotBurst(b);}
+ // Retreat should still work after a shield breaks, but without invulnerability.
+ if(b.shieldHP>0&&b.weapon!==7){b.weapon=7;b.weaponHoldUntil=0;resetBotBurst(b);}
+ if(b.shieldHP<=0&&b.weapon===7){
+  b.weapon=b.preferredWeapon===7?0:b.preferredWeapon;resetBotBurst(b);
+ }
  if(b.aiMode==='retreat'){
   if(nowSec>=b.retreatUntil){
    // If there is no safely hidden position, bot still cannot heal in gunfire.
@@ -1746,16 +1809,17 @@ function botChooseWeapon(b,dist,visible){
  const now=nowSec;
  const current=weapons[b.weapon];
  const empty=!current.shield&&b.ammo?.[b.weapon]<=0&&b.reserves?.[b.weapon]<=0;
- const broken=false; // shield cannot be broken by intercepted rounds
+ const broken=b.weapon===7&&b.shieldHP<=0;
  if(b.weaponHoldUntil&&now<b.weaponHoldUntil&&!empty&&!broken)return;
  let target=b.preferredWeapon;
  if(empty||broken)target=b.ammo?.[4]>0?4:b.ammo?.[0]>0?0:7;
- if(!empty&&!broken&&b.hp<34&&b.shieldHP>110&&visible&&dist<15)target=7;
- else if(!empty&&!broken&&dist<3.1&&b.shieldHP>65&&(b.preferredWeapon===7||b.weapon===7))target=7;
+ if(!empty&&!broken&&b.hp<34&&b.shieldHP>shieldMaxHP()*.15&&visible&&dist<15)target=7;
+ else if(!empty&&!broken&&dist<3.1&&b.shieldHP>shieldMaxHP()*.15&&(b.preferredWeapon===7||b.weapon===7))target=7;
  else if(!empty&&!broken&&dist>19){if([1,3,4,7].includes(target))target=b.id%2?2:5;}
  else if(!empty&&!broken&&dist<6){if([2,5].includes(target))target=b.id%2?1:3;}
  else if(!empty&&!broken&&dist>9&&dist<23&&b.preferredWeapon===6)target=6;
  else if(!empty&&!broken&&dist>7&&dist<15&&b.preferredWeapon===7&&b.hp>65)target=0;
+ if(target===7&&b.shieldHP<=0)target=b.ammo?.[0]>0?0:4;
  if(target!==b.weapon){
   b.weapon=target;b.chargeStart=-1;b.reloadUntil=0;resetBotBurst(b);b.shootCD=Math.max(.25,b.shootCD);
   b.aimReadyAt=now+.20;b.weaponHoldUntil=now+rand(4.8,7.3);
@@ -1821,6 +1885,7 @@ function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
  }
  if(w.shield){
   b.chargeStart=-1;
+  if(b.shieldHP<=0){b.weapon=0;return;}
   if(!visible||dist>w.range||b.shootCD>0||Math.abs(rotation)>.58)return;
   b.shootCD=1.0*cooldown;
   const dmg=w.damage;
@@ -1898,7 +1963,7 @@ function updateBots(dt){
     const p=spawnPoint(b.team);b.x=p.x;b.z=p.z;b.hp=100;b.alive=true;b.diedAt=-Infinity;b.fallSide=1;
     b.weapon=b.preferredWeapon;
     b.ammo=weapons.map(w=>w.mag);b.reserves=weapons.map(w=>w.reserve);
-    b.shieldHP=weapons[7].shieldHP;b.shieldLastDamage=-99;b.chargeStart=-1;
+    b.shieldHP=shieldMaxHP();b.shieldLastDamage=-99;b.chargeStart=-1;
     b.reloadUntil=0;b.weaponHoldUntil=nowSec+4;resetBotBurst(b);b.lastFiredAt=-99;
     b.path=[];b.target=null;b.pathRefresh=0;b.targetRefresh=0;
     b.stuckFor=0;b.coverPoint=null;b.coverUntil=0;b.aimReadyAt=nowSec+.5;
@@ -2226,10 +2291,14 @@ function shoot(){
   // Apply head and non-head pellet damage independently.
   // Otherwise one head pellet could wrongly bypass a shield for all body pellets.
   let dealt=0,headDealt=0;
+  const shieldBefore=bot.shieldHP;
   if(hit.bodyDamage>0)dealt+=damageBot(bot,hit.bodyDamage,player,'chest');
   if(hit.headDamage>0){headDealt=damageBot(bot,hit.headDamage,player,'head');dealt+=headDealt;}
-  const record=dealt>0?{zone:headDealt>0?'head':hit.zone==='head'?'chest':hit.zone,damage:dealt,head:headDealt>0}:
-    {zone:'shield',damage:0,head:false};
+  const shieldDamage=Math.max(0,shieldBefore-bot.shieldHP);
+  const record=shieldDamage>0&&bot.shieldHP<=0?
+     {zone:'shieldbreak',damage:shieldDamage,head:false}:
+     dealt>0?{zone:headDealt>0?'head':hit.zone==='head'?'chest':hit.zone,damage:dealt,head:headDealt>0}:
+     {zone:'shield',damage:shieldDamage,head:false};
   if(!best||(record.head&&!best.head)||(record.head===best.head&&record.damage>best.damage))best=record;
  }
  if(best)showCombatFeedback(best.zone,best.damage);
@@ -2240,6 +2309,7 @@ function reload(){if(!running||!player.alive||player.reloadUntil>nowSec)return;i
 function completeReload(){if(!player.reloadUntil||nowSec<player.reloadUntil)return;const n=player.weapon,w=weapons[n],count=Math.min(w.mag-player.ammo[n],player.reserves[n]);player.reserves[n]-=count;player.ammo[n]+=count;player.reloadUntil=0;if(count>0)beep('reloadend');updateHud();}
 function switchWeapon(index){
  if(!Number.isInteger(index)||index<0||index>=weapons.length||mode==='gun'||!running||paused||!player.alive||player.weapon===index)return;
+ if(index===7&&player.shieldHP<=0){announce('AEGIS SHIELD BROKEN · REPAIRED ON RESPAWN',1.4);return;}
  cancelEnergyCharge();player.weapon=index;player.reloadUntil=0;player.recoil=.14;player.lastShot=nowSec-.25;beep('switch');updateHud();
  const w=weapons[index];announce(w.name+' • '+w.damage+' BASE DMG',1.0);
 }
@@ -2294,9 +2364,22 @@ function updatePlayer(dt){
    if(previousShown!==Math.ceil(player.hp)||player.hp===100)updateHud();
  }
  if(player.shoot)shoot();updateEnergyChargeHUD();
- // AEGIS is a perfect cover object; no shield health or regeneration required.
+ // AEGIS shield has limited HP and is repaired only on respawn.
 }
-function updateHud(){const w=weapons[player.weapon];$('hpText').textContent=String(Math.ceil(player.hp));$('hpFill').style.width=player.hp+'%';$('hpFill').style.background=player.hp<35?'#f2564d':'#64e3b8';$('ammoCount').textContent=w.shield?'SHD':String(player.ammo[player.weapon]).padStart(2,'0');$('reserveCount').textContent=w.shield?'∞':player.reserves[player.weapon];$('weaponType').textContent=w.type;$('weaponName').textContent=w.name;$('reloadDisplay').textContent=w.shield?'BODY BLOCKED · HEAD / REAR EXPOSED':player.reloadUntil>nowSec?'RELOADING ...':'R TO RELOAD';$('killStat').textContent=`${player.kills} KILLS · ${player.deaths} DEATHS`;}
+function updateHud(){
+ const w=weapons[player.weapon],max=shieldMaxHP(),hp=Math.ceil(player.shieldHP);
+ $('hpText').textContent=String(Math.ceil(player.hp));
+ $('hpFill').style.width=player.hp+'%';
+ $('hpFill').style.background=player.hp<35?'#f2564d':'#64e3b8';
+ $('ammoCount').textContent=w.shield?String(hp):String(player.ammo[player.weapon]).padStart(2,'0');
+ $('reserveCount').textContent=w.shield?String(max):player.reserves[player.weapon];
+ $('weaponType').textContent=w.type;$('weaponName').textContent=w.name;
+ $('shieldStatus').textContent=hp<=0?'AEGIS · BROKEN':'AEGIS '+hp+'/'+max+' HP';
+ $('shieldStatus').style.color=hp<=0?'#fa7668':hp<max*.35?'#ffcb78':'#98d2e6';
+ $('reloadDisplay').textContent=w.shield?'SHIELD '+hp+'/'+max+' HP · HEAD / REAR EXPOSED':
+  player.reloadUntil>nowSec?'RELOADING ...':'R TO RELOAD';
+ $('killStat').textContent=`${player.kills} KILLS · ${player.deaths} DEATHS`;
+}
 function updateScores(){$('blueScore').textContent=String(mode==='tdm'?blue:player.kills).padStart(2,'0');$('redScore').textContent=String(mode==='tdm'?red:Math.max(...bots.map(b=>b.kills),0)).padStart(2,'0');}
 function feedKill(a,b,byPlayer){let el=document.createElement('div');el.className='feedItem';el.innerHTML=`<b>${a}</b><i>✚</i>${b}`;$('feed').prepend(el);setTimeout(()=>el.remove(),3500);while($('feed').children.length>5)$('feed').lastChild.remove();}
 function announce(t,duration=1.5){$('announcement').textContent=t;$('announcement').classList.add('visible');announceUntil=nowSec+duration;}
@@ -2411,7 +2494,14 @@ function botShape(out,b){
  B(0,1.06,0,.34,.14,.18,uniform);                         // abdomen
  B(0,1.24,.0,.50,.34,.28,uniform);                        // chest core
  B(0,1.23,.18,.39,.23,.08,visor);
- if(b.weapon===7&&b.shieldHP>0){B(0,1.11,.42,.79,.89,.11,20);B(0,1.57,.42,.79,.12,.12,9);B(0,1.41,.49,.61,.25,.035,25);for(const side of [-1,1])B(side*.38,1.21,.43,.065,1.02,.13,8);}                         // vest front plate
+ if(b.weapon===7&&b.shieldHP>0){
+  const ratio=b.shieldHP/shieldMaxHP(),plate=ratio>.65?20:ratio>.30?21:12;
+  B(0,1.11,.42,.79,.89,.11,plate);B(0,1.57,.42,.79,.12,.12,9);
+  B(0,1.41,.49,.61,.25,.035,ratio>.35?25:12);
+  for(const side of [-1,1])B(side*.38,1.21,.43,.065,1.02,.13,8);
+  if(ratio<.65)B(.12,1.03,.515,.08,.57,.027,9);
+  if(ratio<.32)B(-.22,1.29,.518,.09,.47,.03,12);
+ }                         // vest front plate
  B(0,1.26,-.16,.32,.22,.10,armor);                        // backpack
  B(0,1.37,.18,.30,.06,.05,trim);                          // chest stripe
  B(-.12,1.08,.17,.08,.12,.08,7);                          // pouch left
@@ -2802,7 +2892,10 @@ document.querySelectorAll('.diffBtn').forEach(button=>button.addEventListener('c
 const baseCreateBots=createBots;
 createBots=function(){baseCreateBots();const speedFactor={rookie:.80,regular:1,veteran:1.16}[difficulty];for(const b of bots){b.speed*=speedFactor;b.shootCD*=difficulty==='veteran'?.72:difficulty==='rookie'?1.45:1;}};
 const baseDamagePlayer=damagePlayer;
-damagePlayer=function(amount,source){const m={rookie:.66,regular:1,veteran:1.35}[difficulty];return baseDamagePlayer(Math.max(1,Math.round(amount*m)),source);};
+damagePlayer=function(amount,source,zone='chest',impactSource=source){
+ const m={rookie:.66,regular:1,veteran:1.35}[difficulty];
+ return baseDamagePlayer(Math.max(1,Math.round(amount*m)),source,zone,impactSource);
+};
 const baseEndMatch=endMatch;
 endMatch=function(){if(!ended){career.matches++;career.kills+=player.kills;career.deaths+=player.deaths;career.best=Math.max(career.best,player.kills);career.xp+=player.kills*100+Math.max(0,Math.round(matchRemaining))*2+75;try{localStorage.setItem('strikezone-solo-v11',JSON.stringify(career));}catch(e){}showCareer();}return baseEndMatch();};
 // Two new procedural first-person weapon profiles, and animated magazine reloads.
@@ -2875,7 +2968,7 @@ window.StrikeZoneRenderBridge={
  tracerData:()=>tracers.map(t=>({x:t.x,y:t.y,z:t.z,X:t.X,Y:t.Y,Z:t.Z,friendly:t.friendly})),
  botData:()=>bots.filter(soldierVisible).map(b=>({
  x:b.x,z:b.z,team:b.team,yaw:b.yaw,phase:b.phase,walk:b.walk,
- airHeight:b.alive?(b.airHeight||0):0,weapon:b.weapon,shieldHP:b.shieldHP||0,lastFiredAt:b.lastFiredAt??-99,
+ airHeight:b.alive?(b.airHeight||0):0,weapon:b.weapon,shieldHP:b.shieldHP||0,shieldMax:shieldMaxHP(),lastFiredAt:b.lastFiredAt??-99,
  downed:!b.alive,fall:soldierFallProgress(b),fallSide:b.fallSide||1
 })),
  energyFX:()=>({shots:energyShots.map(p=>({x:p.x,y:p.y,z:p.z})),waves:energyWaves.map(p=>({x:p.x,y:p.y,z:p.z,age:p.age,ttl:p.ttl,radius:p.radius}))}),
