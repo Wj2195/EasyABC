@@ -692,6 +692,99 @@ async function startModernRenderer(THREE){
   catch(err){console.warn('STRIKEZONE: humanoid model failed, using existing soldier graphics.',err);humanoidSystem=null;}
 
 
+  // v3.26 — Procedural boss and two classes of zombies, rendered with the
+  // same perspective and world lighting as the tactical soldiers.
+  const flesh=new THREE.MeshStandardMaterial({color:0x768b6b,roughness:.95});
+  const sprintFlesh=new THREE.MeshStandardMaterial({color:0xb2944d,roughness:.94});
+  const undeadCloth=new THREE.MeshStandardMaterial({color:0x414d44,roughness:.94});
+  const monsterArmor=new THREE.MeshStandardMaterial({color:0x392b4b,roughness:.76,metalness:.24});
+  const monsterBone=new THREE.MeshStandardMaterial({color:0xddd6c0,roughness:.88});
+  const monsterGlow=new THREE.MeshBasicMaterial({color:0xff4569});
+  const monsterEye=new THREE.MeshBasicMaterial({color:0xff3b35});
+  const unitBox=new THREE.BoxGeometry(1,1,1);
+  const unitSphere=new THREE.SphereGeometry(1,10,8);
+  const unitHorn=new THREE.ConeGeometry(1,1,7);
+  function buildMonsterUnit(big=false){
+    const root=new THREE.Group();scene.add(root);
+    const body=new THREE.Group();root.add(body);
+    const add=(geo,mat,x,y,z,sx,sy,sz,parent=body)=>{
+      const mesh=new THREE.Mesh(geo,mat);
+      mesh.position.set(x,y,z);mesh.scale.set(sx,sy,sz);
+      mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+    };
+    const arms=[],legs=[];
+    if(big){
+      add(unitBox,monsterArmor,0,2.30,0,2.18,2.35,1.52);
+      add(unitSphere,monsterArmor,0,3.83,.08,1.01,.83,.88);
+      add(unitBox,monsterBone,0,2.32,.86,1.28,.48,.19);
+      for(const sign of [-1,1]){
+        add(unitBox,monsterArmor,sign*1.34,2.91,0,.92,.72,.95);
+        const arm=new THREE.Group();arm.position.set(sign*1.45,2.66,0);body.add(arm);
+        add(unitBox,monsterArmor,sign*.10,-.69,.22,.70,1.63,.75,arm);
+        add(unitBox,monsterBone,sign*.14,-1.46,.32,.80,.48,.75,arm);
+        arms.push(arm);
+        const leg=new THREE.Group();leg.position.set(sign*.66,1.35,0);body.add(leg);
+        add(unitBox,monsterArmor,0,-.60,.05,.80,1.28,.86,leg);legs.push(leg);
+        const horn=add(unitHorn,monsterBone,sign*.62,4.79,.02,.34,.98,.37);
+        horn.rotation.z=-sign*.25;
+        add(unitSphere,monsterGlow,sign*.39,3.92,.79,.17,.14,.1);
+      }
+      add(unitSphere,monsterGlow,0,2.3,1.00,.40,.22,.19);
+    }else{
+      add(unitBox,undeadCloth,0,1.15,0,.65,.84,.43);
+      add(unitSphere,flesh,0,1.76,.07,.26,.32,.26);
+      add(unitBox,monsterEye,-.11,1.80,.305,.095,.07,.05);
+      add(unitBox,monsterEye,.11,1.80,.305,.095,.07,.05);
+      for(const sign of [-1,1]){
+        const arm=new THREE.Group();arm.position.set(sign*.40,1.45,.02);body.add(arm);
+        add(unitBox,flesh,sign*.08,-.43,.21,.18,.90,.18,arm);
+        arms.push(arm);
+        const leg=new THREE.Group();leg.position.set(sign*.16,.73,0);body.add(leg);
+        add(unitBox,undeadCloth,0,-.35,.025,.23,.82,.24,leg);legs.push(leg);
+      }
+    }
+    root.visible=false;
+    return {root,body,arms,legs,big};
+  }
+  const bossVisual=buildMonsterUnit(true);
+  const zombieVisuals=Array.from({length:26},()=>buildMonsterUnit(false));
+  const bossRing=new THREE.Mesh(
+    new THREE.RingGeometry(5.1,6.8,48),
+    new THREE.MeshBasicMaterial({color:0xff5d8d,transparent:true,opacity:.20,
+      depthWrite:false,side:THREE.DoubleSide}));
+  bossRing.rotation.x=-Math.PI/2;bossRing.visible=false;scene.add(bossRing);
+  function updateMonsterVisuals(){
+    const items=bridge.monsterData?.()||[];
+    bossVisual.root.visible=false;
+    for(const u of zombieVisuals)u.root.visible=false;
+    let count=0;let activeBoss=null;
+    for(const m of items){
+      const u=m.boss?bossVisual:zombieVisuals[count++];
+      if(!u)continue;
+      u.root.visible=true;u.root.position.set(m.x,floorSurfaceAt(m.x,m.z),m.z);
+      u.root.rotation.y=m.yaw;
+      if(m.boss){activeBoss=m;u.body.rotation.y=Math.sin(m.phase*1.6)*.04;}
+      else{
+        const agile=!!m.agile;
+        const skin=agile?sprintFlesh:flesh;
+        for(const arm of u.arms)for(const part of arm.children)part.material=skin;
+        u.root.scale.setScalar(agile?.88:1);
+        u.body.rotation.x=agile?.30:.12;
+      }
+      for(let k=0;k<u.arms.length;k++){
+        u.arms[k].rotation.x=m.boss?-.30+Math.sin(m.phase*3+k)*.25:
+          -.85+Math.sin(m.phase*1.4+k*Math.PI)*.42;
+        u.legs[k].rotation.x=Math.sin(m.phase*1.7+k*Math.PI)*(m.boss?.12:.22);
+      }
+    }
+    const attack=bridge.monsterAttack?.();
+    bossRing.visible=!!(activeBoss&&attack&&attack.until>attack.now);
+    if(bossRing.visible){
+      bossRing.position.set(activeBoss.x,.06,activeBoss.z);
+      bossRing.material.opacity=.10+.22*(attack.until-attack.now)/.52;
+    }
+  }
+
   // v3.12 pooled glowing energy orbs and expanding radial shockwave rings.
   const energyCoreMat=new THREE.MeshBasicMaterial({color:0x8cffff});
   const energyHaloMat=new THREE.MeshBasicMaterial({color:0x28bedd,transparent:true,opacity:.24,depthWrite:false});
@@ -741,9 +834,9 @@ async function startModernRenderer(THREE){
   // lightweight gun meshes remain available as the fallback.
   let realisticWeapons=null;
   try{
-    const module=await import('./weapon-rig.js?v=3.16');
+    const module=await import('./weapon-rig.js?v=3.26');
     realisticWeapons=module.createWeaponRig(THREE,gunScene);
-    if(realisticWeapons.weaponCount!==8)throw new Error('Incomplete weapon set');
+    if(realisticWeapons.weaponCount!==9)throw new Error('Incomplete weapon set');
   }catch(error){
     console.warn('STRIKEZONE: detailed weapon assets unavailable; using safe original gun meshes.',error);
     realisticWeapons?.dispose?.();
@@ -791,7 +884,7 @@ async function startModernRenderer(THREE){
           teamPatches[i].material=bot.team===0?armorBlue:armorRed;
         }}}
       if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position,s.nowSec);
-      renderEnergyFX();
+      updateMonsterVisuals();renderEnergyFX();
       if(!realisticWeapons&&elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
       for(let i=0;i<tracerPool.length;i++){
         const o=tracerPool[i],t=bridge.tracerData()[i];
