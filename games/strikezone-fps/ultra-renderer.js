@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.9 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.10 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -498,7 +498,7 @@ async function startModernRenderer(THREE){
   // lightweight gun meshes remain available as the fallback.
   let realisticWeapons=null;
   try{
-    const module=await import('./weapon-rig.js?v=3.9.1');
+    const module=await import('./weapon-rig.js?v=3.10');
     realisticWeapons=module.createWeaponRig(THREE,gunScene);
     if(realisticWeapons.weaponCount!==6)throw new Error('Incomplete weapon set');
   }catch(error){
@@ -535,7 +535,7 @@ async function startModernRenderer(THREE){
       let x=s.x,y=s.y+(s.crouch?.98:1.72)-s.landBob,z=s.z;
       if(!s.running){const t=s.nowSec*.12;x=Math.cos(t)*17;z=Math.sin(t)*21;y=7.2;camera.position.set(x,y,z);camTarget.set(0,2.3,0);camera.lookAt(camTarget);}
       else {camera.position.set(x,y,z);camTarget.set(x+Math.sin(s.yaw)*Math.cos(s.pitch),y+Math.sin(s.pitch),z+Math.cos(s.yaw)*Math.cos(s.pitch));camera.lookAt(camTarget);}
-      const aimFov=s.ads&&s.running?53:78;if(camera.fov!==aimFov){camera.fov=aimFov;camera.updateProjectionMatrix();}
+      const aimFov=s.scopeFov??(s.ads&&s.running?53:78);if(camera.fov!==aimFov){camera.fov=aimFov;camera.updateProjectionMatrix();}
       dome.position.copy(camera.position);skyMat.uniforms.t.value=s.nowSec;
       dust.position.y=Math.sin(s.nowSec*.35)*.13;
       const elapsed=stamp*.001;
@@ -553,14 +553,14 @@ async function startModernRenderer(THREE){
         o.scale.y=length;o.material=t.friendly?tracerFriendly:tracerEnemy;
         o.quaternion.setFromUnitVectors(upAxis,delta.normalize());
       }
-      const playerVisible=s.running&&s.alive;
-      gunAccents.visible=!realisticWeapons&&playerVisible&&s.weapon<4;
+      const playerVisible=s.running&&s.alive;const scoped=!!s.sniperScoped;
+      gunAccents.visible=!realisticWeapons&&playerVisible&&!scoped&&s.weapon<4;
       gunAccents.position.y=s.recoil*.09;
-      muzzleGlow.intensity=playerVisible&&s.flash>.01?Math.min(8,s.flash*16):0;
-      gunGroup.visible=playerVisible&&!realisticWeapons;
+      muzzleGlow.intensity=playerVisible&&!scoped&&s.flash>.01?Math.min(8,s.flash*16):0;
+      gunGroup.visible=playerVisible&&!realisticWeapons&&!scoped;
       if(realisticWeapons)realisticWeapons.update(s);
       renderer.autoClear=false;renderer.clear(true,true,true);renderer.render(scene,camera);
-      if(playerVisible){renderer.clearDepth();renderer.render(gunScene,gunCam);}
+      if(playerVisible&&!scoped){renderer.clearDepth();renderer.render(gunScene,gunCam);}
       if(!started){window.__strike3DActive=true;started=true;updateStatus(`ENHANCED 3D · ${quality.toUpperCase()} · SHADOWS / PBR ON`);}
       requestAnimationFrame(loop);
     }catch(error){window.__strike3DActive=false;console.warn('STRIKEZONE: GPU renderer runtime exception; reverting to classic rendering.',error);
