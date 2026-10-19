@@ -354,3 +354,34 @@ Buildings are all on the existing **ground-floor play plane**; roof terraces and
 The full footprint is still roughly **108×164 game units**, with **Blue** and **Red** spawning at opposite ends, 6-minute matches, and the 85×85 AI grid. A static simulation generated **329 obstacle colliders** and **2,536 architecture/detail pieces**; all **2,946 walkable grid cells** formed one connected navigable area. Both team bases reached all eight building centers in path tests. Existing eight weapons, intelligent burst-fire bots, shield mechanics, scope aiming, mobile controls and 2-second fallen-body persistence are retained.
 
 **Limitations:** Code parsing and collision/navigation simulation were verified. Final visual quality, frame rates and touch performance should be tested in a Chrome/Android browser. This upgrade adds original detailed procedural 3D geometry; it is not a fully photorealistic AAA asset/lighting pipeline.
+
+
+## v3.21 — Dense Urban Combat / 13 Enterable Buildings
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.21
+
+Built from the user's approved Map 1 room plan; **only Map 001** was modified. This release preserves the existing **108×164-unit footprint** and the north/south opposing spawn positions, but it is more enclosed and intentionally tactical.
+
+### Building and section layout
+
+- The existing eight themed buildings (depot, comms, garage, clinic, offices, market, barracks and power station) remain enterable.
+- Five **additional enterable central buildings**: North Security Checkpoint, Armory & Stores, Tactical Command, Maintenance Works and South Security Checkpoint.
+- All **13 primary buildings** feature genuine openings, roof/overhang detailing, walkable ground floors, and interior obstructions providing cover and choices. The new five center interiors have offset doorways, partitions, workstations, lockers and industrial equipment.
+- Two robust sector boundaries divide the map into **three major combat districts**. Players can cross the sector lines through controlled central building entry/exit corridors. Other alleys include barriers and short bends to eliminate long straight firing lanes.
+- Streets feature additional cover, security barricades, overhead service piping, rooftop equipment, fluorescent strips, thin glazed window visuals, restrained new signage, and higher architectural density.
+- These assets are original procedural geometry and materials, not copied Call of Duty maps or licensed 3D assets. **This is not photorealistic AAA art**; the focus is believable and playable enclosed layouts rather than blocks placed at random.
+
+### Neutral-color team spawns
+
+- Blue and red retain distinct north/south starts, but the large colored walls, floor patches, columns and partitions were replaced with **neutral plaster/concrete/tile/steel**.
+- Only small floor stripes, signs and checkpoint panels communicate team color.
+- Respawn coordinates remain safely inside their bases, and neither base has an artificial team-colored arena covering the whole sector.
+
+### Verified movement and AI
+
+- The **2-unit navigation grid** now includes cached collision-checked edges. This prevents bots from "pathing" through a thin wall between two clear grid nodes, a problem the previous version could encounter at the new checkpoint walls.
+- Physical movement checks use 0.36-radius collision and 0.18-unit incremental steps along waypoints. Tested routes from **both team spawn areas to each of the 13 building centers**.
+- Narrow unreachable alcoves around the south transition were corrected by aligning a checkpoint wall with the existing facade.
+- The existing eight weapons, burst-fire AI, directional shield protection, charged energy weapon, headshot damage, temporary downed bodies, mobile controls, minimap and 6-minute match timer remain intact.
+
+**Validation:** Source JavaScript parses successfully. Geometric and collision/nav graph integration tests should be rerun on the final release version. GitHub commit does not guarantee immediate GitHub Pages publication; browser caches may require using the versioned link above.
