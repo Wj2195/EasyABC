@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.29 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.30 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -1155,7 +1155,7 @@ function urbanStreetDetails(){
 }
 
 
-// MAP 001 v3.29: five additional fully traversable center buildings, sectional
+// MAP 001 v3.30: five additional fully traversable center buildings, sectional
 // airlock walls, and street-scale architectural obstacles. A wall has collision
 // ONLY if it touches the ground; door voids are true player/bot openings.
 const MAP_ONE_SECTORS=[
@@ -1464,7 +1464,8 @@ window.addEventListener('wheel',e=>{
  e.preventDefault();if(Math.abs(e.deltaY)>1)changeScopeZoom(e.deltaY<0?1:-1);
 },{passive:false});
 function spawnPlayer(){
- const p=findOpenSpawn(0);player.x=p.x;player.z=p.z;player.lastSafeX=p.x;player.lastSafeZ=p.z;
+ const p=findOpenSpawn(onlineRole==='guest'?onlineTeam:0);
+ player.x=p.x;player.z=p.z;player.lastSafeX=p.x;player.lastSafeZ=p.z;
  player.stuckTimer=0;player.groundY=playerFloorAt(p.x,p.z);player.y=player.groundY;player.yVel=0;player.yaw=teamFacingDirection(p);player.pitch=0;
  player.hp=100;player.shieldHP=shieldMaxHP();player.shieldLastDamage=-99;player.alive=true;player.reloadUntil=0;player.hurt=0;player.shoot=false;player.energyChargeStart=-1;player.energyReady=false;player.shockVX=player.shockVZ=0;player.ads=false;player.scopeZoom=1;player.lastDamage=nowSec;mobileCrouched=false;$('mobileCrouch').classList.remove('active');$('mobileCrouch').setAttribute('aria-pressed','false');
  keys={};touchMove.x=0;touchMove.y=0;
@@ -1626,6 +1627,7 @@ function damagePlayer(dmg,source,zone='chest',impactSource=source){if(!player.al
 // v3.14: deceased soldiers topple over, remain for exactly two seconds, then hide.
 const CORPSE_VISIBLE_SECONDS=2,DEATH_FALL_SECONDS=.42;
 function soldierVisible(b){
+ if(onlineRole==='guest'&&b.id===onlineSlot)return false;
  // Complete the fall, then leave the body on the floor for a full two seconds.
  return b.alive||(!b.alive&&Number.isFinite(b.diedAt)&&nowSec>=b.diedAt&&nowSec-b.diedAt<DEATH_FALL_SECONDS+CORPSE_VISIBLE_SECONDS);
 }
@@ -1750,7 +1752,7 @@ function pickTarget(bot){
  }
  return best;
 }
-// v3.29: cover discovery works across the FULL map, not just the old +/-29 arena.
+// v3.30: cover discovery works across the FULL map, not just the old +/-29 arena.
 function chooseCoverPoint(bot,tar){
  if(!tar)return null;
  const candidates=[];
@@ -1796,7 +1798,7 @@ function tacticalVector(b,tar,visible,dist,go){
 }
 
 
-// v3.29 — squad decision system: varied building patrols, shield retreat,
+// v3.30 — squad decision system: varied building patrols, shield retreat,
 // safe health recovery, and deliberate re-engagement.
 // All landmarks are world positions inside the existing Map 1 geometry.
 const AI_PATROL_POINTS=[
@@ -1808,7 +1810,7 @@ const AI_PATROL_POINTS=[
  [-7,-65],[7,-65],[-7,65],[7,65]
 ];
 
-// v3.29 — Zombie & Monster operation. Both teams race for the final boss hit.
+// v3.30 — Zombie & Monster operation. Both teams race for the final boss hit.
 let boss=null,zombies=[],bossDamage=[0,0],monsterWaves=0,ammoDrops=[],nextAmmoDropId=0;
 const ZOMBIE_COUNT=48,AGILE_ZOMBIE_FREQUENCY=5,OVERLORD_MAX_HP=50000;
 const AMMO_DROP_LIFETIME=48;
@@ -2457,11 +2459,13 @@ function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
  }
 }
 function updateBots(dt){
+ if(onlineRole==='guest'&&onlineStarted)return;
  const skill=typeof difficulty==='string'?difficulty:'regular';
  const reaction={rookie:.48,regular:.28,veteran:.14}[skill]||.28;
  const accuracy={rookie:.66,regular:.86,veteran:1.07}[skill]||.86;
  const cooldown={rookie:1.32,regular:1.00,veteran:.81}[skill]||1;
  for(const b of bots){
+  if(b.remoteHuman)continue;
   if(!b.alive){
    b.chargeStart=-1;
    if(nowSec>b.until&&!ended){
@@ -2663,6 +2667,7 @@ function queueEnergyProjectile(origin,dir,owner,w){
  return projectile;
 }
 function launchEnergyShot(){
+ if(onlineRole==='guest'&&onlineStarted){onlineGuestFire();return true;}
  const w=weapons[6];
  if(!player.alive||player.weapon!==6||paused||ended||player.reloadUntil>nowSec||
     player.ammo[6]<=0||nowSec-player.lastShot<60/w.rate)return false;
@@ -2795,6 +2800,7 @@ const tracers=[];
 function feedTracer(x,y,z,X,Y,Z,friendly){tracers.push({x,y,z,X,Y,Z,ttl:.10,friendly});if(tracers.length>18)tracers.shift();}
 function shoot(){
  if(!running||paused||ended||!player.alive)return;
+ if(onlineRole==='guest'&&onlineStarted){onlineGuestFire();return;}
  const w=weapons[player.weapon];
  if(w.energy){beginEnergyCharge();return;}
  if(w.shield){shieldBashPlayer();return;}
@@ -2856,7 +2862,8 @@ function shoot(){
  updateHud();
  if(player.ammo[player.weapon]===0)window.setTimeout(()=>{if(running&&player.alive)reload();},340);
 }
-function reload(){if(!running||!player.alive||player.reloadUntil>nowSec)return;if(player.weapon===7||player.weapon===8)return;if(player.weapon===6)cancelEnergyCharge();const id=player.weapon,w=weapons[id];if(player.ammo[id]>=w.mag||player.reserves[id]<=0)return;player.reloadUntil=nowSec+w.reload;beep('reload');updateHud();}
+function reload(){if(!running||!player.alive||player.reloadUntil>nowSec)return;if(player.weapon===7||player.weapon===8)return;
+ if(onlineRole==='guest'&&onlineStarted&&onlineHostConn?.open)onlineHostConn.send({t:'reload'});if(player.weapon===6)cancelEnergyCharge();const id=player.weapon,w=weapons[id];if(player.ammo[id]>=w.mag||player.reserves[id]<=0)return;player.reloadUntil=nowSec+w.reload;beep('reload');updateHud();}
 function completeReload(){if(!player.reloadUntil||nowSec<player.reloadUntil)return;const n=player.weapon,w=weapons[n],count=Math.min(w.mag-player.ammo[n],player.reserves[n]);player.reserves[n]-=count;player.ammo[n]+=count;player.reloadUntil=0;if(count>0)beep('reloadend');updateHud();}
 function switchWeapon(index){
  if(!Number.isInteger(index)||index<0||index>=weapons.length||mode==='gun'||!running||paused||!player.alive||player.weapon===index)return;
@@ -2944,7 +2951,8 @@ function updateScores(){
 }
 function feedKill(a,b,byPlayer){let el=document.createElement('div');el.className='feedItem';el.innerHTML=`<b>${a}</b><i>✚</i>${b}`;$('feed').prepend(el);setTimeout(()=>el.remove(),3500);while($('feed').children.length>5)$('feed').lastChild.remove();}
 function announce(t,duration=1.5){$('announcement').textContent=t;$('announcement').classList.add('visible');announceUntil=nowSec+duration;}
-function endMatch(){if(ended||mode==='zombie'&&boss?.alive)return;
+function endMatch(){if(onlineRole==='guest'&&onlineStarted)return;
+ if(ended||mode==='zombie'&&boss?.alive)return;
  ended=true;cancelEnergyCharge();player.shoot=false;const won=mode==='zombie'?boss?.killedBy===0:
  mode==='tdm'?blue>=red:(mode==='gun'?player.kills>=10:player.kills>=Math.max(...bots.map(b=>b.kills),0));
  const title=mode==='zombie'?(won?'VICTORY · BLUE ELIMINATED THE BOSS':'RED TEAM ELIMINATED THE BOSS'):
@@ -2952,7 +2960,9 @@ function endMatch(){if(ended||mode==='zombie'&&boss?.alive)return;
  const subtitle=mode==='zombie'?'FINAL BLOW WINS · BLUE '+Math.round(bossDamage[0])+
  ' DMG / RED '+Math.round(bossDamage[1])+' DMG':
  mode==='tdm'?`ALPHA ${blue} — ${red} DELTA`:`${player.kills} eliminations secured.`;
- openModal('result',title,subtitle);}
+ openModal('result',title,subtitle);
+ if(onlineRole==='host'&&onlineStarted)onlineBroadcast();
+}
 
 let soundEnabled=true,noiseBuffer=null;
 try{soundEnabled=localStorage.getItem('strikezone-sound-v31')!=='off';}catch(_){}
@@ -3167,7 +3177,7 @@ ctx.fillStyle='#ae8d78';ctx.fillRect(-17,60,34,22);
 ctx.fillStyle='#4b4655';
 for(const c of colliders){let w=c.X-c.x,d=c.Z-c.z;if(w>22&&d>22)continue;ctx.fillRect(c.x,c.z,w,d);}
 ctx.fillStyle='#cb8dda';ctx.fillRect(-10,-9,20,18);
-for(const b of bots){if(!b.alive)continue;ctx.fillStyle=b.team===0&&(mode==='tdm'||mode==='zombie')?'#60c2ff':'#f65750';ctx.beginPath();ctx.arc(b.x,b.z,.7,0,Math.PI*2);ctx.fill();}
+for(const b of bots){if(!b.alive||onlineRole==='guest'&&b.id===onlineSlot)continue;ctx.fillStyle=b.team===0&&(mode==='tdm'||mode==='zombie')?'#60c2ff':'#f65750';ctx.beginPath();ctx.arc(b.x,b.z,.7,0,Math.PI*2);ctx.fill();}
 if(mode==='zombie'){
  for(const zombie of zombies)if(zombie.alive){
   ctx.fillStyle=zombie.agile?'#ffbd5e':'#84bb72';
@@ -3497,7 +3507,7 @@ async function onlineJoinRoom(raw){
  }catch(e){onlineStop();onlineUIStatus('Unable to join: '+e.message);}
 }
 function onlineHostStart(){
- if(onlineRole!=='host'||onlineStarted)return;
+ if(onlineRole!=='host'||onlineStarted||!onlinePeer?.open)return;
  onlineStarted=true;onlineEndShown=false;
  document.querySelectorAll('.modeCard').forEach(c=>
   c.classList.toggle('selected',c.dataset.mode==='tdm'));
@@ -3777,12 +3787,31 @@ if(inviteCode&&/^[A-Z2-9]{6}$/i.test(inviteCode)){
 
 function tick(stamp){const sec=stamp/1000;let dt=Math.min(.045,sec-(last||sec));last=sec;nowSec=sec;frame++;if(sec-fpsMark>=1){fps=Math.round(frame/(sec-fpsMark));$('fpsCounter').textContent=`${fps} FPS`;frame=0;fpsMark=sec;}
 if(running&&!paused&&!ended){
- if(mode==='zombie')matchRemaining+=dt;
- else{matchRemaining-=dt;if(matchRemaining<=0){matchRemaining=0;endMatch();}}
- updatePlayer(dt);updateBots(dt);updateMonsters(dt);updateEnergyKnockback(dt);updateEnergyEffects(dt);completeReload();if(!player.alive&&!ended){$('respawnCountdown').textContent=Math.max(1,Math.ceil(finishTime-nowSec));if(nowSec>=finishTime)spawnPlayer();}if(nowSec>announceUntil)$('announcement').classList.remove('visible');$('matchTime').textContent=formatTime(matchRemaining);if(mode==='tdm'&&(blue>=30||red>=30))endMatch();if(Math.floor(sec*10)%4===0)drawMinimap();}
+ const isGuest=onlineRole==='guest'&&onlineStarted;
+ if(isGuest){
+  updatePlayer(dt);completeReload();onlineTick(dt);
+  if(!player.alive)$('respawnCountdown').textContent='WAIT FOR HOST';
+ }else{
+  if(mode==='zombie')matchRemaining+=dt;
+  else{matchRemaining-=dt;if(matchRemaining<=0){matchRemaining=0;endMatch();}}
+  updatePlayer(dt);updateBots(dt);updateMonsters(dt);
+  updateEnergyKnockback(dt);updateEnergyEffects(dt);completeReload();
+  if(!player.alive&&!ended){
+   $('respawnCountdown').textContent=Math.max(1,Math.ceil(finishTime-nowSec));
+   if(nowSec>=finishTime)spawnPlayer();
+  }
+  if(onlineRole==='host'&&onlineStarted)onlineTick(dt);
+  if(mode==='tdm'&&(blue>=30||red>=30))endMatch();
+ }
+ if(nowSec>announceUntil)$('announcement').classList.remove('visible');
+ $('matchTime').textContent=formatTime(matchRemaining);
+ if(Math.floor(sec*10)%4===0)drawMinimap();
+}
 syncSniperScope();renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
 function startGame(){document.body.classList.add('playing');ensureAudio();mode=document.querySelector('.modeCard.selected')?.dataset.mode||'tdm';resetGame();running=true;paused=false;ended=false;$('mainMenu').classList.add('hidden');hud.classList.remove('hidden');$('modal').classList.add('hidden');$('matchMode').textContent=mode==='zombie'?'BOSS HUNT · TEAM DAMAGE':mode==='tdm'?'TEAM DEATHMATCH':mode==='ffa'?'FREE FOR ALL':'GUN RACE';$('feed').innerHTML='';canvas.requestPointerLock?.();announce(mode==='zombie'?'OVERLORD DETECTED · DEFEAT THE BOSS!':'MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
-function goMenu(){cancelEnergyCharge();energyShots.length=0;energyWaves.length=0;
+function goMenu(){
+ if(onlineRole)onlineStop();
+ cancelEnergyCharge();energyShots.length=0;energyWaves.length=0;
  boss=null;zombies=[];ammoDrops=[];bossLightningBolts.length=0;updateBossHUD();hud.classList.remove('sniper-scoped');$('sniperScope').classList.add('hidden');document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
 const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['DMR / SNIPER: Z / X / SCROLL','ZOOM IN / OUT'],['1 TO 9 / MOBILE SWAP','CHANGE WEAPON'],['LIGHTSABER','MELEE · NO AMMUNITION'],['ZOMBIE & MONSTER','FINAL HIT ON THE BOSS WINS'],['AEGIS S8','FRONT SHIELD · FIRE TO BASH'],['NOVA PULSE · HOLD 2 SECONDS','RELEASE TO FIRE SHOCKWAVE'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
 function openModal(kind,title,subtitle){cancelEnergyCharge();modalType=kind;if(running)paused=true;player.shoot=false;$('modalEyebrow').textContent=kind==='help'?'FIELD MANUAL //':kind==='result'?'AFTER ACTION REPORT //':'TACTICAL INTERFACE //';$('modalTitle').textContent=title;$('modalSubtitle').textContent=subtitle;
@@ -3790,7 +3819,7 @@ const content=$('modalContent');if(kind==='help'){content.innerHTML='<div class=
 $('modal').classList.remove('hidden');$('resumeBtn').textContent=kind==='result'?'PLAY AGAIN ▶':kind==='help'&&!running?'BACK TO LOBBY':'RESUME MATCH ▶';$('resumeBtn').onclick=()=>{if(kind==='result')startGame();else closeModal();};$('menuBtn').textContent=running?'BACK TO MENU':'CLOSE';$('menuBtn').onclick=()=>running?goMenu():closeModal();document.exitPointerLock?.();}
 function closeModal(){if(modalType==='result')return;$('modal').classList.add('hidden');if(running){paused=false;if(!matchRemaining||ended)return;canvas.requestPointerLock?.();}else paused=false;}
 function pauseGame(){if(!running||ended)return;if(!$('modal').classList.contains('hidden'))closeModal();else openModal('pause','MATCH PAUSED','Take a moment, check the scoreboard, or return to the lobby.');}
-$('deploy').addEventListener('click',startGame);$('howTo').addEventListener('click',()=>openModal('help','CONTROLS & TACTICS','Master these controls before deploying into the arena.'));document.querySelectorAll('.modeCard').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.modeCard').forEach(c=>c.classList.remove('selected'));b.classList.add('selected');beep('switch');}));$('pauseBtn').addEventListener('click',pauseGame);$('closeModal').addEventListener('click',closeModal);$('resumeBtn').addEventListener('click',closeModal);$('menuBtn').addEventListener('click',goMenu);
+$('deploy').addEventListener('click',()=>onlineRole?onlineLobby(true):startGame());$('howTo').addEventListener('click',()=>openModal('help','CONTROLS & TACTICS','Master these controls before deploying into the arena.'));document.querySelectorAll('.modeCard').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.modeCard').forEach(c=>c.classList.remove('selected'));b.classList.add('selected');beep('switch');}));$('pauseBtn').addEventListener('click',pauseGame);$('closeModal').addEventListener('click',closeModal);$('resumeBtn').addEventListener('click',closeModal);$('menuBtn').addEventListener('click',goMenu);
 window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='Digit7')switchWeapon(6);if(e.code==='Digit8')switchWeapon(7);if(e.code==='Digit9')switchWeapon(8);if(e.code==='KeyV')player.ads=!player.ads;if(e.code==='KeyZ')changeScopeZoom(1);if(e.code==='KeyX')changeScopeZoom(-1);});window.addEventListener('keyup',e=>{keys[e.code]=false;});
 canvas.addEventListener('click',()=>{if(running&&!paused&&!ended&&document.pointerLockElement!==canvas&&matchRemaining>0)canvas.requestPointerLock?.();});canvas.addEventListener('mousedown',e=>{if(running&&!paused){if(e.button===0)player.shoot=true;if(e.button===2)player.ads=true;}});window.addEventListener('mouseup',e=>{if(e.button===0){releaseEnergyCharge();player.shoot=false;}if(e.button===2)player.ads=false;});canvas.addEventListener('contextmenu',e=>e.preventDefault());// v2.1: corrected look is the reverse of the previous build's X/Y mapping.
 let lookDirection='corrected';
