@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.6 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.9 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -492,6 +492,18 @@ async function startModernRenderer(THREE){
     const m=new THREE.Mesh(tracerGeom,tracerFriendly);m.visible=false;m.frustumCulled=false;scene.add(m);tracerPool.push(m);
   }
 
+  // Six detailed first-person PBR guns. If their module fails to load, the original
+  // lightweight gun meshes remain available as the fallback.
+  let realisticWeapons=null;
+  try{
+    const module=await import('./weapon-rig.js?v=3.9');
+    realisticWeapons=module.createWeaponRig(THREE,gunScene);
+    if(realisticWeapons.weaponCount!==6)throw new Error('Incomplete weapon set');
+  }catch(error){
+    console.warn('STRIKEZONE: detailed weapon assets unavailable; using safe original gun meshes.',error);
+    realisticWeapons?.dispose?.();
+    realisticWeapons=null;
+  }
   let quality=bridge.quality||'high',sizeW=0,sizeH=0,shadowSize=0,activeActors=[],activeGun=[];
   let lastActors=-1,lastGun=-1,started=false;
   const cleanup=(meshes)=>{for(const m of meshes){m.parent?.remove(m);m.geometry.dispose();}};
@@ -529,7 +541,7 @@ async function startModernRenderer(THREE){
       if(elapsed-lastActors>.046){cleanup(activeActors);activeActors=humanoidSystem?[]:grouped(bridge.actorGeometry(),{dynamic:true});for(const m of activeActors)actorGroup.add(m);lastActors=elapsed;
         const b=bridge.botData();for(let i=0;i<botHelmets.length;i++){const g=botHelmets[i],bot=b[i];g.visible=!humanoidSystem&&!!bot;if(!humanoidSystem&&bot){g.position.set(bot.x,Math.sin(bot.walk)*.012,bot.z);g.rotation.y=-bot.yaw;teamPatches[i].material=bot.team===0?armorBlue:armorRed;}}}
       if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position);
-      if(elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
+      if(!realisticWeapons&&elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
       for(let i=0;i<tracerPool.length;i++){
         const o=tracerPool[i],t=bridge.tracerData()[i];
         o.visible=!!t;if(!t)continue;
@@ -540,10 +552,11 @@ async function startModernRenderer(THREE){
         o.quaternion.setFromUnitVectors(upAxis,delta.normalize());
       }
       const playerVisible=s.running&&s.alive;
-      gunAccents.visible=playerVisible&&s.weapon<4;
+      gunAccents.visible=!realisticWeapons&&playerVisible&&s.weapon<4;
       gunAccents.position.y=s.recoil*.09;
       muzzleGlow.intensity=playerVisible&&s.flash>.01?Math.min(8,s.flash*16):0;
-      gunGroup.visible=playerVisible;
+      gunGroup.visible=playerVisible&&!realisticWeapons;
+      if(realisticWeapons)realisticWeapons.update(s);
       renderer.autoClear=false;renderer.clear(true,true,true);renderer.render(scene,camera);
       if(playerVisible){renderer.clearDepth();renderer.render(gunScene,gunCam);}
       if(!started){window.__strike3DActive=true;started=true;updateStatus(`ENHANCED 3D · ${quality.toUpperCase()} · SHADOWS / PBR ON`);}
