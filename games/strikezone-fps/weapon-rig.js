@@ -286,11 +286,17 @@ export function createWeaponRig(THREE, scene){
   let current=-1;
   function update(s){
     if(!s||!s.running||!s.alive){
-      for(const g of groups)g.visible=false;return;
+      for(const g of groups)g.visible=false;
+      // Reset cached identity so respawning with the same weapon re-enables it.
+      current=-1;
+      return;
     }
     const i=Math.max(0,Math.min(5,s.weapon|0));
-    if(current!==i){if(current>=0)groups[current].visible=false;current=i;groups[i].visible=true;}
+    if(current!==i){if(current>=0)groups[current].visible=false;current=i;}
     const g=groups[i],aim=!!s.ads,weapon=i;
+    // Visibility must be set every living frame, not only when weapon index changes.
+    // When using the sniper scope, keep the rifle out of the sight picture.
+    g.visible=!(i===5&&aim);
     const gait=Math.sin(s.bob||0)*.009;
     const shake=Math.abs(Math.sin((s.bob||0)*.8))*.007;
     // Place optical sight nearer the crosshair in ADS; preserve a right-hand hip position.
@@ -320,5 +326,5 @@ export function createWeaponRig(THREE, scene){
     for(const m of mats)m.dispose();
     for(const t of textures)t.dispose();
   }
-  return {update,dispose,weaponCount:groups.length,version:'3.9-realistic-weapon-rig'};
+  return {update,dispose,weaponCount:groups.length,version:'3.10-respawn-scope-rig'};
 }
