@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.13 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.14 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -463,7 +463,7 @@ async function startModernRenderer(THREE){
         const maxDim=Math.max(m.scale.x,m.scale.y,m.scale.z);
         if(maxDim<.17&&m!==patch){smallDetails.push(m);m.castShadow=false;}
       });
-      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,gun,pistol,energyCannon};
+      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,gun,pistol,energyCannon,shadow};
     }
     const units=Array.from({length:10},build);
     let currentCount=0;
@@ -490,6 +490,21 @@ async function startModernRenderer(THREE){
             u.patch.material=b.team===0?allied:enemy;
             u.material=shirt;
           }
+          // Death animation: all body parts, armor and held weapon topple together.
+          // No walking, targeting or combat occurs because dead bots are display-only.
+          if(b.downed){
+            const fall=Math.min(1,Math.max(0,b.fall||0)),side=b.fallSide||1;
+            u.root.rotation.x=side*1.43*fall;
+            u.root.rotation.z=side*.10*fall;
+            u.root.position.y=floorSurfaceAt(b.x,b.z)+.025+.11*fall;
+            u.shadow.visible=false;
+            u.torso.rotation.set(0,0,0);
+            for(const leg of u.legs){leg.hip.rotation.x=.10*fall;leg.knee.rotation.x=.22*fall;}
+            for(const arm of u.arms){arm.shoulder.rotation.x=.20*fall;arm.elbow.rotation.x=.30*fall;}
+            continue;
+          }
+          // Re-enable an upright skeleton when this pooled mesh is reused on respawn.
+          u.root.rotation.x=0;u.root.rotation.z=0;u.shadow.visible=true;
           const gait=Math.sin(b.walk+b.phase),wave=Math.cos(b.walk+b.phase);
           for(let k=0;k<2;k++){
             const sign=k===0?1:-1;
@@ -613,7 +628,12 @@ async function startModernRenderer(THREE){
       const elapsed=stamp*.001;
       // New anatomical soldier rigs replace the cube-based enemies only on WebGL2.
       if(elapsed-lastActors>.046){cleanup(activeActors);activeActors=humanoidSystem?[]:grouped(bridge.actorGeometry(),{dynamic:true});for(const m of activeActors)actorGroup.add(m);lastActors=elapsed;
-        const b=bridge.botData();for(let i=0;i<botHelmets.length;i++){const g=botHelmets[i],bot=b[i];g.visible=!humanoidSystem&&!!bot;if(!humanoidSystem&&bot){g.position.set(bot.x,Math.sin(bot.walk)*.012+(bot.airHeight||0),bot.z);g.rotation.y=-bot.yaw;teamPatches[i].material=bot.team===0?armorBlue:armorRed;}}}
+        const b=bridge.botData();for(let i=0;i<botHelmets.length;i++){const g=botHelmets[i],bot=b[i];g.visible=!humanoidSystem&&!!bot;if(!humanoidSystem&&bot){
+          const fall=bot.downed?Math.max(0,Math.min(1,bot.fall||0)):0;
+          g.position.set(bot.x,floorSurfaceAt(bot.x,bot.z)+.12*fall+(bot.downed?0:(bot.airHeight||0)),bot.z);
+          g.rotation.set((bot.fallSide||1)*1.43*fall,-bot.yaw,0);
+          teamPatches[i].material=bot.team===0?armorBlue:armorRed;
+        }}}
       if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position);
       renderEnergyFX();
       if(!realisticWeapons&&elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
