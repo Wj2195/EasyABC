@@ -230,3 +230,18 @@ This supersedes the previous v3.13 partial-damage/durability rules. When the AEG
 Damage calculation is shared by player and bot soldiers. For shotguns, head-hit pellets and body-hit pellets are applied separately: a headshot pellet cannot cause blocked body pellets to slip past the shield. Energy splash is tested against the **actual blast location**, rather than against the shooter position. Shockwave physical displacement may still occur even when the shield prevents HP damage.
 
 **Verification:** Direct simulations confirmed zero damage from front/side body, arm and leg hits, front blast damage, no shield wear, normal front headshot damage and full rear damage. WebGL/compatibility assets and previous weapon/AI behaviors remain unchanged. In-browser playtesting still recommended.
+
+
+## v3.16 — Lower ADS gun models; keep crosshair and target visible
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.16
+
+**Problem fixed:** Screenshots showed the JUDGE 12 shotgun and SPECTRE P9 pistol obstructing the reticle and forward view in aim-down-sights (ADS) mode. Some rifles similarly placed their receivers directly in front of the camera.
+
+- Enhanced WebGL2 first-person models now sit **lower, slightly right and farther away from the camera** while ADS is active. Shotgun and pistol have individually tuned offsets. ADS weapon geometry is also scaled down slightly to reduce obstruction.
+- The first-person crosshair has a higher overlay priority and greater visual contrast while aiming, without changing bullet trajectory, weapon damage, spread, headshot regions, health, bot AI or physics.
+- Classic WebGL and software fallback use equivalent lower-right ADS positions for the same weapons.
+- PHANTOM SR and RANGER DMR continue using their transparent 2x/4x/8x and 1.5x/2x/4x precision scopes, hiding the 3D model while scoped. AEGIS S8 shield still retains its protective appearance.
+- Versioned script assets v3.16 bypass older cached v3.13 weapon-rig assets.
+
+**Verification:** JS syntax validation passed; all eight procedural 3D weapon models were constructed and updated. Position tests showed pistol and shotgun shifting below center during ADS, and sniper/DMR hidden in the scope mode. Death and respawn model visibility passed. Full visual browser QA and mobile touch checks should be done on the target devices.
