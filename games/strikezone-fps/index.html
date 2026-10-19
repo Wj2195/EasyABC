@@ -2237,7 +2237,7 @@ function botChooseWeapon(b,dist,visible){
  else if(!empty&&!broken&&dist<3.1&&b.shieldHP>shieldMaxHP()*.15&&(b.preferredWeapon===7||b.weapon===7))target=7;
  else if(!empty&&!broken&&dist>19&&!horde){if([1,3,4,7].includes(target))target=b.id%2?2:5;}
  else if(!empty&&!broken&&dist<6){if([2,5].includes(target))target=b.id%2?1:3;}
- else if(!empty&&!broken&&dist>9&&dist<23&&b.preferredWeapon===6)target=6;
+ else if(!empty&&!broken&&dist>9&&dist<23&&b.preferredWeapon===6&&!horde)target=6;
  else if(!empty&&!broken&&dist>7&&dist<15&&b.preferredWeapon===7&&b.hp>65)target=0;
  if(target===7&&b.shieldHP<=0)target=b.ammo?.[0]>0?0:4;
  if(target!==b.weapon){
