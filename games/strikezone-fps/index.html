@@ -1141,7 +1141,7 @@ function denseCenterRoom(index){
 // The two sector transitions pass through a center building at z≈-22 / +22.
 // Exterior sidewalks DO NOT offer shortcuts around the section checkpoints.
 function denseSectorBoundaries(){
- for(const z of [-23.5,23.5]){
+ for(const z of [-25.1,25.1]){
   // Leave x [-11.5,11.5] for the actual checkpoint building interior.
   for(const [lo,hi] of [[-54,-11.5],[11.5,54]]){
    const width=hi-lo;
