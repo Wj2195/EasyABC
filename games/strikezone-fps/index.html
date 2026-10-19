@@ -265,6 +265,25 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
 #energyChargeHUD.ready{border-color:#ffd477;color:#ffe9a8}
 #energyChargeHUD.ready #energyChargeFill{background:linear-gradient(90deg,#8dcbd2,#ffce69)}
 @media(hover:none) and (pointer:coarse){#energyChargeHUD{width:min(170px,29vw);bottom:max(12px,env(safe-area-inset-bottom) + 12px);padding:5px;font-size:8px}}
+
+/* Boss-encounter operation */
+.modeCards{flex-wrap:wrap}
+.modeCard[data-mode="zombie"]{border-color:#8c5943b5}
+.modeCard[data-mode="zombie"].selected{border-color:#ffa65e;box-shadow:0 0 15px #e374534a}
+#bossHUD{position:absolute;top:156px;left:50%;transform:translateX(-50%);
+ width:min(490px,calc(100vw - 34px));padding:10px 13px;z-index:6;
+ background:#150e19dc;border:1px solid #f0665d8c;border-radius:5px;
+ box-shadow:0 4px 24px #0009;color:#fff;pointer-events:none}
+#bossHUD.hidden{display:none}
+.bossHeading,.bossFoot{display:flex;justify-content:space-between;gap:12px;font-size:11px;
+ letter-spacing:.8px;font-weight:900}
+.bossHeading strong{color:#ffb894}
+.bossMeter{height:12px;border:1px solid #e27c6866;background:#27131d;margin:7px 0 5px;overflow:hidden}
+#bossHPFill{height:100%;width:100%;background:linear-gradient(90deg,#e64b44,#ffbe72);
+ box-shadow:0 0 12px #e94953;transition:width .12s linear}
+.bossFoot{font-size:9px;color:#f0bbae}
+@media(max-width:800px){#bossHUD{top:75px;width:calc(100vw - 165px);left:auto;right:8px;transform:none;padding:5px}
+.bossHeading,.bossFoot{font-size:7px}.bossMeter{height:7px;margin:4px 0}}
 </style>
 </head>
 <body>
@@ -301,6 +320,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
      <button class="modeCard selected" data-mode="tdm"><b>01</b><strong>TEAM DEATHMATCH</strong><small>Blue team vs Red team</small></button>
      <button class="modeCard" data-mode="ffa"><b>02</b><strong>FREE FOR ALL</strong><small>Every operative for themselves</small></button>
      <button class="modeCard" data-mode="gun"><b>03</b><strong>GUN RACE</strong><small>Change weapons on every kill</small></button>
+     <button class="modeCard" data-mode="zombie"><b>04</b><strong>ZOMBIE &amp; MONSTER</strong><small>First team to eliminate the boss wins</small></button>
    </div></section>
    <div class="armoryChooser"><label for="loadoutSelect">STARTING WEAPON</label><select id="loadoutSelect" aria-label="Starting weapon"></select><span id="loadoutInfo">Choose your loadout</span></div>
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
@@ -309,6 +329,11 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
   <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.21 — DENSE URBAN ROOM-CLEARING</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
+ <div id="bossHUD" class="hidden">
+   <div class="bossHeading"><span>☠ OVERLORD · BOSS ENCOUNTER</span><strong id="bossHPText">0 / 0 HP</strong></div>
+   <div class="bossMeter"><div id="bossHPFill"></div></div>
+   <div class="bossFoot"><span>BLUE VS RED · LAST HIT WINS</span><span id="zombieCount">0 ZOMBIES</span></div>
+ </div>
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">06:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button type="button" id="hudSound" title="Mute / unmute sound" aria-label="Sound on">♪</button><button type="button" id="hudFullscreen" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
  <canvas id="minimap" width="164" height="164"></canvas><div class="mapLabel">TRI-SECTOR LABYRINTH</div>
  <div id="feed" class="killFeed"></div><div id="crosshair"><span class="cTop"></span><span class="cRight"></span><span class="cBottom"></span><span class="cLeft"></span><i></i></div><div id="sniperScope" class="hidden" aria-hidden="true">
@@ -329,7 +354,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
   </div>
 </div><div id="hitmarker">✕</div><div id="combatFeedback" role="status" aria-live="polite"></div><div id="damageDirection"></div>
  <div class="bottomHUD"><div class="healthPanel"><div class="unit">OPERATIVE <b>ALPHA 01</b></div><div class="hpRow"><span class="hpIcon">✚</span><strong id="hpText">100</strong><div class="hpTrack"><div id="hpFill"></div></div></div><div class="subStat"><span id="shieldStatus">SHIELD READY</span><span id="killStat">0 KILLS · 0 DEATHS</span></div></div><div class="weaponPanel"><div class="weaponLabel"><span id="weaponType">ASSAULT RIFLE</span><span id="weaponName">VORTEX AR</span></div><div class="ammoRow"><strong id="ammoCount">30</strong><span class="ammoSlash">/</span><span id="reserveCount">150</span><span class="ammoBullet">▥</span></div><div id="reloadDisplay">R TO RELOAD</div></div></div>
- <div class="keyHints"><span>[SHIFT] SPRINT</span><span>[SPACE] JUMP</span><span>[R] RELOAD</span><span>[1–8] WEAPON</span><span>[U] UNSTUCK</span><span>[P] SCOREBOARD</span></div>
+ <div class="keyHints"><span>[SHIFT] SPRINT</span><span>[SPACE] JUMP</span><span>[R] RELOAD</span><span>[1–9] WEAPON</span><span>[U] UNSTUCK</span><span>[P] SCOREBOARD</span></div>
  <div id="energyChargeHUD" class="hidden"><span id="energyChargeText">HOLD FIRE 2s</span><div class="chargeMeter"><div id="energyChargeFill"></div></div></div>
 <div id="announcement" class="announcement"></div>
  <div id="respawnScreen" class="hidden"><div>YOU WERE ELIMINATED</div><strong id="respawnCountdown">3</strong><small>REDEPLOYMENT IN PROGRESS</small></div>
@@ -1260,7 +1285,8 @@ const weapons=[
 {name:'SPECTRE P9',type:'SIDEARM',mag:18,reserve:108,damage:35,rate:390,spread:.019,reload:1.20,range:55,headMult:2.1,falloffStart:24,falloffRate:.010},
 {name:'PHANTOM SR',type:'SNIPER RIFLE',mag:5,reserve:30,damage:85,rate:55,spread:.0025,reload:2.70,range:130,headMult:2.6,falloffStart:100,falloffRate:.002},
 {name:'NOVA PULSE',type:'ENERGY CANNON',mag:4,reserve:20,damage:40,rate:50,spread:0,reload:3.3,range:80,headMult:1,falloffStart:80,falloffRate:0,energy:true,charge:2,projectileSpeed:39,blastRadius:5.4,blastDamage:24,knockback:10.5},
-{name:'AEGIS S8',type:'BALLISTIC SHIELD',mag:1,reserve:0,damage:23,rate:56,spread:0,reload:0,range:1.9,headMult:1,falloffStart:5,falloffRate:0,shield:true,shieldHP:200,block:1}
+{name:'AEGIS S8',type:'BALLISTIC SHIELD',mag:1,reserve:0,damage:23,rate:56,spread:0,reload:0,range:1.9,headMult:1,falloffStart:5,falloffRate:0,shield:true,shieldHP:200,block:1},
+{name:'LIGHTSABER',type:'ENERGY BLADE',mag:1,reserve:0,damage:95,rate:90,spread:0,reload:0,range:3.1,headMult:1,falloffStart:4,falloffRate:0,melee:true}
 ];
 const SHIELD_DURABILITY={light:120,standard:200,heavy:340};
 let shieldSetting='standard';
@@ -1392,8 +1418,8 @@ function spawnPlayer(){
  $('respawnScreen').classList.add('hidden');updateHud();announce('SAFE REDEPLOYMENT',1.15);
 }
 function teamFacingDirection(p){return p.z<0?0:Math.PI;}
-function createBots(){bots=[];const count=mode==='tdm'?9:8;
- for(let i=0;i<count;i++){const team=mode==='tdm'?(i<4?0:1):1,p=spawnPoint(team);
+function createBots(){bots=[];const count=mode==='tdm'||mode==='zombie'?9:8;
+ for(let i=0;i<count;i++){const team=(mode==='tdm'||mode==='zombie')?(i<4?0:1):1,p=spawnPoint(team);
  const weapon=i%weapons.length;
  bots.push({id:i,name:botNames[i],team,x:p.x,z:p.z,yaw:rand(-3,3),hp:100,alive:true,diedAt:-Infinity,fallSide:1,until:0,kills:0,deaths:0,
  target:null,targetRefresh:0,path:[],pathRefresh:0,shootCD:rand(.4,1.5),speed:rand(2.5,3.3),
@@ -1426,7 +1452,8 @@ loadoutSelect.addEventListener('change',()=>{startingWeapon=Number(loadoutSelect
  refreshLoadout();
 });
 refreshLoadout();
-function resetGame(){energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=360;blue=0;red=0;ended=false;touchMove={x:0,y:0};createBots();spawnPlayer();updateHud();updateScores();}
+function resetGame(){energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=mode==='zombie'?0:360;blue=0;red=0;ended=false;touchMove={x:0,y:0};
+ createBots();spawnPlayer();resetMonsterEncounter();updateHud();updateScores();}
 // Navmesh over both bases and the enlarged maze. 2-unit cells + full BFS,
 // with enough search depth to reach from one end of this 164-unit map to the other.
 const gridN=85,gridStep=2,gridMin=-84;
@@ -1633,6 +1660,15 @@ function shieldBashPlayer(){
 function pickTarget(bot){
  let best=null,score=Infinity;
  const targets=[];
+ if(mode==='zombie'){
+   for(const monster of aliveMonsters()){
+     const d=hypot(monster.x-bot.x,monster.z-bot.z);
+     const seen=d<39&&clearPath(bot.x,bot.z,monster.x,monster.z);
+     const priority=d+(seen?-9:4)+(monster.boss?-27:3);
+     if(priority<score){best=monster;score=priority;}
+   }
+   return best;
+ }
  if(player.alive&&(mode!=='tdm'||bot.team!==0))targets.push(player);
  for(const other of bots)if(other!==bot&&other.alive&&(mode!=='tdm'||other.team!==bot.team))targets.push(other);
  for(const t of targets){
@@ -1883,18 +1919,28 @@ function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
   const take=Math.min(w.mag-b.ammo[id],b.reserves[id]);
   b.ammo[id]+=take;b.reserves[id]-=take;b.reloadUntil=0;
  }
+ if(w.melee){
+  if(!visible||b.shootCD>0||Math.abs(rotation)>.7||
+     dist>w.range+(tar.boss?1.4:0))return;
+  b.shootCD=60/w.rate*cooldown;b.lastFiredAt=nowSec;
+  if(tar.monster)damageMonster(tar,w.damage*(tar.boss?1.25:1),b);
+  else if(tar===player)damagePlayer(w.damage*.65,b,'chest');
+  else damageBot(tar,w.damage*.65,b,'chest');
+  return;
+ }
  if(w.shield){
   b.chargeStart=-1;
   if(b.shieldHP<=0){b.weapon=0;return;}
-  if(!visible||dist>w.range||b.shootCD>0||Math.abs(rotation)>.58)return;
+  if(!visible||dist>w.range+(tar.boss?1.2:0)||b.shootCD>0||Math.abs(rotation)>.58)return;
   b.shootCD=1.0*cooldown;
   const dmg=w.damage;
   if(tar===player)damagePlayer(dmg,b,'chest');
+  else if(tar.monster)damageMonster(tar,dmg,b);
   else damageBot(tar,dmg,b,'chest');
   const dx=(tar.x-b.x)/(dist||1),dz=(tar.z-b.z)/(dist||1);
-  if(tar===player){player.shockVX+=dx*4;player.shockVZ+=dz*4;}
-  else{tar.energyVX=(tar.energyVX||0)+dx*4;tar.energyVZ=(tar.energyVZ||0)+dz*4;}
-  if(tar===player)player.yVel=Math.max(player.yVel,2.2);else tar.airVY=Math.max(tar.airVY||0,2.2);
+  if(tar===player){player.shockVX+=dx*4;player.shockVZ+=dz*4;player.yVel=Math.max(player.yVel,2.2);}
+  else if(!tar.monster){tar.energyVX=(tar.energyVX||0)+dx*4;tar.energyVZ=(tar.energyVZ||0)+dz*4;
+   tar.airVY=Math.max(tar.airVY||0,2.2);}
   return;
  }
  if(!visible||dist>Math.min(w.range,55)){
@@ -1906,7 +1952,7 @@ function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
   if(b.chargeStart<0){b.chargeStart=nowSec;return;}
   if(nowSec-b.chargeStart<w.charge)return;
   if(b.shootCD>0)return;
-  const targetY=(tar===player?player.y:floorSurfaceAt(tar.x,tar.z)+(tar.airHeight||0))+1.03;
+  const targetY=(tar===player?player.y:floorSurfaceAt(tar.x,tar.z)+(tar.airHeight||0))+(tar.boss?2.2:1.03);
   const originY=floorSurfaceAt(b.x,b.z)+(b.airHeight||0)+1.28;
   const pitch=Math.atan2(targetY-originY,dist);
   const c=Math.cos(pitch),dir={dx:Math.sin(b.yaw)*c,dy:Math.sin(pitch),dz:Math.cos(b.yaw)*c};
@@ -1937,10 +1983,12 @@ function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
   const zone=(w.type==='SNIPER RIFLE'||w.type==='MARKSMAN RIFLE')&&Math.random()<.13?'head':Math.random()<.2?'leg':'chest';
   const hitAmount=hitDamage(w,zone,dist)*(w.pellets?2.8:1)*.55;
   const damage=Math.max(3,Math.round(hitAmount));
-  if(tar===player)damagePlayer(damage,b,zone);else damageBot(tar,damage,b,zone);
+  if(tar===player)damagePlayer(damage,b,zone);
+  else if(tar.monster)damageMonster(tar,damage,b);
+  else damageBot(tar,damage,b,zone);
  }
  const muzzleY=floorSurfaceAt(b.x,b.z)+(b.airHeight||0)+1.3;
- const targetY=(tar===player?player.y:floorSurfaceAt(tar.x,tar.z)+(tar.airHeight||0))+1.16;
+ const targetY=(tar===player?player.y:floorSurfaceAt(tar.x,tar.z)+(tar.airHeight||0))+(tar.boss?2.2:1.16);
  // All fired rounds are visible, including misses (which scatter beyond target).
  const missAngle=(Math.random()-.5)*(1-hitChance)*.20;
  const tx=tar.x+Math.cos(b.yaw)*missAngle*dist;
@@ -2255,6 +2303,7 @@ function shoot(){
  const w=weapons[player.weapon];
  if(w.energy){beginEnergyCharge();return;}
  if(w.shield){shieldBashPlayer();return;}
+ if(w.melee){swingLightsaber();return;}
  if(nowSec-player.lastShot<60/w.rate||player.reloadUntil>nowSec)return;
  if(player.ammo[player.weapon]<=0){reload();return;}
  player.lastShot=nowSec;player.ammo[player.weapon]--;player.recoil=Math.min(.32,player.recoil+(player.weapon===5?.19:.09));player.flash=.075;beep('gun');
@@ -2272,18 +2321,22 @@ function shoot(){
   const len=Math.hypot(dx,dy,dz)||1,ray={x:dx/len,y:dy/len,z:dz/len};
   let nearest=Math.min(w.range,worldImpact(origin,ray)),hit=null;
   for(const bot of bots){
-   if(!bot.alive||(mode==='tdm'&&bot.team===0))continue;
+   if(!bot.alive||(mode==='tdm'&&bot.team===0)||mode==='zombie')continue;
    const impact=hitActor(origin,ray,bot);
-   if(impact.dist<nearest){nearest=impact.dist;hit={bot,zone:impact.zone};}
+   if(impact.dist<nearest){nearest=impact.dist;hit={actor:bot,zone:impact.zone};}
+  }
+  if(mode==='zombie')for(const creature of aliveMonsters()){
+   const impact=hitMonsterRay(origin,ray,creature);
+   if(impact<nearest){nearest=impact;hit={actor:creature,zone:'chest'};}
   }
   if(i===0)tracerEnd={x:origin.x+ray.x*nearest,y:origin.y+ray.y*nearest,z:origin.z+ray.z*nearest};
   if(!hit)continue;
   const damage=hitDamage(w,hit.zone,nearest);
-  const saved=hits.get(hit.bot)||{damage:0,bodyDamage:0,headDamage:0,zone:hit.zone,head:false};
+  const saved=hits.get(hit.actor)||{damage:0,bodyDamage:0,headDamage:0,zone:hit.zone,head:false};
   saved.damage+=damage;
   if(hit.zone==='head'){saved.head=true;saved.headDamage+=damage;saved.zone='head';}
   else{saved.bodyDamage+=damage;if(!saved.head&&hit.zone==='abdomen')saved.zone='abdomen';}
-  hits.set(hit.bot,saved);
+  hits.set(hit.actor,saved);
  }
  if(tracerEnd)feedTracer(origin.x,origin.y,origin.z,tracerEnd.x,tracerEnd.y,tracerEnd.z,true);
  let best=null;
@@ -2291,10 +2344,13 @@ function shoot(){
   // Apply head and non-head pellet damage independently.
   // Otherwise one head pellet could wrongly bypass a shield for all body pellets.
   let dealt=0,headDealt=0;
-  const shieldBefore=bot.shieldHP;
-  if(hit.bodyDamage>0)dealt+=damageBot(bot,hit.bodyDamage,player,'chest');
-  if(hit.headDamage>0){headDealt=damageBot(bot,hit.headDamage,player,'head');dealt+=headDealt;}
-  const shieldDamage=Math.max(0,shieldBefore-bot.shieldHP);
+  const shieldBefore=bot.shieldHP||0;
+  if(bot.monster){dealt=damageMonster(bot,hit.bodyDamage+hit.headDamage,player);}
+  else{
+   if(hit.bodyDamage>0)dealt+=damageBot(bot,hit.bodyDamage,player,'chest');
+   if(hit.headDamage>0){headDealt=damageBot(bot,hit.headDamage,player,'head');dealt+=headDealt;}
+  }
+  const shieldDamage=Math.max(0,shieldBefore-(bot.shieldHP||0));
   const record=shieldDamage>0&&bot.shieldHP<=0?
      {zone:'shieldbreak',damage:shieldDamage,head:false}:
      dealt>0?{zone:headDealt>0?'head':hit.zone==='head'?'chest':hit.zone,damage:dealt,head:headDealt>0}:
@@ -2305,7 +2361,7 @@ function shoot(){
  updateHud();
  if(player.ammo[player.weapon]===0)window.setTimeout(()=>{if(running&&player.alive)reload();},340);
 }
-function reload(){if(!running||!player.alive||player.reloadUntil>nowSec)return;if(player.weapon===7)return;if(player.weapon===6)cancelEnergyCharge();const id=player.weapon,w=weapons[id];if(player.ammo[id]>=w.mag||player.reserves[id]<=0)return;player.reloadUntil=nowSec+w.reload;beep('reload');updateHud();}
+function reload(){if(!running||!player.alive||player.reloadUntil>nowSec)return;if(player.weapon===7||player.weapon===8)return;if(player.weapon===6)cancelEnergyCharge();const id=player.weapon,w=weapons[id];if(player.ammo[id]>=w.mag||player.reserves[id]<=0)return;player.reloadUntil=nowSec+w.reload;beep('reload');updateHud();}
 function completeReload(){if(!player.reloadUntil||nowSec<player.reloadUntil)return;const n=player.weapon,w=weapons[n],count=Math.min(w.mag-player.ammo[n],player.reserves[n]);player.reserves[n]-=count;player.ammo[n]+=count;player.reloadUntil=0;if(count>0)beep('reloadend');updateHud();}
 function switchWeapon(index){
  if(!Number.isInteger(index)||index<0||index>=weapons.length||mode==='gun'||!running||paused||!player.alive||player.weapon===index)return;
@@ -2371,19 +2427,28 @@ function updateHud(){
  $('hpText').textContent=String(Math.ceil(player.hp));
  $('hpFill').style.width=player.hp+'%';
  $('hpFill').style.background=player.hp<35?'#f2564d':'#64e3b8';
- $('ammoCount').textContent=w.shield?String(hp):String(player.ammo[player.weapon]).padStart(2,'0');
- $('reserveCount').textContent=w.shield?String(max):player.reserves[player.weapon];
+ $('ammoCount').textContent=w.melee?'⚔':w.shield?String(hp):String(player.ammo[player.weapon]).padStart(2,'0');
+ $('reserveCount').textContent=w.melee?'∞':w.shield?String(max):player.reserves[player.weapon];
  $('weaponType').textContent=w.type;$('weaponName').textContent=w.name;
  $('shieldStatus').textContent=hp<=0?'AEGIS · BROKEN':'AEGIS '+hp+'/'+max+' HP';
  $('shieldStatus').style.color=hp<=0?'#fa7668':hp<max*.35?'#ffcb78':'#98d2e6';
- $('reloadDisplay').textContent=w.shield?'SHIELD '+hp+'/'+max+' HP · HEAD / REAR EXPOSED':
+ $('reloadDisplay').textContent=w.melee?'LIGHTSABER · CLOSE-RANGE SWING':w.shield?'SHIELD '+hp+'/'+max+' HP · HEAD / REAR EXPOSED':
   player.reloadUntil>nowSec?'RELOADING ...':'R TO RELOAD';
  $('killStat').textContent=`${player.kills} KILLS · ${player.deaths} DEATHS`;
 }
-function updateScores(){$('blueScore').textContent=String(mode==='tdm'?blue:player.kills).padStart(2,'0');$('redScore').textContent=String(mode==='tdm'?red:Math.max(...bots.map(b=>b.kills),0)).padStart(2,'0');}
+function updateScores(){
+ if(mode==='zombie'){
+  $('blueScore').textContent=String(Math.round(bossDamage[0]||0));
+  $('redScore').textContent=String(Math.round(bossDamage[1]||0));
+  return;
+ }
+ $('blueScore').textContent=String(mode==='tdm'?blue:player.kills).padStart(2,'0');
+ $('redScore').textContent=String(mode==='tdm'?red:Math.max(...bots.map(b=>b.kills),0)).padStart(2,'0');
+}
 function feedKill(a,b,byPlayer){let el=document.createElement('div');el.className='feedItem';el.innerHTML=`<b>${a}</b><i>✚</i>${b}`;$('feed').prepend(el);setTimeout(()=>el.remove(),3500);while($('feed').children.length>5)$('feed').lastChild.remove();}
 function announce(t,duration=1.5){$('announcement').textContent=t;$('announcement').classList.add('visible');announceUntil=nowSec+duration;}
-function endMatch(){if(ended)return;ended=true;cancelEnergyCharge();player.shoot=false;const won=mode==='tdm'?blue>=red:(mode==='gun'?player.kills>=10:player.kills>=Math.max(...bots.map(b=>b.kills),0));openModal('result',won?'VICTORY':'MISSION COMPLETE',mode==='tdm'?`ALPHA ${blue} — ${red} DELTA`:`${player.kills} eliminations secured.`);}
+function endMatch(){if(ended||mode==='zombie'&&boss?.alive)return;
+ ended=true;cancelEnergyCharge();player.shoot=false;const won=mode==='tdm'?blue>=red:(mode==='gun'?player.kills>=10:player.kills>=Math.max(...bots.map(b=>b.kills),0));openModal('result',won?'VICTORY':'MISSION COMPLETE',mode==='tdm'?`ALPHA ${blue} — ${red} DELTA`:`${player.kills} eliminations secured.`);}
 
 let soundEnabled=true,noiseBuffer=null;
 try{soundEnabled=localStorage.getItem('strikezone-sound-v31')!=='off';}catch(_){}
@@ -2478,7 +2543,7 @@ function botShape(out,b){
   const dd=Math.max(.03,Math.abs(sn)*h+Math.abs(cs)*d);
   return box(out,ox+x,baseY+Math.max(hh*.51,ty+.03),oz+tz,w,hh,dd,m,a,ox,oz);
  };
- const friendly=mode==='tdm'&&b.team===0,uniform=friendly?11:12,trim=friendly?25:27;
+ const friendly=(mode==='tdm'||mode==='zombie')&&b.team===0,uniform=friendly?11:12,trim=friendly?25:27;
  const skin=14,armor=9,visor=21,accent=24;
  // More humanoid proportions: narrower shoulders, clearer waist, separate upper/lower limbs.
  // Legs
@@ -2565,6 +2630,14 @@ else if(i===3){ // JUDGE 12 SHOTGUN
  B(0,-.30,-.22,.31,.27,.55,9);B(0,.20,.61,.09,.07,.78,15);
  B(-.18,-.26,.70,.13,.39,.13,20);
  muzzle=1.78;
+}else if(i===8){ // LIGHTSABER: bright cyan energy blade and metallic grip.
+ const swing=player.flash>0?Math.sin((1-player.flash/.18)*Math.PI)*.24:0;
+ B(.08+swing,-.18,.34,.13,.27,.28,9);
+ B(.06+swing,-.10,.82,.11,.16,.64,25);
+ B(.06+swing,-.09,1.31,.08,.12,.60,15);
+ B(.06+swing,-.09,1.75,.10,.10,.38,25);
+ B(.06+swing,-.12,2.00,.15,.16,.18,15);
+ muzzle=2;
 }else{ // AEGIS S8 protective police shield held on the left side of the sightline
  B(-.48,.04,.86,.57,.95,.10,20);
  B(-.48,.56,.86,.60,.17,.11,9);
@@ -2588,7 +2661,14 @@ ctx.fillStyle='#ae8d78';ctx.fillRect(-17,60,34,22);
 ctx.fillStyle='#4b4655';
 for(const c of colliders){let w=c.X-c.x,d=c.Z-c.z;if(w>22&&d>22)continue;ctx.fillRect(c.x,c.z,w,d);}
 ctx.fillStyle='#cb8dda';ctx.fillRect(-10,-9,20,18);
-for(const b of bots){if(!b.alive)continue;ctx.fillStyle=b.team===0&&mode==='tdm'?'#60c2ff':'#f65750';ctx.beginPath();ctx.arc(b.x,b.z,.7,0,Math.PI*2);ctx.fill();}
+for(const b of bots){if(!b.alive)continue;ctx.fillStyle=b.team===0&&(mode==='tdm'||mode==='zombie')?'#60c2ff':'#f65750';ctx.beginPath();ctx.arc(b.x,b.z,.7,0,Math.PI*2);ctx.fill();}
+if(mode==='zombie'){
+ for(const zombie of zombies)if(zombie.alive){
+  ctx.fillStyle=zombie.agile?'#ffbd5e':'#84bb72';
+  ctx.beginPath();ctx.arc(zombie.x,zombie.z,zombie.agile?.85:.56,0,Math.PI*2);ctx.fill();
+ }
+ if(boss?.alive){ctx.fillStyle='#fe72c9';ctx.beginPath();ctx.arc(boss.x,boss.z,2.4,0,Math.PI*2);ctx.fill();}
+}
 ctx.translate(player.x,player.z);ctx.rotate(-player.yaw);ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(0,1.6);ctx.lineTo(-1.1,-1.25);ctx.lineTo(1.1,-1.25);ctx.closePath();ctx.fill();ctx.restore();}
 
 function drawAtmosphereFX(ctx,W,H){
@@ -2763,11 +2843,14 @@ function softwareScene(dt){
 }
 function formatTime(t){let n=Math.max(0,Math.ceil(t));return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;}
 function tick(stamp){const sec=stamp/1000;let dt=Math.min(.045,sec-(last||sec));last=sec;nowSec=sec;frame++;if(sec-fpsMark>=1){fps=Math.round(frame/(sec-fpsMark));$('fpsCounter').textContent=`${fps} FPS`;frame=0;fpsMark=sec;}
-if(running&&!paused&&!ended){matchRemaining-=dt;if(matchRemaining<=0){matchRemaining=0;endMatch();}updatePlayer(dt);updateBots(dt);updateEnergyKnockback(dt);updateEnergyEffects(dt);completeReload();if(!player.alive&&!ended){$('respawnCountdown').textContent=Math.max(1,Math.ceil(finishTime-nowSec));if(nowSec>=finishTime)spawnPlayer();}if(nowSec>announceUntil)$('announcement').classList.remove('visible');$('matchTime').textContent=formatTime(matchRemaining);if(mode==='tdm'&&(blue>=30||red>=30))endMatch();if(Math.floor(sec*10)%4===0)drawMinimap();}
+if(running&&!paused&&!ended){
+ if(mode==='zombie')matchRemaining+=dt;
+ else{matchRemaining-=dt;if(matchRemaining<=0){matchRemaining=0;endMatch();}}
+ updatePlayer(dt);updateBots(dt);updateMonsters(dt);updateEnergyKnockback(dt);updateEnergyEffects(dt);completeReload();if(!player.alive&&!ended){$('respawnCountdown').textContent=Math.max(1,Math.ceil(finishTime-nowSec));if(nowSec>=finishTime)spawnPlayer();}if(nowSec>announceUntil)$('announcement').classList.remove('visible');$('matchTime').textContent=formatTime(matchRemaining);if(mode==='tdm'&&(blue>=30||red>=30))endMatch();if(Math.floor(sec*10)%4===0)drawMinimap();}
 syncSniperScope();renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
-function startGame(){document.body.classList.add('playing');ensureAudio();mode=document.querySelector('.modeCard.selected')?.dataset.mode||'tdm';resetGame();running=true;paused=false;ended=false;$('mainMenu').classList.add('hidden');hud.classList.remove('hidden');$('modal').classList.add('hidden');$('matchMode').textContent=mode==='tdm'?'TEAM DEATHMATCH':mode==='ffa'?'FREE FOR ALL':'GUN RACE';$('feed').innerHTML='';canvas.requestPointerLock?.();announce('MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
+function startGame(){document.body.classList.add('playing');ensureAudio();mode=document.querySelector('.modeCard.selected')?.dataset.mode||'tdm';resetGame();running=true;paused=false;ended=false;$('mainMenu').classList.add('hidden');hud.classList.remove('hidden');$('modal').classList.add('hidden');$('matchMode').textContent=mode==='zombie'?'BOSS HUNT · TEAM DAMAGE':mode==='tdm'?'TEAM DEATHMATCH':mode==='ffa'?'FREE FOR ALL':'GUN RACE';$('feed').innerHTML='';canvas.requestPointerLock?.();announce(mode==='zombie'?'OVERLORD DETECTED · DEFEAT THE BOSS!':'MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
 function goMenu(){cancelEnergyCharge();energyShots.length=0;energyWaves.length=0;hud.classList.remove('sniper-scoped');$('sniperScope').classList.add('hidden');document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
-const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['DMR / SNIPER: Z / X / SCROLL','ZOOM IN / OUT'],['1 TO 8 / MOBILE SWAP','CHANGE WEAPON'],['AEGIS S8','FRONT SHIELD · FIRE TO BASH'],['NOVA PULSE · HOLD 2 SECONDS','RELEASE TO FIRE SHOCKWAVE'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
+const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['DMR / SNIPER: Z / X / SCROLL','ZOOM IN / OUT'],['1 TO 9 / MOBILE SWAP','CHANGE WEAPON'],['LIGHTSABER','MELEE · NO AMMUNITION'],['ZOMBIE & MONSTER','FINAL HIT ON THE BOSS WINS'],['AEGIS S8','FRONT SHIELD · FIRE TO BASH'],['NOVA PULSE · HOLD 2 SECONDS','RELEASE TO FIRE SHOCKWAVE'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
 function openModal(kind,title,subtitle){cancelEnergyCharge();modalType=kind;if(running)paused=true;player.shoot=false;$('modalEyebrow').textContent=kind==='help'?'FIELD MANUAL //':kind==='result'?'AFTER ACTION REPORT //':'TACTICAL INTERFACE //';$('modalTitle').textContent=title;$('modalSubtitle').textContent=subtitle;
 const content=$('modalContent');if(kind==='help'){content.innerHTML='<div class="controlsGrid">'+helpEntries.map(([a,b])=>`<div>${b}<b>${a}</b></div>`).join('')+'</div><p>Mobile: move with the left joystick; swipe on the right to look; AIM and FIRE are together on the right, while JUMP and tap-to-toggle CROUCH are at the bottom center.</p>';}else{const others=bots.map(b=>({name:b.name,kills:b.kills,team:b.team})).sort((a,b)=>b.kills-a.kills).slice(0,5);content.innerHTML=`<div class="modalStat"><div><strong>${player.kills}</strong><small>KILLS</small></div><div><strong>${player.deaths}</strong><small>DEATHS</small></div><div><strong>${Math.max(0,Math.round(player.kills*100+player.kills*50))}</strong><small>XP EARNED</small></div></div><p style="margin:20px 0 7px;font-weight:bold">SCOREBOARD</p>${[['YOU',player.kills],...others.map(b=>[b.name,b.kills])].map(([n,v])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ffffff1c;padding:8px 0;color:#d8e6ed;font-size:12px"><span>${n}</span><b>${v} ELIMINATIONS</b></div>`).join('')}`;}
 $('modal').classList.remove('hidden');$('resumeBtn').textContent=kind==='result'?'PLAY AGAIN ▶':kind==='help'&&!running?'BACK TO LOBBY':'RESUME MATCH ▶';$('resumeBtn').onclick=()=>{if(kind==='result')startGame();else closeModal();};$('menuBtn').textContent=running?'BACK TO MENU':'CLOSE';$('menuBtn').onclick=()=>running?goMenu():closeModal();document.exitPointerLock?.();}
@@ -2963,9 +3046,15 @@ updatePlayer=function(dt){baseUpdatePlayer(dt);const cross=$('crosshair');const 
 window.StrikeZoneRenderBridge={
  geometry:()=>STATIC,
  materials:()=>palette,
- actorGeometry:()=>{const data=[];for(const b of bots)if(soldierVisible(b))botShape(data,b);return data;},
+ actorGeometry:()=>{const data=[];for(const b of bots)if(soldierVisible(b))botShape(data,b);
+ if(mode==='zombie')for(const m of aliveMonsters())monsterFallbackGeometry(data,m);
+ return data;},
  weaponGeometry:()=>{if(!running||!player.alive)return [];const data=[];weaponShape(data);return data;},
  tracerData:()=>tracers.map(t=>({x:t.x,y:t.y,z:t.z,X:t.X,Y:t.Y,Z:t.Z,friendly:t.friendly})),
+ monsterData:()=>mode==='zombie'?aliveMonsters().map(m=>({
+  id:m.id,x:m.x,z:m.z,yaw:m.yaw||0,hp:m.hp,maxHP:m.maxHP,
+  boss:!!m.boss,agile:!!m.agile,phase:m.phase||0
+ })):[],
  botData:()=>bots.filter(soldierVisible).map(b=>({
  x:b.x,z:b.z,team:b.team,yaw:b.yaw,phase:b.phase,walk:b.walk,
  airHeight:b.alive?(b.airHeight||0):0,weapon:b.weapon,shieldHP:b.shieldHP||0,shieldMax:shieldMaxHP(),lastFiredAt:b.lastFiredAt??-99,
