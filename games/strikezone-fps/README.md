@@ -90,3 +90,17 @@ WebGL2/Three.js enemy characters now use original procedurally modeled humanoid 
 Detailed accessories use distance-based visibility to reduce GPU cost. All 3D character pieces are generated in JavaScript, with no added network asset downloads or third-party character models. Hit detection, bot AI, safe spawning, damage, mobile controls, health regeneration, ammo and fullscreen are unchanged.
 
 If the enhanced WebGL2 graphics path fails, the existing procedural bot rendering remains available. Character visuals have been syntax/integration-verified on GitHub, but they have not yet been visually confirmed on the player's actual GPU. This is a **semi-realistic stylized model**, not a photorealistic recreation of the reference image.
+
+
+## v3.6 — Grounded soldiers and smarter solo AI
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.6
+
+- Soldier boots track the raised 0.60m central temple floor and its stepped entrances. The old 0.32m cap on cosmetic vertical correction was removed, so legs should no longer disappear into the temple floor. These changes affect 3D graphics only, not character collisions or movement.
+- Bots evaluate line-of-sight and prioritize visible threats, change strafing direction, keep a preferred shooting distance, approach or retreat as appropriate, and seek cover near crates and columns when badly injured.
+- Bots use recent target-position memory, navigation waypoints, local teammate separation, and blocked-movement recovery instead of pushing against walls indefinitely.
+- Shooting now includes reaction delay and distance/movement accuracy adjustments. Rookie, Regular, and Veteran difficulties still differ.
+- Walking gait is advanced only when the bot travels, reducing visible sliding and stationary marching.
+- Desktop/mobile controls, audio, health recovery, graphics quality, and single-player modes are unchanged.
+
+**Verification:** The deployed code was fetched back from GitHub. JavaScript syntax and deterministic floor-height tests passed; a simulated bot engagement showed movement, target tracking and attack behavior. Visual confirmation on the user's Chrome GPU remains outstanding.
