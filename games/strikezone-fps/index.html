@@ -1364,6 +1364,20 @@ for(let j=0;j<gridN;j++)for(let i=0;i<gridN;i++){
  const x=gridMin+i*gridStep,z=gridMin+j*gridStep;
  walkable[j*gridN+i]=!collidesCircle(x,z,.58)?1:0;
 }
+// Connection-aware navigation: a wall may sit BETWEEN two traversable
+// 2-unit grid points. Verify and cache edges instead of allowing bot
+// routes to tunnel through thin partitions and section checkpoints.
+const navEdges=new Uint8Array(gridN*gridN);
+for(let j=0;j<gridN;j++)for(let i=0;i<gridN;i++){
+ const cellId=j*gridN+i;if(!walkable[cellId])continue;
+ for(const [bit,di,dj] of [[1,1,0],[2,-1,0],[4,0,1],[8,0,-1]]){
+  const x=i+di,z=j+dj;
+  if(x<0||z<0||x>=gridN||z>=gridN)continue;
+  if(!walkable[z*gridN+x])continue;
+  if(clearPath(gridMin+i*gridStep,gridMin+j*gridStep,gridMin+x*gridStep,gridMin+z*gridStep))
+   navEdges[cellId]|=bit;
+ }
+}
 function closestNavCell(x,z){
  const c=cell(x,z),start=c.j*gridN+c.i;
  if(walkable[start])return start;
@@ -1391,7 +1405,7 @@ function navigation(x,z,X,Z){
   for(let k=0;k<4;k++){
    if(k===0&&i===gridN-1||k===1&&i===0||k===2&&j===gridN-1||k===3&&j===0)continue;
    const next=n+stepOffset[k];
-   if(!walkable[next]||seen[next]>=0)continue;
+   if(!(navEdges[n]&(1<<k))||!walkable[next]||seen[next]>=0)continue;
    seen[next]=n;queue[tail++]=next;
   }
  }
