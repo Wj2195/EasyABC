@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.25 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.26 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -1102,7 +1102,7 @@ function urbanStreetDetails(){
 }
 
 
-// MAP 001 v3.25: five additional fully traversable center buildings, sectional
+// MAP 001 v3.26: five additional fully traversable center buildings, sectional
 // airlock walls, and street-scale architectural obstacles. A wall has collision
 // ONLY if it touches the ground; door voids are true player/bot openings.
 const MAP_ONE_SECTORS=[
@@ -1445,7 +1445,7 @@ for(let i=0;i<weapons.length;i++){
 }
 function refreshLoadout(){
  const w=weapons[startingWeapon];loadoutSelect.value=String(startingWeapon);
- loadoutInfo.textContent=w.shield?'AEGIS '+shieldMaxHP()+' HP · HEAD & REAR EXPOSED · FIRE TO BASH':w.energy?'HOLD '+w.charge+'s · RELEASE · '+w.blastRadius+'m SHOCKWAVE':w.damage+' BASE DMG · '+w.headMult.toFixed(2)+'× HEAD · '+(w.pellets||1)+' PROJECTILE'+(w.pellets?'S':'');
+ loadoutInfo.textContent=w.melee?'LIGHTSABER · SWING TO HIT · NO AMMO':w.shield?'AEGIS '+shieldMaxHP()+' HP · HEAD & REAR EXPOSED · FIRE TO BASH':w.energy?'HOLD '+w.charge+'s · RELEASE · '+w.blastRadius+'m SHOCKWAVE':w.damage+' BASE DMG · '+w.headMult.toFixed(2)+'× HEAD · '+(w.pellets||1)+' PROJECTILE'+(w.pellets?'S':'');
 }
 loadoutSelect.addEventListener('change',()=>{startingWeapon=Number(loadoutSelect.value);
  try{localStorage.setItem('strikezone-start-weapon-v38',String(startingWeapon));}catch(_){}
@@ -1678,7 +1678,7 @@ function pickTarget(bot){
  }
  return best;
 }
-// v3.25: cover discovery works across the FULL map, not just the old +/-29 arena.
+// v3.26: cover discovery works across the FULL map, not just the old +/-29 arena.
 function chooseCoverPoint(bot,tar){
  if(!tar)return null;
  const candidates=[];
@@ -1724,7 +1724,7 @@ function tacticalVector(b,tar,visible,dist,go){
 }
 
 
-// v3.25 — squad decision system: varied building patrols, shield retreat,
+// v3.26 — squad decision system: varied building patrols, shield retreat,
 // safe health recovery, and deliberate re-engagement.
 // All landmarks are world positions inside the existing Map 1 geometry.
 const AI_PATROL_POINTS=[
@@ -2887,7 +2887,7 @@ else if(i===3){ // JUDGE 12 SHOTGUN
  // Right hand / glove, and magazine grip.
 B(.18,-.26,.12,.28,.21,.40,13);B(.24,-.34,-.05,.28,.22,.3,14);B(-.23,-.36,.55,.29,.25,.42,14);B(-.23,-.28,.58,.29,.12,.42,13);
 if(player.weapon===6&&player.energyChargeStart>=0){const q=clamp((nowSec-player.energyChargeStart)/2,0,1);B(0,.03,1.77,.14+q*.30,.14+q*.30,.17+q*.23,25);}
-if(player.flash>0){B(0,.045,muzzle,.37,.37,.22,18);B(0,.045,muzzle+.20,.14,.14,.28,15);}
+if(player.flash>0&&player.weapon!==8){B(0,.045,muzzle,.37,.37,.22,18);B(0,.045,muzzle+.20,.14,.14,.28,15);}
 }
 function drawMinimap(){const can=$('minimap'),ctx=can.getContext('2d'),W=can.width,H=can.height,s=Math.min((W-10)/112,(H-10)/168);
 ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d202c';ctx.fillRect(0,0,W,H);
@@ -3095,7 +3095,7 @@ $('modal').classList.remove('hidden');$('resumeBtn').textContent=kind==='result'
 function closeModal(){if(modalType==='result')return;$('modal').classList.add('hidden');if(running){paused=false;if(!matchRemaining||ended)return;canvas.requestPointerLock?.();}else paused=false;}
 function pauseGame(){if(!running||ended)return;if(!$('modal').classList.contains('hidden'))closeModal();else openModal('pause','MATCH PAUSED','Take a moment, check the scoreboard, or return to the lobby.');}
 $('deploy').addEventListener('click',startGame);$('howTo').addEventListener('click',()=>openModal('help','CONTROLS & TACTICS','Master these controls before deploying into the arena.'));document.querySelectorAll('.modeCard').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.modeCard').forEach(c=>c.classList.remove('selected'));b.classList.add('selected');beep('switch');}));$('pauseBtn').addEventListener('click',pauseGame);$('closeModal').addEventListener('click',closeModal);$('resumeBtn').addEventListener('click',closeModal);$('menuBtn').addEventListener('click',goMenu);
-window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='Digit7')switchWeapon(6);if(e.code==='Digit8')switchWeapon(7);if(e.code==='KeyV')player.ads=!player.ads;if(e.code==='KeyZ')changeScopeZoom(1);if(e.code==='KeyX')changeScopeZoom(-1);});window.addEventListener('keyup',e=>{keys[e.code]=false;});
+window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='Digit7')switchWeapon(6);if(e.code==='Digit8')switchWeapon(7);if(e.code==='Digit9')switchWeapon(8);if(e.code==='KeyV')player.ads=!player.ads;if(e.code==='KeyZ')changeScopeZoom(1);if(e.code==='KeyX')changeScopeZoom(-1);});window.addEventListener('keyup',e=>{keys[e.code]=false;});
 canvas.addEventListener('click',()=>{if(running&&!paused&&!ended&&document.pointerLockElement!==canvas&&matchRemaining>0)canvas.requestPointerLock?.();});canvas.addEventListener('mousedown',e=>{if(running&&!paused){if(e.button===0)player.shoot=true;if(e.button===2)player.ads=true;}});window.addEventListener('mouseup',e=>{if(e.button===0){releaseEnergyCharge();player.shoot=false;}if(e.button===2)player.ads=false;});canvas.addEventListener('contextmenu',e=>e.preventDefault());// v2.1: corrected look is the reverse of the previous build's X/Y mapping.
 let lookDirection='corrected';
 try{lookDirection=localStorage.getItem('strikezone-look-v21')==='original'?'original':'corrected';}catch(e){}
