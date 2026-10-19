@@ -710,7 +710,7 @@ function createBots(){bots=[];const count=mode==='tdm'?9:8;
  bots.push({id:i,name:botNames[i],team,x:p.x,z:p.z,yaw:rand(-3,3),hp:100,alive:true,until:0,kills:0,deaths:0,
  target:null,targetRefresh:0,path:[],pathRefresh:0,shootCD:rand(.4,1.5),speed:rand(2.5,3.3),
  phase:rand(0,6.28),walk:0,weapon,preferredWeapon:weapon,
- magazine:weapons[weapon].mag,ammoReserve:weapons[weapon].reserve,reloadUntil:0,
+ ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),reloadUntil:0,
  shieldHP:weapons[7].shieldHP,shieldLastDamage:-99,chargeStart:-1,weaponHoldUntil:0});}
 }
 let startingWeapon=0;
@@ -843,19 +843,106 @@ function tacticalVector(b,tar,visible,dist,go){
  const len=Math.max(.001,Math.hypot(vx,vz));
  return {x:vx/len,z:vz/len};
 }
+
+// AI uses weapon-specific ranges, cadence, ammo and cover tactics.
+function botChooseWeapon(b,dist,visible){
+ const now=nowSec;
+ if(b.weaponHoldUntil&&now<b.weaponHoldUntil)return;
+ let target=b.preferredWeapon;
+ if(b.hp<34&&b.shieldHP>110&&visible&&dist<15)target=7;
+ else if(dist<3.1&&b.shieldHP>65&&(b.preferredWeapon===7||b.weapon===7))target=7;
+ else if(dist>19){if([1,3,4,7].includes(target))target=b.id%2?2:5;}
+ else if(dist<6){if([2,5].includes(target))target=b.id%2?1:3;}
+ else if(dist>9&&dist<23&&b.preferredWeapon===6)target=6;
+ else if(dist>7&&dist<15&&b.preferredWeapon===7&&b.hp>65)target=0;
+ if(target!==b.weapon){
+  b.weapon=target;b.chargeStart=-1;b.shootCD=Math.max(.25,b.shootCD);
+  b.aimReadyAt=now+.20;b.weaponHoldUntil=now+rand(4.8,7.3);
+ }
+}
+function botReload(b){
+ const w=weapons[b.weapon],i=b.weapon;
+ if(w.shield)return;
+ if(b.reloadUntil>nowSec)return;
+ if(b.ammo[i]>0||b.reserves[i]<=0)return;
+ b.reloadUntil=nowSec+w.reload;
+ b.chargeStart=-1;b.shootCD=Math.max(b.shootCD,w.reload);
+}
+function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
+ const w=weapons[b.weapon],id=b.weapon;
+ if(b.reloadUntil>0){
+  if(nowSec<b.reloadUntil)return;
+  const take=Math.min(w.mag-b.ammo[id],b.reserves[id]);
+  b.ammo[id]+=take;b.reserves[id]-=take;b.reloadUntil=0;
+ }
+ if(w.shield){
+  b.chargeStart=-1;
+  if(!visible||dist>w.range||b.shootCD>0||Math.abs(rotation)>.58)return;
+  b.shootCD=1.0*cooldown;
+  const dmg=w.damage;
+  if(tar===player)damagePlayer(dmg,b,'chest');
+  else damageBot(tar,dmg,b,'chest');
+  const dx=(tar.x-b.x)/(dist||1),dz=(tar.z-b.z)/(dist||1);
+  tar.energyVX=(tar.energyVX||0)+dx*4;
+  tar.energyVZ=(tar.energyVZ||0)+dz*4;
+  tar.airVY=Math.max(tar.airVY||0,2.2);
+  return;
+ }
+ if(!visible||dist>Math.min(w.range,55)){
+  b.chargeStart=-1;return;
+ }
+ if(nowSec<b.aimReadyAt||Math.abs(rotation)>.38)return;
+ if(w.energy){
+  if(dist>25||b.ammo[id]<=0){botReload(b);return;}
+  if(b.chargeStart<0){b.chargeStart=nowSec;return;}
+  if(nowSec-b.chargeStart<w.charge)return;
+  if(b.shootCD>0)return;
+  const targetY=(tar===player?player.y:floorSurfaceAt(tar.x,tar.z)+(tar.airHeight||0))+1.03;
+  const originY=floorSurfaceAt(b.x,b.z)+(b.airHeight||0)+1.28;
+  const pitch=Math.atan2(targetY-originY,dist);
+  const c=Math.cos(pitch),dir={dx:Math.sin(b.yaw)*c,dy:Math.sin(pitch),dz:Math.cos(b.yaw)*c};
+  energyShots.push({x:b.x+dir.dx*.80,y:originY+dir.dy*.80,z:b.z+dir.dz*.80,...dir,
+    range:w.range,travelled:0,speed:w.projectileSpeed,radius:.31,owner:b});
+  b.chargeStart=-1;b.ammo[id]--;b.shootCD=2.4*cooldown;
+  feedTracer(b.x,originY,b.z,b.x+dir.dx*1.3,originY+dir.dy*1.3,b.z+dir.dz*1.3,false);
+  return;
+ }
+ if(b.shootCD>0||b.ammo[id]<=0){botReload(b);return;}
+ b.ammo[id]--;
+ const baseCooldown=60/w.rate;
+ b.shootCD=Math.max(.075,baseCooldown)*cooldown*(.85+Math.random()*.30);
+ const optimal=w.type==='SNIPER RIFLE'?42:w.type==='MARKSMAN RIFLE'?32:w.type==='COMBAT SHOTGUN'?7:w.type==='SUBMACHINE GUN'?12:23;
+ const rangePenalty=dist>optimal?Math.max(.3,optimal/dist):1;
+ const hitChance=clamp((.80-dist*.011)*accuracy*rangePenalty*(Math.random()<.2?.9:1),.1,.84);
+ if(Math.random()<hitChance){
+  const zone=(w.type==='SNIPER RIFLE'||w.type==='MARKSMAN RIFLE')&&Math.random()<.13?'head':Math.random()<.2?'leg':'chest';
+  const hitAmount=hitDamage(w,zone,dist)*(w.pellets?2.8:1)*.55;
+  const damage=Math.max(3,Math.round(hitAmount));
+  if(tar===player)damagePlayer(damage,b,zone);else damageBot(tar,damage,b,zone);
+ }
+ if(Math.random()<.8)feedTracer(b.x,floorSurfaceAt(b.x,b.z)+1.3,b.z,tar.x,
+    (tar===player?player.y:floorSurfaceAt(tar.x,tar.z)+(tar.airHeight||0))+1.16,tar.z,false);
+}
 function updateBots(dt){
  const skill=typeof difficulty==='string'?difficulty:'regular';
- const reaction={rookie:.47,regular:.28,veteran:.14}[skill]||.28;
- const accuracy={rookie:.72,regular:1,veteran:1.17}[skill]||1;
- const cooldown={rookie:1.3,regular:1,veteran:.78}[skill]||1;
+ const reaction={rookie:.48,regular:.28,veteran:.14}[skill]||.28;
+ const accuracy={rookie:.66,regular:.86,veteran:1.07}[skill]||.86;
+ const cooldown={rookie:1.32,regular:1.00,veteran:.81}[skill]||1;
  for(const b of bots){
   if(!b.alive){
+   b.chargeStart=-1;
    if(nowSec>b.until&&!ended){
     const p=spawnPoint(b.team);b.x=p.x;b.z=p.z;b.hp=100;b.alive=true;
-    b.path=[];b.target=null;b.pathRefresh=0;b.targetRefresh=0;b.stuckFor=0;b.coverPoint=null;b.coverUntil=0;b.aimReadyAt=nowSec+.5;
+    b.weapon=b.preferredWeapon;
+    b.ammo=weapons.map(w=>w.mag);b.reserves=weapons.map(w=>w.reserve);
+    b.shieldHP=weapons[7].shieldHP;b.shieldLastDamage=-99;b.chargeStart=-1;
+    b.reloadUntil=0;b.weaponHoldUntil=nowSec+4;
+    b.path=[];b.target=null;b.pathRefresh=0;b.targetRefresh=0;
+    b.stuckFor=0;b.coverPoint=null;b.coverUntil=0;b.aimReadyAt=nowSec+.5;
    }
    continue;
   }
+  if(!b.ammo){b.ammo=weapons.map(w=>w.mag);b.reserves=weapons.map(w=>w.reserve);}
   if(b.strafeDir===undefined)b.strafeDir=Math.random()<.5?-1:1;
   if(b.preferredRange===undefined)b.preferredRange=rand(8,12);
   if(b.tacticUntil===undefined)b.tacticUntil=0;
@@ -864,72 +951,69 @@ function updateBots(dt){
   if(b.stuckFor===undefined)b.stuckFor=0;
   if(b.coverUntil===undefined)b.coverUntil=0;
   b.shootCD-=dt;b.targetRefresh-=dt;b.pathRefresh-=dt;
+  if(b.weapon===7&&b.shieldHP<weapons[7].shieldHP&&nowSec-(b.shieldLastDamage||0)>7)
+    b.shieldHP=Math.min(weapons[7].shieldHP,b.shieldHP+dt*14);
   const previous=b.target;
   if(b.targetRefresh<=0||!b.target||!b.target.alive){
-   b.target=pickTarget(b);b.targetRefresh=rand(.5,.85);
+    b.target=pickTarget(b);b.targetRefresh=rand(.45,.8);
   }
   if(previous!==b.target){
-   b.path=[];b.pathRefresh=0;b.coverPoint=null;b.aimReadyAt=nowSec+reaction+rand(.06,.22);
+    b.path=[];b.pathRefresh=0;b.coverPoint=null;b.aimReadyAt=nowSec+reaction+rand(.08,.24);
   }
-  const tar=b.target;if(!tar)continue;
-  const dist=hypot(tar.x-b.x,tar.z-b.z);
-  const visible=dist<29&&clearPath(b.x,b.z,tar.x,tar.z);
+  const tar=b.target;if(!tar){b.chargeStart=-1;continue;}
+  const dist=hypot(tar.x-b.x,tar.z-b.z),visible=dist<30&&clearPath(b.x,b.z,tar.x,tar.z);
   if(visible){
-   if(nowSec-b.lastSeenAt>2)b.aimReadyAt=Math.max(b.aimReadyAt,nowSec+reaction*.7);
-   b.lastSeenAt=nowSec;b.lastSeenX=tar.x;b.lastSeenZ=tar.z;
+    if(nowSec-b.lastSeenAt>2)b.aimReadyAt=Math.max(b.aimReadyAt,nowSec+reaction*.6);
+    b.lastSeenAt=nowSec;b.lastSeenX=tar.x;b.lastSeenZ=tar.z;
   }
+  botChooseWeapon(b,dist,visible);
+  const w=weapons[b.weapon];
   if(nowSec>b.tacticUntil){
-   b.strafeDir=Math.random()<.5?-1:1;
-   b.preferredRange=rand(7.5,12);
-   b.tacticUntil=nowSec+rand(1.4,3.0);
+    b.strafeDir=Math.random()<.5?-1:1;
+    b.preferredRange=w.shield?1.5:w.energy?14:w.type==='SNIPER RIFLE'?23:
+      w.type==='MARKSMAN RIFLE'?18:w.type==='COMBAT SHOTGUN'?5:
+      w.type==='SUBMACHINE GUN'?8:w.type==='SIDEARM'?10:13;
+    b.tacticUntil=nowSec+rand(1.4,3.0);
   }
-  // Low-health bots seek a barricade rather than charging head-on.
-  if(b.hp<43&&visible&&nowSec>b.coverUntil){
-   b.coverPoint=chooseCoverPoint(b,tar);
-   b.coverUntil=nowSec+rand(2.6,4.2);b.pathRefresh=0;
+  if(b.hp<43&&visible&&!w.shield&&nowSec>b.coverUntil){
+    b.coverPoint=chooseCoverPoint(b,tar);
+    b.coverUntil=nowSec+rand(2.6,4.2);b.pathRefresh=0;
   }
   if(nowSec>b.coverUntil)b.coverPoint=null;
   const pursue=b.coverPoint||(visible?tar:
-   (nowSec-b.lastSeenAt<3.5?{x:b.lastSeenX,z:b.lastSeenZ}:tar));
+    (nowSec-b.lastSeenAt<3.5?{x:b.lastSeenX,z:b.lastSeenZ}:tar));
   if(b.pathRefresh<=0){
-   b.path=(!visible||b.coverPoint)?navigation(b.x,b.z,pursue.x,pursue.z):[];
-   b.pathRefresh=rand(.55,1.0);
+    b.path=(!visible||b.coverPoint)?navigation(b.x,b.z,pursue.x,pursue.z):[];
+    b.pathRefresh=rand(.55,1.0);
   }
   let go=b.path[0]||pursue;
   if(b.path.length>1&&hypot(go.x-b.x,go.z-b.z)<.85){b.path.shift();go=b.path[0];}
   const dir=tacticalVector(b,tar,visible&&!b.coverPoint,dist,go);
   let rx=0,rz=0;
   for(const other of bots)if(other!==b&&other.alive){
-   const dx=b.x-other.x,dz=b.z-other.z,d=Math.hypot(dx,dz);
-   if(d>.02&&d<.9){rx+=dx/d*(.9-d);rz+=dz/d*(.9-d);}
+    const dx=b.x-other.x,dz=b.z-other.z,d=Math.hypot(dx,dz);
+    if(d>.02&&d<.9){rx+=dx/d*(.9-d);rz+=dz/d*(.9-d);}
   }
   const vx=dir.x+rx*.82,vz=dir.z+rz*.82,len=Math.max(.001,Math.hypot(vx,vz));
   const bx=b.x,bz=b.z;
-  const moved=resolveMovement(b.x,b.z,vx/len*b.speed*dt*(visible?.82:1),vz/len*b.speed*dt*(visible?.82:1),.37);
+  const slowdown=w.shield?.68:w.energy&&b.chargeStart>=0?.65:1;
+  const moved=resolveMovement(b.x,b.z,vx/len*b.speed*dt*(visible?.82:1)*slowdown,
+    vz/len*b.speed*dt*(visible?.82:1)*slowdown,.37);
   b.x=moved.x;b.z=moved.z;
   const travelled=Math.hypot(b.x-bx,b.z-bz);
-  // Stand still when not moving instead of endlessly marching through the floor.
   if(travelled>.0005)b.walk+=travelled*2.9;
   b.stuckFor=travelled<dt*.11?b.stuckFor+dt:0;
   if(b.stuckFor>.52){
-   b.stuckFor=0;b.strafeDir*=-1;b.tacticUntil=nowSec+1.2;b.path=[];b.pathRefresh=0;
-   const p=resolvePosition(b.x,b.z,.42);b.x=p.x;b.z=p.z;
+    b.stuckFor=0;b.strafeDir*=-1;b.tacticUntil=nowSec+1.2;b.path=[];b.pathRefresh=0;
+    const p=resolvePosition(b.x,b.z,.42);b.x=p.x;b.z=p.z;
   }
   const aim=visible?tar:go;
-  const yaw=Math.atan2(aim.x-b.x,aim.z-b.z),rotation=(yaw-b.yaw+Math.PI*3)%(Math.PI*2)-Math.PI;
-  b.yaw+=clamp(rotation,-dt*4.0,dt*4.0);
-  if(visible&&dist<26&&b.shootCD<=0&&nowSec>=b.aimReadyAt&&Math.abs(rotation)<.34){
-   b.shootCD=rand(.62,1.07)*cooldown;
-   const hit=clamp((.70-dist*.019)*accuracy*(travelled>.035?.87:1),.10,.78);
-   if(Math.random()<hit){
-    const damage=Math.round(rand(7,15));
-    if(tar===player)damagePlayer(damage,b);else if(tar.alive)damageBot(tar,damage,b);
-   }
-   if(Math.random()<.55)feedTracer(b.x,1.2,b.z,tar.x,1.3,tar.z,false);
-  }
+  const yaw=Math.atan2(aim.x-b.x,aim.z-b.z);
+  const rotation=(yaw-b.yaw+Math.PI*3)%(Math.PI*2)-Math.PI;
+  b.yaw+=clamp(rotation,-dt*(w.shield?5:4),dt*(w.shield?5:4));
+  botAttack(b,tar,dist,visible,accuracy,cooldown,rotation);
  }
 }
-
 // v3.12 kinetic energy projectile (39 u/s = 65% of a 60 u/s reference bullet).
 // Existing weapons use hitscan; this projectile advances through the world frame by frame.
 const energyShots=[],energyWaves=[];
