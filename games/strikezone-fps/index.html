@@ -250,6 +250,17 @@ font:bold 11px Arial;border-radius:3px;padding:9px 10px;min-width:175px;max-widt
 @media(hover:none) and (pointer:coarse){
   #sniperScope.dmr-scope .scopeLens{width:min(61vmin,540px)}
 }
+
+/* v3.12 charged energy weapon progress UI */
+#energyChargeHUD{position:absolute;left:50%;bottom:max(54px,env(safe-area-inset-bottom) + 50px);
+transform:translateX(-50%);width:min(230px,35vw);z-index:13;pointer-events:none;
+background:#091a2bcc;border:1px solid #43cbe38f;border-radius:7px;padding:7px 9px;
+color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1px;text-align:center}
+#energyChargeHUD .chargeMeter{height:7px;margin-top:6px;border-radius:5px;overflow:hidden;background:#284757}
+#energyChargeFill{height:100%;width:0%;background:linear-gradient(90deg,#1a9fc5,#73ecff);transition:width .06s linear}
+#energyChargeHUD.ready{border-color:#ffd477;color:#ffe9a8}
+#energyChargeHUD.ready #energyChargeFill{background:linear-gradient(90deg,#8dcbd2,#ffce69)}
+@media(hover:none) and (pointer:coarse){#energyChargeHUD{width:min(170px,29vw);bottom:max(12px,env(safe-area-inset-bottom) + 12px);padding:5px;font-size:8px}}
 </style>
 </head>
 <body>
@@ -307,8 +318,9 @@ font:bold 11px Arial;border-radius:3px;padding:9px 10px;min-width:175px;max-widt
   </div>
 </div><div id="hitmarker">✕</div><div id="combatFeedback" role="status" aria-live="polite"></div><div id="damageDirection"></div>
  <div class="bottomHUD"><div class="healthPanel"><div class="unit">OPERATIVE <b>ALPHA 01</b></div><div class="hpRow"><span class="hpIcon">✚</span><strong id="hpText">100</strong><div class="hpTrack"><div id="hpFill"></div></div></div><div class="subStat"><span>ARMOR ▰▰▰</span><span id="killStat">0 KILLS · 0 DEATHS</span></div></div><div class="weaponPanel"><div class="weaponLabel"><span id="weaponType">ASSAULT RIFLE</span><span id="weaponName">VORTEX AR</span></div><div class="ammoRow"><strong id="ammoCount">30</strong><span class="ammoSlash">/</span><span id="reserveCount">150</span><span class="ammoBullet">▥</span></div><div id="reloadDisplay">R TO RELOAD</div></div></div>
- <div class="keyHints"><span>[SHIFT] SPRINT</span><span>[SPACE] JUMP</span><span>[R] RELOAD</span><span>[1–6] WEAPON</span><span>[U] UNSTUCK</span><span>[P] SCOREBOARD</span></div>
- <div id="announcement" class="announcement"></div>
+ <div class="keyHints"><span>[SHIFT] SPRINT</span><span>[SPACE] JUMP</span><span>[R] RELOAD</span><span>[1–7] WEAPON</span><span>[U] UNSTUCK</span><span>[P] SCOREBOARD</span></div>
+ <div id="energyChargeHUD" class="hidden"><span id="energyChargeText">HOLD FIRE 2s</span><div class="chargeMeter"><div id="energyChargeFill"></div></div></div>
+<div id="announcement" class="announcement"></div>
  <div id="respawnScreen" class="hidden"><div>YOU WERE ELIMINATED</div><strong id="respawnCountdown">3</strong><small>REDEPLOYMENT IN PROGRESS</small></div>
  <div id="mobileControls"><div id="joyBase"><div id="joyNub"></div></div><div id="lookZone"></div><button id="mobileFire">● <small>FIRE</small></button><button id="mobileAds">◎<small>AIM</small></button><button id="mobileJump">⬆<small>JUMP</small></button><button id="mobileCrouch" type="button" aria-pressed="false">⬇<small>CROUCH</small></button><button id="mobileReload">↻<small>RELOAD</small></button><button id="mobileSwitch">⇄<small>SWAP</small></button></div>
 </div>
@@ -581,9 +593,10 @@ const weapons=[
 {name:'RANGER DMR',type:'MARKSMAN RIFLE',mag:12,reserve:72,damage:53,rate:210,spread:.004,reload:2.35,range:95,headMult:2.45,falloffStart:55,falloffRate:.003},
 {name:'JUDGE 12',type:'COMBAT SHOTGUN',mag:8,reserve:48,damage:11,pellets:8,rate:95,spread:.075,reload:2.35,range:30,headMult:1.65,falloffStart:10,falloffRate:.033},
 {name:'SPECTRE P9',type:'SIDEARM',mag:18,reserve:108,damage:35,rate:390,spread:.019,reload:1.20,range:55,headMult:2.1,falloffStart:24,falloffRate:.010},
-{name:'PHANTOM SR',type:'SNIPER RIFLE',mag:5,reserve:30,damage:85,rate:55,spread:.0025,reload:2.70,range:130,headMult:2.6,falloffStart:100,falloffRate:.002}
+{name:'PHANTOM SR',type:'SNIPER RIFLE',mag:5,reserve:30,damage:85,rate:55,spread:.0025,reload:2.70,range:130,headMult:2.6,falloffStart:100,falloffRate:.002},
+{name:'NOVA PULSE',type:'ENERGY CANNON',mag:4,reserve:20,damage:40,rate:50,spread:0,reload:3.3,range:80,headMult:1,falloffStart:80,falloffRate:0,energy:true,charge:2,projectileSpeed:39,blastRadius:5.4,blastDamage:24,knockback:10.5}
 ];
-const player={x:0,z:-17,y:0,groundY:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),scopeZoom:1,lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99};
+const player={x:0,z:-17,y:0,groundY:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),scopeZoom:1,lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99,energyChargeStart:-1,energyReady:false,shockVX:0,shockVZ:0};
 let mode='tdm',running=false,paused=false,ended=false,showHelp=false,matchRemaining=240,blue=0,red=0,bots=[],keys={},last=0,frame=0,fpsMark=0,fps=60,nowSec=0,finishTime=0,announceUntil=0,gunLast=0,modalType='',touchMove={x:0,y:0},audioCtx=null,mobileCrouched=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),hypot=(x,z)=>Math.hypot(x,z),rand=(a,b)=>a+Math.random()*(b-a);
 function overlaps(x,z,r=.37){if(x<-30.6+r||x>30.6-r||z<-30.6+r||z>30.6-r)return true;for(const o of colliders){if(x+r>o.x&&x-r<o.X&&z+r>o.z&&z-r<o.Z)return true;}return false;}
@@ -685,7 +698,7 @@ window.addEventListener('wheel',e=>{
 function spawnPlayer(){
  const p=findOpenSpawn(0);player.x=p.x;player.z=p.z;player.lastSafeX=p.x;player.lastSafeZ=p.z;
  player.stuckTimer=0;player.groundY=playerFloorAt(p.x,p.z);player.y=player.groundY;player.yVel=0;player.yaw=teamFacingDirection(p);player.pitch=0;
- player.hp=100;player.alive=true;player.reloadUntil=0;player.hurt=0;player.shoot=false;player.ads=false;player.scopeZoom=1;player.lastDamage=nowSec;mobileCrouched=false;$('mobileCrouch').classList.remove('active');$('mobileCrouch').setAttribute('aria-pressed','false');
+ player.hp=100;player.alive=true;player.reloadUntil=0;player.hurt=0;player.shoot=false;player.energyChargeStart=-1;player.energyReady=false;player.shockVX=player.shockVZ=0;player.ads=false;player.scopeZoom=1;player.lastDamage=nowSec;mobileCrouched=false;$('mobileCrouch').classList.remove('active');$('mobileCrouch').setAttribute('aria-pressed','false');
  keys={};touchMove.x=0;touchMove.y=0;
  $('respawnScreen').classList.add('hidden');updateHud();announce('SAFE REDEPLOYMENT',1.15);
 }
@@ -704,14 +717,14 @@ for(let i=0;i<weapons.length;i++){
 }
 function refreshLoadout(){
  const w=weapons[startingWeapon];loadoutSelect.value=String(startingWeapon);
- loadoutInfo.textContent=w.damage+' BASE DMG · '+w.headMult.toFixed(2)+'× HEAD · '+(w.pellets||1)+' PROJECTILE'+(w.pellets?'S':'');
+ loadoutInfo.textContent=w.energy?'HOLD '+w.charge+'s · RELEASE · '+w.blastRadius+'m SHOCKWAVE':w.damage+' BASE DMG · '+w.headMult.toFixed(2)+'× HEAD · '+(w.pellets||1)+' PROJECTILE'+(w.pellets?'S':'');
 }
 loadoutSelect.addEventListener('change',()=>{startingWeapon=Number(loadoutSelect.value);
  try{localStorage.setItem('strikezone-start-weapon-v38',String(startingWeapon));}catch(_){}
  refreshLoadout();
 });
 refreshLoadout();
-function resetGame(){player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=240;blue=0;red=0;ended=false;touchMove={x:0,y:0};createBots();spawnPlayer();updateHud();updateScores();}
+function resetGame(){energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=240;blue=0;red=0;ended=false;touchMove={x:0,y:0};createBots();spawnPlayer();updateHud();updateScores();}
 const gridN=30,gridStep=2,gridMin=-29;
 function cell(x,z){return {i:clamp(Math.round((x-gridMin)/gridStep),0,gridN-1),j:clamp(Math.round((z-gridMin)/gridStep),0,gridN-1)};}
 const walkable=Array.from({length:gridN*gridN},(_,n)=>{let i=n%gridN,j=Math.floor(n/gridN);return !overlaps(gridMin+i*gridStep,gridMin+j*gridStep,.45);});
@@ -753,8 +766,8 @@ function showCombatFeedback(zone,damage){
  showCombatFeedback.hitTimer=setTimeout(()=>{marker.style.opacity='0';marker.classList.remove('head')},120);
  if(zone==='head'){announce('HEADSHOT!',1.25);beep('headshot');}
 }
-function damagePlayer(dmg,source){if(!player.alive||ended)return;player.hp=Math.max(0,player.hp-dmg);player.lastDamage=nowSec;player.hurt=.72;$('damageOverlay').style.opacity='.70';beep('hurt');if(player.hp<=0){player.deaths++;player.alive=false;player.shoot=false;keys={};touchMove.x=touchMove.y=0;finishTime=nowSec+3;announce('YOU WERE ELIMINATED',1.5);$('respawnScreen').classList.remove('hidden');if(source){source.kills++;if(mode==='tdm')red++;}updateScores();}updateHud();}
-function eliminateBot(b,killer){b.alive=false;b.hp=0;b.until=nowSec+2.7;b.deaths++;if(killer===player){player.kills++;if(mode==='tdm')blue++;feedKill('YOU',b.name,true);beep('kill');announce(player.kills>0&&player.kills%5===0?'KILL STREAK ×'+player.kills:'ELIMINATION +100 XP',1);if(mode==='gun'){player.weapon=(player.weapon+1)%weapons.length;player.ammo[player.weapon]=weapons[player.weapon].mag;player.lastShot=nowSec-.25;updateHud();if(player.kills>=10)endMatch();}}else if(killer){killer.kills++;if(mode==='tdm'){if(killer.team===0)blue++;else red++;}feedKill(killer.name,b.name,false);}updateScores();updateHud();}
+function damagePlayer(dmg,source){if(!player.alive||ended)return;player.hp=Math.max(0,player.hp-dmg);player.lastDamage=nowSec;player.hurt=.72;$('damageOverlay').style.opacity='.70';beep('hurt');if(player.hp<=0){player.deaths++;player.alive=false;player.shoot=false;cancelEnergyCharge();keys={};touchMove.x=touchMove.y=0;finishTime=nowSec+3;announce('YOU WERE ELIMINATED',1.5);$('respawnScreen').classList.remove('hidden');if(source){source.kills++;if(mode==='tdm')red++;}updateScores();}updateHud();}
+function eliminateBot(b,killer){b.alive=false;b.hp=0;b.until=nowSec+2.7;b.deaths++;if(killer===player){player.kills++;if(mode==='tdm')blue++;feedKill('YOU',b.name,true);beep('kill');announce(player.kills>0&&player.kills%5===0?'KILL STREAK ×'+player.kills:'ELIMINATION +100 XP',1);if(mode==='gun'){cancelEnergyCharge();player.weapon=(player.weapon+1)%weapons.length;player.ammo[player.weapon]=weapons[player.weapon].mag;player.lastShot=nowSec-.25;updateHud();if(player.kills>=10)endMatch();}}else if(killer){killer.kills++;if(mode==='tdm'){if(killer.team===0)blue++;else red++;}feedKill(killer.name,b.name,false);}updateScores();updateHud();}
 function damageBot(b,damage,killer){if(!b.alive)return;b.hp-=damage;if(b.hp<=0)eliminateBot(b,killer);}
 // Tactical AI: threat evaluation, pursuit, line-of-sight, flanking, cover and wall recovery.
 function pickTarget(bot){
@@ -885,6 +898,7 @@ function feedTracer(x,y,z,X,Y,Z,friendly){tracers.push({x,y,z,X,Y,Z,ttl:.10,frie
 function shoot(){
  if(!running||paused||ended||!player.alive)return;
  const w=weapons[player.weapon];
+ if(w.energy){beginEnergyCharge();return;}
  if(nowSec-player.lastShot<60/w.rate||player.reloadUntil>nowSec)return;
  if(player.ammo[player.weapon]<=0){reload();return;}
  player.lastShot=nowSec;player.ammo[player.weapon]--;player.recoil=Math.min(.32,player.recoil+(player.weapon===5?.19:.09));player.flash=.075;beep('gun');
@@ -926,11 +940,11 @@ function shoot(){
  updateHud();
  if(player.ammo[player.weapon]===0)window.setTimeout(()=>{if(running&&player.alive)reload();},340);
 }
-function reload(){if(!running||!player.alive||player.reloadUntil>nowSec)return;const id=player.weapon,w=weapons[id];if(player.ammo[id]>=w.mag||player.reserves[id]<=0)return;player.reloadUntil=nowSec+w.reload;beep('reload');updateHud();}
+function reload(){if(!running||!player.alive||player.reloadUntil>nowSec)return;if(player.weapon===6)cancelEnergyCharge();const id=player.weapon,w=weapons[id];if(player.ammo[id]>=w.mag||player.reserves[id]<=0)return;player.reloadUntil=nowSec+w.reload;beep('reload');updateHud();}
 function completeReload(){if(!player.reloadUntil||nowSec<player.reloadUntil)return;const n=player.weapon,w=weapons[n],count=Math.min(w.mag-player.ammo[n],player.reserves[n]);player.reserves[n]-=count;player.ammo[n]+=count;player.reloadUntil=0;if(count>0)beep('reloadend');updateHud();}
 function switchWeapon(index){
  if(!Number.isInteger(index)||index<0||index>=weapons.length||mode==='gun'||!running||paused||!player.alive||player.weapon===index)return;
- player.weapon=index;player.reloadUntil=0;player.recoil=.14;player.lastShot=nowSec-.25;beep('switch');updateHud();
+ cancelEnergyCharge();player.weapon=index;player.reloadUntil=0;player.recoil=.14;player.lastShot=nowSec-.25;beep('switch');updateHud();
  const w=weapons[index];announce(w.name+' • '+w.damage+' BASE DMG',1.0);
 }
 function updatePlayer(dt){
@@ -940,7 +954,7 @@ function updatePlayer(dt){
  let side=(keys.KeyD?1:0)-(keys.KeyA?1:0)+touchMove.x;
  let front=(keys.KeyW?1:0)-(keys.KeyS?1:0)-touchMove.y;
  const len=Math.hypot(side,front);player.crouch=!!keys.KeyC||mobileCrouched;
- let speed=player.crouch?2.65:(keys.ShiftLeft||keys.ShiftRight?9.2:5.9);
+ let speed=player.crouch?2.65:(keys.ShiftLeft||keys.ShiftRight?9.2:5.9);if(player.energyChargeStart>=0)speed*=.60;
  if(len>.03){side/=len;front/=len;
   // The Three.js renderer's camera-right is reversed relative to the legacy renderer.
   // Invert only strafing in the enhanced 3D renderer. Forward/back and aim remain unchanged.
@@ -953,6 +967,11 @@ function updatePlayer(dt){
   if(distMoved>.002){player.lastSafeX=player.x;player.lastSafeZ=player.z;player.bob+=dt*(speed*.88);player.landBob=Math.min(.12,player.landBob+dt*2.4);player.stuckTimer=0;}
   else{player.stuckTimer+=dt;}
  }else player.stuckTimer=0;
+ if(Math.hypot(player.shockVX,player.shockVZ)>.035){
+  const m=resolveMovement(player.x,player.z,player.shockVX*dt,player.shockVZ*dt,.34);
+  player.x=m.x;player.z=m.z;
+  const decay=Math.exp(-5*dt);player.shockVX*=decay;player.shockVZ*=decay;
+ }else{player.shockVX=0;player.shockVZ=0;}
  const tip=$('unstuckTip');if(tip)tip.style.opacity=player.stuckTimer>1.3?'1':'0';
  if(keys.KeyU&&!keys._unstuckLock){forceUnstuck();keys._unstuckLock=true;}
  if(!keys.KeyU)keys._unstuckLock=false;
@@ -978,13 +997,13 @@ function updatePlayer(dt){
    player.hp=Math.min(100,player.hp+dt*10);
    if(previousShown!==Math.ceil(player.hp)||player.hp===100)updateHud();
  }
- if(player.shoot)shoot();
+ if(player.shoot)shoot();updateEnergyChargeHUD();
 }
 function updateHud(){const w=weapons[player.weapon];$('hpText').textContent=String(Math.ceil(player.hp));$('hpFill').style.width=player.hp+'%';$('hpFill').style.background=player.hp<35?'#f2564d':'#64e3b8';$('ammoCount').textContent=String(player.ammo[player.weapon]).padStart(2,'0');$('reserveCount').textContent=player.reserves[player.weapon];$('weaponType').textContent=w.type;$('weaponName').textContent=w.name;$('reloadDisplay').textContent=player.reloadUntil>nowSec?'RELOADING ...':'R TO RELOAD';$('killStat').textContent=`${player.kills} KILLS · ${player.deaths} DEATHS`;}
 function updateScores(){$('blueScore').textContent=String(mode==='tdm'?blue:player.kills).padStart(2,'0');$('redScore').textContent=String(mode==='tdm'?red:Math.max(...bots.map(b=>b.kills),0)).padStart(2,'0');}
 function feedKill(a,b,byPlayer){let el=document.createElement('div');el.className='feedItem';el.innerHTML=`<b>${a}</b><i>✚</i>${b}`;$('feed').prepend(el);setTimeout(()=>el.remove(),3500);while($('feed').children.length>5)$('feed').lastChild.remove();}
 function announce(t,duration=1.5){$('announcement').textContent=t;$('announcement').classList.add('visible');announceUntil=nowSec+duration;}
-function endMatch(){if(ended)return;ended=true;player.shoot=false;const won=mode==='tdm'?blue>=red:(mode==='gun'?player.kills>=10:player.kills>=Math.max(...bots.map(b=>b.kills),0));openModal('result',won?'VICTORY':'MISSION COMPLETE',mode==='tdm'?`ALPHA ${blue} — ${red} DELTA`:`${player.kills} eliminations secured.`);}
+function endMatch(){if(ended)return;ended=true;cancelEnergyCharge();player.shoot=false;const won=mode==='tdm'?blue>=red:(mode==='gun'?player.kills>=10:player.kills>=Math.max(...bots.map(b=>b.kills),0));openModal('result',won?'VICTORY':'MISSION COMPLETE',mode==='tdm'?`ALPHA ${blue} — ${red} DELTA`:`${player.kills} eliminations secured.`);}
 
 let soundEnabled=true,noiseBuffer=null;
 try{soundEnabled=localStorage.getItem('strikezone-sound-v31')!=='off';}catch(_){}
@@ -1031,6 +1050,10 @@ function beep(kind){
    audioNoise(ctx,t,shotgun?.21:pistol?.12:.15,shotgun?.13:pistol?.08:.105,shotgun?65:130,shotgun?2300:4400);
    audioTone(ctx,t,shotgun?115:pistol?210:170,shotgun?48:pistol?88:67,shotgun?.21:.12,shotgun?.145:.07,'sawtooth');
    audioTone(ctx,t+.027,gun===2?140:260,gun===2?64:125,.085,.022,'triangle');
+  }else if(kind==='energyCharge'){audioTone(ctx,t,180,510,.32,.052,'sine');
+  }else if(kind==='energyReady'){audioTone(ctx,t,630,980,.24,.042,'triangle');
+  }else if(kind==='energyFire'){audioTone(ctx,t,330,82,.48,.14,'sawtooth');audioNoise(ctx,t,.24,.06,180,1600);
+  }else if(kind==='energyImpact'){audioTone(ctx,t,135,45,.48,.14,'sawtooth');audioNoise(ctx,t,.40,.07,80,2300);
   }else if(kind==='headshot'){
    audioTone(ctx,t,1050,1580,.14,.045,'sine');
    audioTone(ctx,t+.07,1350,2020,.12,.023,'triangle');
@@ -1295,16 +1318,16 @@ function tick(stamp){const sec=stamp/1000;let dt=Math.min(.045,sec-(last||sec));
 if(running&&!paused&&!ended){matchRemaining-=dt;if(matchRemaining<=0){matchRemaining=0;endMatch();}updatePlayer(dt);updateBots(dt);completeReload();if(!player.alive&&!ended){$('respawnCountdown').textContent=Math.max(1,Math.ceil(finishTime-nowSec));if(nowSec>=finishTime)spawnPlayer();}if(nowSec>announceUntil)$('announcement').classList.remove('visible');$('matchTime').textContent=formatTime(matchRemaining);if(mode==='tdm'&&(blue>=30||red>=30))endMatch();if(Math.floor(sec*10)%4===0)drawMinimap();}
 syncSniperScope();renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
 function startGame(){document.body.classList.add('playing');ensureAudio();mode=document.querySelector('.modeCard.selected')?.dataset.mode||'tdm';resetGame();running=true;paused=false;ended=false;$('mainMenu').classList.add('hidden');hud.classList.remove('hidden');$('modal').classList.add('hidden');$('matchMode').textContent=mode==='tdm'?'TEAM DEATHMATCH':mode==='ffa'?'FREE FOR ALL':'GUN RACE';$('feed').innerHTML='';canvas.requestPointerLock?.();announce('MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
-function goMenu(){hud.classList.remove('sniper-scoped');$('sniperScope').classList.add('hidden');document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
-const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['DMR / SNIPER: Z / X / SCROLL','ZOOM IN / OUT'],['1 TO 6 / MOBILE SWAP','CHANGE WEAPON'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
-function openModal(kind,title,subtitle){modalType=kind;if(running)paused=true;player.shoot=false;$('modalEyebrow').textContent=kind==='help'?'FIELD MANUAL //':kind==='result'?'AFTER ACTION REPORT //':'TACTICAL INTERFACE //';$('modalTitle').textContent=title;$('modalSubtitle').textContent=subtitle;
+function goMenu(){cancelEnergyCharge();energyShots.length=0;energyWaves.length=0;hud.classList.remove('sniper-scoped');$('sniperScope').classList.add('hidden');document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
+const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['DMR / SNIPER: Z / X / SCROLL','ZOOM IN / OUT'],['1 TO 7 / MOBILE SWAP','CHANGE WEAPON'],['NOVA PULSE · HOLD 2 SECONDS','RELEASE TO FIRE SHOCKWAVE'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
+function openModal(kind,title,subtitle){cancelEnergyCharge();modalType=kind;if(running)paused=true;player.shoot=false;$('modalEyebrow').textContent=kind==='help'?'FIELD MANUAL //':kind==='result'?'AFTER ACTION REPORT //':'TACTICAL INTERFACE //';$('modalTitle').textContent=title;$('modalSubtitle').textContent=subtitle;
 const content=$('modalContent');if(kind==='help'){content.innerHTML='<div class="controlsGrid">'+helpEntries.map(([a,b])=>`<div>${b}<b>${a}</b></div>`).join('')+'</div><p>Mobile: move with the left joystick; swipe on the right to look; AIM and FIRE are together on the right, while JUMP and tap-to-toggle CROUCH are at the bottom center.</p>';}else{const others=bots.map(b=>({name:b.name,kills:b.kills,team:b.team})).sort((a,b)=>b.kills-a.kills).slice(0,5);content.innerHTML=`<div class="modalStat"><div><strong>${player.kills}</strong><small>KILLS</small></div><div><strong>${player.deaths}</strong><small>DEATHS</small></div><div><strong>${Math.max(0,Math.round(player.kills*100+player.kills*50))}</strong><small>XP EARNED</small></div></div><p style="margin:20px 0 7px;font-weight:bold">SCOREBOARD</p>${[['YOU',player.kills],...others.map(b=>[b.name,b.kills])].map(([n,v])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ffffff1c;padding:8px 0;color:#d8e6ed;font-size:12px"><span>${n}</span><b>${v} ELIMINATIONS</b></div>`).join('')}`;}
 $('modal').classList.remove('hidden');$('resumeBtn').textContent=kind==='result'?'PLAY AGAIN ▶':kind==='help'&&!running?'BACK TO LOBBY':'RESUME MATCH ▶';$('resumeBtn').onclick=()=>{if(kind==='result')startGame();else closeModal();};$('menuBtn').textContent=running?'BACK TO MENU':'CLOSE';$('menuBtn').onclick=()=>running?goMenu():closeModal();document.exitPointerLock?.();}
 function closeModal(){if(modalType==='result')return;$('modal').classList.add('hidden');if(running){paused=false;if(!matchRemaining||ended)return;canvas.requestPointerLock?.();}else paused=false;}
 function pauseGame(){if(!running||ended)return;if(!$('modal').classList.contains('hidden'))closeModal();else openModal('pause','MATCH PAUSED','Take a moment, check the scoreboard, or return to the lobby.');}
 $('deploy').addEventListener('click',startGame);$('howTo').addEventListener('click',()=>openModal('help','CONTROLS & TACTICS','Master these controls before deploying into the arena.'));document.querySelectorAll('.modeCard').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.modeCard').forEach(c=>c.classList.remove('selected'));b.classList.add('selected');beep('switch');}));$('pauseBtn').addEventListener('click',pauseGame);$('closeModal').addEventListener('click',closeModal);$('resumeBtn').addEventListener('click',closeModal);$('menuBtn').addEventListener('click',goMenu);
-window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='KeyV')player.ads=!player.ads;if(e.code==='KeyZ')changeScopeZoom(1);if(e.code==='KeyX')changeScopeZoom(-1);});window.addEventListener('keyup',e=>{keys[e.code]=false;});
-canvas.addEventListener('click',()=>{if(running&&!paused&&!ended&&document.pointerLockElement!==canvas&&matchRemaining>0)canvas.requestPointerLock?.();});canvas.addEventListener('mousedown',e=>{if(running&&!paused){if(e.button===0)player.shoot=true;if(e.button===2)player.ads=true;}});window.addEventListener('mouseup',e=>{if(e.button===0)player.shoot=false;if(e.button===2)player.ads=false;});canvas.addEventListener('contextmenu',e=>e.preventDefault());// v2.1: corrected look is the reverse of the previous build's X/Y mapping.
+window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='Digit7')switchWeapon(6);if(e.code==='KeyV')player.ads=!player.ads;if(e.code==='KeyZ')changeScopeZoom(1);if(e.code==='KeyX')changeScopeZoom(-1);});window.addEventListener('keyup',e=>{keys[e.code]=false;});
+canvas.addEventListener('click',()=>{if(running&&!paused&&!ended&&document.pointerLockElement!==canvas&&matchRemaining>0)canvas.requestPointerLock?.();});canvas.addEventListener('mousedown',e=>{if(running&&!paused){if(e.button===0)player.shoot=true;if(e.button===2)player.ads=true;}});window.addEventListener('mouseup',e=>{if(e.button===0){releaseEnergyCharge();player.shoot=false;}if(e.button===2)player.ads=false;});canvas.addEventListener('contextmenu',e=>e.preventDefault());// v2.1: corrected look is the reverse of the previous build's X/Y mapping.
 let lookDirection='corrected';
 try{lookDirection=localStorage.getItem('strikezone-look-v21')==='original'?'original':'corrected';}catch(e){}
 function applyLookDelta(dx,dy,speed,input='mouse'){
@@ -1323,7 +1346,7 @@ function toggleLookDirection(){
 refreshLookButton();$('lookModeBtn').addEventListener('click',toggleLookDirection);
 window.__strikezoneLookTest={applyLookDelta,getMode:()=>lookDirection,toggleLookDirection};
 document.addEventListener('mousemove',e=>{if(document.pointerLockElement===canvas&&running&&!paused&&player.alive){applyLookDelta(e.movementX,e.movementY,.00215);}});
-window.addEventListener('blur',()=>{keys={};player.shoot=false;if(running&&!paused&&!ended)openModal('pause','MATCH PAUSED','The game was paused when you switched away.');});document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement!==canvas){player.shoot=false;} });
+window.addEventListener('blur',()=>{keys={};cancelEnergyCharge();player.shoot=false;if(running&&!paused&&!ended)openModal('pause','MATCH PAUSED','The game was paused when you switched away.');});document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement!==canvas){cancelEnergyCharge();player.shoot=false;} });
 // Mobile: left thumb joystick and right-hand look drag.
 const joy=$('joyBase'),nub=$('joyNub');let joyId=null;function moveStick(ev){const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=ev.clientX-cx,dy=ev.clientY-cy,m=Math.max(1,Math.hypot(dx,dy)),range=40;if(m>range){dx=dx*range/m;dy=dy*range/m;}touchMove.x=dx/range;touchMove.y=dy/range;nub.style.transform=`translate(${dx}px,${dy}px)`;}
 joy.addEventListener('pointerdown',e=>{if(joyId!==null||!running||paused)return;e.preventDefault();joyId=e.pointerId;try{joy.setPointerCapture(e.pointerId);}catch(_){}moveStick(e);});
@@ -1353,7 +1376,7 @@ function mobileButton(id,onDown,onUp){const b=$(id);let activePointer=null;
  const release=e=>{if(activePointer!==e.pointerId)return;e.preventDefault?.();activePointer=null;onUp?.();};
  b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('lostpointercapture',release);
 }
-mobileButton('mobileFire',()=>{ensureAudio();player.shoot=true;shoot();},()=>player.shoot=false);mobileButton('mobileAds',()=>player.ads=!player.ads);mobileButton('mobileJump',()=>{keys.Space=true;},()=>keys.Space=false);
+mobileButton('mobileFire',()=>{ensureAudio();player.shoot=true;shoot();},()=>{releaseEnergyCharge();player.shoot=false;});mobileButton('mobileAds',()=>player.ads=!player.ads);mobileButton('mobileJump',()=>{keys.Space=true;},()=>keys.Space=false);
 mobileButton('mobileCrouch',()=>{
  if(!running||paused||ended||!player.alive)return;
  mobileCrouched=!mobileCrouched;
