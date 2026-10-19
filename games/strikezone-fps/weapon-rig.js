@@ -7,9 +7,9 @@ export function createWeaponRig(THREE, scene){
   const resources=new Set(), mats=new Set(), textures=new Set();
   const stockColors=[0x29343b,0x34383c,0x51534c,0x68452b,0x2c3339,0x987a50];
   const limbSkin=new THREE.MeshStandardMaterial({color:0x987966,roughness:.94});
-  const metal=new THREE.MeshStandardMaterial({color:0x343d43,metalness:.83,roughness:.31});
-  const darkMetal=new THREE.MeshStandardMaterial({color:0x151e25,metalness:.85,roughness:.29});
-  const brightMetal=new THREE.MeshStandardMaterial({color:0x647078,metalness:.85,roughness:.3});
+  const metal=new THREE.MeshStandardMaterial({color:0x626d73,metalness:.83,roughness:.34});
+  const darkMetal=new THREE.MeshStandardMaterial({color:0x27333a,metalness:.84,roughness:.31});
+  const brightMetal=new THREE.MeshStandardMaterial({color:0x9ba7ad,metalness:.84,roughness:.30});
   const rubber=new THREE.MeshStandardMaterial({color:0x222729,metalness:.08,roughness:.93});
   const glass=new THREE.MeshStandardMaterial({color:0x174b59,metalness:.44,roughness:.10,emissive:0x0e3c47,emissiveIntensity:.35});
   const marking=new THREE.MeshStandardMaterial({color:0xb3a88f,metalness:.55,roughness:.45});
@@ -35,9 +35,9 @@ export function createWeaponRig(THREE, scene){
   const gripTex=texture(21983,'#a8a8a8');
   const camoTex=texture(33511,'#8b968f');
   const materials={
-    black:new THREE.MeshStandardMaterial({color:0x343b40,map:gripTex,roughness:.71,metalness:.10}),
-    olive:new THREE.MeshStandardMaterial({color:0x666753,map:gripTex,roughness:.78,metalness:.08}),
-    tan:new THREE.MeshStandardMaterial({color:0xb4a084,map:gripTex,roughness:.82,metalness:.04}),
+    black:new THREE.MeshStandardMaterial({color:0x58656b,map:gripTex,roughness:.72,metalness:.10}),
+    olive:new THREE.MeshStandardMaterial({color:0x87917b,map:gripTex,roughness:.78,metalness:.08}),
+    tan:new THREE.MeshStandardMaterial({color:0xcbb99e,map:gripTex,roughness:.82,metalness:.04}),
     wood:new THREE.MeshStandardMaterial({color:0xb38155,map:camoTex,roughness:.69,metalness:.02}),
     camo:new THREE.MeshStandardMaterial({color:0x899b8c,map:camoTex,roughness:.89,metalness:.04}),
     glove:new THREE.MeshStandardMaterial({color:0x404849,map:gripTex,roughness:.88,metalness:.04}),
@@ -296,11 +296,15 @@ export function createWeaponRig(THREE, scene){
     // Place optical sight nearer the crosshair in ADS; preserve a right-hand hip position.
     const adsX=weapon===4?.03:0;
     const hipX=weapon===4?.41:.40;
-    const lerp=aim?.82:0;
-    g.position.set(hipX+(adsX-hipX)*lerp+gait*(aim?.15:1),
-      -.31+(aim?.105:0)+shake-s.recoil*.23,weapon===4?-.66:-.80);
+    // In ADS, center the optic's actual height on the camera reticle instead of
+    // lifting the whole model above the crosshair.
+    const scale=weapon===4?.94:weapon===5?.83:.91;
+    const opticHeights=[.37,.31,.44,.21,.15,.49];
+    const centerY=aim?-opticHeights[weapon]*scale:-.32;
+    g.scale.setScalar(scale);
+    g.position.set(aim?adsX:hipX+gait,
+      centerY+shake-s.recoil*.23,weapon===4?-.66:-.80);
     g.rotation.set(-s.recoil*.20,0,gait*.34+(aim?0:-.035));
-    g.scale.setScalar(weapon===4?.94:weapon===5?.83:.91);
     const reload=(s.reloadDuration&&s.reloadRemaining)?Math.max(0,Math.min(1,s.reloadRemaining/s.reloadDuration)):0;
     if(reload>0){const p=1-reload;g.rotation.x+=Math.sin(p*Math.PI)*.34;g.position.y-=Math.sin(p*Math.PI)*.12;}
     for(const m of mags[i]){
