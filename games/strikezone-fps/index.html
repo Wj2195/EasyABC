@@ -349,8 +349,18 @@ else if(m<25.5)c=vec3(.29,.57,.63); /* smoked teal glass */
 else if(m<26.5)c=vec3(.96,.88,.72); /* pale plaster */
 else if(m<27.5)c=vec3(.74,.29,.16); /* terracotta */
 else if(m<28.5)c=vec3(.38,.34,.28); /* sand shadow */
-else if(m<29.5)c=vec3(.63,.22,.63); /* magenta sector markings */
-else c=vec3(.12,.42,.60); /* blue team base paint */
+else if(m<29.5)c=vec3(.63,.22,.63); /* zone markings */
+else if(m<30.5)c=vec3(.12,.42,.60); /* blue team */
+else if(m<31.5)c=vec3(.17,.22,.26); /* slate graphite */
+else if(m<32.5)c=vec3(.69,.71,.67); /* concrete plaster */
+else if(m<33.5)c=vec3(.32,.39,.27); /* tactical olive */
+else if(m<34.5)c=vec3(.89,.66,.20); /* hazard paint */
+else if(m<35.5)c=vec3(.29,.52,.64); /* dark window glass */
+else if(m<36.5)c=vec3(.62,.48,.37); /* warm brick */
+else if(m<37.5)c=vec3(.24,.29,.33); /* roof tar */
+else if(m<38.5)c=vec3(.58,.30,.20); /* rusted steel */
+else if(m<39.5)c=vec3(.85,.87,.81); /* tile and interiors */
+else c=vec3(.15,.36,.39); /* institutional teal */
 float shade=max(.0,dot(normalize(vNormal),normalize(vec3(-.52,.85,.49))));
 float bounce=max(.0,dot(normalize(vNormal),normalize(vec3(.62,.12,-.78))));
 c*=.48+.47*shade+.09*bounce;
@@ -2091,7 +2101,7 @@ if(running&&player.alive&&!sniperScoped()){gl.clear(gl.DEPTH_BUFFER_BIT);gl.unif
 
 // Compatibility renderer: projected original 3D mesh using Canvas 2D when WebGL or a shader is blocked.
 // Does not use any third-party libraries and keeps AI, controls, scoring and weapons operational.
-const palette=[[121,101,80],[218,193,153],[245,223,180],[47,73,89],[162,88,45],[211,67,44],[47,104,70],[75,55,41],[113,163,190],[23,38,51],[29,111,165],[26,94,182],[198,38,29],[103,118,84],[190,153,101],[248,187,65],[31,177,118],[57,44,38],[248,108,42],[228,234,220],[12,21,30],[65,99,121],[43,111,80],[112,96,76],[252,202,58],[63,165,184],[249,228,182],[191,70,39],[87,76,67],[160,56,160],[31,107,153]];
+const palette=[[121,101,80],[218,193,153],[245,223,180],[47,73,89],[162,88,45],[211,67,44],[47,104,70],[75,55,41],[113,163,190],[23,38,51],[29,111,165],[26,94,182],[198,38,29],[103,118,84],[190,153,101],[248,187,65],[31,177,118],[57,44,38],[248,108,42],[228,234,220],[12,21,30],[65,99,121],[43,111,80],[112,96,76],[252,202,58],[63,165,184],[249,228,182],[191,70,39],[87,76,67],[160,56,160],[31,107,153],[43,56,66],[176,181,173],[81,98,68],[229,169,54],[74,133,163],[159,123,97],[61,74,84],[146,76,51],[219,224,207],[38,91,99]];
 function makeFaces(data){const faces=[];for(let i=0;i+41<data.length;i+=42){const v=[0,7,14,35].map(o=>[data[i+o],data[i+o+1],data[i+o+2]]);const x=(v[0][0]+v[2][0])*.5,z=(v[0][2]+v[2][2])*.5;faces.push({v,x,y:(v[0][1]+v[2][1])*.5,z,nx:data[i+3],ny:data[i+4],nz:data[i+5],mat:Math.max(0,Math.min(palette.length-1,Math.round(data[i+6]))),shade:.52+.48*Math.max(0,data[i+4]*.77-data[i+3]*.51+data[i+5]*.38)});}return faces;}
 const staticFaces=makeFaces(STATIC);
 // Textures generated locally on Canvas: stone grain, masonry, wood and metal.
