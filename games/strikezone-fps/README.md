@@ -80,3 +80,13 @@ These visual objects are decorative, **not extra collision boxes**. The existing
 - Preserves fullscreen, Web Audio effects, safe spawns, keyboard aiming/strafe corrections, and graphics selection on the main dashboard only.
 
 **Verification:** Repository file contents were fetched back and checked for the new control layout, regenerated health logic and preserved features. JavaScript parsed successfully and regeneration timing was simulated. In-device layout and gameplay should still be checked on your phone.
+
+## v3.5 — semi-realistic tactical operators (Option B)
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.5
+
+WebGL2/Three.js enemy characters now use original procedurally modeled humanoid anatomy instead of the prior voxel-like bot meshes: curved head and torso, proportional arms and legs, articulated hip/knee/elbow animation, gloves, boots, fabric camouflage (separate team palettes), cap/helmet and communication headset, tactical plate carrier with MOLLE-style pouches, and a rifle with recognizable receiver, magazine, stock, sights, and barrel.
+
+Detailed accessories use distance-based visibility to reduce GPU cost. All 3D character pieces are generated in JavaScript, with no added network asset downloads or third-party character models. Hit detection, bot AI, safe spawning, damage, mobile controls, health regeneration, ammo and fullscreen are unchanged.
+
+If the enhanced WebGL2 graphics path fails, the existing procedural bot rendering remains available. Character visuals have been syntax/integration-verified on GitHub, but they have not yet been visually confirmed on the player's actual GPU. This is a **semi-realistic stylized model**, not a photorealistic recreation of the reference image.
