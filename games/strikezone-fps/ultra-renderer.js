@@ -584,6 +584,12 @@ async function startModernRenderer(THREE){
       cube(energyCannon,[0,.02,1.23],[.23,.23,.27],glass);
       cube(energyCannon,[0,-.20,.26],[.14,.24,.16],gear);
       energyCannon.visible=false;
+      const saber=new THREE.Group();saber.position.set(.25,1.12,.42);torso.add(saber);
+      const saberLight=new THREE.MeshBasicMaterial({color:0x64faff});
+      cube(saber,[0,0,.18],[.12,.12,.47],steel);
+      cube(saber,[0,0,.45],[.17,.16,.09],dark);
+      cube(saber,[0,0,1.02],[.088,.095,1.16],saberLight);
+      saber.visible=false;
       for(const side of [-1,1])sphere(torso,[side*.206,1.086,.437],[.082,.071,.089],boots);
       // Police-style AEGIS raised shield for AI bots, colored viewplate and reinforced frame.
       const shield=new THREE.Group();shield.position.set(0,1.14,.53);torso.add(shield);
@@ -605,7 +611,7 @@ async function startModernRenderer(THREE){
         const maxDim=Math.max(m.scale.x,m.scale.y,m.scale.z);
         if(maxDim<.17&&m!==patch){smallDetails.push(m);m.castShadow=false;}
       });
-      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,shieldArmor,shieldGlass,gun,pistol,energyCannon,shadow,gunFlash};
+      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,shieldArmor,shieldGlass,gun,pistol,energyCannon,saber,shadow,gunFlash};
     }
     const units=Array.from({length:10},build);
     let currentCount=0;
@@ -630,8 +636,10 @@ async function startModernRenderer(THREE){
           }
           u.pistol.visible=b.weapon===4;
           u.energyCannon.visible=b.weapon===6;
-          u.gun.visible=![4,6,7].includes(b.weapon);
-          u.gunFlash.visible=!b.downed&&![6,7].includes(b.weapon)&&
+          u.saber.visible=b.weapon===8;
+          if(u.saber.visible)u.saber.rotation.y=Math.sin(nowSec*9)*.15;
+          u.gun.visible=![4,6,7,8].includes(b.weapon);
+          u.gunFlash.visible=!b.downed&&![6,7,8].includes(b.weapon)&&
              Number.isFinite(b.lastFiredAt)&&nowSec-b.lastFiredAt>=0&&nowSec-b.lastFiredAt<.115;
           u.gunFlash.position.z=b.weapon===4?.78:b.weapon===5?2.05:b.weapon===2?1.89:
             b.weapon===1?1.40:1.65;
