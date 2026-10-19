@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo Training v2.0 (Graphics Engine Upgrade)
+# STRIKEZONE FPS — Solo Tactical Training v3.26
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=2.0
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.26
 
 Original browser-based 3D FPS for one human player against AI bots. Multiplayer is not included.
 
@@ -385,3 +385,23 @@ Built from the user's approved Map 1 room plan; **only Map 001** was modified. T
 - The existing eight weapons, burst-fire AI, directional shield protection, charged energy weapon, headshot damage, temporary downed bodies, mobile controls, minimap and 6-minute match timer remain intact.
 
 **Validation:** Source JavaScript parses successfully. Geometric and collision/nav graph integration tests should be rerun on the final release version. GitHub commit does not guarantee immediate GitHub Pages publication; browser caches may require using the versioned link above.
+
+
+## v3.26 — Operation: Zombie & Monster (October 2026)
+
+The fourth operation is a **two-team Overlord boss race** on the existing 13-building connected urban map. ALPHA (the player + four allied bots) and DELTA (five bots) compete for the final blow; the team that kills the boss wins. No timer or deathmatch score can end this operation while the boss lives.
+
+- **Overlord:** one giant, armored monster spawning randomly at a collision-checked navigable location across all three combat sectors. 5,200 HP shown on a dedicated top-of-screen boss health bar. It pursues soldiers and deals a sweeping **22-damage multi-target** attack within its 7-unit radius (with line-of-sight checks). The minimap shows its location.
+- **Zombies:** 23 roaming undead, five of them agile runners. Regular zombies use close-range melee attacks, while runners pursue at almost twice the speed and strike faster. They can injure the player and bots on **both teams**, and respawn after a delay. The minimap distinguishes normal, agile and boss enemies.
+- **Lightsaber:** the ninth weapon, available from starting-loadout selection and the **9** keyboard key. No ammunition/reload; short-range cyan energy-blade swings harm the boss, zombies or opponents in other operations. Procedural models are available both in the enhanced 3D renderer and the fallback renderer.
+- **Damage accounting:** blue and red HUD scores display total damage dealt to the Overlord, but the **last damaging hit**, not highest damage, wins the match.
+- **Enhanced rendering:** procedural Overlord and undead actors, raised limbs and animated movement, blade model and swings, red boss area-attack indicator. WebGL2 is optional; fallback geometry remains provided.
+- **Legacy operations unchanged:** Team Deathmatch, Free For All, Gun Race, shield durability, respawns, shooting/energy cannon, soldier AI and existing map layout remain available.
+
+### Verification
+
+- Main JavaScript syntax and module JavaScript syntax validated.
+- Tested 60 safe Overlord spawn candidates across the northern, central and southern map sections, plus 73 valid zombie spawn points.
+- Simulated Overlord death by **last-hit red bot**, repeated blue-team damage without early victory, zombie death and respawn, and multi-target sweep hurting both teams.
+- GitHub Pages deployment confirmed separately by its latest workflow; manual live browser performance/balance testing remains recommended.
+
