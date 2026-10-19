@@ -301,6 +301,16 @@ export function createWeaponRig(THREE, scene){
       box(g,0,.37,-.55,.18,.16,.32,plasma,.025);
       box(g,0,-.32,-.55,.17,.25,.23,materials.glove,.027);
       muzzle(g,-1.84,.16);
+    }else if(type===8){ // LIGHTSABER — illuminated physical energy blade and metal grip.
+      const saber=new THREE.Group();g.add(saber);
+      box(saber,0,-.10,-.15,.16,.16,.75,materials.black,.025);
+      box(saber,0,-.10,-.52,.19,.19,.14,brightMetal,.015);
+      for(let k=0;k<5;k++)
+        box(saber,0,-.1,.10-k*.12,.175,.018,.024,brightMetal,.004);
+      tube(saber,0,-.10,-1.36,.091,1.66,plasma,.091,14);
+      tube(saber,0,-.10,-1.40,.047,1.65,plasmaCore,.047,12);
+      box(saber,0,-.10,-2.24,.15,.15,.13,plasmaCore,.015);
+      g.userData.saber=saber;meta.barrelZ=-2.28;
     }else{ // AEGIS S8 tactical ballistic shield, held upright with a clear viewport
       const face=new THREE.Group();g.add(face);face.position.set(-.32,-.12,-.95);
       box(face,0,-.17,0,.80,.80,.085,shieldSteel,.06);
@@ -338,7 +348,7 @@ export function createWeaponRig(THREE, scene){
     flash.visible=false;meta.flash=flash;
     g.visible=false;groups.push(g);mags.push(meta.mags);flashes.push(flash);
   }
-  for(let i=0;i<8;i++)makeWeapon(i);
+  for(let i=0;i<9;i++)makeWeapon(i);
   let current=-1;
   function update(s){
     if(!s||!s.running||!s.alive){
@@ -347,7 +357,7 @@ export function createWeaponRig(THREE, scene){
       current=-1;
       return;
     }
-    const i=Math.max(0,Math.min(7,s.weapon|0));
+    const i=Math.max(0,Math.min(8,s.weapon|0));
     if(current!==i){if(current>=0)groups[current].visible=false;current=i;}
     const g=groups[i],aim=!!s.ads,weapon=i;
     // Visibility must be set every living frame, not only when weapon index changes.
@@ -358,8 +368,8 @@ export function createWeaponRig(THREE, scene){
     // v3.16: clear-target ADS. Keep guns in the lower corner rather than
     // aligning a solid receiver/optic with the camera's center ray.
     // Bullet direction and aim magnification are independent of this visual pose.
-    const hipX=weapon===7?-.35:weapon===4?.41:.40;
-    const baseScale=weapon===7?.90:weapon===4?.94:weapon===5?.83:weapon===6?.87:.91;
+    const hipX=weapon===8?.40:weapon===7?-.35:weapon===4?.41:.40;
+    const baseScale=weapon===8?.90:weapon===7?.90:weapon===4?.94:weapon===5?.83:weapon===6?.87:.91;
     const clearAds=aim&&weapon!==2&&weapon!==5;
     const adsX=weapon===7?-.45:weapon===4?.47:weapon===3?.47:.44;
     const adsY=weapon===7?-.48:weapon===4?-.73:weapon===3?-.78:weapon===6?-.70:-.70;
@@ -370,6 +380,13 @@ export function createWeaponRig(THREE, scene){
       (clearAds?adsY:-.32)+shake-s.recoil*.23,
       clearAds?adsZ:weapon===4?-.66:-.80);
     g.rotation.set(-s.recoil*.20,0,gait*.34+(aim?0:-.035));
+    if(i===8&&g.userData.saber){
+      const slash=Math.max(0,Math.min(1,(s.flash||0)/.18));
+      g.rotation.y=-.16+Math.sin((1-slash)*Math.PI)*.63;
+      g.rotation.z=-.30+Math.sin((1-slash)*Math.PI)*.43;
+      g.position.x+=.12;
+      g.position.y-=.22;
+    }
     const reload=(s.reloadDuration&&s.reloadRemaining)?Math.max(0,Math.min(1,s.reloadRemaining/s.reloadDuration)):0;
     if(reload>0){const p=1-reload;g.rotation.x+=Math.sin(p*Math.PI)*.34;g.position.y-=Math.sin(p*Math.PI)*.12;}
     for(const m of mags[i]){
@@ -377,7 +394,7 @@ export function createWeaponRig(THREE, scene){
       m.position.y=(m.userData.baseY??(m.userData.baseY=m.position.y))-(reload>0?Math.sin((1-reload)*Math.PI)*.17:0);
     }
     if(i===6&&g.userData.energyCore){g.userData.energyCore.scale.setScalar(1+(s.energyCharge||0)*.30);}
-    const f=flashes[i];f.visible=s.flash>.015;
+    const f=flashes[i];f.visible=i!==8&&s.flash>.015;
     if(f.visible){const size=.72+s.flash*7;f.scale.setScalar(size);}
   }
   function dispose(){
@@ -386,5 +403,5 @@ export function createWeaponRig(THREE, scene){
     for(const m of mats)m.dispose();
     for(const t of textures)t.dispose();
   }
-  return {update,dispose,weaponCount:groups.length,version:'3.16-clear-ads-weapons'};
+  return {update,dispose,weaponCount:groups.length,version:'3.26-lightsaber'};
 }
