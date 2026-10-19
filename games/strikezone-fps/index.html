@@ -626,23 +626,243 @@ function mazeCover(x,z,w=2.4,d=1.35,h=1.45,material=4){
  cube(x,h/2,z,w,h,d,material,true);
  cube(x,h+.045,z,w+.08,.09,d+.08,material===4?7:25);
 }
+
+// v3.20: Architectural kit. Wall segments have REAL open door/window apertures.
+// Only ground-touching segments register collision, so players, bots and gunfire
+// can pass through entrances and aim through empty window openings.
+function archFacade(axis,coordinate,lo,hi,openings,height,mat,trim){
+ const width=.64;
+ const entries=[...openings].sort((a,b)=>a.at-b.at),vertical=axis==='v';
+ const build=(from,to,bottom,top,material,solid=false)=>{
+  if(to-from<.06||top-bottom<.04)return;
+  const along=(from+to)/2,span=to-from;
+  cube(vertical?coordinate:along,(bottom+top)/2,vertical?along:coordinate,
+       vertical?width:span,top-bottom,vertical?span:width,material,solid);
+ };
+ let cursor=lo;
+ for(const o of entries){
+  const from=Math.max(cursor,o.at-o.w/2),to=Math.min(hi,o.at+o.w/2);
+  if(from>cursor+.03)build(cursor,from,0,height,mat,true);
+  if(to<=from){cursor=Math.max(cursor,to);continue;}
+  if(o.kind==='window'){
+   build(from,to,0,1.12,mat,true); // human-height sill: projectile above may pass
+   build(from,to,2.68,height,mat,false);
+   build(from+.02,to-.02,1.09,1.18,trim,false);
+   build(from+.02,to-.02,2.60,2.70,trim,false);
+   const edge=(pos)=>{
+    if(vertical)cube(coordinate,1.89,pos,.13,1.53,.12,trim);
+    else cube(pos,1.89,coordinate,.12,1.53,.13,trim);
+   };
+   edge(from);edge(to);
+   // Unobstructed glass aperture: colored rim, NOT a solid opaque cube.
+   if(o.w>2.0){
+    if(vertical)cube(coordinate,1.91,(from+to)/2,.07,1.43,.055,25);
+    else cube((from+to)/2,1.91,coordinate,.055,1.43,.07,25);
+   }
+  }else{
+   build(from,to,3.08,height,mat,false);
+   build(from,to,2.97,3.10,trim,false);
+   for(const pos of [from,to]){
+    if(vertical)cube(coordinate,1.53,pos,.16,3.03,.17,trim);
+    else cube(pos,1.53,coordinate,.17,3.03,.16,trim);
+   }
+  }
+  cursor=to;
+ }
+ if(hi>cursor+.03)build(cursor,hi,0,height,mat,true);
+ // Cornice casting, banding, and grounding curb add recognizable facades.
+ if(vertical){
+  cube(coordinate,height+.09,(lo+hi)/2,.89,.22,hi-lo+.05,trim);
+  cube(coordinate,.24,(lo+hi)/2,.74,.12,hi-lo+.05,trim);
+ }else{
+  cube((lo+hi)/2,height+.09,coordinate,hi-lo+.05,.22,.89,trim);
+  cube((lo+hi)/2,.24,coordinate,hi-lo+.05,.12,.74,trim);
+ }
+}
+// Architectural props. Shallow wall-mounted elements do not block movement.
+function archBeam(x,z,w,d,h=5.6,material=31){
+ cube(x,h-.15,z,w,.27,d,material);
+}
+function archTerminal(x,z,dir=1){
+ cube(x,.62,z,2.05,1.24,.82,31,true); // console with small collider
+ cube(x,1.30,z,1.62,.09,.77,8);
+ for(let k=-1;k<=1;k++)cube(x+k*.54,1.85,z+dir*.09,.50,.89,.11,20);
+ for(let k=-1;k<=1;k++)cube(x+k*.54,1.85,z+dir*.16,.39,.68,.035,k===0?25:10);
+ cube(x,1.07,z+dir*.47,1.54,.055,.16,34);
+}
+function archLocker(x,z,n=3){
+ for(let i=0;i<n;i++){
+  const xx=x+(i-(n-1)/2)*.83;
+  cube(xx,1.12,z,.77,2.24,.68,31,true);
+  cube(xx,1.18,z+.357,.61,1.89,.027,33);
+  cube(xx-.20,1.78,z+.385,.06,.14,.047,9);
+  for(let k=0;k<3;k++)cube(xx+.13,1.76+k*.12,z+.39,.24,.017,.028,21);
+ }
+}
+function archShelves(x,z,style=0){
+ // Warehouse and grocery shelving with actual floor-plan footprint.
+ for(const a of [-1.15,1.15]){
+  for(let h of [.58,1.34,2.1])cube(x+a,h,z,.16,.10,3.0,31);
+ }
+ for(let height of [.66,1.4,2.15]){
+  cube(x,height,z,2.46,.12,3.02,style===1?7:31);
+  for(const a of [-.84,0,.84])
+   cube(x+a,height+.23,z+((Math.round(height*3)%2)?-.7:.55),.46,.36,.53,
+       style===1?4:33);
+ }
+ // One simple collider on the full rack footprint, not every shelf.
+ colliders.push({x:x-1.16,X:x+1.16,z:z-1.40,Z:z+1.40,h:2.4});
+}
+function archGenerator(x,z){
+ cube(x,.63,z,3.2,1.26,2.08,31,true);
+ cube(x,1.32,z,2.76,.17,1.9,21);
+ for(let k=0;k<7;k++)cube(x-1.4+k*.46,.81,z+1.06,.25,.82,.09,9);
+ for(const a of [-1,1]){
+  tube(STATIC,x+a*1.26,1.66,z,.18,1.15,21,10);
+  cube(x+a*1.26,2.27,z,.58,.09,.58,33);
+ }
+ cube(x,1.83,z-.90,1.08,.70,.12,25);
+}
+function archVehicle(x,z){
+ // Parked four-wheel tactical utility vehicle, readable as a vehicle rather
+ // than a plain crate; obstacle uses one footprint, details are decorative.
+ cube(x,.69,z,3.5,.96,5.0,33,true);
+ cube(x,1.40,z-.45,3.02,.85,2.65,31);
+ cube(x,1.73,z+1.08,2.57,.48,.15,25);
+ cube(x,1.23,z+2.45,3.18,.32,.22,9);
+ cube(x,1.21,z-2.45,3.18,.33,.24,9);
+ for(const side of [-1,1])for(const zz of [-1.56,1.55]){
+  tube(STATIC,x+side*1.81,.55,z+zz,.42,.38,20,10);
+  cube(x+side*1.84,.56,z+zz,.12,.25,.23,21);
+ }
+ for(const side of [-1,1]){
+  cube(x+side*.95,1.34,z+2.48,.46,.24,.075,19);
+  cube(x+side*.95,1.00,z-2.48,.40,.16,.075,12);
+ }
+}
+function archBed(x,z){
+ cube(x,.41,z,2.2,.36,3.0,31,true);
+ cube(x,.67,z-.26,1.87,.22,2.1,10);
+ cube(x,.76,z+1.05,1.78,.14,.60,19);
+ cube(x,1.02,z-1.49,2.17,.72,.13,21);
+}
+function archMarketStall(x,z,dir=1){
+ cube(x,.60,z,3.12,1.2,1.15,7,true);
+ for(const dx of [-1.42,1.42])cube(x+dx,2.15,z+dir*.48,.10,3.0,.12,31);
+ cube(x,3.19,z+dir*.38,3.48,.17,2.55,styleMaterialFromX(x));
+ for(let i=0;i<5;i++)cube(x+(i-2)*.6,3.24,z+dir*.41,.29,.18,2.56,i%2?19:12);
+ for(let k=-1;k<=1;k++)cube(x+k*.77,1.26,z,.52,.28,.61,k%2?33:4);
+}
+function styleMaterialFromX(x){return x<0?11:12;}
+function archKitchen(x,z){
+ cube(x,.62,z,2.5,1.24,1.05,21,true);
+ cube(x,1.28,z,2.72,.11,1.21,19);
+ for(let i=-1;i<=1;i++)tube(STATIC,x+i*.73,1.37,z,.19,.10,9,8);
+ cube(x,2.18,z-.44,2.65,.94,.20,31);
+}
+function archInterior(cx,cz,index){
+ const variant=index%8;
+ if(variant===0){ // FREIGHT DEPOT / warehouse
+  archShelves(cx-4.1,cz+3.8);archShelves(cx+4.2,cz-3.7);
+  archGenerator(cx-5.3,cz-5.6);
+  for(const z of [cz-5,cz,cz+5]){cube(cx+6.1,2.75,z,1.5,.15,1.5,31);cube(cx+6.1,3.30,z,1.2,.80,1.0,4);}
+ }else if(variant===1){ // COMMS / control rooms
+  archTerminal(cx-4.4,cz+4.1,1);archTerminal(cx+4.4,cz-4.1,-1);
+  archLocker(cx+5.7,cz+5.9,2);
+  cube(cx,3.93,cz,.95,.23,2.4,31);
+ }else if(variant===2){ // VEHICLE MAINTENANCE / garage
+  archVehicle(cx-3.5,cz+2.8);
+  archShelves(cx+4.1,cz-3.7,1);
+  archGenerator(cx+5.5,cz+5.4);
+ }else if(variant===3){ // CLINIC / aid station
+  archBed(cx-4.1,cz+4.8);archBed(cx+4.4,cz-4.7);
+  archLocker(cx-5.2,cz-5.2,2);
+  cube(cx,2.15,cz+4,3.3,3.6,.13,19);
+  cube(cx,2.15,cz+4,3.3,.14,.18,10);
+ }else if(variant===4){ // OPS OFFICE / cubicles
+  archTerminal(cx-4.4,cz-4.6,-1);archTerminal(cx+4.1,cz+4.4,1);
+  mazeCover(cx-4.4,cz+5.9,2.6,.87,1.32,31);
+  archLocker(cx+5.8,cz-5.3,3);
+ }else if(variant===5){ // MARKET / cafe & storefront
+  archMarketStall(cx-4.5,cz-4.5,-1);
+  archMarketStall(cx+4.4,cz+4.4,1);
+  archKitchen(cx-5.3,cz+5.9);
+  cube(cx+5.4,.40,cz-5.8,1.5,.80,1.5,4,true);
+ }else if(variant===6){ // BARRACKS / sleeping quarters
+  archBed(cx-4.2,cz+4.3);archBed(cx+4.1,cz-4.1);
+  archLocker(cx-5.3,cz-5.2,3);
+  archLocker(cx+5.2,cz+5.2,2);
+ }else{ // POWER PLANT / workshops
+  archGenerator(cx-4.2,cz+3.7);archGenerator(cx+4.2,cz-4.0);
+  for(const x of [cx-5.7,cx+5.7]){
+   tube(STATIC,x,2.48,cz,.21,4.8,21,9);
+   cube(x,4.93,cz,.74,.12,.74,9);
+  }
+  archShelves(cx+4.4,cz+5.2);
+ }
+}
 function mazeRoom(cx,cz,index){
  const w=17.4,d=17.6,L=cx-w/2,R=cx+w/2,N=cz-d/2,S=cz+d/2;
- const mat=index%3===0?21:index%3===1?9:23;
- // Wide walkable thresholds on all four sides create loops, not trap rooms.
- mazeGatedH(N,L,R,[cx+(index%2?2.8:-2.8)],4.6,mat);
- mazeGatedH(S,L,R,[cx+(index%2?-2.8:2.8)],4.6,mat);
- mazeGatedV(L,N,S,[cz+(index%2?2.6:-2.6)],4.6,mat);
- mazeGatedV(R,N,S,[cz+(index%2?-2.6:2.6)],4.6,mat);
- // Offset interior partitions add tactical corners, ambushes and alternate exits.
- mazeGatedV(cx+(index%2?2.0:-2.0),N+2,S-2,[cz+(index%3===0?2.4:-2.4)],4.5,mat);
- // Low cover never seals a room.
- mazeCover(cx+(index%2?-4:4),cz+(index%3-1)*3.2,1.55,1.25,1.15,index%2?9:4);
- cube(cx,4.25,cz,w-.65,.22,d-.65,23); // non-collidable roof edge / canopy outline
- for(const side of [-1,1]){
-  cube(cx+side*(w/2-.42),2.4,cz, .12,1.05,2.5,25);
-  cube(cx+side*5.7,.035,cz+(index%2?3:-3),1.9,.035,.12,29);
+ const themed=[32,31,36,32,36,32,33,31],mat=themed[index],
+       trim=[31,25,9,10,21,12,21,33][index],h=[5.6,5.3,5.8,5.4,5.45,5.15,5.4,5.9][index];
+ // Four usable entries, multiple exposed window apertures and tall facades.
+ archFacade('h',N,L,R,[
+  {at:cx+(index%2?2.8:-2.8),w:4.65,kind:'door'},
+  {at:cx+(index%2?-4.3:4.5),w:1.75,kind:'window'}
+ ],h,mat,trim);
+ archFacade('h',S,L,R,[
+  {at:cx+(index%2?-2.8:2.8),w:4.65,kind:'door'},
+  {at:cx+(index%2?4.4:-4.3),w:1.80,kind:'window'}
+ ],h,mat,trim);
+ archFacade('v',L,N,S,[
+  {at:cz+(index%2?2.6:-2.6),w:4.65,kind:'door'},
+  {at:cz+(index%2?-4.5:4.5),w:1.65,kind:'window'}
+ ],h,mat,trim);
+ archFacade('v',R,N,S,[
+  {at:cz+(index%2?-2.6:2.6),w:4.65,kind:'door'},
+  {at:cz+(index%2?4.5:-4.5),w:1.65,kind:'window'}
+ ],h,mat,trim);
+ // Interior partition deliberately has a broad offset opening.
+ const sx=cx+(index%2?1.9:-1.9);
+ mazeGatedV(sx,N+2,S-2,[cz+(index%3===0?2.45:-2.45)],4.85,mat);
+ // Interior floors: separate room surface material from dusty outdoor alleys.
+ cube(cx,.019,cz,w-.90,.036,d-.90,index%3===0?31:index%3===1?26:23);
+ for(const z of [N+1.4,S-1.4])cube(cx,.042,z,w-2.1,.025,.16,trim);
+ // Roof beams + PARTIAL canopy with tall clearance, open skylight / courtyards.
+ for(const x of [L+1.1,R-1.1]){
+  archBeam(x,cz,.18,d-.35,h+.08,31);
+  for(const z of [N+2.1,S-2.1])
+   cube(x,h-.9,z,.31,1.40,.31,31);
  }
+ const canopyLeft=index%2===0;
+ const roofX=cx+(canopyLeft?-5.1:5.1);
+ cube(roofX,h+.55,cz,6.8,.24,d-.38,index%2===0?37:31);
+ for(let z=N+1.0;z<S;z+=2.5)
+  cube(roofX,h+.74,z,6.9,.07,.13,31);
+ // Visible staggered metal roof-edge panels & parapets.
+ for(const z of [N-.40,S+.40]){
+  cube(cx,h+.22,z,w+.7,.41,.31,31);
+  for(let k=0;k<5;k++)
+   cube(L+.9+k*3.9,h+.48,z,1.72,.12,.33,trim);
+ }
+ for(const x of [L-.40,R+.40])cube(x,h+.22,cz,.31,.41,d+.38,31);
+ // Panels, lamps, distinct facade relief, downpipes, door frames.
+ for(const side of [-1,1]){
+  const x=cx+side*(w/2+.09);
+  cube(x,3.5,cz,.055,1.25,2.2,index%2?25:33);
+  cube(x,4.6,cz,.085,.23,2.7,trim);
+  tube(STATIC,x,2.52,cz+5.9,.072,4.5,31,8);
+ }
+ for(const z of [N+.04,S-.04])for(const x of [cx-6.7,cx+6.7]){
+  cube(x,4.48,z,.92,.30,.16,34);
+  cube(x,4.26,z,.70,.09,.12,19);
+ }
+ // Exterior black-yellow safety markings and light fixtures.
+ for(const z of [N-.05,S+.05])for(const x of [L+1.2,R-1.2]){
+  cube(x,1.07,z,.14,1.95,.10,34);
+  for(let i=0;i<4;i++)cube(x,.34+i*.38,z+.06,.15,.13,.11,9);
+ }
+ archInterior(cx,cz,index);
 }
 function generateMapOne(){
  const {halfWidth,halfLength,baseHalf,baseEnd,join}=MAP_ONE;
