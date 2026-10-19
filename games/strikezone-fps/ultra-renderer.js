@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.11 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.12 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -474,7 +474,7 @@ async function startModernRenderer(THREE){
             requiredLift=Math.max(requiredLift,floorSurfaceAt(footX,footZ)+.027-footBottom);
           }
           // The temple sits at 0.6m: a 0.32m clamped correction sank legs into stone.
-          u.root.position.y=Math.max(-.03,Math.min(1.55,requiredLift));
+          u.root.position.y=Math.max(-.03,Math.min(1.55,requiredLift))+(b.airHeight||0);
         }
       },
       get count(){return currentCount;}
@@ -483,6 +483,42 @@ async function startModernRenderer(THREE){
   let humanoidSystem=null;
   try{humanoidSystem=createOperatorSystem();}
   catch(err){console.warn('STRIKEZONE: humanoid model failed, using existing soldier graphics.',err);humanoidSystem=null;}
+
+
+  // v3.12 pooled glowing energy orbs and expanding radial shockwave rings.
+  const energyCoreMat=new THREE.MeshBasicMaterial({color:0x8cffff});
+  const energyHaloMat=new THREE.MeshBasicMaterial({color:0x28bedd,transparent:true,opacity:.24,depthWrite:false});
+  const energyWaveMat=new THREE.MeshBasicMaterial({color:0x80ecff,transparent:true,opacity:.75,depthWrite:false,side:THREE.DoubleSide});
+  const energyCoreGeom=new THREE.SphereGeometry(.29,14,12);
+  const energyHaloGeom=new THREE.SphereGeometry(.50,12,9);
+  const energyRingGeom=new THREE.TorusGeometry(1,.065,8,52);
+  const energyOrbs=[];
+  for(let i=0;i<6;i++){
+    const group=new THREE.Group(),core=new THREE.Mesh(energyCoreGeom,energyCoreMat);
+    const halo=new THREE.Mesh(energyHaloGeom,energyHaloMat);
+    group.add(halo,core);group.visible=false;scene.add(group);energyOrbs.push(group);
+  }
+  const energyRings=[];
+  for(let i=0;i<8;i++){
+    const ring=new THREE.Mesh(energyRingGeom,energyWaveMat);ring.rotation.x=-Math.PI/2;
+    ring.visible=false;scene.add(ring);energyRings.push(ring);
+  }
+  const energyLight=new THREE.PointLight(0x5edaff,0,7,2);scene.add(energyLight);
+  function renderEnergyFX(){
+    const fx=bridge.energyFX?.()||{shots:[],waves:[]};
+    for(let i=0;i<energyOrbs.length;i++){
+      const p=fx.shots[i],group=energyOrbs[i];group.visible=!!p;
+      if(p){group.position.set(p.x,p.y,p.z);group.scale.setScalar(1+.12*Math.sin(performance.now()*.016+i));}
+    }
+    for(let i=0;i<energyRings.length;i++){
+      const p=fx.waves[i],ring=energyRings[i];ring.visible=!!p;
+      if(p){ring.position.set(p.x,p.y,p.z);ring.scale.setScalar(Math.max(.05,p.radius*Math.min(1,p.age/p.ttl)));}
+    }
+    const orb=fx.shots[0],wave=fx.waves[0];
+    if(orb){energyLight.position.set(orb.x,orb.y,orb.z);energyLight.intensity=3.5;}
+    else if(wave){energyLight.position.set(wave.x,wave.y,wave.z);energyLight.intensity=2*Math.max(0,1-wave.age/wave.ttl);}
+    else energyLight.intensity=0;
+  }
 
   // Pooled tracer meshes avoid creating GPU buffers for each hit.
   const tracerPool=[];
@@ -498,9 +534,9 @@ async function startModernRenderer(THREE){
   // lightweight gun meshes remain available as the fallback.
   let realisticWeapons=null;
   try{
-    const module=await import('./weapon-rig.js?v=3.11');
+    const module=await import('./weapon-rig.js?v=3.12');
     realisticWeapons=module.createWeaponRig(THREE,gunScene);
-    if(realisticWeapons.weaponCount!==6)throw new Error('Incomplete weapon set');
+    if(realisticWeapons.weaponCount!==7)throw new Error('Incomplete weapon set');
   }catch(error){
     console.warn('STRIKEZONE: detailed weapon assets unavailable; using safe original gun meshes.',error);
     realisticWeapons?.dispose?.();
@@ -541,8 +577,9 @@ async function startModernRenderer(THREE){
       const elapsed=stamp*.001;
       // New anatomical soldier rigs replace the cube-based enemies only on WebGL2.
       if(elapsed-lastActors>.046){cleanup(activeActors);activeActors=humanoidSystem?[]:grouped(bridge.actorGeometry(),{dynamic:true});for(const m of activeActors)actorGroup.add(m);lastActors=elapsed;
-        const b=bridge.botData();for(let i=0;i<botHelmets.length;i++){const g=botHelmets[i],bot=b[i];g.visible=!humanoidSystem&&!!bot;if(!humanoidSystem&&bot){g.position.set(bot.x,Math.sin(bot.walk)*.012,bot.z);g.rotation.y=-bot.yaw;teamPatches[i].material=bot.team===0?armorBlue:armorRed;}}}
+        const b=bridge.botData();for(let i=0;i<botHelmets.length;i++){const g=botHelmets[i],bot=b[i];g.visible=!humanoidSystem&&!!bot;if(!humanoidSystem&&bot){g.position.set(bot.x,Math.sin(bot.walk)*.012+(bot.airHeight||0),bot.z);g.rotation.y=-bot.yaw;teamPatches[i].material=bot.team===0?armorBlue:armorRed;}}}
       if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position);
+      renderEnergyFX();
       if(!realisticWeapons&&elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
       for(let i=0;i<tracerPool.length;i++){
         const o=tracerPool[i],t=bridge.tracerData()[i];
