@@ -587,7 +587,149 @@ function phase3MapDetail(){
  }
 }
 
-generateMap();phase2MapDetail();phase3MapDetail();contrastDetail();
+
+// v3.19 — MAP 001: TRI-SECTOR LABYRINTH.
+// Inspired by the supplied floor plan: compact BLUE base at north,
+// large purple-marked multi-route battle complex, compact RED base at south.
+// All maze walls are actual collision objects. Every room has ≥2 exits.
+const MAP_ONE={name:'TRI-SECTOR LABYRINTH',halfWidth:54,halfLength:60,baseHalf:17,baseEnd:82,join:60};
+function inPlayableArea(x,z,r=0){
+ const ax=Math.abs(x),az=Math.abs(z);
+ if(az<=MAP_ONE.join-.50)return ax<MAP_ONE.halfWidth-.55-r;
+ return az<MAP_ONE.baseEnd-.55-r&&ax<MAP_ONE.baseHalf-.55-r;
+}
+function mapWall(x,z,w,d,h=3.85,mat=9){
+ cube(x,h/2,z,w,h,d,mat,true);
+ cube(x,h+.09,z,w+.12,.18,d+.12,mat===9?25:26);
+}
+function mazeGatedH(z,left,right,doors=[],opening=4.8,mat=9){
+ let cursor=left;
+ for(const door of [...doors].sort((a,b)=>a-b)){
+  const lo=Math.max(cursor,door-opening/2),hi=Math.min(right,door+opening/2);
+  if(lo>cursor+.12)mapWall((lo+cursor)/2,z,lo-cursor,.62,3.75,mat);
+  cursor=Math.max(cursor,hi);
+ }
+ if(right>cursor+.12)mapWall((right+cursor)/2,z,right-cursor,.62,3.75,mat);
+}
+function mazeGatedV(x,near,far,doors=[],opening=4.8,mat=9){
+ let cursor=near;
+ for(const door of [...doors].sort((a,b)=>a-b)){
+  const lo=Math.max(cursor,door-opening/2),hi=Math.min(far,door+opening/2);
+  if(lo>cursor+.12)mapWall(x,(lo+cursor)/2,.62,lo-cursor,3.75,mat);
+  cursor=Math.max(cursor,hi);
+ }
+ if(far>cursor+.12)mapWall(x,(far+cursor)/2,.62,far-cursor,3.75,mat);
+}
+function mazeCover(x,z,w=2.4,d=1.35,h=1.45,material=4){
+ cube(x,h/2,z,w,h,d,material,true);
+ cube(x,h+.045,z,w+.08,.09,d+.08,material===4?7:25);
+}
+function mazeRoom(cx,cz,index){
+ const w=17.4,d=17.6,L=cx-w/2,R=cx+w/2,N=cz-d/2,S=cz+d/2;
+ const mat=index%3===0?21:index%3===1?9:23;
+ // Wide walkable thresholds on all four sides create loops, not trap rooms.
+ mazeGatedH(N,L,R,[cx+(index%2?2.8:-2.8)],4.6,mat);
+ mazeGatedH(S,L,R,[cx+(index%2?-2.8:2.8)],4.6,mat);
+ mazeGatedV(L,N,S,[cz+(index%2?2.6:-2.6)],4.6,mat);
+ mazeGatedV(R,N,S,[cz+(index%2?-2.6:2.6)],4.6,mat);
+ // Offset interior partitions add tactical corners, ambushes and alternate exits.
+ mazeGatedV(cx+(index%2?2.0:-2.0),N+2,S-2,[cz+(index%3===0?2.4:-2.4)],4.5,mat);
+ // Low cover never seals a room.
+ mazeCover(cx+(index%2?-4:4),cz+(index%3-1)*3.2,1.55,1.25,1.15,index%2?9:4);
+ cube(cx,4.25,cz,w-.65,.22,d-.65,23); // non-collidable roof edge / canopy outline
+ for(const side of [-1,1]){
+  cube(cx+side*(w/2-.42),2.4,cz, .12,1.05,2.5,25);
+  cube(cx+side*5.7,.035,cz+(index%2?3:-3),1.9,.035,.12,29);
+ }
+}
+function generateMapOne(){
+ const {halfWidth,halfLength,baseHalf,baseEnd,join}=MAP_ONE;
+ // Central footprint + smaller attached north/south spawn buildings.
+ cube(0,-.24,0,halfWidth*2+.6,.48,halfLength*2+.6,23);
+ for(const side of [-1,1]){
+  cube(0,-.23,side*71,baseHalf*2+.8,.46,22.8,side<0?11:18);
+  cube(0,.016,side*70,baseHalf*2-1,.025,19.0,side<0?30:27);
+  for(const x of [-12,12]){
+   cube(x,2.2,side*71,.70,4.4,20,side<0?11:12,true);
+   cube(x,4.52,side*71,1.0,.28,21.3,side<0?25:24);
+  }
+  mazeGatedH(side*baseEnd,-baseHalf,baseHalf,[],4.6,side<0?11:12);
+  mazeGatedV(-baseHalf,Math.min(side*join,side*baseEnd),Math.max(side*join,side*baseEnd),[],4.6,side<0?11:12);
+  mazeGatedV(baseHalf,Math.min(side*join,side*baseEnd),Math.max(side*join,side*baseEnd),[],4.6,side<0?11:12);
+  // Three distinct spawn-to-center entries, protected by a short vestibule.
+  mazeGatedH(side*join,-halfWidth,halfWidth,[-11,0,11],5.2,side<0?11:12);
+  for(const x of [-10,0,10]){
+    cube(x,.02,side*65.7,3.6,.025,.20,side<0?25:24);
+    cube(x,4.65,side*join,4.3,.18,.65,side<0?11:12);
+  }
+  // Raised-side spawn details, but no cover blocking spawn slots.
+  for(const x of [-12.5,12.5]){
+   cube(x,1.15,side*77,1.15,2.3,2.2,side<0?11:12);
+   cube(x,2.47,side*77,1.4,.20,2.55,9);
+  }
+ }
+ // External middle walls; no playable space beyond them.
+ for(const x of [-halfWidth,halfWidth])mazeGatedV(x,-join,join,[],5,9);
+ for(const z of [-50,-25,0,25,50])for(const x of [-halfWidth,halfWidth]){
+  cube(x,4.07,z,1.0,.24,4.8,25);
+  cube(x,2.0,z+(z%2?1:-1),.09,1.7,2.5,29);
+ }
+ // The eight open-door tactical buildings / chambers.
+ let index=0;
+ for(const z of [-35,-12,12,35])for(const x of [-24,24])mazeRoom(x,z,index++);
+ // Long side-flanking runs. Discontinuous partitions force choices while
+ // leaving several transverse cross-links, including through each room.
+ for(const x of [-40,40]){
+  mazeGatedV(x,-52,52,[-44,-23,0,23,44],7,21);
+  for(const z of [-44,-22,0,22,44]){
+   mazeCover(x+(x<0?-4.1:4.1),z,1.8,1.1,1.25,9);
+   cube(x,4.1,z,1.4,.12,1.5,29);
+  }
+ }
+ // Central approach lanes with intermittent knee-high cover.
+ for(const z of [-49,-26,0,26,49]){
+  mazeGatedH(z,-11,11,[-6,6],3.8,z===0?29:21);
+  for(const x of [-6,6])mazeCover(x,z+(z%2?2:-2),1.9,1.2,1.10,4);
+ }
+ // Central command hub, open on all sides: combat hub is not a sealed building.
+ for(const x of [-10,10])for(const z of [-8,8]){
+   cube(x,2.1,z,.9,4.2,.9,2,true);
+   cube(x,4.4,z,1.4,.4,1.4,29);
+ }
+ for(const z of [-6.5,6.5])mazeCover(0,z,3.6,1.6,1.55,9);
+ cube(0,4.95,0,20,.35,16.9,23); // elevated canopy, no floor collision
+ for(const z of [-52,52])for(const x of [-46,-33,0,33,46]){
+  cube(x,1.08,z,1.7,2.16,1.75,4,true);
+  cube(x,2.29,z,1.95,.25,1.95,7);
+ }
+ // Color-coded region markings echo the blueprint: blue north, magenta main,
+ // orange-red south. The labels and arrows are nonblocking.
+ for(let z=-51;z<=51;z+=12){
+   cube(0,.025,z,1.65,.026,2.5,29);
+   for(const x of [-46,46])cube(x,.024,z,1.4,.024,.25,29);
+ }
+ for(const z of [-57,57])for(const x of [-47,-28,0,28,47]){
+  cube(x,4.9,z,.2,9.8,.2,9);
+  cube(x,9.6,z,.55,.24,.55,25);
+  cube(x,9.36,z,.3,.14,.44,19);
+ }
+ // Distinct room identity with workbenches, pallets and mechanical props.
+ for(const [x,z] of [[-34,-46],[34,-46],[-34,46],[34,46],[-13,-52],[13,52]]){
+   mazeCover(x,z,1.6,1.45,1.20,4);
+ }
+ for(const [x,z] of [[-4,-33],[4,33],[-4,10],[4,-10]]){
+   cube(x,.055,z,2.8,.06,.8,29);
+ }
+ // Outside map skyline (noncolliding), farther away than the expanded walls.
+ for(let i=0;i<16;i++){
+  const a=i*Math.PI/8,rad=135+((i*11)%3)*9;
+  const x=Math.sin(a)*rad,z=Math.cos(a)*rad;
+  cube(x,3,z,9,6,8,i%2?23:2);
+  cube(x,9,z,4,6,3,9);
+ }
+}
+
+generateMapOne();
 if(gl){gl.bindBuffer(gl.ARRAY_BUFFER,staticBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(STATIC),gl.STATIC_DRAW);}const staticCount=STATIC.length/7;
 function drawBuffer(buffer,data,count,dynamic=true){if(!gl)return;gl.bindBuffer(gl.ARRAY_BUFFER,buffer);if(data)gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),dynamic?gl.DYNAMIC_DRAW:gl.STATIC_DRAW);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,28,0);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.normal,3,gl.FLOAT,false,28,12);gl.enableVertexAttribArray(loc.normal);gl.vertexAttribPointer(loc.mat,1,gl.FLOAT,false,28,24);gl.enableVertexAttribArray(loc.mat);gl.drawArrays(gl.TRIANGLES,0,count);}
 // V3.8 — independent weapon profiles and damage per projectile.
@@ -604,13 +746,13 @@ const weapons=[
 const player={x:0,z:-17,y:0,groundY:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),scopeZoom:1,lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99,energyChargeStart:-1,energyReady:false,shockVX:0,shockVZ:0,shieldHP:360,shieldLastDamage:-99};
 let mode='tdm',running=false,paused=false,ended=false,showHelp=false,matchRemaining=240,blue=0,red=0,bots=[],keys={},last=0,frame=0,fpsMark=0,fps=60,nowSec=0,finishTime=0,announceUntil=0,gunLast=0,modalType='',touchMove={x:0,y:0},audioCtx=null,mobileCrouched=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),hypot=(x,z)=>Math.hypot(x,z),rand=(a,b)=>a+Math.random()*(b-a);
-function overlaps(x,z,r=.37){if(x<-30.6+r||x>30.6-r||z<-30.6+r||z>30.6-r)return true;for(const o of colliders){if(x+r>o.x&&x-r<o.X&&z+r>o.z&&z-r<o.Z)return true;}return false;}
-function collidesCircle(x,z,r=.34){if(x<-30.45+r||x>30.45-r||z<-30.45+r||z>30.45-r)return true;for(const o of colliders){const qx=clamp(x,o.x,o.X),qz=clamp(z,o.z,o.Z);if((x-qx)*(x-qx)+(z-qz)*(z-qz)<r*r)return true;}return false;}
+function overlaps(x,z,r=.37){if(!inPlayableArea(x,z,r))return true;for(const o of colliders){if(x+r>o.x&&x-r<o.X&&z+r>o.z&&z-r<o.Z)return true;}return false;}
+function collidesCircle(x,z,r=.34){if(!inPlayableArea(x,z,r))return true;for(const o of colliders){const qx=clamp(x,o.x,o.X),qz=clamp(z,o.z,o.Z);if((x-qx)*(x-qx)+(z-qz)*(z-qz)<r*r)return true;}return false;}
 function resolvePosition(x,z,r=.34){
- x=clamp(x,-30.44+r,30.44-r);z=clamp(z,-30.44+r,30.44-r);
+ x=clamp(x,-MAP_ONE.halfWidth+r,MAP_ONE.halfWidth-r);z=clamp(z,-MAP_ONE.baseEnd+r,MAP_ONE.baseEnd-r);
  if(!collidesCircle(x,z,r))return {x,z,hit:false};
  for(let radius=.2;radius<=6.0;radius+=.2){for(let j=0;j<24;j++){
-  const ang=2*Math.PI*j/24,px=clamp(x+Math.cos(ang)*radius,-30.44+r,30.44-r),pz=clamp(z+Math.sin(ang)*radius,-30.44+r,30.44-r);
+  const ang=2*Math.PI*j/24,px=clamp(x+Math.cos(ang)*radius,-MAP_ONE.halfWidth+r,MAP_ONE.halfWidth-r),pz=clamp(z+Math.sin(ang)*radius,-MAP_ONE.baseEnd+r,MAP_ONE.baseEnd-r);
   if(!collidesCircle(px,pz,r+.05))return {x:px,z:pz,hit:true};
  }}return {x,z,hit:true};
 }
@@ -626,30 +768,28 @@ function resolveMovement(x,z,dx,dz,r=.34){
  }
  return {x:px,z:pz,hit};
 }
-function safeForSpawn(x,z){return !collidesCircle(x,z,1.15)&&Math.abs(x)<29&&Math.abs(z)<29;}
+function safeForSpawn(x,z){return inPlayableArea(x,z,1.15)&&!collidesCircle(x,z,1.15);}
 function findOpenSpawn(team){
- const points=team===0?[[-3,-18],[-13,-13],[13,-16],[-18,-4],[19,-2],[0,-13],[-11,-23],[12,-24]]:[[3,18],[-13,15],[14,18],[-18,8],[16,8],[0,16],[-12,24],[12,24]];
- let best=null,bestScore=-1e6;
- for(const [bx,bz] of points){for(let i=0;i<12;i++){
-  const a=(i*2.39996),rad=i===0?0:1+Math.sqrt(i)*1.20,x=bx+Math.cos(a)*rad,z=bz+Math.sin(a)*rad;
+ const side=team===0?-1:1;
+ const points=[];
+ for(const z of [side*74,side*69,side*78])for(const x of [-9,-4,1,6,10])points.push([x,z]);
+ let best=null,score=-Infinity;
+ for(const [x,z] of points){
   if(!safeForSpawn(x,z))continue;
-  let spacing=99;for(const b of bots)if(b.alive)spacing=Math.min(spacing,Math.hypot(x-b.x,z-b.z));
-  if(player.alive)spacing=Math.min(spacing,Math.hypot(x-player.x,z-player.z));
-  const score=Math.min(spacing,10)*3+Math.random()*3-Math.abs(z-(team===0?-18:18))*.24;
-  if(score>bestScore){best={x,z};bestScore=score;}
- }}
+  let spacing=99;
+  for(const b of bots)if(b.alive)spacing=Math.min(spacing,hypot(x-b.x,z-b.z));
+  if(player.alive)spacing=Math.min(spacing,hypot(x-player.x,z-player.z));
+  const value=Math.min(18,spacing)*3+Math.random()*1.7;
+  if(value>score){score=value;best={x,z};}
+ }
  if(best)return best;
- for(let z=-27;z<=27;z+=2.5)for(let x=-27;x<=27;x+=2.5)if(safeForSpawn(x,z)&&(team===0?z<0:z>0))return {x,z};
- return {x:0,z:team===0?-15:15};
+ for(let z=65;z<=79;z+=2.5)for(let x=-12;x<=12;x+=2.5){
+  if(safeForSpawn(x,side*z))return{x,z:side*z};
+ }
+ return {x:0,z:side*73};
 }
 // v3.7 — shared player floor elevation (world Y). The temple slab is raised 0.6m.
-function floorSurfaceAt(x,z){
- let y=0;if(Math.abs(x)<=7&&Math.abs(z)<=7)y=.60;
- for(const side of [-1,1])for(let k=0;k<3;k++){
-  const cz=side*(8.4-k*.58),half=(10.4-k*.85)*.5;
-  if(Math.abs(x)<=half&&Math.abs(z-cz)<=.9)y=Math.max(y,.405+k*.12);
- }return y;
-}
+function floorSurfaceAt(x,z){return 0;}
 function playerFloorAt(x,z){
  return Math.max(floorSurfaceAt(x,z),floorSurfaceAt(x-.15,z-.15),
   floorSurfaceAt(x+.15,z-.15),floorSurfaceAt(x-.15,z+.15),floorSurfaceAt(x+.15,z+.15));
