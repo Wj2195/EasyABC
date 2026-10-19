@@ -184,3 +184,22 @@ A new **seventh weapon**, **NOVA PULSE**, is available as the starting loadout, 
 - **AI/gameplay:** Existing weapon damage, accuracy, headshot detection, team modes, mobile controls, fullscreen, respawn, player floor positioning and AI behavior stay in place.
 
 **Testing:** JavaScript syntax passed for HTML, renderer and 3D weapon rig. Seven weapon meshes initialized and updated. Deterministic simulations verified early-charge cancellation, 2-second charge release, 39-unit/sec projectile travel, enemy damage, allied and player knockback, airborne bots and targets outside the blast radius. Final visual/audio and mobile multitouch testing still requires playing on real devices.
+
+
+## v3.13 — AEGIS S8 shield and adaptive eight-weapon AI
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.13
+
+### Eighth weapon: AEGIS S8
+- A new original **police-style tactical ballistic shield** is available as starting equipment or by pressing **8** on desktop. On mobile, use **SWAP** to cycle to the shield. FIRE executes a close-range shield bash; holding FIRE repeats bashes at the weapon's cooldown.
+- **Front-facing defense:** A shield protects a 130° front arc when held toward incoming bullets. It absorbs up to 92% of incoming body/head damage while shield health lasts. Exposed leg hits have reduced protection (56% absorption). Side and rear attacks remain unblocked. A shield has **360 shield-health points** and regenerates after seven seconds without shield damage while equipped. The shield movement penalty is 27%, and it has a 23-damage close-range shield bash.
+- Distinct models in enhanced WebGL2 and classic renderers include a reinforced dark frame, upper visor, support bars and transparent viewing panel. Equipped shield-health is shown in the weapon HUD instead of ammunition.
+
+### Bots understand all eight weapons
+- Each bot begins with one of the eight weapon roles. Bots adjust their preferred distance and movement: SMG and shotgun rush at shorter ranges, rifle and pistol favor medium range, DMR and sniper aim at long range, energy-cannon bots charge for two seconds and launch slow-moving shockwave projectiles, and shield-equipped bots face threats, advance defensively and bash at short range.
+- AI supports weapon-specific firing cadence, magazine ammunition, reloads, tactical weapon swapping, a backup weapon when out of ammunition or when the shield breaks, cover-seeking at low health, shield flanking, dodging incoming energy orbs, aim reaction delays and teammate collision avoidance.
+- Bot-fired energy waves now have actual ownership, can injure the player if fired by an enemy, and preserve team-aware splash-damage rules. Shockwaves can still knock friends and enemies back without friendly-fire damage.
+- The bot models reflect their selected equipment: shield, pistol, glowing energy cannon, shortened SMG, shotgun, long DMR and sniper shapes; uniform shirts retain blue/red team identification.
+- Solo/offline matches, modes, previous six conventional guns, charged NOVA PULSE, headshot damage, collision positioning, 3D graphics, sound and mobile controls remain intact.
+
+**Checks:** Source JavaScript parsing passed for the HTML, GPU renderer and 3D weapon rig. Directional protection tests verified front/side/rear/leg hits and depleted shield durability. Eight-role AI simulations ran through all weapon indices, consumed ammunition and fired a charged energy shot. Owner-aware energy splash tests verified enemy damage to player, no allied damage and knockback. The eighth player weapon model passed simulated weapon switching, death and respawn. Actual GPU rendering and touch controls still require playtesting on the user's devices.
