@@ -15,7 +15,10 @@ export function createWeaponRig(THREE, scene){
   const marking=new THREE.MeshStandardMaterial({color:0xb3a88f,metalness:.55,roughness:.45});
   const brass=new THREE.MeshStandardMaterial({color:0xb69a5d,metalness:.74,roughness:.32});
   const orange=new THREE.MeshBasicMaterial({color:0xffc068,transparent:true,opacity:.75,side:THREE.DoubleSide,depthWrite:false});
-  for(const m of [limbSkin,metal,darkMetal,brightMetal,rubber,glass,marking,brass,orange])mats.add(m);
+  const plasma=new THREE.MeshStandardMaterial({color:0x289dc6,metalness:.28,roughness:.18,emissive:0x167cd1,emissiveIntensity:1.3});
+  const plasmaCore=new THREE.MeshBasicMaterial({color:0x7dfaff});
+  const energyFlash=new THREE.MeshBasicMaterial({color:0x77faff,transparent:true,opacity:.90,side:THREE.DoubleSide,depthWrite:false});
+  for(const m of [limbSkin,metal,darkMetal,brightMetal,rubber,glass,marking,brass,orange,plasma,plasmaCore,energyFlash])mats.add(m);
   function texture(seed,base){
     const c=document.createElement('canvas');c.width=c.height=256;
     const ctx=c.getContext('2d');
@@ -207,7 +210,7 @@ export function createWeaponRig(THREE, scene){
   function makeWeapon(index){
     const g=new THREE.Group();scene.add(g);
     const meta={mags:[],flash:null,barrelZ:-1.50};
-    const type=index;const stockmat=[materials.black,materials.black,materials.olive,materials.wood,materials.black,materials.tan][index];
+    const type=index;const stockmat=[materials.black,materials.black,materials.olive,materials.wood,materials.black,materials.tan,materials.black][index];
     let width=.26;
     if(type===0){ // VORTEX AR
       width=detailReceiver(g,'VORTEX AR',materials.black);
@@ -255,7 +258,7 @@ export function createWeaponRig(THREE, scene){
       box(g,0,.15,.05,.045,.070,.03,marking);box(g,0,.14,-.48,.054,.046,.032,marking);
       rod(g,[-.10,-.22,-.05],[.10,-.22,-.05],.012,darkMetal);
       meta.mags.push(box(g,0,-.40,.15,.14,.35,.175,darkMetal,.014));
-    }else{ // PHANTOM SR
+    }else if(type===5){ // PHANTOM SR
       width=detailReceiver(g,'PHANTOM SR',materials.tan);
       handguard(g,1.19,.29,materials.tan,11);
       tube(g,0,0,-1.90,.054,1.15,metal,.052,20);
@@ -271,6 +274,31 @@ export function createWeaponRig(THREE, scene){
       }
       tube(g,.175,.028,.19,.035,.13,brightMetal);
       rod(g,[.18,.05,.19],[.33,-.04,.20],.028,metal);
+    }else{ // NOVA PULSE — magnetic plasma accelerator with glowing capacitor rails
+      detailReceiver(g,'NOVA PULSE',materials.black);
+      box(g,0,.025,-.70,.39,.36,.95,metal,.045);
+      box(g,0,.02,-1.15,.31,.27,.61,materials.black,.035);
+      for(const sign of [-1,1]){
+        box(g,sign*.25,.015,-.82,.14,.32,1.02,metal,.024);
+        box(g,sign*.26,.035,-.92,.034,.18,.75,plasma,.012);
+        rod(g,[sign*.18,-.15,-.52],[sign*.18,-.15,-1.37],.041,darkMetal);
+        for(let k=0;k<4;k++)box(g,sign*.18,.24,-.45-k*.25,.16,.09,.082,plasma,.016);
+      }
+      const chamber=tube(g,0,.02,-1.01,.146,.76,plasma,.14,18);
+      g.userData.energyCore=chamber;
+      for(let n=0;n<5;n++){
+        const coil=new THREE.Mesh(new THREE.TorusGeometry(.19,.043,8,20),plasmaCore);
+        coil.position.set(0,.02,-.61-n*.19);g.add(coil);
+      }
+      tube(g,0,.02,-1.58,.16,.28,metal,.16,14);
+      tube(g,0,.02,-1.74,.145,.13,plasma,.145,18);
+      meta.barrelZ=-1.84;
+      stock(g,.43,'solid',materials.black);
+      meta.mags.push(magazine(g,.02,false,false));
+      rail(g,-.15,-1.50,.26,.18);
+      box(g,0,.37,-.55,.18,.16,.32,plasma,.025);
+      box(g,0,-.32,-.55,.17,.25,.23,materials.glove,.027);
+      muzzle(g,-1.84,.16);
     }
     if(index!==4)addHands(g,index);
     else{
@@ -280,17 +308,17 @@ export function createWeaponRig(THREE, scene){
     // Dedicated four-blade muzzle flash, never drawn for the wrong weapon.
     const flash=new THREE.Group();g.add(flash);
     const front=meta.barrelZ;
-    const star=new THREE.Mesh(new THREE.OctahedronGeometry(.17,0),orange);
+    const star=new THREE.Mesh(new THREE.OctahedronGeometry(.17,0),index===6?energyFlash:orange);
     flash.add(star);star.position.set(0,0,front);star.scale.set(.8,.8,2.3);
     for(let k=0;k<4;k++){
-      const m=new THREE.Mesh(new THREE.ConeGeometry(.075,.42,4),orange);
+      const m=new THREE.Mesh(new THREE.ConeGeometry(.075,.42,4),index===6?energyFlash:orange);
       m.position.set(Math.cos(k*Math.PI/2)*.10,Math.sin(k*Math.PI/2)*.10,front-.12);
       m.rotation.set(Math.PI/2,0,k*Math.PI/2);flash.add(m);
     }
     flash.visible=false;meta.flash=flash;
     g.visible=false;groups.push(g);mags.push(meta.mags);flashes.push(flash);
   }
-  for(let i=0;i<6;i++)makeWeapon(i);
+  for(let i=0;i<7;i++)makeWeapon(i);
   let current=-1;
   function update(s){
     if(!s||!s.running||!s.alive){
@@ -299,7 +327,7 @@ export function createWeaponRig(THREE, scene){
       current=-1;
       return;
     }
-    const i=Math.max(0,Math.min(5,s.weapon|0));
+    const i=Math.max(0,Math.min(6,s.weapon|0));
     if(current!==i){if(current>=0)groups[current].visible=false;current=i;}
     const g=groups[i],aim=!!s.ads,weapon=i;
     // Visibility must be set every living frame, not only when weapon index changes.
@@ -312,8 +340,8 @@ export function createWeaponRig(THREE, scene){
     const hipX=weapon===4?.41:.40;
     // In ADS, center the optic's actual height on the camera reticle instead of
     // lifting the whole model above the crosshair.
-    const scale=weapon===4?.94:weapon===5?.83:.91;
-    const opticHeights=[.37,.31,.44,.21,.15,.49];
+    const scale=weapon===4?.94:weapon===5?.83:weapon===6?.87:.91;
+    const opticHeights=[.37,.31,.44,.21,.15,.49,.37];
     const centerY=aim?-opticHeights[weapon]*scale:-.32;
     g.scale.setScalar(scale);
     g.position.set(aim?adsX:hipX+gait,
@@ -325,6 +353,7 @@ export function createWeaponRig(THREE, scene){
       if(!m||!m.isObject3D)continue;
       m.position.y=(m.userData.baseY??(m.userData.baseY=m.position.y))-(reload>0?Math.sin((1-reload)*Math.PI)*.17:0);
     }
+    if(i===6&&g.userData.energyCore){g.userData.energyCore.scale.setScalar(1+(s.energyCharge||0)*.30);}
     const f=flashes[i];f.visible=s.flash>.015;
     if(f.visible){const size=.72+s.flash*7;f.scale.setScalar(size);}
   }
@@ -334,5 +363,5 @@ export function createWeaponRig(THREE, scene){
     for(const m of mats)m.dispose();
     for(const t of textures)t.dispose();
   }
-  return {update,dispose,weaponCount:groups.length,version:'3.11-clear-dmr-optics'};
+  return {update,dispose,weaponCount:groups.length,version:'3.12-nova-pulse'};
 }
