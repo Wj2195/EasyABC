@@ -245,3 +245,24 @@ Damage calculation is shared by player and bot soldiers. For shotguns, head-hit 
 - Versioned script assets v3.16 bypass older cached v3.13 weapon-rig assets.
 
 **Verification:** JS syntax validation passed; all eight procedural 3D weapon models were constructed and updated. Position tests showed pistol and shotgun shifting below center during ADS, and sniper/DMR hidden in the scope mode. Death and respawn model visibility passed. Full visual browser QA and mobile touch checks should be done on the target devices.
+
+
+## v3.17 — Weapon-aware multi-shot bot AI
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.17
+
+The solo-training bots now fire **multiple shots per engagement**, rather than treating all conventional weapons like single-shot guns. Each bot tracks its current burst, recoil progression, target, next-fire cooldown and pause between bursts:
+
+- **VORTEX AR:** controlled bursts of **3–6 rounds**.
+- **RAPTOR SMG:** longer automatic bursts of **5–10 rounds**.
+- **RANGER DMR:** measured bursts of **2–3 rounds**.
+- **SPECTRE P9 pistol:** quick **2–4-round** strings.
+- **JUDGE 12 shotgun** and **PHANTOM sniper:** one deliberate shot per attack, with longer pauses appropriate for their weapons.
+- **NOVA PULSE:** retains its two-second charge-and-release projectile and shockwave.
+- **AEGIS S8 shield:** retains its single close-range bash.
+
+Burst timing respects each gun's real in-game rate-of-fire, ammunition, reload time and difficulty level. Recoil builds slightly throughout a burst; distant or badly injured bots take shorter bursts. Bots pause and reacquire their target if line of sight is lost, reset bursts on target or weapon changes, and hold fire when a teammate is standing between them and an intended target. They can reposition before shooting again.
+
+**Visuals:** Each bot shot produces a visible tracer. New short-lived muzzle flashes are shown on humanoid weapon models during conventional firing, without altering projectile damage or the player's reticle. Existing shield mechanics, headshots, energy attacks, smart navigation, two-second fallen bodies and mobile controls are unchanged.
+
+**Verification:** Simulated 4.4-second firing sequences validated rapid successive rounds for assault rifles, SMGs, DMRs and pistols and deliberate single-shot patterns for shotgun/sniper. A teammate placed directly in the lane prevented shots; removing it resumed fire. Source syntax checks passed. Full PC and mobile browser gameplay still needs visual/audio testing.
