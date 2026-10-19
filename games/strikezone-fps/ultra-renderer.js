@@ -605,7 +605,7 @@ async function startModernRenderer(THREE){
         const maxDim=Math.max(m.scale.x,m.scale.y,m.scale.z);
         if(maxDim<.17&&m!==patch){smallDetails.push(m);m.castShadow=false;}
       });
-      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,gun,pistol,energyCannon,shadow,gunFlash};
+      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,shieldArmor,shieldGlass,gun,pistol,energyCannon,shadow,gunFlash};
     }
     const units=Array.from({length:10},build);
     let currentCount=0;
@@ -619,7 +619,15 @@ async function startModernRenderer(THREE){
           // Models face local +Z; gameplay forward is (+sin(yaw), +cos(yaw)).
           // Inverting yaw made the visible shield face the opposite lateral direction.
           u.root.rotation.y=b.yaw;
-          u.shield.visible=b.weapon===7;
+          u.shield.visible=b.weapon===7&&b.shieldHP>0;
+          if(b.shieldMax&&b.shieldHP>0){
+            const ratio=Math.max(0,Math.min(1,b.shieldHP/b.shieldMax));
+            const tint=ratio>.66?0x2b3b44:ratio>.33?0x685b40:0x9a4935;
+            const glassTint=ratio>.33?0x70b9cc:0xd68d68;
+            u.shieldArmor.color.setHex(tint);
+            u.shieldGlass.color.setHex(glassTint);
+            u.shieldGlass.opacity=ratio>.33?.39:.23;
+          }
           u.pistol.visible=b.weapon===4;
           u.energyCannon.visible=b.weapon===6;
           u.gun.visible=![4,6,7].includes(b.weapon);
