@@ -966,7 +966,118 @@ function generateMapOne(){
  }
 }
 
-generateMapOne();
+
+// v3.20: original urban-warfare streetscape: mixed-height facades, service
+// connections, ledges, shutter bays, wiring, parking markings, shopfronts,
+// lamps, rooftop utilities and civilian/military clutter. Detail meshes never
+// close the vital routes through the existing labyrinth.
+function urbanStreetDetails(){
+ const width=MAP_ONE.halfWidth,loop=[-46,-24,0,24,46];
+ // Facades behind the exterior corridor make this feel like a dense city.
+ for(const side of [-1,1]){
+  for(let i=0;i<5;i++){
+   const z=-48+i*24,mat=[36,31,32,33,36][i],height=[8.2,10.4,6.5,9.8,7.4][i];
+   const x=side*53.45;
+   archFacade('v',x,z-11.2,z+11.2,[
+    {at:z-5.9,w:2.1,kind:'window'},
+    {at:z+5.9,w:2.1,kind:'window'}
+   ],height,mat,i%2?31:21);
+   // Horizontal weather awnings, a narrow pilaster and box cornices.
+   cube(x-side*.44,3.75,z,1.30,.19,14.5,i%2?38:31);
+   cube(x-side*.67,3.90,z,1.42,.08,14.5,9);
+   for(const zz of [z-10,z+10]){
+    cube(x-side*.28,3.2,zz,.40,6.4,.42,31);
+    cube(x-side*.46,5.15,zz,.13,.21,.61,34);
+   }
+   cube(x-side*.42,height+.32,z,1.43,.38,21.5,37);
+   for(const zz of [z-8,z,z+8])cube(x-side*.66,4.97,zz,.25,.28,1.6,35);
+  }
+  // Awnings, graffiti panels and ventilation fans above side corridors.
+  for(const z of [-48,-14,14,48]){
+   const x=side*50.9;
+   cube(x,2.32,z,1.72,.23,5.1,z<0?11:12);
+   for(let k=0;k<5;k++)cube(x,2.54,z-2.05+k*1.01,1.70,.13,.25,k%2?34:31);
+   tube(STATIC,side*53.01,4.2,z,.16,5.4,21,9);
+   cube(side*52.88,6.90,z,.46,.28,.48,31);
+  }
+  // Luminous street lights mark major junctions, not navigation blockers.
+  for(const z of loop){
+   const x=side*49.6;
+   cube(x,3.4,z,.17,6.8,.18,31);
+   cube(x-side*.4,6.72,z,1.03,.13,.22,31);
+   cube(x-side*.89,6.66,z,.45,.075,.35,19);
+   cube(x,.016,z,1.10,.027,1.10,37);
+  }
+ }
+ // Marked middle avenues and pedestrian crossing points.
+ for(let z=-53;z<=53;z+=8.3){
+  for(const x of [-12.8,12.8])cube(x,.024,z,.15,.027,3.2,39);
+  for(const x of [-4.4,4.4])cube(x,.026,z,.24,.027,1.5,z%2?34:39);
+ }
+ for(const z of [-52,-25,0,25,52]){
+  for(let x=-50;x<=50;x+=3.4){
+   if(Math.abs(x)<14&&Math.abs(z)<17)continue;
+   cube(x,.021,z,1.35,.026,.09,39);
+  }
+ }
+ // Service runs above the human field of view add vertical sophistication.
+ for(const z of [-38,-13,13,38])for(const side of [-1,1]){
+  const x=side*35.2;
+  cube(x,5.56,z,10.1,.23,.14,31);
+  cube(x,5.82,z,9.9,.06,.06,31);
+  for(const dx of [-4.2,4.2]){
+   cube(x+dx,4.63,z,.14,1.93,.13,21);
+   cube(x+dx,4.45,z,.28,.09,.29,34);
+  }
+  // Air-conditioning units and ventilation louvers on building side walls.
+  const near=side*32.91;
+  cube(near+side*.5,3.52,z,1.25,.84,1.45,31);
+  for(let k=0;k<5;k++)cube(near+side*1.14,3.20+k*.13,z,.045,.055,1.08,9);
+  cube(near+side*.3,4.10,z,1.35,.10,1.58,21);
+ }
+ // Rooftop ventilators, satellite equipment and antennas for all eight blocks.
+ let j=0;
+ for(const z of [-35,-12,12,35])for(const x of [-24,24]){
+  const h=[5.6,5.3,5.8,5.4,5.45,5.15,5.4,5.9][j];
+  const sign=j%2?-1:1;
+  cube(x+sign*5.65,h+.58,z-3.5,1.8,.64,1.6,31);
+  cube(x+sign*5.65,h+.95,z-3.5,2.05,.18,1.8,21);
+  for(let k=-1;k<=1;k++)cube(x+sign*5.65+k*.47,h+.60,z-2.64,.24,.38,.075,9);
+  tube(STATIC,x-sign*5.7,h+1.15,z+3.8,.14,1.25,21,8);
+  cube(x-sign*5.7,h+1.83,z+3.8,1.20,.09,.45,25);
+  cube(x-sign*5.7,h+1.92,z+3.8,.14,.25,.35,31);
+  j++;
+ }
+ // Police barricades / security checkpoint signage around the central hub.
+ for(const z of [-54,54]){
+  for(const x of [-26,26]){
+   cube(x,.79,z,4.3,1.55,.32,32,true);
+   cube(x,1.02,z,.09,.46,.38,34);
+   for(let k=-1;k<=1;k++)cube(x+k*1.10,1.10,z+.17,.57,.20,.06,34);
+   cube(x,1.67,z,4.4,.16,.38,31);
+  }
+ }
+ // Rooftop bridges create an urban silhouette. They are overhead-only.
+ for(const z of [-23,23]){
+  cube(0,7.58,z,22.3,.27,2.8,31);
+  for(const side of [-1,1])cube(side*10.8,6.28,z,.31,2.5,2.55,31);
+  for(const zz of [z-1.24,z+1.24])cube(0,8.16,zz,22.2,.13,.14,34);
+ }
+ // Roadside dumpsters at the extreme sides, leaving central flanking paths.
+ for(const x of [-51,51])for(const z of [-31,31]){
+  cube(x,.81,z,1.78,1.62,2.1,33,true);
+  cube(x,1.72,z,1.97,.20,2.26,31);
+  for(let k=0;k<3;k++)cube(x,.70,z-.65+k*.65,1.89,.13,.045,21);
+ }
+ // Exhaust pipes, cable trays and short barriers under industrial entrances.
+ for(const z of [-48,-24,24,48])for(const x of [-36,36]){
+  cube(x,2.35,z,1.42,.13,2.2,21);
+  cube(x,2.61,z,.10,.38,2.24,9);
+  for(let k=0;k<3;k++)cube(x,1.72+k*.24,z,1.44,.05,.09,34);
+ }
+}
+
+generateMapOne();urbanStreetDetails();
 if(gl){gl.bindBuffer(gl.ARRAY_BUFFER,staticBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(STATIC),gl.STATIC_DRAW);}const staticCount=STATIC.length/7;
 function drawBuffer(buffer,data,count,dynamic=true){if(!gl)return;gl.bindBuffer(gl.ARRAY_BUFFER,buffer);if(data)gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),dynamic?gl.DYNAMIC_DRAW:gl.STATIC_DRAW);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,28,0);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.normal,3,gl.FLOAT,false,28,12);gl.enableVertexAttribArray(loc.normal);gl.vertexAttribPointer(loc.mat,1,gl.FLOAT,false,28,24);gl.enableVertexAttribArray(loc.mat);gl.drawArrays(gl.TRIANGLES,0,count);}
 // V3.8 — independent weapon profiles and damage per projectile.
