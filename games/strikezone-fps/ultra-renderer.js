@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.10 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.11 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -498,7 +498,7 @@ async function startModernRenderer(THREE){
   // lightweight gun meshes remain available as the fallback.
   let realisticWeapons=null;
   try{
-    const module=await import('./weapon-rig.js?v=3.10');
+    const module=await import('./weapon-rig.js?v=3.11');
     realisticWeapons=module.createWeaponRig(THREE,gunScene);
     if(realisticWeapons.weaponCount!==6)throw new Error('Incomplete weapon set');
   }catch(error){
@@ -553,7 +553,7 @@ async function startModernRenderer(THREE){
         o.scale.y=length;o.material=t.friendly?tracerFriendly:tracerEnemy;
         o.quaternion.setFromUnitVectors(upAxis,delta.normalize());
       }
-      const playerVisible=s.running&&s.alive;const scoped=!!s.sniperScoped;
+      const playerVisible=s.running&&s.alive;const scoped=!!(s.precisionScoped??s.sniperScoped);
       gunAccents.visible=!realisticWeapons&&playerVisible&&!scoped&&s.weapon<4;
       gunAccents.position.y=s.recoil*.09;
       muzzleGlow.intensity=playerVisible&&!scoped&&s.flash>.01?Math.min(8,s.flash*16):0;
