@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.5 | semi-realistic tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.5.1 | grounded boots and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -308,10 +308,12 @@ async function startModernRenderer(THREE){
       for(let i=0;i<1000;i++){x.fillStyle=rnd()>.5?'#ffffff08':'#00000008';x.fillRect(rnd()*256,rnd()*256,2+rnd()*3,2+rnd()*3);}
       const tex=new THREE.CanvasTexture(c);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=4;return tex;
     }
+    // Distinct, bright team-color combat shirts; neutral camouflage stays on trousers.
     const uniforms=[
-      new THREE.MeshStandardMaterial({color:0xd9d8d0,map:camo(['#677678','#435a61','#9da19b','#404b51','#808c83'],305),roughness:.97}),
-      new THREE.MeshStandardMaterial({color:0xcdc8b8,map:camo(['#7d8273','#434f48','#aba89b','#646552','#9c967e'],607),roughness:.97})
+      new THREE.MeshStandardMaterial({color:0xffffff,map:camo(['#3186bd','#206998','#5bacdc','#246d9c','#5aa6d2'],305),roughness:.94}),
+      new THREE.MeshStandardMaterial({color:0xffffff,map:camo(['#c2443c','#9b342f','#e47666','#a53e34','#d86759'],607),roughness:.94})
     ];
+    const trousers=new THREE.MeshStandardMaterial({color:0xffffff,map:camo(['#81887b','#536158','#9a9888','#505c54','#777969'],919),roughness:.98});
     const sphere=(parent,p,sz,mat)=>{
       const m=new THREE.Mesh(sphereG,mat);m.position.set(...p);m.scale.set(...sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
     };
@@ -327,11 +329,15 @@ async function startModernRenderer(THREE){
     }
     function build(){
       const root=new THREE.Group(),torso=new THREE.Group();root.visible=false;root.add(torso);scene.add(root);
-      const cloth=uniforms[1],clothes=[];
-      const garment=(parent,p,sz)=>{const o=sphere(parent,p,sz,cloth);clothes.push(o);return o;};
+      const shirtPieces=[];
+      const garment=(parent,p,sz,isShirt=false)=>{
+        const o=sphere(parent,p,sz,isShirt?uniforms[1]:trousers);
+        if(isShirt)shirtPieces.push(o);
+        return o;
+      };
       // Tapered neck, jacket, waist and recognizable human face.
-      garment(torso,[0,1.30,0],[.282,.342,.177]);
-      garment(torso,[0,1.03,0],[.211,.177,.144]);
+      garment(torso,[0,1.30,0],[.282,.342,.177],true);
+      garment(torso,[0,1.03,0],[.211,.177,.144],true);
       sphere(torso,[0,.94,0],[.238,.139,.150],gear);
       sphere(torso,[0,1.552,0],[.073,.095,.077],skin);
       sphere(torso,[0,1.724,.016],[.144,.173,.134],skin);
@@ -374,19 +380,19 @@ async function startModernRenderer(THREE){
         sphere(knee,[0,0,.025],[.114,.093,.125],plates);
         garment(knee,[0,-.179,-.008],[.102,.204,.113]);
         sphere(knee,[0,-.342,.02],[.115,.10,.129],boots);
-        sphere(knee,[0,-.419,.095],[.132,.068,.207],boots);
+        const foot=sphere(knee,[0,-.419,.095],[.132,.068,.207],boots);
         cube(knee,[0,-.420,.227],[.210,.028,.028],gear);
-        legs.push({hip,knee});
+        legs.push({hip,knee,foot});
       }
       // Anatomically separate shoulders, elbows, hands and forearms.
       const arms=[];
       for(const side of [-1,1]){
         const shoulder=new THREE.Group();shoulder.position.set(side*.305,1.496,0);torso.add(shoulder);
-        garment(shoulder,[side*.020,-.026,0],[.124,.117,.116]);
-        clothes.push(link(shoulder,[0,-.06,.004],[side*.076,-.298,.138],.093,cloth));
+        garment(shoulder,[side*.020,-.026,0],[.124,.117,.116],true);
+        shirtPieces.push(link(shoulder,[0,-.06,.004],[side*.076,-.298,.138],.093,uniforms[1]));
         sphere(shoulder,[side*.078,-.302,.140],[.090,.088,.084],plates);
         const elbow=new THREE.Group();elbow.position.set(side*.078,-.30,.144);shoulder.add(elbow);
-        clothes.push(link(elbow,[0,0,0],[-side*.138,-.078,.209],.076,cloth));
+        shirtPieces.push(link(elbow,[0,0,0],[-side*.138,-.078,.209],.076,uniforms[1]));
         sphere(elbow,[-side*.137,-.074,.211],[.081,.077,.075],boots);
         arms.push({shoulder,elbow});
       }
@@ -414,7 +420,7 @@ async function startModernRenderer(THREE){
         const maxDim=Math.max(m.scale.x,m.scale.y,m.scale.z);
         if(maxDim<.17&&m!==patch){smallDetails.push(m);m.castShadow=false;}
       });
-      return {root,torso,clothes,legs,arms,patch,smallDetails,material:null};
+      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null};
     }
     const units=Array.from({length:10},build);
     let currentCount=0;
@@ -423,12 +429,17 @@ async function startModernRenderer(THREE){
         currentCount=Math.min(units.length,bots.length);
         for(let i=0;i<units.length;i++){
           const u=units[i],b=bots[i];u.root.visible=!!b;if(!b)continue;
-          u.root.position.set(b.x,Math.abs(Math.sin(b.walk+b.phase))*.009,b.z);
+          // Feet will be placed against world floor after the walking pose is evaluated.
+          u.root.position.set(b.x,0,b.z);
           u.root.rotation.y=-b.yaw;
           const far=viewpoint&&((b.x-viewpoint.x)**2+(b.z-viewpoint.z)**2)>19*19;
           for(const item of u.smallDetails)item.visible=!far;
-          const cloth=b.team===0?uniforms[0]:uniforms[1];
-          if(u.material!==cloth){u.clothes.forEach(m=>m.material=cloth);u.patch.material=b.team===0?allied:enemy;u.material=cloth;}
+          const shirt=b.team===0?uniforms[0]:uniforms[1];
+          if(u.material!==shirt){
+            u.shirtPieces.forEach(m=>m.material=shirt);
+            u.patch.material=b.team===0?allied:enemy;
+            u.material=shirt;
+          }
           const gait=Math.sin(b.walk+b.phase),wave=Math.cos(b.walk+b.phase);
           for(let k=0;k<2;k++){
             const sign=k===0?1:-1;
@@ -439,6 +450,16 @@ async function startModernRenderer(THREE){
           }
           u.torso.rotation.z=gait*.014;
           u.torso.rotation.x=.014+Math.abs(wave)*.015;
+          // Compute each animated boot's true lowest Y from its scaled world matrix.
+          // Adjust the cosmetic rig vertically so no step pushes feet under the floor.
+          u.root.updateMatrixWorld(true);
+          let lowest=Infinity;
+          for(const leg of u.legs){
+            const m=leg.foot.matrixWorld.elements;
+            const bottom=m[13]-Math.hypot(m[1],m[5],m[9]);
+            lowest=Math.min(lowest,bottom);
+          }
+          u.root.position.y=Math.max(-.015,Math.min(.32,.035-lowest));
         }
       },
       get count(){return currentCount;}
