@@ -54,6 +54,8 @@ async function startModernRenderer(THREE){
   gunCam.rotation.set(0,0,0);
   gunScene.add(new THREE.AmbientLight(0xffffff,1.28));
   const gunKey=new THREE.DirectionalLight(0xfff4da,2.4);gunKey.position.set(-2,4,4);gunScene.add(gunKey);
+  // Soft blue opposing fill light reveals receiver edges, scope and grips without flattening the metal.
+  const gunFill=new THREE.DirectionalLight(0xa4cce5,1.15);gunFill.position.set(3,1,2);gunScene.add(gunFill);
   const hemi=new THREE.HemisphereLight(0xd7edff,0x66533b,2.0);scene.add(hemi);
   const sun=new THREE.DirectionalLight(0xffdfb6,3.4);
   sun.position.set(-65,95,-38);sun.target.position.set(0,0,0);sun.castShadow=true;
@@ -496,7 +498,7 @@ async function startModernRenderer(THREE){
   // lightweight gun meshes remain available as the fallback.
   let realisticWeapons=null;
   try{
-    const module=await import('./weapon-rig.js?v=3.9');
+    const module=await import('./weapon-rig.js?v=3.9.1');
     realisticWeapons=module.createWeaponRig(THREE,gunScene);
     if(realisticWeapons.weaponCount!==6)throw new Error('Incomplete weapon set');
   }catch(error){
