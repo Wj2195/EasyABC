@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.23 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.24 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -811,24 +811,32 @@ function archInterior(cx,cz,index){
   archShelves(cx+3.4,cz+1.8);
  }
 }
+
+const OFFSET_ROOM_DOORS=[
+ {n:[-5.65,1.25],s:[-1.55,5.50],w:[-5.35,1.70],e:[-1.50,5.40]},
+ {n:[-1.55,5.55],s:[-5.45,1.50],w:[-1.45,5.60],e:[-5.60,1.35]},
+ {n:[-5.40,1.50],s:[-1.65,5.40],w:[-1.70,5.50],e:[-5.50,1.40]},
+ {n:[-1.70,5.40],s:[-5.60,1.30],w:[-5.60,1.30],e:[-1.55,5.55]}
+];
+function offsetFacadeDoors(mid, offsets, width){
+ const a=mid+offsets[0],b=mid+offsets[1];
+ return [{at:a,w:width,kind:'door'},
+         {at:(a+b)/2,w:1.05,kind:'window'},
+         {at:b,w:width,kind:'door'}];
+}
 function mazeRoom(cx,cz,index){
  const w=17.4,d=17.6,L=cx-w/2,R=cx+w/2,N=cz-d/2,S=cz+d/2;
  const themed=[32,31,36,32,36,32,33,31],mat=themed[index],
        trim=[31,25,9,10,21,12,21,33][index],h=[5.6,5.3,5.8,5.4,5.45,5.15,5.4,5.9][index];
- // Map 1 v3.23: Eight actual entryways per outer building, with both
- // north/south and east/west exits leading to the linked building network.
- const doubleDoors=(mid)=>[
-  {at:mid-4.9,w:3.55,kind:'door'},
-  {at:mid,w:1.65,kind:'window'},
-  {at:mid+4.9,w:3.55,kind:'door'}
- ];
- archFacade('h',N,L,R,doubleDoors(cx),h,mat,trim);
- archFacade('h',S,L,R,doubleDoors(cx),h,mat,trim);
- archFacade('v',L,N,S,doubleDoors(cz),h,mat,trim);
- archFacade('v',R,N,S,doubleDoors(cz),h,mat,trim);
- // Two independent passages through the internal divider, not a dead end.
+ // Staggered entrances break the long aligned room-to-room sightlines.
+ const doors=OFFSET_ROOM_DOORS[index%OFFSET_ROOM_DOORS.length];
+ archFacade('h',N,L,R,offsetFacadeDoors(cx,doors.n,3.25),h,mat,trim);
+ archFacade('h',S,L,R,offsetFacadeDoors(cx,doors.s,3.25),h,mat,trim);
+ archFacade('v',L,N,S,offsetFacadeDoors(cz,doors.w,3.25),h,mat,trim);
+ archFacade('v',R,N,S,offsetFacadeDoors(cz,doors.e,3.25),h,mat,trim);
  const sx=cx+(index%2?1.9:-1.9);
- mazeGatedV(sx,N+2,S-2,[cz-4.75,cz+4.75],3.65,mat);
+ const innerDoors=index%2===0?[cz-4.8,cz+1.8]:[cz-1.7,cz+4.7];
+ mazeGatedV(sx,N+2,S-2,innerDoors,3.15,mat);
  // Interior floors: separate room surface material from dusty outdoor alleys.
  cube(cx,.019,cz,w-.90,.036,d-.90,index%3===0?31:index%3===1?26:23);
  for(const z of [N+1.4,S-1.4])cube(cx,.042,z,w-2.1,.025,.16,trim);
@@ -1062,7 +1070,7 @@ function urbanStreetDetails(){
 }
 
 
-// MAP 001 v3.23: five additional fully traversable center buildings, sectional
+// MAP 001 v3.24: five additional fully traversable center buildings, sectional
 // airlock walls, and street-scale architectural obstacles. A wall has collision
 // ONLY if it touches the ground; door voids are true player/bot openings.
 const MAP_ONE_SECTORS=[
@@ -1072,26 +1080,27 @@ const MAP_ONE_SECTORS=[
  {z:22,label:'MAINTENANCE WORKS',mat:33,trim:21},
  {z:45,label:'SOUTH CHECKPOINT',mat:32,trim:31}
 ];
+
+const OFFSET_HUB_DOORS=[
+ {n:[-6.9,2.0],s:[-2.4,6.6],w:[-4.3,1.75],e:[-1.85,4.2]},
+ {n:[-2.5,6.5],s:[-6.6,2.3],w:[-5.75,1.75],e:[-4.25,1.8]},
+ {n:[-7.0,1.85],s:[-2.2,6.8],w:[-4.3,1.85],e:[-1.8,4.3]},
+ {n:[-2.3,6.8],s:[-7.0,1.8],w:[-1.9,4.2],e:[-2.95,3.25]},
+ {n:[-6.5,2.5],s:[-2.9,6.3],w:[-4.2,1.9],e:[-1.95,4.15]}
+];
 function denseCenterRoom(index){
  const info=MAP_ONE_SECTORS[index],z=info.z,mat=info.mat,trim=info.trim;
  const left=-11.5,right=11.5,n=z-7.5,s=z+7.5,h=5.8+(index%2)*.65;
- // Side halls now join the neighboring depot/clinic/office buildings.
- // Each center building has eight real entryways (two on every facade).
- const frontDoors=[{at:-5.9,w:4.0,kind:'door'},
-                   {at:0,w:1.35,kind:'window'},
-                   {at:5.9,w:4.0,kind:'door'}];
- archFacade('h',n,left,right,frontDoors,h,mat,trim);
- archFacade('h',s,left,right,frontDoors,h,mat,trim);
- for(const x of [left,right]){
-   archFacade('v',x,n,s,[
-    {at:z-4.6,w:3.3,kind:'door'},
-    {at:z,w:1.15,kind:'window'},
-    {at:z+4.6,w:3.3,kind:'door'}
-   ],h,mat,trim);
- }
- // Both interior dividers have two walkable cross passages.
- mazeGatedV(-4.6,n+.9,s-.9,[z-4.4,z+4.4],3.05,mat);
- mazeGatedV(4.6,n+.9,s-.9,[z-4.4,z+4.4],3.05,mat);
+ // Independently offset doors on each face, with two internal cross-passes.
+ const layout=OFFSET_HUB_DOORS[index];
+ archFacade('h',n,left,right,offsetFacadeDoors(0,layout.n,3.60),h,mat,trim);
+ archFacade('h',s,left,right,offsetFacadeDoors(0,layout.s,3.60),h,mat,trim);
+ archFacade('v',left,n,s,offsetFacadeDoors(z,layout.w,2.76),h,mat,trim);
+ archFacade('v',right,n,s,offsetFacadeDoors(z,layout.e,2.76),h,mat,trim);
+ const passages=index%2===0?[z-4.0,z+2.2]:[z-2.1,z+4.0];
+ mazeGatedV(-4.6,n+.9,s-.9,passages,2.85,mat);
+ mazeGatedV(4.6,n+.9,s-.9,
+  index%2===0?[z-2.1,z+4.1]:[z-4.0,z+2.0],2.85,mat);
  cube(0,.03,z,21.7,.055,14.4,39);
  // Staggered waist-high cover, leaves a clear central walking channel.
  for(const side of [-1,1]){
@@ -1190,28 +1199,46 @@ function denseStreetClutter(){
 }
 // Architectural links are overhead-only with visible walking-surface guides.
 // No floor-level blocking collision is inserted across a doorway or passage.
+// Slanted/offset visual street links lead between buildings.
 function denseBuildingLinks(){
- // Direct sheltered links from the eight flank rooms to their neighboring hubs.
- for(const side of [-1,1])for(const z of [-40.1,-17.1,17.1,40.1]){
-  const x=side*13.4;
-  cube(x,.027,z,4.65,.025,3.55,39);
-  cube(x,4.20,z,4.85,.22,3.75,31);
-  for(const edge of [-1,1])
-   cube(x,4.36,z+edge*1.82,4.90,.16,.13,21);
-  cube(side*13.3,4.04,z,.44,.09,2.15,34);
+ for(const side of [-1,1]){
+  const offsetZ=side<0?[-40.6,-17.6,18.4,39.6]:[-39.2,-18.5,16.9,40.5];
+  for(let i=0;i<offsetZ.length;i++){
+   const x=side*(13.2+(i%2)*.4),z=offsetZ[i];
+   cube(x,.028,z,4.65,.025,3.45,39);
+   cube(x,4.2,z,4.9,.22,3.55,31);
+   for(const edge of [-1,1])cube(x,4.36,z+edge*1.75,4.90,.15,.13,21);
+  }
  }
- // North/south connections between adjoining side-building facades.
- for(const x of [-24,24])for(const z of [-23.5,0,23.5]){
-  cube(x,.028,z,8.0,.025,5.8,39);
-  cube(x,4.70,z,8.2,.20,4.7,31);
-  for(const dz of [-2.2,2.2])
-   cube(x,4.83,z+dz,8.3,.14,.13,21);
+ const links=[[-25.6,-23.5],[22.8,-23.5],[-22.5,0],[25.5,0],[-25.1,23.5],[22.6,23.5]];
+ for(const [x,z] of links){
+  cube(x,.028,z,7.1,.025,5.0,39);
+  cube(x,4.7,z,7.3,.2,5.0,31);
+  for(const delta of [-2.4,2.4])cube(x,4.83,z+delta,7.3,.14,.13,21);
+ }
+}
+// Cosmetic asphalt/concrete patchwork, no hidden collision or fake ramps.
+function variedStreetTerrain(){
+ for(let i=0;i<10;i++){
+  const z=-51+i*11.2;
+  for(const side of [-1,1]){
+   const x=side*(43.8+(i%3)*1.05);
+   cube(x,.009,z,8.1,.016,5.0,i%3===0?23:i%3===1?31:32);
+   cube(x+side*.8,.019,z-1.25,4.0,.012,.12,39);
+   cube(x-side*1.7,.020,z+1.4,1.25,.012,.13,34);
+  }
+ }
+ for(const z of [-47.5,-29.5,-9.4,8.5,30,48]){
+  const shift=z<0?-1:1;
+  cube(shift*3,.012,z,6.8,.017,3.6,23);
+  cube(-shift*4.5,.022,z+1.4,5.6,.018,2.2,32);
  }
 }
 function denseMapExpansion(){
  for(let i=0;i<MAP_ONE_SECTORS.length;i++)denseCenterRoom(i);
  denseSectorBoundaries();
  denseBuildingLinks();
+ variedStreetTerrain();
  denseStreetClutter();
 }
 generateMapOne();urbanStreetDetails();denseMapExpansion();
@@ -1557,7 +1584,7 @@ function pickTarget(bot){
  }
  return best;
 }
-// v3.23: cover discovery works across the FULL map, not just the old +/-29 arena.
+// v3.24: cover discovery works across the FULL map, not just the old +/-29 arena.
 function chooseCoverPoint(bot,tar){
  if(!tar)return null;
  const candidates=[];
@@ -1603,7 +1630,7 @@ function tacticalVector(b,tar,visible,dist,go){
 }
 
 
-// v3.23 — squad decision system: varied building patrols, shield retreat,
+// v3.24 — squad decision system: varied building patrols, shield retreat,
 // safe health recovery, and deliberate re-engagement.
 // All landmarks are world positions inside the existing Map 1 geometry.
 const AI_PATROL_POINTS=[
@@ -1818,8 +1845,7 @@ function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
   const originY=floorSurfaceAt(b.x,b.z)+(b.airHeight||0)+1.28;
   const pitch=Math.atan2(targetY-originY,dist);
   const c=Math.cos(pitch),dir={dx:Math.sin(b.yaw)*c,dy:Math.sin(pitch),dz:Math.cos(b.yaw)*c};
-  energyShots.push({x:b.x+dir.dx*.80,y:originY+dir.dy*.80,z:b.z+dir.dz*.80,...dir,
-    range:w.range,travelled:0,speed:w.projectileSpeed,radius:.31,owner:b});
+  queueEnergyProjectile({x:b.x,y:originY,z:b.z},dir,b,w);
   b.chargeStart=-1;b.ammo[id]--;b.shootCD=2.4*cooldown;
   feedTracer(b.x,originY,b.z,b.x+dir.dx*1.3,originY+dir.dy*1.3,b.z+dir.dz*1.3,false);
   return;
@@ -2041,15 +2067,24 @@ function releaseEnergyCharge(){
  if(valid)launchEnergyShot();
  else if(player.weapon===6&&running&&!paused) $('energyChargeText').textContent='CHARGE CANCELLED · HOLD 2s';
 }
+// Never spawn energy rounds beyond a close obstacle; use map-sized bounds.
+function queueEnergyProjectile(origin,dir,owner,w){
+ const wall=worldImpact(origin,{x:dir.dx,y:dir.dy,z:dir.dz});
+ const offset=Number.isFinite(wall)?Math.max(0,Math.min(.84,wall-.12)):.84;
+ const projectile={x:origin.x+dir.dx*offset,y:origin.y+dir.dy*offset,
+  z:origin.z+dir.dz*offset,dx:dir.dx,dy:dir.dy,dz:dir.dz,
+  range:w.range,travelled:0,speed:w.projectileSpeed,radius:.31,owner};
+ energyShots.push(projectile);
+ return projectile;
+}
 function launchEnergyShot(){
  const w=weapons[6];
  if(!player.alive||player.weapon!==6||paused||ended||player.reloadUntil>nowSec||
     player.ammo[6]<=0||nowSec-player.lastShot<60/w.rate)return false;
  const yaw=player.yaw,pitch=player.pitch,c=Math.cos(pitch);
- const dx=Math.sin(yaw)*c,dy=Math.sin(pitch),dz=Math.cos(yaw)*c;
- const eye=player.y+(player.crouch?.96:1.68);
- const x=player.x+dx*.94,y=eye+dy*.94,z=player.z+dz*.94;
- energyShots.push({x,y,z,dx,dy,dz,range:w.range,travelled:0,speed:w.projectileSpeed,radius:.31});
+ const dir={dx:Math.sin(yaw)*c,dy:Math.sin(pitch),dz:Math.cos(yaw)*c};
+ const origin={x:player.x,y:player.y+(player.crouch?.96:1.68),z:player.z};
+ queueEnergyProjectile(origin,dir,player,w);
  player.ammo[6]--;player.lastShot=nowSec;player.recoil=.30;player.flash=.14;
  beep('energyFire');updateHud();return true;
 }
@@ -2118,8 +2153,10 @@ function updateEnergyEffects(dt){
      }
    }
    q.x+=q.dx*travel;q.y+=q.dy*travel;q.z+=q.dz*travel;q.travelled+=travel;
+   // Map 1 spans +/-54m by +/-82m, and narrows near team spawn bases.
+   // Never detonate just because the player is beyond the OLD +/-30.2m range.
    const collided=directHit||wallDist<=step+.005||q.travelled>=q.range-.01||
-      q.y<=floorSurfaceAt(q.x,q.z)+.20||Math.abs(q.x)>30.2||Math.abs(q.z)>30.2;
+      q.y<=floorSurfaceAt(q.x,q.z)+.20||!inPlayableArea(q.x,q.z,-.2);
    if(collided){blastEnergy(q.x,q.y,q.z,q.owner||player);energyShots.splice(i,1);}
  }
  for(let i=energyWaves.length-1;i>=0;i--){
