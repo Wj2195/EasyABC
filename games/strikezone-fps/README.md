@@ -266,3 +266,19 @@ Burst timing respects each gun's real in-game rate-of-fire, ammunition, reload t
 **Visuals:** Each bot shot produces a visible tracer. New short-lived muzzle flashes are shown on humanoid weapon models during conventional firing, without altering projectile damage or the player's reticle. Existing shield mechanics, headshots, energy attacks, smart navigation, two-second fallen bodies and mobile controls are unchanged.
 
 **Verification:** Simulated 4.4-second firing sequences validated rapid successive rounds for assault rifles, SMGs, DMRs and pistols and deliberate single-shot patterns for shotgun/sniper. A teammate placed directly in the lane prevented shots; removing it resumed fire. Source syntax checks passed. Full PC and mobile browser gameplay still needs visual/audio testing.
+
+
+## v3.18 — Fix shield shots from behind
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.18
+
+**Bug:** The 3D soldier mesh was rotated with `-bot.yaw` even though the collision, firing and defensive code all treat `bot.yaw` as facing `(+sin(yaw), +cos(yaw))`. This meant the shield could appear to be facing away from the player while the damage logic considered a shot frontal. The previous 240-degree shield protection arc also extended too far behind the soldier, and the shield bot could turn toward attackers nearly immediately.
+
+**Fix:**
+- Enhanced humanoid and compatibility mesh yaw now uses the same heading as projectile collision and shield defense.
+- Frontal hits on the body, arms and legs remain **0 damage**; exposed headshots always deal normal damage.
+- The shield protects the forward hemisphere with a small side-on tolerance; shots entering from rear quarters or directly behind **deal normal damage**. Shotgun pellets and explosion impact origins continue to use the same logic.
+- A shield bot turns at **1.75 radians/second** instead of 5, allowing a legitimate opportunity to reach and fire at its vulnerable back before it can face its shield toward you.
+- Blue AI teammates remain non-damageable by player bullets in team-deathmatch mode. Test rear damage against a red enemy shield carrier.
+
+**Verification:** Tested body/head shot ray-sphere intersections and shield damage against defenders facing 0°, 90°, 180° and 270°. Frontal body hits yielded 0 HP damage, rear body/head hits yielded normal damage, and side-on body shots remained blocked. Code syntax checks passed. Actual browser-facing graphics and online page propagation should still be visually verified.
