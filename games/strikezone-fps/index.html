@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.3 — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.4 — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -229,7 +229,7 @@ html,body{height:100%;height:100dvh;overscroll-behavior:none;-webkit-user-select
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.3 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.4 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button type="button" id="hudSound" title="Mute / unmute sound" aria-label="Sound on">♪</button><button type="button" id="hudFullscreen" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
@@ -713,60 +713,56 @@ function toggleSound(){
  refreshSoundButtons();
 }
 function botShape(out,b){
- const a=b.yaw,ox=b.x,oz=b.z,walk=Math.sin(b.walk+b.phase)*.23;
+ const a=b.yaw,ox=b.x,oz=b.z,walk=Math.sin(b.walk+b.phase)*.20;
  const B=(x,y,z,w,h,d,m)=>box(out,ox+x,y,oz+z,w,h,d,m,a,ox,oz);
  const friendly=mode==='tdm'&&b.team===0,uniform=friendly?11:12,trim=friendly?25:27;
- // Boots, ankle armor, articulated knees and cargo trousers.
- for(const s of [-1,1]){
-  const gait=walk*s;
-  B(s*.205,.14,.09+gait*.72,.34,.25,.55,9);
-  B(s*.205,.43,gait*.57,.32,.57,.34,13);
-  B(s*.205,.64,.14+gait*.36,.38,.22,.40,21);
-  B(s*.205,.84,-gait*.22,.40,.48,.44,13);
-  B(s*.205,.89,.20-gait*.22,.23,.19,.15,uniform);
+ const skin=14,armor=9,visor=21,accent=24;
+ // More humanoid proportions: narrower shoulders, clearer waist, separate upper/lower limbs.
+ // Legs
+ for(const side of [-1,1]){
+  const swing=walk*side;
+  B(side*.13,.10,.06+swing*.55,.22,.16,.34,9);            // foot
+  B(side*.13,.35,swing*.45,.19,.34,.18,13);               // shin
+  B(side*.13,.55,.03+swing*.16,.17,.12,.17,21);           // knee
+  B(side*.13,.79,-swing*.15,.20,.36,.21,13);              // thigh
  }
- // Ballistic vest, utility webbing, center chest plate and bodypack.
- B(0,1.25,0,.83,.70,.53,uniform);
- B(0,1.26,.31,.69,.50,.15,21);
- B(0,1.43,.405,.52,.13,.055,trim);
- B(0,1.16,.41,.44,.14,.07,9);
- for(const x of [-.24,0,.24])B(x,1.10,.445,.19,.24,.13,7);
- B(0,1.2,-.36,.60,.58,.23,9);
- B(0,1.32,-.53,.48,.37,.15,21);
- B(0,1.00,.0,.89,.16,.51,9);
- for(const x of [-.36,.36])B(x,.98,.15,.22,.20,.30,7);
- // Combat sleeves, separate protective shoulder pads, elbow and wrist details.
- for(const s of [-1,1]){
-  B(s*.55,1.47,.02,.33,.31,.50,uniform);
-  B(s*.61,1.54,.05,.43,.22,.53,21);
-  B(s*.60,1.27,.19,.26,.34,.36,13);
-  B(s*.61,1.12,.29,.29,.17,.35,9);
-  B(s*.57,1.04,.43,.29,.16,.24,14);
-  B(s*.58,1.45,.29,.30,.10,.12,trim);
+ // Hips / waist / torso
+ B(0,.93,0,.38,.14,.20,armor);                            // belt
+ B(0,1.06,0,.34,.14,.18,uniform);                         // abdomen
+ B(0,1.24,.0,.50,.34,.28,uniform);                        // chest core
+ B(0,1.23,.18,.39,.23,.08,visor);                         // vest front plate
+ B(0,1.26,-.16,.32,.22,.10,armor);                        // backpack
+ B(0,1.37,.18,.30,.06,.05,trim);                          // chest stripe
+ B(-.12,1.08,.17,.08,.12,.08,7);                          // pouch left
+ B(.12,1.08,.17,.08,.12,.08,7);                           // pouch right
+ // Neck and head
+ B(0,1.50,.02,.12,.08,.10,skin);                          // neck
+ B(0,1.68,.00,.30,.28,.26,skin);                          // head
+ B(0,1.82,-.02,.36,.08,.30,armor);                        // helmet cap
+ B(0,1.72,.15,.24,.12,.06,visor);                         // visor
+ B(0,1.59,.13,.18,.09,.05,armor);                         // mask/mouth guard
+ B(-.17,1.70,.02,.06,.10,.08,armor);                      // ear/helmet left
+ B(.17,1.70,.02,.06,.10,.08,armor);                       // ear/helmet right
+ B(.18,1.67,.13,.06,.06,.06,accent);                      // headset light
+ // Arms
+ for(const side of [-1,1]){
+  B(side*.31,1.34,.02,.11,.12,.12,uniform);               // shoulder joint
+  B(side*.42,1.26,.06,.12,.28,.13,uniform);               // upper arm
+  B(side*.45,1.07,.15,.10,.12,.11,visor);                 // elbow
+  B(side*.47,.90,.24,.11,.24,.12,skin);                   // forearm
+  B(side*.47,.76,.30,.11,.09,.12,13);                     // hand
  }
- // Distinct helmet, face shield, straps, comms headset, cheek mask.
- B(0,1.72,.015,.52,.51,.49,14);
- B(0,1.90,-.01,.64,.19,.58,9);
- B(0,1.84,.30,.64,.12,.24,21);
- B(0,1.76,.37,.50,.20,.07,25);
- B(0,1.62,.335,.49,.20,.11,9);
- B(-.32,1.72,.025,.12,.23,.20,21);
- B(.32,1.72,.025,.12,.23,.20,21);
- B(.36,1.69,.20,.07,.09,.30,9);
- B(.42,1.65,.32,.10,.08,.10,24);
- // Forward carried rifle: stock, receiver, vented handguard, barrel, sights.
- B(.10,1.29,.52,.22,.24,.83,9);
- B(.11,1.33,.82,.16,.14,.40,21);
- B(.10,1.32,1.15,.085,.085,.49,8);
- B(.10,1.40,.74,.06,.09,.22,24);
- B(.10,1.46,.51,.17,.14,.19,9);
- B(.16,1.08,.46,.15,.40,.16,9);
- B(-.13,1.24,.38,.22,.15,.38,14);
- B(.28,1.21,.70,.25,.15,.32,14);
- // Contact shadow (falls back to geometry, no image assets).
- B(0,.016,0,.87,.018,.76,17);
-}
-function addTracer(out,t){const dx=t.X-t.x,dy=t.Y-t.y,dz=t.Z-t.z,len=Math.hypot(dx,dy,dz)||1,px=-dz/len*.03,pz=dx/len*.03;quad(out,[t.x+px,t.y+.02,t.z+pz],[t.X+px,t.Y+.02,t.Z+pz],[t.X-px,t.Y-.02,t.Z-pz],[t.x-px,t.y-.02,t.z-pz],[0,1,0],t.friendly?15:12);}
+ // Rifle carried in front by hands
+ B(.07,1.02,.39,.16,.12,.56,armor);                       // receiver
+ B(.07,1.02,.72,.09,.08,.34,visor);                       // handguard
+ B(.07,1.03,1.00,.05,.05,.38,8);                          // barrel
+ B(.07,1.09,.46,.06,.08,.12,accent);                      // sight
+ B(.07,.97,.26,.08,.18,.18,9);                            // mag
+ B(-.10,.95,.24,.12,.08,.18,skin);                        // support hand near rifle
+ B(.22,.89,.34,.10,.08,.18,skin);                         // trigger hand near rifle
+ // Subtle contact shadow for grounding
+ B(0,.014,0,.52,.014,.46,17);
+}function addTracer(out,t){const dx=t.X-t.x,dy=t.Y-t.y,dz=t.Z-t.z,len=Math.hypot(dx,dy,dz)||1,px=-dz/len*.03,pz=dx/len*.03;quad(out,[t.x+px,t.y+.02,t.z+pz],[t.X+px,t.Y+.02,t.Z+pz],[t.X-px,t.Y-.02,t.Z-pz],[t.x-px,t.y-.02,t.z-pz],[0,1,0],t.friendly?15:12);}
 function weaponShape(out){const i=player.weapon,aim=player.ads,recoil=player.recoil,walking=(keys.KeyW||keys.KeyA||keys.KeyD||keys.KeyS)?1:0, sway=Math.sin(player.bob*2)*.012*walking, lift=Math.abs(Math.sin(player.bob))*.011*walking;
 let gx=(aim?.16:.43)+sway,gy=(aim?-.31:-.43)+lift-recoil*.28,gz=.50+recoil*.55;const B=(x,y,z,w,h,d,m)=>box(out,gx+x,gy+y,gz+z,w,h,d,m);
 // Receivers and upper rails aligned into camera frustum. Aiming narrows the sight line.
