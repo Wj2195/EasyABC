@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.21 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.22 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -815,26 +815,20 @@ function mazeRoom(cx,cz,index){
  const w=17.4,d=17.6,L=cx-w/2,R=cx+w/2,N=cz-d/2,S=cz+d/2;
  const themed=[32,31,36,32,36,32,33,31],mat=themed[index],
        trim=[31,25,9,10,21,12,21,33][index],h=[5.6,5.3,5.8,5.4,5.45,5.15,5.4,5.9][index];
- // Four usable entries, multiple exposed window apertures and tall facades.
- archFacade('h',N,L,R,[
-  {at:cx+(index%2?2.8:-2.8),w:4.65,kind:'door'},
-  {at:cx+(index%2?-4.3:4.5),w:1.75,kind:'window'}
- ],h,mat,trim);
- archFacade('h',S,L,R,[
-  {at:cx+(index%2?-2.8:2.8),w:4.65,kind:'door'},
-  {at:cx+(index%2?4.4:-4.3),w:1.80,kind:'window'}
- ],h,mat,trim);
- archFacade('v',L,N,S,[
-  {at:cz+(index%2?2.6:-2.6),w:4.65,kind:'door'},
-  {at:cz+(index%2?-4.5:4.5),w:1.65,kind:'window'}
- ],h,mat,trim);
- archFacade('v',R,N,S,[
-  {at:cz+(index%2?-2.6:2.6),w:4.65,kind:'door'},
-  {at:cz+(index%2?4.5:-4.5),w:1.65,kind:'window'}
- ],h,mat,trim);
- // Interior partition deliberately has a broad offset opening.
+ // Map 1 v3.22: Eight actual entryways per outer building, with both
+ // north/south and east/west exits leading to the linked building network.
+ const doubleDoors=(mid)=>[
+  {at:mid-4.9,w:3.55,kind:'door'},
+  {at:mid,w:1.65,kind:'window'},
+  {at:mid+4.9,w:3.55,kind:'door'}
+ ];
+ archFacade('h',N,L,R,doubleDoors(cx),h,mat,trim);
+ archFacade('h',S,L,R,doubleDoors(cx),h,mat,trim);
+ archFacade('v',L,N,S,doubleDoors(cz),h,mat,trim);
+ archFacade('v',R,N,S,doubleDoors(cz),h,mat,trim);
+ // Two independent passages through the internal divider, not a dead end.
  const sx=cx+(index%2?1.9:-1.9);
- mazeGatedV(sx,N+2,S-2,[cz+(index%3===0?2.45:-2.45)],4.85,mat);
+ mazeGatedV(sx,N+2,S-2,[cz-4.75,cz+4.75],3.65,mat);
  // Interior floors: separate room surface material from dusty outdoor alleys.
  cube(cx,.019,cz,w-.90,.036,d-.90,index%3===0?31:index%3===1?26:23);
  for(const z of [N+1.4,S-1.4])cube(cx,.042,z,w-2.1,.025,.16,trim);
@@ -1068,7 +1062,7 @@ function urbanStreetDetails(){
 }
 
 
-// MAP 001 v3.21: five additional fully traversable center buildings, sectional
+// MAP 001 v3.22: five additional fully traversable center buildings, sectional
 // airlock walls, and street-scale architectural obstacles. A wall has collision
 // ONLY if it touches the ground; door voids are true player/bot openings.
 const MAP_ONE_SECTORS=[
@@ -1081,24 +1075,23 @@ const MAP_ONE_SECTORS=[
 function denseCenterRoom(index){
  const info=MAP_ONE_SECTORS[index],z=info.z,mat=info.mat,trim=info.trim;
  const left=-11.5,right=11.5,n=z-7.5,s=z+7.5,h=5.8+(index%2)*.65;
- // Opposite entry and exit: the section cannot be bypassed down the middle.
- archFacade('h',n,left,right,[
-   {at:-3.2,w:5.0,kind:'door'},
-   {at:5.4,w:2.1,kind:'window'}
- ],h,mat,trim);
- archFacade('h',s,left,right,[
-   {at:3.2,w:5.0,kind:'door'},
-   {at:-5.4,w:2.1,kind:'window'}
- ],h,mat,trim);
+ // Side halls now join the neighboring depot/clinic/office buildings.
+ // Each center building has eight real entryways (two on every facade).
+ const frontDoors=[{at:-5.9,w:4.0,kind:'door'},
+                   {at:0,w:1.35,kind:'window'},
+                   {at:5.9,w:4.0,kind:'door'}];
+ archFacade('h',n,left,right,frontDoors,h,mat,trim);
+ archFacade('h',s,left,right,frontDoors,h,mat,trim);
  for(const x of [left,right]){
    archFacade('v',x,n,s,[
-    {at:z-3.6,w:2.0,kind:'window'},
-    {at:z+3.7,w:2.0,kind:'window'}
+    {at:z-4.6,w:3.3,kind:'door'},
+    {at:z,w:1.15,kind:'window'},
+    {at:z+4.6,w:3.3,kind:'door'}
    ],h,mat,trim);
  }
- // Two separate indoor lanes joined by offset interior doorways.
- mazeGatedV(-4.6,n+.9,s-.9,[z+1.65],4.4,mat);
- mazeGatedV(4.6,n+.9,s-.9,[z-1.65],4.4,mat);
+ // Both interior dividers have two walkable cross passages.
+ mazeGatedV(-4.6,n+.9,s-.9,[z-4.4,z+4.4],3.05,mat);
+ mazeGatedV(4.6,n+.9,s-.9,[z-4.4,z+4.4],3.05,mat);
  cube(0,.03,z,21.7,.055,14.4,39);
  // Staggered waist-high cover, leaves a clear central walking channel.
  for(const side of [-1,1]){
@@ -1137,19 +1130,18 @@ function denseCenterRoom(index){
   cube(xx,5.5,zz,.46,.26,.46,34);
  }
 }
-// Three main combat districts, bounded by concrete and modular secure walls.
-// The two sector transitions pass through a center building at z≈-22 / +22.
-// Exterior sidewalks DO NOT offer shortcuts around the section checkpoints.
+// Three combat districts, but with side-building paths through each.
+// Put barriers in the gaps between buildings, not inside their doors.
 function denseSectorBoundaries(){
- for(const z of [-27.5,27.5]){
-  // Leave x [-11.5,11.5] for the actual checkpoint building interior.
-  for(const [lo,hi] of [[-54,-11.5],[11.5,54]]){
-   const width=hi-lo;
-   mapWall((lo+hi)/2,z,width,.60,4.4,32);
-   for(let x=lo+3;x<hi-2;x+=6.3){
-    cube(x,4.65,z,.26,.28,.85,31);
-    cube(x,2.55,z,.06,.5,.72,33);
-   }
+ for(const z of [-23.5,23.5]){
+  // Twin side links are 7.6m wide; the 23m-wide central zone stays open.
+  for(const side of [-1,1]){
+   const lo=side<0?-54:11.5,hi=side<0?-11.5:54;
+   mazeGatedH(z,lo,hi,[side*24],7.6,32);
+   cube(side*24,4.63,z,8.05,.22,1.28,31);
+   cube(side*24,.029,z,7.3,.025,.38,39);
+   for(const off of [-3.93,3.93])
+    cube(side*24+off,3.84,z,.19,.19,1.0,34);
   }
  }
  // Smaller boundary sections reduce straight 80m firing lanes without
@@ -1196,9 +1188,30 @@ function denseStreetClutter(){
   }
  }
 }
+// Architectural links are overhead-only with visible walking-surface guides.
+// No floor-level blocking collision is inserted across a doorway or passage.
+function denseBuildingLinks(){
+ // Direct sheltered links from the eight flank rooms to their neighboring hubs.
+ for(const side of [-1,1])for(const z of [-40.1,-17.1,17.1,40.1]){
+  const x=side*13.4;
+  cube(x,.027,z,4.65,.025,3.55,39);
+  cube(x,4.20,z,4.85,.22,3.75,31);
+  for(const edge of [-1,1])
+   cube(x,4.36,z+edge*1.82,4.90,.16,.13,21);
+  cube(side*13.3,4.04,z,.44,.09,2.15,34);
+ }
+ // North/south connections between adjoining side-building facades.
+ for(const x of [-24,24])for(const z of [-23.5,0,23.5]){
+  cube(x,.028,z,8.0,.025,5.8,39);
+  cube(x,4.70,z,8.2,.20,4.7,31);
+  for(const dz of [-2.2,2.2])
+   cube(x,4.83,z+dz,8.3,.14,.13,21);
+ }
+}
 function denseMapExpansion(){
  for(let i=0;i<MAP_ONE_SECTORS.length;i++)denseCenterRoom(i);
  denseSectorBoundaries();
+ denseBuildingLinks();
  denseStreetClutter();
 }
 generateMapOne();urbanStreetDetails();denseMapExpansion();
