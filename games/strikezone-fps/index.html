@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.5.1 — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.6 — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -229,7 +229,7 @@ html,body{height:100%;height:100dvh;overscroll-behavior:none;-webkit-user-select
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.5.1 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.6 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button type="button" id="hudSound" title="Mute / unmute sound" aria-label="Sound on">♪</button><button type="button" id="hudFullscreen" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
@@ -575,16 +575,130 @@ function hitActor(o,d,b){let head=raySphere(o,d,{x:b.x,y:1.65,z:b.z},.37),body=r
 function damagePlayer(dmg,source){if(!player.alive||ended)return;player.hp=Math.max(0,player.hp-dmg);player.lastDamage=nowSec;player.hurt=.72;$('damageOverlay').style.opacity='.70';beep('hurt');if(player.hp<=0){player.deaths++;player.alive=false;player.shoot=false;keys={};touchMove.x=touchMove.y=0;finishTime=nowSec+3;announce('YOU WERE ELIMINATED',1.5);$('respawnScreen').classList.remove('hidden');if(source){source.kills++;if(mode==='tdm')red++;}updateScores();}updateHud();}
 function eliminateBot(b,killer){b.alive=false;b.hp=0;b.until=nowSec+2.7;b.deaths++;if(killer===player){player.kills++;if(mode==='tdm')blue++;feedKill('YOU',b.name,true);beep('kill');announce(player.kills>0&&player.kills%5===0?'KILL STREAK ×'+player.kills:'ELIMINATION +100 XP',1);if(mode==='gun'){player.weapon=(player.weapon+1)%weapons.length;player.ammo[player.weapon]=weapons[player.weapon].mag;updateHud();if(player.kills>=10)endMatch();}}else if(killer){killer.kills++;if(mode==='tdm'){if(killer.team===0)blue++;else red++;}feedKill(killer.name,b.name,false);}updateScores();updateHud();}
 function damageBot(b,damage,killer){if(!b.alive)return;b.hp-=damage;if(b.hp<=0)eliminateBot(b,killer);}
-function pickTarget(bot){let choices=[];if(player.alive&&(mode!=='tdm'||bot.team!==0))choices.push(player);for(const other of bots)if(other!==bot&&other.alive&&(mode!=='tdm'||other.team!==bot.team))choices.push(other);if(!choices.length)return null;choices.sort((a,b)=>hypot(bot.x-a.x,bot.z-a.z)-hypot(bot.x-b.x,bot.z-b.z));return choices[0];}
-function updateBots(dt){for(const b of bots){if(!b.alive){if(nowSec>b.until&&!ended){const p=spawnPoint(b.team);b.x=p.x;b.z=p.z;b.hp=100;b.alive=true;b.path=[];}continue;}
- b.walk+=dt*7;b.shootCD-=dt;b.targetRefresh-=dt;b.pathRefresh-=dt;
- if(b.targetRefresh<=0||!b.target||!b.target.alive){b.target=pickTarget(b);b.targetRefresh=rand(.5,1.1);}
- const tar=b.target;if(!tar)continue;const dist=hypot(tar.x-b.x,tar.z-b.z),visible=dist<27&&clearPath(b.x,b.z,tar.x,tar.z);
- if(b.pathRefresh<=0){b.path=visible?[{x:tar.x,z:tar.z}]:navigation(b.x,b.z,tar.x,tar.z);b.pathRefresh=rand(.9,1.8);}
- let go=b.path[0]||{x:tar.x,z:tar.z};if(hypot(go.x-b.x,go.z-b.z)<.85&&b.path.length>1){b.path.shift();go=b.path[0];}let targetYaw=Math.atan2(tar.x-b.x,tar.z-b.z);let rot=(targetYaw-b.yaw+Math.PI*3)%(Math.PI*2)-Math.PI;b.yaw+=clamp(rot,-dt*3.7,dt*3.7);
- if(dist>rand(6.2,8.0)||!visible){let dx=go.x-b.x,dz=go.z-b.z,len=Math.max(.001,Math.hypot(dx,dz));dx/=len;dz/=len;const moved=resolveMovement(b.x,b.z,dx*b.speed*dt,dz*b.speed*dt,.37);b.x=moved.x;b.z=moved.z;}
- if(visible&&dist<25&&b.shootCD<=0&&Math.abs(rot)<.42){b.shootCD=rand(.6,1.15);const hitChance=clamp(.68-dist*.019,.12,.64);if(Math.random()<hitChance){const dmg=Math.round(rand(7,15));if(tar===player)damagePlayer(dmg,b);else damageBot(tar,dmg,b);}if(Math.random()<.22)feedTracer(b.x,1.2,b.z,tar.x,1.3,tar.z,false);}
- }}
+// Tactical AI: threat evaluation, pursuit, line-of-sight, flanking, cover and wall recovery.
+function pickTarget(bot){
+ let best=null,score=Infinity;
+ const targets=[];
+ if(player.alive&&(mode!=='tdm'||bot.team!==0))targets.push(player);
+ for(const other of bots)if(other!==bot&&other.alive&&(mode!=='tdm'||other.team!==bot.team))targets.push(other);
+ for(const t of targets){
+  const d=hypot(t.x-bot.x,t.z-bot.z),seen=d<30&&clearPath(bot.x,bot.z,t.x,t.z);
+  const priority=d+(seen?-7:4)+(t.hp<50?-2:0)+(bot.target===t?-3:0);
+  if(priority<score){best=t;score=priority;}
+ }
+ return best;
+}
+function chooseCoverPoint(bot,tar){
+ let best=null,bestScore=-Infinity;
+ for(const o of colliders){
+  const w=o.X-o.x,d=o.Z-o.z;if(w>5||d>5||o.h<.65)continue;
+  const cx=(o.x+o.X)/2,cz=(o.z+o.Z)/2;if(hypot(cx-bot.x,cz-bot.z)>9)continue;
+  const dx=cx-tar.x,dz=cz-tar.z,len=Math.hypot(dx,dz)||1;
+  const x=cx+dx/len*(Math.max(w,d)*.6+.65),z=cz+dz/len*(Math.max(w,d)*.6+.65);
+  if(Math.abs(x)>=29||Math.abs(z)>=29||collidesCircle(x,z,.54)||clearPath(tar.x,tar.z,x,z))continue;
+  const score=10-hypot(bot.x-x,bot.z-z);if(score>bestScore){best={x,z};bestScore=score;}
+ }
+ return best;
+}
+function tacticalVector(b,tar,visible,dist,go){
+ let vx=go.x-b.x,vz=go.z-b.z;
+ if(visible&&tar&&b.hp>36){
+  const d=Math.max(.01,dist),dx=(tar.x-b.x)/d,dz=(tar.z-b.z)/d;
+  const range=b.preferredRange||10;
+  const approach=dist>range+2?.8:dist<range-3?-.65:0;
+  const lateral=approach===0?1:.56;
+  vx=dx*approach+dz*b.strafeDir*lateral;
+  vz=dz*approach-dx*b.strafeDir*lateral;
+ }
+ const len=Math.max(.001,Math.hypot(vx,vz));
+ return {x:vx/len,z:vz/len};
+}
+function updateBots(dt){
+ const skill=typeof difficulty==='string'?difficulty:'regular';
+ const reaction={rookie:.47,regular:.28,veteran:.14}[skill]||.28;
+ const accuracy={rookie:.72,regular:1,veteran:1.17}[skill]||1;
+ const cooldown={rookie:1.3,regular:1,veteran:.78}[skill]||1;
+ for(const b of bots){
+  if(!b.alive){
+   if(nowSec>b.until&&!ended){
+    const p=spawnPoint(b.team);b.x=p.x;b.z=p.z;b.hp=100;b.alive=true;
+    b.path=[];b.target=null;b.pathRefresh=0;b.targetRefresh=0;b.stuckFor=0;b.coverPoint=null;b.coverUntil=0;b.aimReadyAt=nowSec+.5;
+   }
+   continue;
+  }
+  if(b.strafeDir===undefined)b.strafeDir=Math.random()<.5?-1:1;
+  if(b.preferredRange===undefined)b.preferredRange=rand(8,12);
+  if(b.tacticUntil===undefined)b.tacticUntil=0;
+  if(b.aimReadyAt===undefined)b.aimReadyAt=nowSec+.4;
+  if(b.lastSeenAt===undefined)b.lastSeenAt=-99;
+  if(b.stuckFor===undefined)b.stuckFor=0;
+  if(b.coverUntil===undefined)b.coverUntil=0;
+  b.shootCD-=dt;b.targetRefresh-=dt;b.pathRefresh-=dt;
+  const previous=b.target;
+  if(b.targetRefresh<=0||!b.target||!b.target.alive){
+   b.target=pickTarget(b);b.targetRefresh=rand(.5,.85);
+  }
+  if(previous!==b.target){
+   b.path=[];b.pathRefresh=0;b.coverPoint=null;b.aimReadyAt=nowSec+reaction+rand(.06,.22);
+  }
+  const tar=b.target;if(!tar)continue;
+  const dist=hypot(tar.x-b.x,tar.z-b.z);
+  const visible=dist<29&&clearPath(b.x,b.z,tar.x,tar.z);
+  if(visible){
+   if(nowSec-b.lastSeenAt>2)b.aimReadyAt=Math.max(b.aimReadyAt,nowSec+reaction*.7);
+   b.lastSeenAt=nowSec;b.lastSeenX=tar.x;b.lastSeenZ=tar.z;
+  }
+  if(nowSec>b.tacticUntil){
+   b.strafeDir=Math.random()<.5?-1:1;
+   b.preferredRange=rand(7.5,12);
+   b.tacticUntil=nowSec+rand(1.4,3.0);
+  }
+  // Low-health bots seek a barricade rather than charging head-on.
+  if(b.hp<43&&visible&&nowSec>b.coverUntil){
+   b.coverPoint=chooseCoverPoint(b,tar);
+   b.coverUntil=nowSec+rand(2.6,4.2);b.pathRefresh=0;
+  }
+  if(nowSec>b.coverUntil)b.coverPoint=null;
+  const pursue=b.coverPoint||(visible?tar:
+   (nowSec-b.lastSeenAt<3.5?{x:b.lastSeenX,z:b.lastSeenZ}:tar));
+  if(b.pathRefresh<=0){
+   b.path=(!visible||b.coverPoint)?navigation(b.x,b.z,pursue.x,pursue.z):[];
+   b.pathRefresh=rand(.55,1.0);
+  }
+  let go=b.path[0]||pursue;
+  if(b.path.length>1&&hypot(go.x-b.x,go.z-b.z)<.85){b.path.shift();go=b.path[0];}
+  const dir=tacticalVector(b,tar,visible&&!b.coverPoint,dist,go);
+  let rx=0,rz=0;
+  for(const other of bots)if(other!==b&&other.alive){
+   const dx=b.x-other.x,dz=b.z-other.z,d=Math.hypot(dx,dz);
+   if(d>.02&&d<.9){rx+=dx/d*(.9-d);rz+=dz/d*(.9-d);}
+  }
+  const vx=dir.x+rx*.82,vz=dir.z+rz*.82,len=Math.max(.001,Math.hypot(vx,vz));
+  const bx=b.x,bz=b.z;
+  const moved=resolveMovement(b.x,b.z,vx/len*b.speed*dt*(visible?.82:1),vz/len*b.speed*dt*(visible?.82:1),.37);
+  b.x=moved.x;b.z=moved.z;
+  const travelled=Math.hypot(b.x-bx,b.z-bz);
+  // Stand still when not moving instead of endlessly marching through the floor.
+  if(travelled>.0005)b.walk+=travelled*2.9;
+  b.stuckFor=travelled<dt*.11?b.stuckFor+dt:0;
+  if(b.stuckFor>.52){
+   b.stuckFor=0;b.strafeDir*=-1;b.tacticUntil=nowSec+1.2;b.path=[];b.pathRefresh=0;
+   const p=resolvePosition(b.x,b.z,.42);b.x=p.x;b.z=p.z;
+  }
+  const aim=visible?tar:go;
+  const yaw=Math.atan2(aim.x-b.x,aim.z-b.z),rotation=(yaw-b.yaw+Math.PI*3)%(Math.PI*2)-Math.PI;
+  b.yaw+=clamp(rotation,-dt*4.0,dt*4.0);
+  if(visible&&dist<26&&b.shootCD<=0&&nowSec>=b.aimReadyAt&&Math.abs(rotation)<.34){
+   b.shootCD=rand(.62,1.07)*cooldown;
+   const hit=clamp((.70-dist*.019)*accuracy*(travelled>.035?.87:1),.10,.78);
+   if(Math.random()<hit){
+    const damage=Math.round(rand(7,15));
+    if(tar===player)damagePlayer(damage,b);else if(tar.alive)damageBot(tar,damage,b);
+   }
+   if(Math.random()<.55)feedTracer(b.x,1.2,b.z,tar.x,1.3,tar.z,false);
+  }
+ }
+}
 const tracers=[];
 function feedTracer(x,y,z,X,Y,Z,friendly){tracers.push({x,y,z,X,Y,Z,ttl:.10,friendly});if(tracers.length>18)tracers.shift();}
 function shoot(){if(!running||paused||!player.alive||ended)return;const w=weapons[player.weapon];if(nowSec-player.lastShot<60/w.rate)return;if(player.reloadUntil>nowSec)return;if(player.ammo[player.weapon]<=0){reload();return;}player.lastShot=nowSec;player.ammo[player.weapon]--;player.recoil=Math.min(.30,player.recoil+.09);player.flash=.075;beep('gun');
@@ -1191,5 +1305,5 @@ if(!document.getElementById('rendererState').textContent.includes('renderer'))do
 })();
 
 </script>
-<script type="module" src="./ultra-renderer.js?v=3.5.1"></script>
+<script type="module" src="./ultra-renderer.js?v=3.6"></script>
 </body></html>
