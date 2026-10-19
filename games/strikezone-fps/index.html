@@ -716,7 +716,8 @@ function createBots(){bots=[];const count=mode==='tdm'?9:8;
  target:null,targetRefresh:0,path:[],pathRefresh:0,shootCD:rand(.4,1.5),speed:rand(2.5,3.3),
  phase:rand(0,6.28),walk:0,weapon,preferredWeapon:weapon,
  ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),reloadUntil:0,
- shieldHP:weapons[7].shieldHP,shieldLastDamage:-99,chargeStart:-1,weaponHoldUntil:nowSec+6});}
+ shieldHP:weapons[7].shieldHP,shieldLastDamage:-99,chargeStart:-1,weaponHoldUntil:nowSec+6,
+ burstShots:0,burstPauseUntil:0,burstTarget:null,burstIndex:0,lastFiredAt:-99,fireSide:1});}
 }
 let startingWeapon=0;
 try{
@@ -879,7 +880,7 @@ function botChooseWeapon(b,dist,visible){
  else if(!empty&&!broken&&dist>9&&dist<23&&b.preferredWeapon===6)target=6;
  else if(!empty&&!broken&&dist>7&&dist<15&&b.preferredWeapon===7&&b.hp>65)target=0;
  if(target!==b.weapon){
-  b.weapon=target;b.chargeStart=-1;b.reloadUntil=0;b.shootCD=Math.max(.25,b.shootCD);
+  b.weapon=target;b.chargeStart=-1;b.reloadUntil=0;resetBotBurst(b);b.shootCD=Math.max(.25,b.shootCD);
   b.aimReadyAt=now+.20;b.weaponHoldUntil=now+rand(4.8,7.3);
  }
 }
@@ -889,7 +890,50 @@ function botReload(b){
  if(b.reloadUntil>nowSec)return;
  if(b.ammo[i]>0||b.reserves[i]<=0)return;
  b.reloadUntil=nowSec+w.reload;
- b.chargeStart=-1;b.shootCD=Math.max(b.shootCD,w.reload);
+ resetBotBurst(b);b.chargeStart=-1;b.shootCD=Math.max(b.shootCD,w.reload);
+}
+// v3.17 — choose distinct automatic/burst fire sequences for every weapon.
+// Conventional bots can fire several rounds at real weapon cadence during a single
+// attack opportunity. Shotgun/sniper fire one deliberate shot; energy still charges.
+const BOT_BURST_PROFILES=[
+ {min:3,max:6,pause:.31,ideal:20}, // VORTEX AR
+ {min:5,max:10,pause:.22,ideal:11}, // RAPTOR SMG
+ {min:2,max:3,pause:.49,ideal:29}, // RANGER DMR
+ {min:1,max:1,pause:.60,ideal:6}, // JUDGE shotgun
+ {min:2,max:4,pause:.37,ideal:12}, // SPECTRE P9
+ {min:1,max:1,pause:.85,ideal:42}, // PHANTOM sniper
+ {min:1,max:1,pause:0,ideal:15},  // NOVA charge (separate mechanic)
+ {min:1,max:1,pause:0,ideal:2}    // AEGIS bash (separate mechanic)
+];
+function resetBotBurst(b){
+ b.burstShots=0;b.burstTarget=null;b.burstIndex=0;
+}
+function botFiringLaneBlocked(b,tar){
+ if(mode!=='tdm'||!tar)return false;
+ const dx=tar.x-b.x,dz=tar.z-b.z;
+ const range=Math.hypot(dx,dz);
+ if(range<.5)return false;
+ const nx=dx/range,nz=dz/range;
+ for(const ally of bots){
+  if(ally===b||ally===tar||!ally.alive||ally.team!==b.team)continue;
+  const rx=ally.x-b.x,rz=ally.z-b.z,t=rx*nx+rz*nz;
+  if(t>.35&&t<range-.32&&Math.abs(rx*nz-rz*nx)<.69)return true;
+ }
+ if(b.team===0&&tar!==player&&player.alive){
+  const rx=player.x-b.x,rz=player.z-b.z,t=rx*nx+rz*nz;
+  if(t>.35&&t<range-.32&&Math.abs(rx*nz-rz*nx)<.69)return true;
+ }
+ return false;
+}
+function beginBotBurst(b,tar,dist,cooldown){
+ const p=BOT_BURST_PROFILES[b.weapon];
+ const randomShots=p.min+Math.floor(Math.random()*(p.max-p.min+1));
+ const distancePenalty=dist>p.ideal*1.6?1:dist>p.ideal*1.2?2:0;
+ const wounded=b.hp<30?1:0;
+ const desired=Math.max(1,randomShots-distancePenalty-wounded);
+ b.burstShots=Math.min(desired,b.ammo[b.weapon]);
+ b.burstIndex=0;b.burstTarget=tar;
+ b.burstPauseUntil=0;
 }
 function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
  const w=weapons[b.weapon],id=b.weapon;
@@ -912,7 +956,7 @@ function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
   return;
  }
  if(!visible||dist>Math.min(w.range,55)){
-  b.chargeStart=-1;return;
+  resetBotBurst(b);b.chargeStart=-1;return;
  }
  if(nowSec<b.aimReadyAt||Math.abs(rotation)>.38)return;
  if(w.energy){
@@ -931,20 +975,40 @@ function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
   return;
  }
  if(b.shootCD>0||b.ammo[id]<=0){botReload(b);return;}
- b.ammo[id]--;
+ // Never waste a magazine into a teammate blocking the intended firing lane.
+ if(botFiringLaneBlocked(b,tar)){
+  resetBotBurst(b);b.shootCD=.13;b.strafeDir=-(b.strafeDir||1);
+  b.tacticUntil=nowSec+1;return;
+ }
+ if(b.burstPauseUntil>nowSec)return;
+ if(!b.burstShots||b.burstTarget!==tar)beginBotBurst(b,tar,dist,cooldown);
+ if(b.burstShots<=0){botReload(b);return;}
+ b.ammo[id]--;b.lastFiredAt=nowSec;
+ const p=BOT_BURST_PROFILES[id],shotIndex=b.burstIndex++;
+ b.burstShots--;
  const baseCooldown=60/w.rate;
- b.shootCD=Math.max(.075,baseCooldown)*cooldown*(.85+Math.random()*.30);
- const optimal=w.type==='SNIPER RIFLE'?42:w.type==='MARKSMAN RIFLE'?32:w.type==='COMBAT SHOTGUN'?7:w.type==='SUBMACHINE GUN'?12:23;
- const rangePenalty=dist>optimal?Math.max(.3,optimal/dist):1;
- const hitChance=clamp((.80-dist*.011)*accuracy*rangePenalty*(Math.random()<.2?.9:1),.1,.84);
+ b.shootCD=Math.max(.055,baseCooldown)*cooldown*(.93+Math.random()*.15);
+ const optimal=p.ideal,rangePenalty=dist>optimal?Math.max(.30,optimal/dist):1;
+ // Each follow-up shot adds manageable recoil, resetting after the burst pause.
+ const recoilPenalty=Math.max(.55,1-shotIndex*(id===1?.038:id===0?.026:.015));
+ const hitChance=clamp((.80-dist*.011)*accuracy*rangePenalty*recoilPenalty,.10,.83);
  if(Math.random()<hitChance){
   const zone=(w.type==='SNIPER RIFLE'||w.type==='MARKSMAN RIFLE')&&Math.random()<.13?'head':Math.random()<.2?'leg':'chest';
   const hitAmount=hitDamage(w,zone,dist)*(w.pellets?2.8:1)*.55;
   const damage=Math.max(3,Math.round(hitAmount));
   if(tar===player)damagePlayer(damage,b,zone);else damageBot(tar,damage,b,zone);
  }
- if(Math.random()<.8)feedTracer(b.x,floorSurfaceAt(b.x,b.z)+1.3,b.z,tar.x,
-    (tar===player?player.y:floorSurfaceAt(tar.x,tar.z)+(tar.airHeight||0))+1.16,tar.z,false);
+ const muzzleY=floorSurfaceAt(b.x,b.z)+(b.airHeight||0)+1.3;
+ const targetY=(tar===player?player.y:floorSurfaceAt(tar.x,tar.z)+(tar.airHeight||0))+1.16;
+ // All fired rounds are visible, including misses (which scatter beyond target).
+ const missAngle=(Math.random()-.5)*(1-hitChance)*.20;
+ const tx=tar.x+Math.cos(b.yaw)*missAngle*dist;
+ const tz=tar.z-Math.sin(b.yaw)*missAngle*dist;
+ feedTracer(b.x,muzzleY,b.z,tx,targetY,tz,false);
+ if(b.burstShots<=0){
+   b.burstPauseUntil=nowSec+p.pause*cooldown*(.85+Math.random()*.35);
+   b.burstTarget=null;b.burstIndex=0;
+ }
 }
 function updateBots(dt){
  const skill=typeof difficulty==='string'?difficulty:'regular';
@@ -959,7 +1023,7 @@ function updateBots(dt){
     b.weapon=b.preferredWeapon;
     b.ammo=weapons.map(w=>w.mag);b.reserves=weapons.map(w=>w.reserve);
     b.shieldHP=weapons[7].shieldHP;b.shieldLastDamage=-99;b.chargeStart=-1;
-    b.reloadUntil=0;b.weaponHoldUntil=nowSec+4;
+    b.reloadUntil=0;b.weaponHoldUntil=nowSec+4;resetBotBurst(b);b.lastFiredAt=-99;
     b.path=[];b.target=null;b.pathRefresh=0;b.targetRefresh=0;
     b.stuckFor=0;b.coverPoint=null;b.coverUntil=0;b.aimReadyAt=nowSec+.5;
    }
@@ -980,9 +1044,9 @@ function updateBots(dt){
     b.target=pickTarget(b);b.targetRefresh=rand(.45,.8);
   }
   if(previous!==b.target){
-    b.path=[];b.pathRefresh=0;b.coverPoint=null;b.aimReadyAt=nowSec+reaction+rand(.08,.24);
+    resetBotBurst(b);b.path=[];b.pathRefresh=0;b.coverPoint=null;b.aimReadyAt=nowSec+reaction+rand(.08,.24);
   }
-  const tar=b.target;if(!tar){b.chargeStart=-1;continue;}
+  const tar=b.target;if(!tar){b.chargeStart=-1;resetBotBurst(b);continue;}
   const dist=hypot(tar.x-b.x,tar.z-b.z),visible=dist<30&&clearPath(b.x,b.z,tar.x,tar.z);
   if(visible){
     if(nowSec-b.lastSeenAt>2)b.aimReadyAt=Math.max(b.aimReadyAt,nowSec+reaction*.6);
