@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo Tactical Training v3.26
+# STRIKEZONE FPS — Solo Tactical Training v3.27
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.26
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.27
 
 Original browser-based 3D FPS for one human player against AI bots. Multiplayer is not included.
 
@@ -404,4 +404,16 @@ The fourth operation is a **two-team Overlord boss race** on the existing 13-bui
 - Tested 60 safe Overlord spawn candidates across the northern, central and southern map sections, plus 73 valid zombie spawn points.
 - Simulated Overlord death by **last-hit red bot**, repeated blue-team damage without early victory, zombie death and respawn, and multi-target sweep hurting both teams.
 - GitHub Pages deployment confirmed separately by its latest workflow; manual live browser performance/balance testing remains recommended.
+
+
+
+## v3.27 — Zombie & Monster: PvP / 50,000 HP boss / ammo looting
+
+- **Blue vs Red PvP is active:** in Zombie & Monster, human player and red bots, as well as opposing blue/red bots, can hurt and eliminate one another. Allied blue operators remain protected from accidental friendly fire from player shots, energy explosions and allied bot shots.
+- **Overlord HP is 50,000:** the boss remains the only win condition, with no time limit. The team delivering the **final blow** wins, regardless of team damage totals.
+- **Bigger horde:** 48 simultaneously spawned zombies, including 10 agile runners, roaming and respawning throughout the map. Spawn selection avoids crowding nearby living zombies when alternative safe positions are available.
+- **Guaranteed ammo drop after EVERY zombie kill**, no matter which team kills it. A glowing ammo crate remains on the ground for 48 seconds or until collected. Anyone from either team picks it up automatically when within ~2m. Regular zombies drop one magazine for the current ranged weapon; agile zombies drop two magazines. If wielding the shield or Lightsaber, ammo applies to the last selected ranged weapon, or VORTEX AR by default. Drops refill the clip first and place overflow into reserve.
+- **3D loot:** cyan ammo boxes and golden highlights for agile-zombie drops are rendered by the enhanced WebGL2 path, fallback meshes and minimap.
+
+**Validation:** Main, enhanced renderer and weapon rig JavaScript syntax verified. Simulated Blue and Red bot targeting, direct player rifle damage to Red while sparing Blue, normal and agile ammo collection by player/bots, boss survival at 100 HP, and final Red-team victory from the 50,000-HP boss. Manual live browser FPS/AI balancing is still recommended.
 
