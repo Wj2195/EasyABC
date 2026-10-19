@@ -203,3 +203,17 @@ A new **seventh weapon**, **NOVA PULSE**, is available as the starting loadout, 
 - Solo/offline matches, modes, previous six conventional guns, charged NOVA PULSE, headshot damage, collision positioning, 3D graphics, sound and mobile controls remain intact.
 
 **Checks:** Source JavaScript parsing passed for the HTML, GPU renderer and 3D weapon rig. Directional protection tests verified front/side/rear/leg hits and depleted shield durability. Eight-role AI simulations ran through all weapon indices, consumed ammunition and fired a charged energy shot. Owner-aware energy splash tests verified enemy damage to player, no allied damage and knockback. The eighth player weapon model passed simulated weapon switching, death and respawn. Actual GPU rendering and touch controls still require playtesting on the user's devices.
+
+
+## v3.14 — Fallen soldier animation and temporary bodies
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.14
+
+When a soldier is eliminated, the humanoid model topples to the ground over approximately **0.42 seconds**, then **remains lying on the ground for a full 2 seconds**. The body disappears afterward, before the existing bot respawn at 2.7 seconds after elimination. Soldiers stop targeting, firing and taking hits immediately on elimination; the temporary body is visual only.
+
+- Enhanced WebGL2 soldiers fall with their whole body, tactical outfit, shield/weapon and limbs. Shadow placement is kept separate from the tilted body.
+- Legacy WebGL and software renderers also show a fallen pose by transforming soldier part positions and dimensions.
+- Respawning restores the upright animation, footsteps, weapon visibility and all existing AI behavior.
+- A match reset removes previous fallen bodies. Blue and red team uniforms remain distinct.
+
+**Verification:** Inline game JavaScript and enhanced WebGL2 renderer passed syntax checks. Simulated death timing and fallback mesh rendering verified intermediate falling, a completed fallen pose, corpse visibility during the two-second resting interval and removal before respawn. Actual GPU/mobile playback still needs visual confirmation.
