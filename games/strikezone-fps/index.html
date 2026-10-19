@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.11 — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.12 — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -295,7 +295,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.11 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.12 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button type="button" id="hudSound" title="Mute / unmute sound" aria-label="Sound on">♪</button><button type="button" id="hudFullscreen" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
@@ -734,7 +734,7 @@ function worldImpact(origin,dir){let nearest=150;for(const o of colliders){let d
 function raySphere(o,d,c,r){const x=o.x-c.x,y=o.y-c.y,z=o.z-c.z;const b=x*d.x+y*d.y+z*d.z,cc=x*x+y*y+z*z-r*r,k=b*b-cc;if(k<0)return Infinity;const a=-b-Math.sqrt(k);return a>=0?a:Infinity;}
 // Hit zones follow actual soldier anatomy and the stepped arena floor.
 function hitActor(o,d,b){
- const y=floorSurfaceAt(b.x,b.z),c=Math.cos(b.yaw||0),sn=Math.sin(b.yaw||0);
+ const y=floorSurfaceAt(b.x,b.z)+(b.airHeight||0),c=Math.cos(b.yaw||0),sn=Math.sin(b.yaw||0);
  const pt=(l,h,f=0)=>({x:b.x+c*l+sn*f,y:y+h,z:b.z-sn*l+c*f});
  const zones=[
   ['head',pt(0,1.73,.01),.245],['chest',pt(0,1.33),.345],
@@ -1218,8 +1218,8 @@ function toggleSound(){
  refreshSoundButtons();
 }
 function botShape(out,b){
- const a=b.yaw,ox=b.x,oz=b.z,walk=Math.sin(b.walk+b.phase)*.20;
- const B=(x,y,z,w,h,d,m)=>box(out,ox+x,y,oz+z,w,h,d,m,a,ox,oz);
+ const a=b.yaw,ox=b.x,oz=b.z,walk=Math.sin(b.walk+b.phase)*.20,baseY=floorSurfaceAt(b.x,b.z)+(b.airHeight||0);
+ const B=(x,y,z,w,h,d,m)=>box(out,ox+x,y+baseY,oz+z,w,h,d,m,a,ox,oz);
  const friendly=mode==='tdm'&&b.team===0,uniform=friendly?11:12,trim=friendly?25:27;
  const skin=14,armor=9,visor=21,accent=24;
  // More humanoid proportions: narrower shoulders, clearer waist, separate upper/lower limbs.
@@ -1281,13 +1281,23 @@ else if(i===3){ // JUDGE 12 SHOTGUN
 }else if(i===4){ // SPECTRE P9 SIDEARM
  B(0,0,.43,.23,.21,.64,9);B(0,.12,.47,.25,.065,.65,8);B(0,-.28,.24,.20,.49,.23,8);
  B(0,.10,.16,.07,.10,.08,20);B(0,.09,.77,.07,.07,.05,20);muzzle=.82;
-}else{ // PHANTOM SR SNIPER RIFLE
+}else if(i===5){ // PHANTOM SR SNIPER RIFLE
  B(0,-.02,.73,.35,.31,1.27,9);B(0,.035,1.75,.13,.14,1.70,8);B(0,.03,2.57,.22,.19,.49,20);
  B(0,.27,.73,.24,.23,.83,9);B(0,.40,.75,.32,.17,.33,8);B(0,.40,1.04,.20,.11,.10,15);
  B(0,-.42,.33,.21,.50,.32,9);B(0,-.22,-.43,.32,.34,.78,4);B(0,-.11,1.40,.28,.15,.53,20);muzzle=2.86;
+}else{ // NOVA PULSE ENERGY CANNON — cyan containment coils and charged core
+ B(0,0,.56,.43,.39,.92,20);B(0,.05,.62,.31,.21,.83,25);
+ B(0,.19,.32,.24,.09,.32,9);B(0,-.28,.40,.23,.36,.28,9);
+ for(const o of [-1,1]){B(o*.24,.03,.93,.12,.24,.90,9);B(o*.24,.04,1.38,.085,.11,.18,25);}
+ for(let k=0;k<5;k++){const z=.80+k*.18;B(0,.18,z,.35,.05,.08,25);B(0,-.18,z,.29,.055,.09,15);}
+ B(0,0,1.46,.38,.37,.28,20);B(0,0,1.62,.29,.28,.16,25);
+ B(0,-.30,-.22,.31,.27,.55,9);B(0,.20,.61,.09,.07,.78,15);
+ B(-.18,-.26,.70,.13,.39,.13,20);
+ muzzle=1.78;
 }
-// Right hand / glove, and magazine grip.
+ // Right hand / glove, and magazine grip.
 B(.18,-.26,.12,.28,.21,.40,13);B(.24,-.34,-.05,.28,.22,.3,14);B(-.23,-.36,.55,.29,.25,.42,14);B(-.23,-.28,.58,.29,.12,.42,13);
+if(player.weapon===6&&player.energyChargeStart>=0){const q=clamp((nowSec-player.energyChargeStart)/2,0,1);B(0,.03,1.77,.14+q*.30,.14+q*.30,.17+q*.23,25);}
 if(player.flash>0){B(0,.045,muzzle,.37,.37,.22,18);B(0,.045,muzzle+.20,.14,.14,.28,15);}
 }
 function drawMinimap(){const can=$('minimap'),ctx=can.getContext('2d'),W=can.width,H=can.height,s=W/68;ctx.clearRect(0,0,W,H);ctx.fillStyle='#12202c';ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2,H/2);ctx.scale(s,s);ctx.fillStyle='#b5a68b';ctx.fillRect(-31.7,-31.7,63.4,63.4);ctx.fillStyle='#8e8975';for(const c of colliders){let w=c.X-c.x,d=c.Z-c.z;if(w>15&&d>15)continue;ctx.fillRect(c.x,c.z,w,d);}ctx.fillStyle='#6b88a6';ctx.fillRect(-7,-7,14,14);
@@ -1346,13 +1356,31 @@ function drawWeaponFlash(ctx,W,H){
  ctx.restore();
 }
 
+
+function addEnergyBoxes(out){
+ for(const e of energyShots){
+  box(out,e.x,e.y,e.z,.54,.54,.54,25);
+  box(out,e.x,e.y,e.z,.23,.23,.23,15);
+  box(out,e.x-e.dx*.41,e.y-e.dy*.41,e.z-e.dz*.41,.26,.26,.28,25);
+ }
+ for(const wave of energyWaves){
+  const t=clamp(wave.age/wave.ttl,0,1),r=wave.radius*t;
+  if(r<.05)continue;
+  const count=28;
+  for(let n=0;n<count;n++){
+   const theta=2*Math.PI*n/count;
+   box(out,wave.x+Math.cos(theta)*r,wave.y,wave.z+Math.sin(theta)*r,
+       .20*(1-t)+.05,.15*(1-t)+.04,.20*(1-t)+.05,25);
+  }
+ }
+}
 function renderScene(dt){if(window.__strike3DActive){tickEffectsForModern(dt);return;}if(!gl){softwareScene(dt);return;}const px=player.x,pz=player.z,eye=player.crouch?.98:1.72;let cx=px,cy=player.y+eye-player.landBob,cz=pz,yaw=player.yaw,pitch=player.pitch+Math.sin(player.bob*1.6)*player.landBob*.12;
 if(!running){const t=nowSec*.12;cx=Math.cos(t)*17;cz=Math.sin(t)*21;cy=7.2;yaw=Math.atan2(-cx,-cz);pitch=Math.atan2(2.3-cy,Math.hypot(cx,cz));}
 if(!player.alive&&running){cy=1.45;pitch=-.10;}
 const DPR=Math.min(devicePixelRatio||1,1.6),W=Math.floor(innerWidth*DPR),H=Math.floor(innerHeight*DPR);if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;gl.viewport(0,0,W,H);}
 gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.frontFace(gl.CW);gl.cullFace(gl.BACK);gl.uniform3f(loc.camera,cx,cy,cz);gl.uniform1f(loc.yaw,yaw);gl.uniform1f(loc.pitch,pitch);gl.uniform1f(loc.aspect,W/H);gl.uniform1f(loc.fov,scopeFov()*Math.PI/180);gl.uniform1f(loc.weapon,0);gl.uniform1f(loc.time,nowSec);
 drawBuffer(staticBuffer,null,staticCount,false);
-const actors=[];for(const b of bots)if(b.alive)botShape(actors,b);for(const t of tracers){t.ttl-=dt;if(t.ttl>0)addTracer(actors,t);}for(let i=tracers.length-1;i>=0;i--)if(tracers[i].ttl<=0)tracers.splice(i,1);for(let i=impactParticles.length-1;i>=0;i--){const p=impactParticles[i];p.ttl-=dt;if(p.ttl<=0){impactParticles.splice(i,1);continue;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vy-=7*dt;box(actors,p.x,p.y,p.z,p.size||.04,p.size||.04,p.size||.04,p.mat);}if(actors.length)drawBuffer(movingBuffer,actors,actors.length/7);
+const actors=[];for(const b of bots)if(b.alive)botShape(actors,b);addEnergyBoxes(actors);for(const t of tracers){t.ttl-=dt;if(t.ttl>0)addTracer(actors,t);}for(let i=tracers.length-1;i>=0;i--)if(tracers[i].ttl<=0)tracers.splice(i,1);for(let i=impactParticles.length-1;i>=0;i--){const p=impactParticles[i];p.ttl-=dt;if(p.ttl<=0){impactParticles.splice(i,1);continue;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vy-=7*dt;box(actors,p.x,p.y,p.z,p.size||.04,p.size||.04,p.size||.04,p.mat);}if(actors.length)drawBuffer(movingBuffer,actors,actors.length/7);
 if(running&&player.alive&&!sniperScoped()){gl.clear(gl.DEPTH_BUFFER_BIT);gl.uniform1f(loc.weapon,1);gl.uniform1f(loc.fov,73*Math.PI/180);const mesh=[];weaponShape(mesh);drawBuffer(gunBuffer,mesh,mesh.length/7);}
 }
 
@@ -1435,7 +1463,7 @@ function softwareScene(dt){
   }
  }
  // Combine world and moving geometry in one depth-sorted pass so bots are occluded by walls.
- const actors=[];for(const b of bots)if(b.alive)botShape(actors,b);
+ const actors=[];for(const b of bots)if(b.alive)botShape(actors,b);addEnergyBoxes(actors);
  for(const t of tracers){t.ttl-=dt;if(t.ttl>0)addTracer(actors,t);}
  for(let i=tracers.length-1;i>=0;i--)if(tracers[i].ttl<=0)tracers.splice(i,1);
  for(let i=impactParticles.length-1;i>=0;i--){const p=impactParticles[i];p.ttl-=dt;if(p.ttl<=0){impactParticles.splice(i,1);continue;}
@@ -1648,8 +1676,9 @@ window.StrikeZoneRenderBridge={
  actorGeometry:()=>{const data=[];for(const b of bots)if(b.alive)botShape(data,b);return data;},
  weaponGeometry:()=>{if(!running||!player.alive)return [];const data=[];weaponShape(data);return data;},
  tracerData:()=>tracers.map(t=>({x:t.x,y:t.y,z:t.z,X:t.X,Y:t.Y,Z:t.Z,friendly:t.friendly})),
- botData:()=>bots.filter(b=>b.alive).map(b=>({x:b.x,z:b.z,team:b.team,yaw:b.yaw,phase:b.phase,walk:b.walk})),
- state:()=>({x:player.x,z:player.z,y:player.y,yaw:player.yaw,pitch:player.pitch,ads:player.ads,precisionScoped:precisionScoped(),sniperScoped:sniperScoped(),scopeFov:scopeFov(),scopeZoom:player.scopeZoom,crouch:player.crouch,alive:player.alive,flash:player.flash,bob:player.bob,landBob:player.landBob,recoil:player.recoil,nowSec,running,paused,ended,weapon:player.weapon,reloadRemaining:Math.max(0,player.reloadUntil-nowSec),reloadDuration:weapons[player.weapon].reload,matchRemaining}),
+ botData:()=>bots.filter(b=>b.alive).map(b=>({x:b.x,z:b.z,team:b.team,yaw:b.yaw,phase:b.phase,walk:b.walk,airHeight:b.airHeight||0})),
+ energyFX:()=>({shots:energyShots.map(p=>({x:p.x,y:p.y,z:p.z})),waves:energyWaves.map(p=>({x:p.x,y:p.y,z:p.z,age:p.age,ttl:p.ttl,radius:p.radius}))}),
+ state:()=>({x:player.x,z:player.z,y:player.y,yaw:player.yaw,pitch:player.pitch,ads:player.ads,precisionScoped:precisionScoped(),sniperScoped:sniperScoped(),scopeFov:scopeFov(),scopeZoom:player.scopeZoom,crouch:player.crouch,alive:player.alive,flash:player.flash,bob:player.bob,landBob:player.landBob,recoil:player.recoil,energyCharge:player.weapon===6&&player.energyChargeStart>=0?clamp((nowSec-player.energyChargeStart)/2,0,1):0,nowSec,running,paused,ended,weapon:player.weapon,reloadRemaining:Math.max(0,player.reloadUntil-nowSec),reloadDuration:weapons[player.weapon].reload,matchRemaining}),
  availableGPU:()=>!!gl,
  quality:'high'
 };
@@ -1708,5 +1737,5 @@ if(!document.getElementById('rendererState').textContent.includes('renderer'))do
 })();
 
 </script>
-<script type="module" src="./ultra-renderer.js?v=3.11"></script>
+<script type="module" src="./ultra-renderer.js?v=3.12"></script>
 </body></html>
