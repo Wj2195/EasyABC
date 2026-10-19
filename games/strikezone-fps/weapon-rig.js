@@ -355,17 +355,20 @@ export function createWeaponRig(THREE, scene){
     g.visible=!((i===2||i===5)&&aim);
     const gait=Math.sin(s.bob||0)*.009;
     const shake=Math.abs(Math.sin((s.bob||0)*.8))*.007;
-    // Place optical sight nearer the crosshair in ADS; preserve a right-hand hip position.
-    const adsX=weapon===4?.03:0;
+    // v3.16: clear-target ADS. Keep guns in the lower corner rather than
+    // aligning a solid receiver/optic with the camera's center ray.
+    // Bullet direction and aim magnification are independent of this visual pose.
     const hipX=weapon===7?-.35:weapon===4?.41:.40;
-    // In ADS, center the optic's actual height on the camera reticle instead of
-    // lifting the whole model above the crosshair.
-    const scale=weapon===7?.90:weapon===4?.94:weapon===5?.83:weapon===6?.87:.91;
-    const opticHeights=[.37,.31,.44,.21,.15,.49,.37,.20];
-    const centerY=aim?-opticHeights[weapon]*scale:-.32;
-    g.scale.setScalar(scale);
-    g.position.set(aim?adsX:hipX+gait,
-      centerY+shake-s.recoil*.23,weapon===4?-.66:-.80);
+    const baseScale=weapon===7?.90:weapon===4?.94:weapon===5?.83:weapon===6?.87:.91;
+    const clearAds=aim&&weapon!==2&&weapon!==5;
+    const adsX=weapon===7?-.45:weapon===4?.47:weapon===3?.47:.44;
+    const adsY=weapon===7?-.48:weapon===4?-.73:weapon===3?-.78:weapon===6?-.70:-.70;
+    const adsZ=weapon===4?-1.06:weapon===3?-1.15:-1.17;
+    // Small ADS scale reduction keeps even a large shotgun receiver clear.
+    g.scale.setScalar(baseScale*(clearAds?.91:1));
+    g.position.set(clearAds?adsX:hipX+gait,
+      (clearAds?adsY:-.32)+shake-s.recoil*.23,
+      clearAds?adsZ:weapon===4?-.66:-.80);
     g.rotation.set(-s.recoil*.20,0,gait*.34+(aim?0:-.035));
     const reload=(s.reloadDuration&&s.reloadRemaining)?Math.max(0,Math.min(1,s.reloadRemaining/s.reloadDuration)):0;
     if(reload>0){const p=1-reload;g.rotation.x+=Math.sin(p*Math.PI)*.34;g.position.y-=Math.sin(p*Math.PI)*.12;}
@@ -383,5 +386,5 @@ export function createWeaponRig(THREE, scene){
     for(const m of mats)m.dispose();
     for(const t of textures)t.dispose();
   }
-  return {update,dispose,weaponCount:groups.length,version:'3.13-aegis-shield'};
+  return {update,dispose,weaponCount:groups.length,version:'3.16-clear-ads-weapons'};
 }
