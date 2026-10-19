@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.9 — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.10 — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -214,6 +214,31 @@ font:bold 11px Arial;border-radius:3px;padding:9px 10px;min-width:175px;max-widt
 @media(hover:none) and (pointer:coarse){#combatFeedback{top:calc(50% - 52px);font-size:12px}
 #combatFeedback.head{font-size:17px}.armoryChooser{gap:6px;margin:7px 0 2px}
 .armoryChooser select{padding:7px 8px;font-size:10px}}
+
+/* v3.10: clear, magnified sniper view instead of a solid rifle/scope obstruction. */
+#sniperScope{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden}
+#sniperScope .scopeLens{position:relative;flex:none;width:min(75vmin,730px);aspect-ratio:1;background:transparent;
+ border:4px solid #1d2c33;border-radius:50%;box-shadow:0 0 0 110vmax rgba(0,5,10,.83),
+ inset 0 0 0 2px #a3b6bc80,inset 0 0 28px #0610198c}
+#sniperScope .scopeLens svg{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 1px 2px #000)}
+#sniperScope .scopeMark{position:absolute;color:#d0e5e6;font:700 10px Arial;letter-spacing:1px;text-shadow:0 2px 5px #000}
+#sniperScope .scopeMarkTL{top:16%;left:20%}#sniperScope .scopeMarkBR{right:18%;bottom:15%}
+#scopeZoomControls{position:absolute;z-index:8;top:24%;right:max(16px,env(safe-area-inset-right) + 12px);
+ display:flex;align-items:center;gap:6px;padding:6px;background:#071823ef;border:1px solid #6596aa;border-radius:7px;
+ pointer-events:auto;color:#edf7fc}
+#scopeZoomControls button{background:#214454;border:1px solid #618fa4;color:white;border-radius:5px;
+ width:42px;height:42px;font:900 26px Arial;cursor:pointer;touch-action:manipulation}
+#scopeZoomControls button:disabled{opacity:.35;cursor:default}
+#scopeZoomLabel{min-width:33px;text-align:center;font:bold 16px Arial}
+#scopeZoomControls small{position:absolute;right:0;top:calc(100% + 7px);color:#bad3dc;white-space:nowrap;font:700 9px Arial}
+#hud.sniper-scoped #crosshair{display:none!important}
+@media(hover:none) and (pointer:coarse){
+ #sniperScope .scopeLens{width:min(74vmin,590px);border-width:3px}
+ #scopeZoomControls{top:19%;right:max(12px,env(safe-area-inset-right) + 8px);padding:4px}
+ #scopeZoomControls button{width:38px;height:38px;font-size:23px}
+ #scopeZoomControls small{display:none}
+ #sniperScope .scopeMark{font-size:7px;letter-spacing:.3px}
+}
 </style>
 </head>
 <body>
@@ -248,12 +273,28 @@ font:bold 11px Arial;border-radius:3px;padding:9px 10px;min-width:175px;max-widt
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.9 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.10 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button type="button" id="hudSound" title="Mute / unmute sound" aria-label="Sound on">♪</button><button type="button" id="hudFullscreen" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
  <canvas id="minimap" width="164" height="164"></canvas><div class="mapLabel">THE SUNKEN OUTPOST</div>
- <div id="feed" class="killFeed"></div><div id="crosshair"><span class="cTop"></span><span class="cRight"></span><span class="cBottom"></span><span class="cLeft"></span><i></i></div><div id="hitmarker">✕</div><div id="combatFeedback" role="status" aria-live="polite"></div><div id="damageDirection"></div>
+ <div id="feed" class="killFeed"></div><div id="crosshair"><span class="cTop"></span><span class="cRight"></span><span class="cBottom"></span><span class="cLeft"></span><i></i></div><div id="sniperScope" class="hidden" aria-hidden="true">
+  <div class="scopeLens"><svg viewBox="0 0 600 600" aria-hidden="true" focusable="false">
+    <g stroke="#dceaf0" stroke-width="1.7" opacity=".90">
+      <path d="M0 300H266 M334 300H600 M300 0V266 M300 334V600"/>
+      <path d="M287 375h26 M292 408h16 M287 441h26 M292 474h16 M287 507h26"/>
+      <path d="M199 288v24 M230 293v14 M370 293v14 M401 288v24"/>
+    </g>
+    <circle cx="300" cy="300" r="3.5" fill="#f27167"/>
+    <circle cx="300" cy="300" r="29" fill="none" stroke="#d9ecf2" stroke-opacity=".45" stroke-width="1"/>
+   </svg>
+   <span class="scopeMark scopeMarkTL">PHANTOM SR / TACTICAL</span><span class="scopeMark scopeMarkBR" id="scopeReadout">4× MAG</span>
+  </div>
+  <div id="scopeZoomControls"><button id="scopeZoomOut" type="button" aria-label="Zoom out scope">−</button>
+    <strong id="scopeZoomLabel">4×</strong><button id="scopeZoomIn" type="button" aria-label="Zoom in scope">+</button>
+    <small>MOUSE WHEEL OR Z / X</small>
+  </div>
+</div><div id="hitmarker">✕</div><div id="combatFeedback" role="status" aria-live="polite"></div><div id="damageDirection"></div>
  <div class="bottomHUD"><div class="healthPanel"><div class="unit">OPERATIVE <b>ALPHA 01</b></div><div class="hpRow"><span class="hpIcon">✚</span><strong id="hpText">100</strong><div class="hpTrack"><div id="hpFill"></div></div></div><div class="subStat"><span>ARMOR ▰▰▰</span><span id="killStat">0 KILLS · 0 DEATHS</span></div></div><div class="weaponPanel"><div class="weaponLabel"><span id="weaponType">ASSAULT RIFLE</span><span id="weaponName">VORTEX AR</span></div><div class="ammoRow"><strong id="ammoCount">30</strong><span class="ammoSlash">/</span><span id="reserveCount">150</span><span class="ammoBullet">▥</span></div><div id="reloadDisplay">R TO RELOAD</div></div></div>
  <div class="keyHints"><span>[SHIFT] SPRINT</span><span>[SPACE] JUMP</span><span>[R] RELOAD</span><span>[1–6] WEAPON</span><span>[U] UNSTUCK</span><span>[P] SCOREBOARD</span></div>
  <div id="announcement" class="announcement"></div>
@@ -531,7 +572,7 @@ const weapons=[
 {name:'SPECTRE P9',type:'SIDEARM',mag:18,reserve:108,damage:35,rate:390,spread:.019,reload:1.20,range:55,headMult:2.1,falloffStart:24,falloffRate:.010},
 {name:'PHANTOM SR',type:'SNIPER RIFLE',mag:5,reserve:30,damage:85,rate:55,spread:.0025,reload:2.70,range:130,headMult:2.6,falloffStart:100,falloffRate:.002}
 ];
-const player={x:0,z:-17,y:0,groundY:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99};
+const player={x:0,z:-17,y:0,groundY:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),scopeZoom:1,lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99};
 let mode='tdm',running=false,paused=false,ended=false,showHelp=false,matchRemaining=240,blue=0,red=0,bots=[],keys={},last=0,frame=0,fpsMark=0,fps=60,nowSec=0,finishTime=0,announceUntil=0,gunLast=0,modalType='',touchMove={x:0,y:0},audioCtx=null,mobileCrouched=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),hypot=(x,z)=>Math.hypot(x,z),rand=(a,b)=>a+Math.random()*(b-a);
 function overlaps(x,z,r=.37){if(x<-30.6+r||x>30.6-r||z<-30.6+r||z>30.6-r)return true;for(const o of colliders){if(x+r>o.x&&x-r<o.X&&z+r>o.z&&z-r<o.Z)return true;}return false;}
@@ -593,10 +634,37 @@ function forceUnstuck(){
 }
 function clearPath(x,z,X,Z){const dx=X-x,dz=Z-z,n=Math.ceil(Math.hypot(dx,dz)/.38);for(let i=1;i<n;i++){const f=i/n;if(overlaps(x+dx*f,z+dz*f,.18))return false;}return true;}
 function spawnPoint(team){return findOpenSpawn(team);}
+
+const SNIPER_ZOOMS=[{label:'2×',fov:36},{label:'4×',fov:20},{label:'8×',fov:11}];
+function sniperScoped(){return running&&!paused&&!ended&&player.alive&&player.weapon===5&&player.ads;}
+function scopeFov(){return sniperScoped()?SNIPER_ZOOMS[player.scopeZoom].fov:(player.ads&&running?53:78);}
+function syncSniperScope(){
+ const active=sniperScoped(),element=$('sniperScope');
+ element.classList.toggle('hidden',!active);
+ element.setAttribute('aria-hidden',String(!active));
+ hud.classList.toggle('sniper-scoped',active);
+ if(!active)return;
+ const zoom=SNIPER_ZOOMS[player.scopeZoom].label;
+ $('scopeZoomLabel').textContent=zoom;$('scopeReadout').textContent=zoom+' MAG';
+ $('scopeZoomOut').disabled=player.scopeZoom<=0;
+ $('scopeZoomIn').disabled=player.scopeZoom>=SNIPER_ZOOMS.length-1;
+}
+function changeScopeZoom(direction){
+ if(!sniperScoped())return;
+ const value=clamp(player.scopeZoom+direction,0,SNIPER_ZOOMS.length-1);
+ if(value!==player.scopeZoom){player.scopeZoom=value;beep('switch');}
+ syncSniperScope();
+}
+$('scopeZoomIn').addEventListener('click',e=>{e.preventDefault();changeScopeZoom(1);});
+$('scopeZoomOut').addEventListener('click',e=>{e.preventDefault();changeScopeZoom(-1);});
+window.addEventListener('wheel',e=>{
+ if(!sniperScoped())return;
+ e.preventDefault();if(Math.abs(e.deltaY)>1)changeScopeZoom(e.deltaY<0?1:-1);
+},{passive:false});
 function spawnPlayer(){
  const p=findOpenSpawn(0);player.x=p.x;player.z=p.z;player.lastSafeX=p.x;player.lastSafeZ=p.z;
  player.stuckTimer=0;player.groundY=playerFloorAt(p.x,p.z);player.y=player.groundY;player.yVel=0;player.yaw=teamFacingDirection(p);player.pitch=0;
- player.hp=100;player.alive=true;player.reloadUntil=0;player.hurt=0;player.shoot=false;player.ads=false;player.lastDamage=nowSec;mobileCrouched=false;$('mobileCrouch').classList.remove('active');$('mobileCrouch').setAttribute('aria-pressed','false');
+ player.hp=100;player.alive=true;player.reloadUntil=0;player.hurt=0;player.shoot=false;player.ads=false;player.scopeZoom=1;player.lastDamage=nowSec;mobileCrouched=false;$('mobileCrouch').classList.remove('active');$('mobileCrouch').setAttribute('aria-pressed','false');
  keys={};touchMove.x=0;touchMove.y=0;
  $('respawnScreen').classList.add('hidden');updateHud();announce('SAFE REDEPLOYMENT',1.15);
 }
@@ -1105,10 +1173,10 @@ function renderScene(dt){if(window.__strike3DActive){tickEffectsForModern(dt);re
 if(!running){const t=nowSec*.12;cx=Math.cos(t)*17;cz=Math.sin(t)*21;cy=7.2;yaw=Math.atan2(-cx,-cz);pitch=Math.atan2(2.3-cy,Math.hypot(cx,cz));}
 if(!player.alive&&running){cy=1.45;pitch=-.10;}
 const DPR=Math.min(devicePixelRatio||1,1.6),W=Math.floor(innerWidth*DPR),H=Math.floor(innerHeight*DPR);if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;gl.viewport(0,0,W,H);}
-gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.frontFace(gl.CW);gl.cullFace(gl.BACK);gl.uniform3f(loc.camera,cx,cy,cz);gl.uniform1f(loc.yaw,yaw);gl.uniform1f(loc.pitch,pitch);gl.uniform1f(loc.aspect,W/H);gl.uniform1f(loc.fov,((player.ads&&running)?53:78)*Math.PI/180);gl.uniform1f(loc.weapon,0);gl.uniform1f(loc.time,nowSec);
+gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.frontFace(gl.CW);gl.cullFace(gl.BACK);gl.uniform3f(loc.camera,cx,cy,cz);gl.uniform1f(loc.yaw,yaw);gl.uniform1f(loc.pitch,pitch);gl.uniform1f(loc.aspect,W/H);gl.uniform1f(loc.fov,scopeFov()*Math.PI/180);gl.uniform1f(loc.weapon,0);gl.uniform1f(loc.time,nowSec);
 drawBuffer(staticBuffer,null,staticCount,false);
 const actors=[];for(const b of bots)if(b.alive)botShape(actors,b);for(const t of tracers){t.ttl-=dt;if(t.ttl>0)addTracer(actors,t);}for(let i=tracers.length-1;i>=0;i--)if(tracers[i].ttl<=0)tracers.splice(i,1);for(let i=impactParticles.length-1;i>=0;i--){const p=impactParticles[i];p.ttl-=dt;if(p.ttl<=0){impactParticles.splice(i,1);continue;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vy-=7*dt;box(actors,p.x,p.y,p.z,p.size||.04,p.size||.04,p.size||.04,p.mat);}if(actors.length)drawBuffer(movingBuffer,actors,actors.length/7);
-if(running&&player.alive){gl.clear(gl.DEPTH_BUFFER_BIT);gl.uniform1f(loc.weapon,1);gl.uniform1f(loc.fov,73*Math.PI/180);const mesh=[];weaponShape(mesh);drawBuffer(gunBuffer,mesh,mesh.length/7);}
+if(running&&player.alive&&!sniperScoped()){gl.clear(gl.DEPTH_BUFFER_BIT);gl.uniform1f(loc.weapon,1);gl.uniform1f(loc.fov,73*Math.PI/180);const mesh=[];weaponShape(mesh);drawBuffer(gunBuffer,mesh,mesh.length/7);}
 }
 
 // Compatibility renderer: projected original 3D mesh using Canvas 2D when WebGL or a shader is blocked.
@@ -1157,7 +1225,7 @@ function softwareScene(dt){
  if(!running){const t=nowSec*.12;cx=Math.cos(t)*17;cz=Math.sin(t)*21;cy=7.2;yaw=Math.atan2(-cx,-cz);pitch=Math.atan2(2.3-cy,Math.hypot(cx,cz));}
  if(!player.alive&&running){cy=1.45;pitch=-.10;}
  const sy=Math.sin(yaw),co=Math.cos(yaw),sp=Math.sin(pitch),cp=Math.cos(pitch);
- const f=(H*.5)/Math.tan(((player.ads&&running)?53:78)*Math.PI/360);
+ const f=(H*.5)/Math.tan(scopeFov()*Math.PI/360);
  function clipNear(poly){const result=[];const near=.06;
   for(let i=0;i<poly.length;i++){
    const a=poly[i],b=poly[(i+1)%poly.length],insideA=a[2]>=near,insideB=b[2]>=near;
@@ -1204,17 +1272,17 @@ function softwareScene(dt){
 function formatTime(t){let n=Math.max(0,Math.ceil(t));return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;}
 function tick(stamp){const sec=stamp/1000;let dt=Math.min(.045,sec-(last||sec));last=sec;nowSec=sec;frame++;if(sec-fpsMark>=1){fps=Math.round(frame/(sec-fpsMark));$('fpsCounter').textContent=`${fps} FPS`;frame=0;fpsMark=sec;}
 if(running&&!paused&&!ended){matchRemaining-=dt;if(matchRemaining<=0){matchRemaining=0;endMatch();}updatePlayer(dt);updateBots(dt);completeReload();if(!player.alive&&!ended){$('respawnCountdown').textContent=Math.max(1,Math.ceil(finishTime-nowSec));if(nowSec>=finishTime)spawnPlayer();}if(nowSec>announceUntil)$('announcement').classList.remove('visible');$('matchTime').textContent=formatTime(matchRemaining);if(mode==='tdm'&&(blue>=30||red>=30))endMatch();if(Math.floor(sec*10)%4===0)drawMinimap();}
-renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
+syncSniperScope();renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
 function startGame(){document.body.classList.add('playing');ensureAudio();mode=document.querySelector('.modeCard.selected')?.dataset.mode||'tdm';resetGame();running=true;paused=false;ended=false;$('mainMenu').classList.add('hidden');hud.classList.remove('hidden');$('modal').classList.add('hidden');$('matchMode').textContent=mode==='tdm'?'TEAM DEATHMATCH':mode==='ffa'?'FREE FOR ALL':'GUN RACE';$('feed').innerHTML='';canvas.requestPointerLock?.();announce('MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
-function goMenu(){document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
-const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['1 TO 6 / MOBILE SWAP','CHANGE WEAPON'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
+function goMenu(){hud.classList.remove('sniper-scoped');$('sniperScope').classList.add('hidden');document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
+const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['SNIPER Z / X / SCROLL','ZOOM IN / OUT'],['1 TO 6 / MOBILE SWAP','CHANGE WEAPON'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
 function openModal(kind,title,subtitle){modalType=kind;if(running)paused=true;player.shoot=false;$('modalEyebrow').textContent=kind==='help'?'FIELD MANUAL //':kind==='result'?'AFTER ACTION REPORT //':'TACTICAL INTERFACE //';$('modalTitle').textContent=title;$('modalSubtitle').textContent=subtitle;
 const content=$('modalContent');if(kind==='help'){content.innerHTML='<div class="controlsGrid">'+helpEntries.map(([a,b])=>`<div>${b}<b>${a}</b></div>`).join('')+'</div><p>Mobile: move with the left joystick; swipe on the right to look; AIM and FIRE are together on the right, while JUMP and tap-to-toggle CROUCH are at the bottom center.</p>';}else{const others=bots.map(b=>({name:b.name,kills:b.kills,team:b.team})).sort((a,b)=>b.kills-a.kills).slice(0,5);content.innerHTML=`<div class="modalStat"><div><strong>${player.kills}</strong><small>KILLS</small></div><div><strong>${player.deaths}</strong><small>DEATHS</small></div><div><strong>${Math.max(0,Math.round(player.kills*100+player.kills*50))}</strong><small>XP EARNED</small></div></div><p style="margin:20px 0 7px;font-weight:bold">SCOREBOARD</p>${[['YOU',player.kills],...others.map(b=>[b.name,b.kills])].map(([n,v])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ffffff1c;padding:8px 0;color:#d8e6ed;font-size:12px"><span>${n}</span><b>${v} ELIMINATIONS</b></div>`).join('')}`;}
 $('modal').classList.remove('hidden');$('resumeBtn').textContent=kind==='result'?'PLAY AGAIN ▶':kind==='help'&&!running?'BACK TO LOBBY':'RESUME MATCH ▶';$('resumeBtn').onclick=()=>{if(kind==='result')startGame();else closeModal();};$('menuBtn').textContent=running?'BACK TO MENU':'CLOSE';$('menuBtn').onclick=()=>running?goMenu():closeModal();document.exitPointerLock?.();}
 function closeModal(){if(modalType==='result')return;$('modal').classList.add('hidden');if(running){paused=false;if(!matchRemaining||ended)return;canvas.requestPointerLock?.();}else paused=false;}
 function pauseGame(){if(!running||ended)return;if(!$('modal').classList.contains('hidden'))closeModal();else openModal('pause','MATCH PAUSED','Take a moment, check the scoreboard, or return to the lobby.');}
 $('deploy').addEventListener('click',startGame);$('howTo').addEventListener('click',()=>openModal('help','CONTROLS & TACTICS','Master these controls before deploying into the arena.'));document.querySelectorAll('.modeCard').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.modeCard').forEach(c=>c.classList.remove('selected'));b.classList.add('selected');beep('switch');}));$('pauseBtn').addEventListener('click',pauseGame);$('closeModal').addEventListener('click',closeModal);$('resumeBtn').addEventListener('click',closeModal);$('menuBtn').addEventListener('click',goMenu);
-window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='KeyV')player.ads=!player.ads;});window.addEventListener('keyup',e=>{keys[e.code]=false;});
+window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='KeyV')player.ads=!player.ads;if(e.code==='KeyZ')changeScopeZoom(1);if(e.code==='KeyX')changeScopeZoom(-1);});window.addEventListener('keyup',e=>{keys[e.code]=false;});
 canvas.addEventListener('click',()=>{if(running&&!paused&&!ended&&document.pointerLockElement!==canvas&&matchRemaining>0)canvas.requestPointerLock?.();});canvas.addEventListener('mousedown',e=>{if(running&&!paused){if(e.button===0)player.shoot=true;if(e.button===2)player.ads=true;}});window.addEventListener('mouseup',e=>{if(e.button===0)player.shoot=false;if(e.button===2)player.ads=false;});canvas.addEventListener('contextmenu',e=>e.preventDefault());// v2.1: corrected look is the reverse of the previous build's X/Y mapping.
 let lookDirection='corrected';
 try{lookDirection=localStorage.getItem('strikezone-look-v21')==='original'?'original':'corrected';}catch(e){}
@@ -1404,7 +1472,7 @@ window.StrikeZoneRenderBridge={
  weaponGeometry:()=>{if(!running||!player.alive)return [];const data=[];weaponShape(data);return data;},
  tracerData:()=>tracers.map(t=>({x:t.x,y:t.y,z:t.z,X:t.X,Y:t.Y,Z:t.Z,friendly:t.friendly})),
  botData:()=>bots.filter(b=>b.alive).map(b=>({x:b.x,z:b.z,team:b.team,yaw:b.yaw,phase:b.phase,walk:b.walk})),
- state:()=>({x:player.x,z:player.z,y:player.y,yaw:player.yaw,pitch:player.pitch,ads:player.ads,crouch:player.crouch,alive:player.alive,flash:player.flash,bob:player.bob,landBob:player.landBob,recoil:player.recoil,nowSec,running,paused,ended,weapon:player.weapon,reloadRemaining:Math.max(0,player.reloadUntil-nowSec),reloadDuration:weapons[player.weapon].reload,matchRemaining}),
+ state:()=>({x:player.x,z:player.z,y:player.y,yaw:player.yaw,pitch:player.pitch,ads:player.ads,sniperScoped:sniperScoped(),scopeFov:scopeFov(),scopeZoom:player.scopeZoom,crouch:player.crouch,alive:player.alive,flash:player.flash,bob:player.bob,landBob:player.landBob,recoil:player.recoil,nowSec,running,paused,ended,weapon:player.weapon,reloadRemaining:Math.max(0,player.reloadUntil-nowSec),reloadDuration:weapons[player.weapon].reload,matchRemaining}),
  availableGPU:()=>!!gl,
  quality:'high'
 };
@@ -1463,5 +1531,5 @@ if(!document.getElementById('rendererState').textContent.includes('renderer'))do
 })();
 
 </script>
-<script type="module" src="./ultra-renderer.js?v=3.9"></script>
+<script type="module" src="./ultra-renderer.js?v=3.10"></script>
 </body></html>
