@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.28 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.29 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -1105,7 +1105,7 @@ function urbanStreetDetails(){
 }
 
 
-// MAP 001 v3.28: five additional fully traversable center buildings, sectional
+// MAP 001 v3.29: five additional fully traversable center buildings, sectional
 // airlock walls, and street-scale architectural obstacles. A wall has collision
 // ONLY if it touches the ground; door voids are true player/bot openings.
 const MAP_ONE_SECTORS=[
@@ -1670,25 +1670,26 @@ function shieldBashPlayer(){
 function pickTarget(bot){
  let best=null,score=Infinity;
  const targets=[];
- if(mode==='zombie'){
-   // Hunt the boss, but fight rival soldiers encountered on the way.
-   for(const monster of aliveMonsters()){
-     const d=hypot(monster.x-bot.x,monster.z-bot.z);
-     const seen=d<39&&clearPath(bot.x,bot.z,monster.x,monster.z);
-     const priority=d+(seen?-9:4)+(monster.boss?-27:!monster.boss&&d<19?-17:7);
-     if(priority<score){best=monster;score=priority;}
-   }
-   const opponents=[
+ if(mode==='zombie'&&boss?.alive){
+   // The boss is the default target. Only a close, visible hostile can
+   // interrupt firing; navigation stays fixed on the Overlord at all times.
+   let urgent=null,urgentScore=Infinity;
+   const threats=[
+     ...zombies.filter(z=>z.alive),
      ...(bot.team===1&&player.alive?[player]:[]),
      ...bots.filter(other=>other!==bot&&other.alive&&other.team!==bot.team)
    ];
-   for(const enemy of opponents){
+   for(const enemy of threats){
      const d=hypot(enemy.x-bot.x,enemy.z-bot.z);
-     const seen=d<35&&clearPath(bot.x,bot.z,enemy.x,enemy.z);
-     const threat=d+(seen?-19:7)+(d<16?-14:0)+(bot.target===enemy?-3:0);
-     if(threat<score){best=enemy;score=threat;}
+     const recentAttacker=bot.lastAttacker===enemy&&
+       nowSec-(bot.lastDamageAt??-99)<3.5;
+     const threshold=recentAttacker?17:enemy.monster?
+       (enemy.agile?10:8):12;
+     if(d>threshold||!clearPath(bot.x,bot.z,enemy.x,enemy.z))continue;
+     const priority=d-(recentAttacker?7:0)-(enemy.agile?2:0);
+     if(priority<urgentScore){urgent=enemy;urgentScore=priority;}
    }
-   return best;
+   return urgent||boss;
  }
  if(player.alive&&(mode!=='tdm'||bot.team!==0))targets.push(player);
  for(const other of bots)if(other!==bot&&other.alive&&(mode!=='tdm'||other.team!==bot.team))targets.push(other);
@@ -1699,7 +1700,7 @@ function pickTarget(bot){
  }
  return best;
 }
-// v3.28: cover discovery works across the FULL map, not just the old +/-29 arena.
+// v3.29: cover discovery works across the FULL map, not just the old +/-29 arena.
 function chooseCoverPoint(bot,tar){
  if(!tar)return null;
  const candidates=[];
@@ -1745,7 +1746,7 @@ function tacticalVector(b,tar,visible,dist,go){
 }
 
 
-// v3.28 — squad decision system: varied building patrols, shield retreat,
+// v3.29 — squad decision system: varied building patrols, shield retreat,
 // safe health recovery, and deliberate re-engagement.
 // All landmarks are world positions inside the existing Map 1 geometry.
 const AI_PATROL_POINTS=[
@@ -1757,7 +1758,7 @@ const AI_PATROL_POINTS=[
  [-7,-65],[7,-65],[-7,65],[7,65]
 ];
 
-// v3.28 — Zombie & Monster operation. Both teams race for the final boss hit.
+// v3.29 — Zombie & Monster operation. Both teams race for the final boss hit.
 let boss=null,zombies=[],bossDamage=[0,0],monsterWaves=0,ammoDrops=[],nextAmmoDropId=0;
 const ZOMBIE_COUNT=48,AGILE_ZOMBIE_FREQUENCY=5,OVERLORD_MAX_HP=50000;
 const AMMO_DROP_LIFETIME=48;
@@ -2416,7 +2417,7 @@ function updateBots(dt){
     b.damageWindowStart=-99;b.damageWindow=0;b.lastAttacker=null;
     b.retreatGoal=null;b.retreatReplan=0;b.retreatCooldown=nowSec+2;
     b.patrolGoal=null;b.patrolUntil=0;b.patrolRecent=[];b.patrolRegion=-1;
-    b.lastSeenAt=-99;
+    b.lastSeenAt=-99;b.missionThreatUntil=0;
    }
    continue;
   }
@@ -2448,7 +2449,8 @@ function updateBots(dt){
   const withdrawing=b.aiMode==='retreat'||b.aiMode==='recover';
   // A target behind a wall on the other side of the map should not draw every
   // bot down the same middle lane. Until contact, fan out around the map.
-  const seeking=!!tar&&(mode==='zombie'||visible||dist<21||nowSec-b.lastSeenAt<4);
+  const bossMission=mode==='zombie'&&!!boss?.alive;
+  const seeking=!!tar&&(bossMission||visible||dist<21||nowSec-b.lastSeenAt<4);
   if(!withdrawing&&!seeking){
    b.aiMode='patrol';
    if(!b.patrolGoal||nowSec>b.patrolUntil||
@@ -2469,14 +2471,21 @@ function updateBots(dt){
   }
   const goRecovery=b.aiMode==='retreat'?b.retreatGoal:
     b.aiMode==='recover'?{x:b.x,z:b.z}:null;
+  // A zombie or rival may be the shooting target, but the destination remains
+  // the Overlord. Do not follow roaming undead into side rooms.
   const pursue=goRecovery||
-    (b.aiMode==='patrol'?b.patrolGoal:
-     (tar&&(visible?tar:(nowSec-b.lastSeenAt<4?
-      {x:b.lastSeenX,z:b.lastSeenZ}:tar))))||{x:b.x,z:b.z};
+    (bossMission?boss:
+     (b.aiMode==='patrol'?b.patrolGoal:
+      (tar&&(visible?tar:(nowSec-b.lastSeenAt<4?
+       {x:b.lastSeenX,z:b.lastSeenZ}:tar)))))||{x:b.x,z:b.z};
   if(b.pathRefresh<=0){
-   const directFight=b.aiMode==='engage'&&visible;
+   const bossInRange=bossMission&&!withdrawing&&tar===boss&&
+      visible&&hypot(boss.x-b.x,boss.z-b.z)<Math.max(7,b.preferredRange+3);
+   const directFight=b.aiMode==='engage'&&visible&&
+      (!bossMission||bossInRange);
    b.path=directFight?[]:navigation(b.x,b.z,pursue.x,pursue.z);
-   b.pathRefresh=b.aiMode==='retreat'?rand(.55,.85):rand(.8,1.4);
+   b.pathRefresh=b.aiMode==='retreat'?rand(.55,.85):
+      bossMission?rand(1.05,1.55):rand(.8,1.4);
    if(!b.path.length&&!clearPath(b.x,b.z,pursue.x,pursue.z)&&
       b.aiMode==='patrol'){b.patrolGoal=null;b.patrolUntil=0;}
   }
@@ -2492,7 +2501,10 @@ function updateBots(dt){
    const tz=tar.z-Math.sin(tar.yaw)*side*3-Math.cos(tar.yaw)*.6;
    if(!collidesCircle(tx,tz,.45))flankPoint={x:tx,z:tz};
   }
-  const inCombat=b.aiMode==='engage'&&visible&&flankPoint===go;
+  const bossAtAttackRange=bossMission&&tar===boss&&visible&&
+      hypot(boss.x-b.x,boss.z-b.z)<Math.max(7,b.preferredRange+3);
+  const inCombat=b.aiMode==='engage'&&visible&&flankPoint===go&&
+      (!bossMission||bossAtAttackRange);
   let dir=tacticalVector(b,tar,inCombat,dist,flankPoint);
   if(b.aiMode==='recover')dir={x:0,z:0};
   let rx=0,rz=0;
@@ -2513,7 +2525,7 @@ function updateBots(dt){
   const slowdown=w.shield?.78:w.energy&&b.chargeStart>=0?.65:1;
   const nearGoal=hypot(pursue.x-b.x,pursue.z-b.z)<.75;
   const step=(b.aiMode==='recover'||nearGoal)?0:
-   b.speed*dt*(inCombat?.82:1)*slowdown;
+   b.speed*dt*(inCombat?.82:1)*(bossMission?1.14:1)*slowdown;
   const moved=resolveMovement(b.x,b.z,vx/len*step,vz/len*step,.37);
   b.x=moved.x;b.z=moved.z;
   const travelled=Math.hypot(b.x-bx,b.z-bz);
