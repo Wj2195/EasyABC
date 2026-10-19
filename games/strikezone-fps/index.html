@@ -1141,7 +1141,7 @@ function denseCenterRoom(index){
 // The two sector transitions pass through a center building at z≈-22 / +22.
 // Exterior sidewalks DO NOT offer shortcuts around the section checkpoints.
 function denseSectorBoundaries(){
- for(const z of [-25.1,25.1]){
+ for(const z of [-27.5,27.5]){
   // Leave x [-11.5,11.5] for the actual checkpoint building interior.
   for(const [lo,hi] of [[-54,-11.5],[11.5,54]]){
    const width=hi-lo;
@@ -1151,12 +1151,6 @@ function denseSectorBoundaries(){
     cube(x,2.55,z,.06,.5,.72,33);
    }
   }
- }
- // Seal two unusably thin legacy doorway alcoves left between the new
- // south checkpoint wall and existing room facades; no phantom bot pockets.
- for(const side of [-1,1]){
-  cube(side*27,1.55,26.1,7.4,3.1,1.9,31,true);
-  cube(side*27,3.18,26.1,7.6,.18,2.1,21);
  }
  // Smaller boundary sections reduce straight 80m firing lanes without
  // sealing the existing routes into the original eight side buildings.
