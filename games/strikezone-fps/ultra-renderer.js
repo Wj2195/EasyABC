@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.5.1 | grounded boots and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.6 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -278,6 +278,18 @@ async function startModernRenderer(THREE){
     teamPatches.push(plate(.46,.15,.045,0,1.27,.38,armorBlue));
   }
 
+  // Ground elevation matches the original temple slab and its three entry steps.
+  function floorSurfaceAt(x,z){
+    let height=0;
+    if(Math.abs(x)<=7.02&&Math.abs(z)<=7.02)height=.60;
+    for(const side of [-1,1])for(let step=0;step<3;step++){
+      const centerZ=side*(8.4-step*.58);
+      const width=10.4-step*.85;
+      if(Math.abs(x)<=width*.5&&Math.abs(z-centerZ)<=.9)
+        height=Math.max(height,.405+step*.12);
+    }
+    return height;
+  }
   // v3.5: anatomically proportioned tactical operators — original procedural assets.
   // Full models are GPU-only. The original block soldiers remain a safe renderer fallback.
   function createOperatorSystem(){
@@ -450,16 +462,17 @@ async function startModernRenderer(THREE){
           }
           u.torso.rotation.z=gait*.014;
           u.torso.rotation.x=.014+Math.abs(wave)*.015;
-          // Compute each animated boot's true lowest Y from its scaled world matrix.
-          // Adjust the cosmetic rig vertically so no step pushes feet under the floor.
+          // Height-correct each animated boot against its real walkable floor.
           u.root.updateMatrixWorld(true);
-          let lowest=Infinity;
+          let requiredLift=-Infinity;
           for(const leg of u.legs){
             const m=leg.foot.matrixWorld.elements;
-            const bottom=m[13]-Math.hypot(m[1],m[5],m[9]);
-            lowest=Math.min(lowest,bottom);
+            const footBottom=m[13]-Math.hypot(m[1],m[5],m[9]);
+            const footX=m[12],footZ=m[14];
+            requiredLift=Math.max(requiredLift,floorSurfaceAt(footX,footZ)+.027-footBottom);
           }
-          u.root.position.y=Math.max(-.015,Math.min(.32,.035-lowest));
+          // The temple sits at 0.6m: a 0.32m clamped correction sank legs into stone.
+          u.root.position.y=Math.max(-.03,Math.min(1.55,requiredLift));
         }
       },
       get count(){return currentCount;}
