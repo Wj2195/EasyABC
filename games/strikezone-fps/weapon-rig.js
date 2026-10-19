@@ -18,7 +18,9 @@ export function createWeaponRig(THREE, scene){
   const plasma=new THREE.MeshStandardMaterial({color:0x289dc6,metalness:.28,roughness:.18,emissive:0x167cd1,emissiveIntensity:1.3});
   const plasmaCore=new THREE.MeshBasicMaterial({color:0x7dfaff});
   const energyFlash=new THREE.MeshBasicMaterial({color:0x77faff,transparent:true,opacity:.90,side:THREE.DoubleSide,depthWrite:false});
-  for(const m of [limbSkin,metal,darkMetal,brightMetal,rubber,glass,marking,brass,orange,plasma,plasmaCore,energyFlash])mats.add(m);
+  const shieldSteel=new THREE.MeshStandardMaterial({color:0x333f47,metalness:.48,roughness:.48});
+  const shieldVisor=new THREE.MeshPhysicalMaterial({color:0x66adc4,transparent:true,opacity:.22,roughness:.15,metalness:.1,depthWrite:false,side:THREE.DoubleSide});
+  for(const m of [limbSkin,metal,darkMetal,brightMetal,rubber,glass,marking,brass,orange,plasma,plasmaCore,energyFlash,shieldSteel,shieldVisor])mats.add(m);
   function texture(seed,base){
     const c=document.createElement('canvas');c.width=c.height=256;
     const ctx=c.getContext('2d');
@@ -210,7 +212,7 @@ export function createWeaponRig(THREE, scene){
   function makeWeapon(index){
     const g=new THREE.Group();scene.add(g);
     const meta={mags:[],flash:null,barrelZ:-1.50};
-    const type=index;const stockmat=[materials.black,materials.black,materials.olive,materials.wood,materials.black,materials.tan,materials.black][index];
+    const type=index;const stockmat=[materials.black,materials.black,materials.olive,materials.wood,materials.black,materials.tan,materials.black,materials.black][index];
     let width=.26;
     if(type===0){ // VORTEX AR
       width=detailReceiver(g,'VORTEX AR',materials.black);
@@ -274,7 +276,7 @@ export function createWeaponRig(THREE, scene){
       }
       tube(g,.175,.028,.19,.035,.13,brightMetal);
       rod(g,[.18,.05,.19],[.33,-.04,.20],.028,metal);
-    }else{ // NOVA PULSE — magnetic plasma accelerator with glowing capacitor rails
+    }else if(type===6){ // NOVA PULSE — magnetic plasma accelerator with glowing capacitor rails
       detailReceiver(g,'NOVA PULSE',materials.black);
       box(g,0,.025,-.70,.39,.36,.95,metal,.045);
       box(g,0,.02,-1.15,.31,.27,.61,materials.black,.035);
@@ -299,8 +301,26 @@ export function createWeaponRig(THREE, scene){
       box(g,0,.37,-.55,.18,.16,.32,plasma,.025);
       box(g,0,-.32,-.55,.17,.25,.23,materials.glove,.027);
       muzzle(g,-1.84,.16);
+    }else{ // AEGIS S8 tactical ballistic shield, held upright with a clear viewport
+      const face=new THREE.Group();g.add(face);face.position.set(-.32,-.12,-.95);
+      box(face,0,-.17,0,.80,.80,.085,shieldSteel,.06);
+      box(face,0,.34,0,.80,.22,.10,shieldSteel,.036);
+      for(const sign of [-1,1]){
+        box(face,sign*.386,.02,-.002,.052,1.12,.14,metal,.012);
+        for(let k=0;k<5;k++)box(face,sign*.28,-.49+k*.16,-.056,.095,.038,.02,brightMetal,.008);
+      }
+      box(face,0,-.59,.02,.83,.055,.12,metal,.015);
+      box(face,0,.17,.01,.70,.30,.028,shieldVisor,.016);
+      box(face,0,.02,-.09,.75,.05,.10,darkMetal,.02);
+      box(face,0,.37,-.09,.76,.053,.12,darkMetal,.015);
+      box(face,0,-.30,-.12,.20,.06,.24,materials.black,.01);
+      box(face,.25,-.23,-.10,.13,.09,.25,materials.black,.012);
+      box(g,-.14,-.37,-.28,.24,.32,.22,materials.glove,.05);
+      box(g,.20,-.37,.06,.22,.29,.23,materials.glove,.05);
+      box(g,0,-.22,.44,.24,.24,.55,materials.camo,.04);
+      meta.barrelZ=-1.0;
     }
-    if(index!==4)addHands(g,index);
+    if(index!==4&&index!==7)addHands(g,index);
     else{
       rod(g,[.34,-.43,.49],[.16,-.29,.16],.10,materials.camo);
       box(g,.12,-.29,.11,.18,.20,.22,materials.glove,.045);
@@ -318,7 +338,7 @@ export function createWeaponRig(THREE, scene){
     flash.visible=false;meta.flash=flash;
     g.visible=false;groups.push(g);mags.push(meta.mags);flashes.push(flash);
   }
-  for(let i=0;i<7;i++)makeWeapon(i);
+  for(let i=0;i<8;i++)makeWeapon(i);
   let current=-1;
   function update(s){
     if(!s||!s.running||!s.alive){
@@ -327,7 +347,7 @@ export function createWeaponRig(THREE, scene){
       current=-1;
       return;
     }
-    const i=Math.max(0,Math.min(6,s.weapon|0));
+    const i=Math.max(0,Math.min(7,s.weapon|0));
     if(current!==i){if(current>=0)groups[current].visible=false;current=i;}
     const g=groups[i],aim=!!s.ads,weapon=i;
     // Visibility must be set every living frame, not only when weapon index changes.
@@ -337,11 +357,11 @@ export function createWeaponRig(THREE, scene){
     const shake=Math.abs(Math.sin((s.bob||0)*.8))*.007;
     // Place optical sight nearer the crosshair in ADS; preserve a right-hand hip position.
     const adsX=weapon===4?.03:0;
-    const hipX=weapon===4?.41:.40;
+    const hipX=weapon===7?-.35:weapon===4?.41:.40;
     // In ADS, center the optic's actual height on the camera reticle instead of
     // lifting the whole model above the crosshair.
-    const scale=weapon===4?.94:weapon===5?.83:weapon===6?.87:.91;
-    const opticHeights=[.37,.31,.44,.21,.15,.49,.37];
+    const scale=weapon===7?.90:weapon===4?.94:weapon===5?.83:weapon===6?.87:.91;
+    const opticHeights=[.37,.31,.44,.21,.15,.49,.37,.20];
     const centerY=aim?-opticHeights[weapon]*scale:-.32;
     g.scale.setScalar(scale);
     g.position.set(aim?adsX:hipX+gait,
@@ -363,5 +383,5 @@ export function createWeaponRig(THREE, scene){
     for(const m of mats)m.dispose();
     for(const t of textures)t.dispose();
   }
-  return {update,dispose,weaponCount:groups.length,version:'3.12-nova-pulse'};
+  return {update,dispose,weaponCount:groups.length,version:'3.13-aegis-shield'};
 }
