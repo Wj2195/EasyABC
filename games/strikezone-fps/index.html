@@ -893,6 +893,139 @@ function updateBots(dt){
   }
  }
 }
+
+// v3.12 kinetic energy projectile (39 u/s = 65% of a 60 u/s reference bullet).
+// Existing weapons use hitscan; this projectile advances through the world frame by frame.
+const energyShots=[],energyWaves=[];
+function cancelEnergyCharge(){
+ player.energyChargeStart=-1;player.energyReady=false;
+ const el=$('energyChargeHUD');if(el){el.classList.add('hidden');el.classList.remove('ready');}
+}
+function beginEnergyCharge(){
+ if(player.weapon!==6||!running||paused||ended||!player.alive||!player.shoot)return;
+ const w=weapons[6];
+ if(player.energyChargeStart>=0)return;
+ if(player.reloadUntil>nowSec||nowSec-player.lastShot<60/w.rate)return;
+ if(player.ammo[6]<=0){reload();return;}
+ player.energyChargeStart=nowSec;player.energyReady=false;
+ beep('energyCharge');
+}
+function updateEnergyChargeHUD(){
+ const visible=running&&!paused&&!ended&&player.alive&&player.weapon===6;
+ const root=$('energyChargeHUD');
+ root.classList.toggle('hidden',!visible);
+ if(!visible)return;
+ const elapsed=player.energyChargeStart>=0?Math.max(0,nowSec-player.energyChargeStart):0;
+ const fraction=clamp(elapsed/weapons[6].charge,0,1);
+ const ready=player.energyChargeStart>=0&&fraction>=1;
+ if(ready&&!player.energyReady){player.energyReady=true;beep('energyReady');}
+ root.classList.toggle('ready',ready);
+ $('energyChargeFill').style.width=(fraction*100).toFixed(0)+'%';
+ $('energyChargeText').textContent=ready?'FULL CHARGE · RELEASE FIRE':
+  player.energyChargeStart>=0?'CHARGING '+(fraction*100).toFixed(0)+'%':
+  'HOLD FIRE 2s · RELEASE';
+}
+function releaseEnergyCharge(){
+ const start=player.energyChargeStart;
+ if(start<0)return;
+ const valid=player.weapon===6&&player.alive&&running&&!paused&&!ended&&nowSec-start>=weapons[6].charge;
+ cancelEnergyCharge();
+ if(valid)launchEnergyShot();
+ else if(player.weapon===6&&running&&!paused) $('energyChargeText').textContent='CHARGE CANCELLED · HOLD 2s';
+}
+function launchEnergyShot(){
+ const w=weapons[6];
+ if(!player.alive||player.weapon!==6||paused||ended||player.reloadUntil>nowSec||
+    player.ammo[6]<=0||nowSec-player.lastShot<60/w.rate)return false;
+ const yaw=player.yaw,pitch=player.pitch,c=Math.cos(pitch);
+ const dx=Math.sin(yaw)*c,dy=Math.sin(pitch),dz=Math.cos(yaw)*c;
+ const eye=player.y+(player.crouch?.96:1.68);
+ const x=player.x+dx*.94,y=eye+dy*.94,z=player.z+dz*.94;
+ energyShots.push({x,y,z,dx,dy,dz,range:w.range,travelled:0,speed:w.projectileSpeed,radius:.31});
+ player.ammo[6]--;player.lastShot=nowSec;player.recoil=.30;player.flash=.14;
+ beep('energyFire');updateHud();return true;
+}
+function blastEnergy(x,y,z){
+ const w=weapons[6],radius=w.blastRadius;
+ energyWaves.push({x,y,z,age:0,ttl:.78,radius});
+ if(energyWaves.length>8)energyWaves.shift();
+ beep('energyImpact');
+ let pushed=0;
+ const boost=(a,mag)=>{
+   let dx=a.x-x,dz=a.z-z,dist=Math.hypot(dx,dz);
+   if(dist<.04){dx=Math.sin(player.yaw);dz=Math.cos(player.yaw);dist=1;}
+   const power=Math.max(.20,1-Math.min(dist,radius)/radius);
+   return {vx:dx/dist*w.knockback*(.33+.67*power),
+           vz:dz/dist*w.knockback*(.33+.67*power),
+           vy:3.15+power*3.1,power};
+ };
+ for(const bot of bots){
+   if(!bot.alive)continue;
+   const dist=Math.hypot(bot.x-x,bot.z-z);
+   const bodyY=floorSurfaceAt(bot.x,bot.z)+(bot.airHeight||0)+1;
+   if(dist>radius||Math.abs(bodyY-y)>radius*.9)continue;
+   const p=boost(bot,dist);
+   bot.energyVX=(bot.energyVX||0)+p.vx;bot.energyVZ=(bot.energyVZ||0)+p.vz;
+   bot.airVY=Math.max(bot.airVY||0,p.vy);
+   // Blue teammates are thrown by the wave, but do not receive friendly fire damage.
+   if(mode!=='tdm'||bot.team!==0)damageBot(bot,Math.round(w.blastDamage*(.3+.7*p.power)),player);
+   pushed++;
+ }
+ if(player.alive){
+   const dist=Math.hypot(player.x-x,player.z-z);
+   if(dist<=radius&&Math.abs(player.y+1-y)<radius*.9){
+     const p=boost(player,dist);
+     player.shockVX+=p.vx;player.shockVZ+=p.vz;
+     player.yVel=Math.max(player.yVel,p.vy);pushed++;
+   }
+ }
+ announce('ENERGY SHOCKWAVE · '+pushed+' THROWN',1.3);
+}
+function updateEnergyEffects(dt){
+ for(let i=energyShots.length-1;i>=0;i--){
+   const q=energyShots[i],step=Math.min(q.speed*dt,q.range-q.travelled);
+   if(step<=0){blastEnergy(q.x,q.y,q.z);energyShots.splice(i,1);continue;}
+   const start={x:q.x,y:q.y,z:q.z},direction={x:q.dx,y:q.dy,z:q.dz};
+   const wallDist=worldImpact(start,direction);
+   let travel=Math.min(step,wallDist),directHit=false;
+   // Check swept collision against all soldiers instead of sampling only the endpoint.
+   for(const b of bots){
+     if(!b.alive)continue;
+     const centerY=floorSurfaceAt(b.x,b.z)+(b.airHeight||0)+1.00;
+     const ux=b.x-start.x,uy=centerY-start.y,uz=b.z-start.z;
+     const t=clamp(ux*q.dx+uy*q.dy+uz*q.dz,0,travel);
+     const x=start.x+q.dx*t,y=start.y+q.dy*t,z=start.z+q.dz*t;
+     if(Math.hypot(b.x-x,centerY-y,b.z-z)<.78){travel=t;directHit=true;}
+   }
+   q.x+=q.dx*travel;q.y+=q.dy*travel;q.z+=q.dz*travel;q.travelled+=travel;
+   const collided=directHit||wallDist<=step+.005||q.travelled>=q.range-.01||
+      q.y<=floorSurfaceAt(q.x,q.z)+.20||Math.abs(q.x)>30.2||Math.abs(q.z)>30.2;
+   if(collided){blastEnergy(q.x,q.y,q.z);energyShots.splice(i,1);}
+ }
+ for(let i=energyWaves.length-1;i>=0;i--){
+   const wave=energyWaves[i];wave.age+=dt;
+   if(wave.age>=wave.ttl)energyWaves.splice(i,1);
+ }
+}
+// Apply physical impulse after normal AI movement. Do not step through solids.
+function updateEnergyKnockback(dt){
+ for(const b of bots){
+  if(!b.alive){b.energyVX=b.energyVZ=b.airVY=b.airHeight=0;continue;}
+  const vx=b.energyVX||0,vz=b.energyVZ||0;
+  if(Math.hypot(vx,vz)>.025){
+    const moved=resolveMovement(b.x,b.z,vx*dt,vz*dt,.37);
+    b.x=moved.x;b.z=moved.z;
+    const fade=Math.exp(-3.6*dt);
+    b.energyVX=vx*fade;b.energyVZ=vz*fade;
+  }else{b.energyVX=0;b.energyVZ=0;}
+  if((b.airHeight||0)>0||(b.airVY||0)>0){
+    b.airHeight=Math.max(0,(b.airHeight||0)+(b.airVY||0)*dt);
+    b.airVY=(b.airVY||0)-15*dt;
+    if(b.airHeight===0&&b.airVY<0)b.airVY=0;
+  }
+ }
+}
+
 const tracers=[];
 function feedTracer(x,y,z,X,Y,Z,friendly){tracers.push({x,y,z,X,Y,Z,ttl:.10,friendly});if(tracers.length>18)tracers.shift();}
 function shoot(){
@@ -1315,7 +1448,7 @@ function softwareScene(dt){
 }
 function formatTime(t){let n=Math.max(0,Math.ceil(t));return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;}
 function tick(stamp){const sec=stamp/1000;let dt=Math.min(.045,sec-(last||sec));last=sec;nowSec=sec;frame++;if(sec-fpsMark>=1){fps=Math.round(frame/(sec-fpsMark));$('fpsCounter').textContent=`${fps} FPS`;frame=0;fpsMark=sec;}
-if(running&&!paused&&!ended){matchRemaining-=dt;if(matchRemaining<=0){matchRemaining=0;endMatch();}updatePlayer(dt);updateBots(dt);completeReload();if(!player.alive&&!ended){$('respawnCountdown').textContent=Math.max(1,Math.ceil(finishTime-nowSec));if(nowSec>=finishTime)spawnPlayer();}if(nowSec>announceUntil)$('announcement').classList.remove('visible');$('matchTime').textContent=formatTime(matchRemaining);if(mode==='tdm'&&(blue>=30||red>=30))endMatch();if(Math.floor(sec*10)%4===0)drawMinimap();}
+if(running&&!paused&&!ended){matchRemaining-=dt;if(matchRemaining<=0){matchRemaining=0;endMatch();}updatePlayer(dt);updateBots(dt);updateEnergyKnockback(dt);updateEnergyEffects(dt);completeReload();if(!player.alive&&!ended){$('respawnCountdown').textContent=Math.max(1,Math.ceil(finishTime-nowSec));if(nowSec>=finishTime)spawnPlayer();}if(nowSec>announceUntil)$('announcement').classList.remove('visible');$('matchTime').textContent=formatTime(matchRemaining);if(mode==='tdm'&&(blue>=30||red>=30))endMatch();if(Math.floor(sec*10)%4===0)drawMinimap();}
 syncSniperScope();renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
 function startGame(){document.body.classList.add('playing');ensureAudio();mode=document.querySelector('.modeCard.selected')?.dataset.mode||'tdm';resetGame();running=true;paused=false;ended=false;$('mainMenu').classList.add('hidden');hud.classList.remove('hidden');$('modal').classList.add('hidden');$('matchMode').textContent=mode==='tdm'?'TEAM DEATHMATCH':mode==='ffa'?'FREE FOR ALL':'GUN RACE';$('feed').innerHTML='';canvas.requestPointerLock?.();announce('MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
 function goMenu(){cancelEnergyCharge();energyShots.length=0;energyWaves.length=0;hud.classList.remove('sniper-scoped');$('sniperScope').classList.add('hidden');document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
