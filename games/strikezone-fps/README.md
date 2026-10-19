@@ -282,3 +282,38 @@ Burst timing respects each gun's real in-game rate-of-fire, ammunition, reload t
 - Blue AI teammates remain non-damageable by player bullets in team-deathmatch mode. Test rear damage against a red enemy shield carrier.
 
 **Verification:** Tested body/head shot ray-sphere intersections and shield damage against defenders facing 0°, 90°, 180° and 270°. Frontal body hits yielded 0 HP damage, rear body/head hits yielded normal damage, and side-on body shots remained blocked. Code syntax checks passed. Actual browser-facing graphics and online page propagation should still be visually verified.
+
+
+## v3.19 — MAP 001: TRI-SECTOR LABYRINTH (first of three planned maps)
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.19
+
+This is **Map 1 only**. Two further maps can be designed and introduced later.
+
+Inspired by the supplied sketch: a compact **blue team spawn base at the north end**, a much larger **magenta-accented central maze**, and a compact **orange/red team base at the south end**. The map is built into the game's existing offline single-player AI experience.
+
+### Layout and scale
+
+- **Previous map:** approximately 64×64 game units.
+- **New central zone:** approximately **108×120 game units**, joined to north and south deployment sectors for an overall map height of **164 units**.
+- **North base:** blue-team deployment near Z = -74; protected against side entry with **three passages** into the central arena.
+- **South base:** red-team deployment near Z = +74; mirrored connections into the same arena.
+- **Main maze:** eight full-sized rooms with multiple entrances, internal wall partitions, rooftop outlines, cover props, alleys, central open command hub, lateral crossing lanes and two long flanking routes.
+- **Combat routes:** front assaults, chamber-to-chamber movement, central hard-cover engagements, covered side paths and a flank around both room banks. Solid walls, barriers and crates take real collision and block gunfire.
+- **Environment:** new central magenta markings, navy/blue and orange/red base floors, perimeter walls, elevated nonblocking architectural details and matching map signage in enhanced WebGL2. The minimap now shows the tall full-map outline.
+
+### Systems upgraded for a larger map
+
+- Pathfinding grid expanded to **85×85 cells** with 2-unit spacing, correcting the previous 30×30 navigation limit. Full-coverage BFS and route smoothing support long trips and maze turns.
+- Movement boundaries, collision resolution, line of sight, safe spawn selection, respawning and unstuck recovery now cover the irregular central rectangle plus narrower team bases.
+- Both teams spawn at opposite ends. Blue player and blue allied bots start in the north, red enemy bots at the south. Every spawn entrance and maze chamber is reachable from both ends.
+- Match timer extended to **six minutes**, giving more time to move through the substantially larger arena.
+- All eight weapon types, advanced multi-shot bot AI, directional shields, energy shockwaves, health regeneration, fullscreen/mobile controls, and fallen-soldier animations are retained.
+
+### Verification
+
+- Parsed updated JavaScript successfully.
+- Generated **181 solid collision obstacles**, and checked the resulting walkable grid. All **3,017 traversable navigation cells** belong to a **single connected component** (no isolated walkable pockets).
+- Confirmed sample bot routes between both team bases, all four room rows and both flank corridors.
+- Enhanced renderer updated for expanded shadows, map signage and draw distance.
+- Actual gameplay, device frame rate, and mobile browser touch-control testing remain to be verified in a real browser.
