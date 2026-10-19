@@ -13,17 +13,17 @@
 <body>
 <header><div class="row"><div><h1>TRADE<span class="buy">LENS</span> / SIGNAL DESK</h1><div class="sub small">Forex · 28 pairs · 15m / 1h / 1D · 1 / 3 / 6 / 12-bar forecasts</div></div><div class="tools"><span class="badge" id="status">Loading snapshot…</span><button type="button" id="refresh">Refresh data</button><a href="https://wj2195.github.io/EasyABC/">EasyABC ↗</a></div></div></header>
 <main>
-<div class="stats"><div class="card"><small>Aligned BUY · selected horizon</small><b class="buy" id="buyCount">—</b></div><div class="card"><small>Aligned SELL · selected horizon</small><b class="sell" id="sellCount">—</b></div><div class="card"><small>Alert-qualified 3/3</small><b id="strongCount">—</b></div><div class="card"><small>Last scanner run (MYT)</small><b id="updated" style="font-size:15px">Pending</b></div></div>
+<div class="stats"><div class="card"><small>Aligned BUY · selected horizon</small><b class="buy" id="buyCount">—</b></div><div class="card"><small>Aligned SELL · selected horizon</small><b class="sell" id="sellCount">—</b></div><div class="card"><small>Alert-qualified 12/12</small><b id="strongCount">—</b></div><div class="card"><small>Last scanner run (MYT)</small><b id="updated" style="font-size:15px">Pending</b></div></div>
 <div class="layout"><section class="panel"><div class="row"><h2>Forex summary · multi-timeframe</h2><span class="note" id="coverage">—</span></div>
 <div class="tools" style="margin-bottom:12px"><label>Forecast horizon<select id="horizon"><option value="1">1 bar</option><option value="3" selected>3 bars</option><option value="6">6 bars</option><option value="12">12 bars</option></select></label><label>Show<select id="filterState"><option value="all">All pairs</option><option value="aligned">Aligned BUY / SELL</option><option value="strong">Alert-qualified only</option></select></label><label>Pair search<input id="search" placeholder="e.g. GBP/USD" autocomplete="off"></label></div>
-<div class="scroll"><table><thead><tr><th>Pair</th><th>15m</th><th>1h</th><th>1D</th><th>3/3 consensus</th></tr></thead><tbody id="pairs"></tbody></table></div>
-<p class="note" id="scanInfo">All three fresh timeframes must share a BUY or SELL bias at the selected horizon. Signal strength is informational; even aligned forecasts may favor SIDEWAYS.</p></section>
+<div class="scroll"><table><thead><tr><th>Pair</th><th>15m</th><th>1h</th><th>1D</th><th>3/3 selected</th><th>12/12 alert</th></tr></thead><tbody id="pairs"></tbody></table></div>
+<p class="note" id="scanInfo">BUY/SELL shown for your selected horizon is for review. Telegram sends only when all 12 forecasts agree on one direction.</p></section>
 <div class="stack"><section class="panel"><div class="row"><h2 id="pairName">EUR/USD · pair detail</h2><span id="pairBadge" class="badge">Pending</span></div><div class="banner"><div><strong id="consensusTitle">15m + 1h + 1D alignment</strong><div class="note" id="consensusReason">Waiting for data.</div></div><span class="badge" id="signalGate">NO ALERT</span></div>
 <h3>Full forecast matrix · 12 forecasts</h3><div class="scroll matrix"><table><thead><tr><th>TF</th><th>Bars</th><th>Bias</th><th>Signal</th><th>Up</th><th>Down</th><th>Side</th><th>Gap pp</th><th>Candle MYT</th></tr></thead><tbody id="matrix"></tbody></table></div>
-<div class="subheading" id="matrixFoot">Colored BUY / SELL badges reflect directional bias. All 3/3 aligned biases qualify, including low-strength signals.</div>
+<div class="subheading" id="matrixFoot">Selected horizon highlights 3/3 alignment only. Telegram requires matching BUY or SELL across all 12 forecasts.</div>
 <div class="row"><h3 style="margin-bottom:0">Completed candle chart</h3><div class="chartbuttons" id="chartButtons"><button data-tf="15m" aria-pressed="true">15m</button><button data-tf="1h" aria-pressed="false">1h</button><button data-tf="1d" aria-pressed="false">1D</button></div></div>
 <svg id="chart" class="chart" viewBox="0 0 700 230" preserveAspectRatio="none" role="img" aria-label="Recent completed price candles"></svg><div class="note" id="chartNote"></div></section>
-<section class="panel"><h2>Notification rules</h2><p class="note" id="rules"></p><div class="row"><h3>Telegram delivery history</h3><span class="badge" id="telegramStatus">Not connected</span></div><ul id="history"><li class="muted">No alerts delivered yet.</li></ul><p class="note">Alerts are WATCH signals, not trade execution. All three fresh timeframes must have the same BUY/SELL bias at the same forecast horizon. Low-strength alignments are included. Multiple newly aligned horizons on one pair share a Telegram notification; unchanged alignments are not repeatedly notified.</p></section></div></div>
+<section class="panel"><h2>Notification rules</h2><p class="note" id="rules"></p><div class="row"><h3>Telegram delivery history</h3><span class="badge" id="telegramStatus">Not connected</span></div><ul id="history"><li class="muted">No alerts delivered yet.</li></ul><p class="note">Alerts require 12/12 agreement: 15m, 1h and 1D must all show the same BUY or SELL on every 1-, 3-, 6- and 12-bar forecast. One short Telegram summary per scan; repeated unchanged 12/12 signals are suppressed. These are WATCH signals, not trade execution.</p></section></div></div>
 <footer class="note">Experimental technical-only historical analog forecasts. Signal percentages are not winning probabilities. Yahoo Finance prices are unofficial and may be delayed. Verify broker prices, spread, news, and position risk before trading. GitHub's scheduled scans are best-effort, not real-time streaming.</footer>
 </main>
 <script>
@@ -38,18 +38,51 @@ function row(pair){return snapshot.rows?.[pair]||{}}
 function forecast(pair,tf,h){return row(pair).timeframes?.[tf]?.forecasts?.[String(h)]}
 function currentTF(pair,tf,h){const t=row(pair).timeframes?.[tf],f=forecast(pair,tf,h);return t?.status==='Updated'&&f?badge(f.bias):'<span class="muted" title="'+safe(t?.status||'Pending')+'">—</span>'}
 function consensus(pair,h){return row(pair).alignments?.[String(h)]||{bias:'WAIT',aligned:false,eligible:false,reason:'Waiting for updated multi-timeframe scan'}}
-function renderPairs(){const f=E('search').value.trim().toUpperCase(),which=E('filterState').value;const visible=PAIRS.filter(p=>p.includes(f)&&((which==='all')||(which==='aligned'&&consensus(p,horizon).aligned)||(which==='strong'&&consensus(p,horizon).eligible)));E('pairs').innerHTML=visible.map(p=>{const c=consensus(p,horizon),cls=c.strong?'strong':'',tag=c.aligned?badge(c.bias)+(c.strong?' <span class="buy mini">★</span>':''): '<span class="muted">'+safe(c.bias||'WAIT')+'</span>';return '<tr data-pair="'+p+'" class="'+(p===selected?'selected':'')+'"><td><b>'+p+'</b></td>'+TF.map(tf=>'<td>'+currentTF(p,tf,horizon)+'</td>').join('')+'<td class="'+cls+'">'+tag+'</td></tr>'}).join('')||'<tr><td colspan="5" class="muted">No pairs match the filter.</td></tr>';
+function fullConsensus(pair){return row(pair).full_alignment||{bias:'WAIT',aligned:false,eligible:false,reason:'Waiting for the new 12/12 scanner snapshot'}}
+function renderPairs(){
+const f=E('search').value.trim().toUpperCase(),which=E('filterState').value;
+const visible=PAIRS.filter(p=>p.includes(f)&&((which==='all')||(which==='aligned'&&consensus(p,horizon).aligned)||(which==='strong'&&fullConsensus(p).eligible)));
+E('pairs').innerHTML=visible.map(p=>{
+const c=consensus(p,horizon),full=fullConsensus(p);
+const chosen=c.aligned?badge(c.bias)+(c.strong?' <span class="buy mini">★</span>':''):'<span class="muted">'+safe(c.bias||'WAIT')+'</span>';
+const fullTag=full.eligible?badge(full.bias)+' <span class="buy mini">12/12</span>':'<span class="muted">—</span>';
+return '<tr data-pair="'+p+'" class="'+(p===selected?'selected':'')+'"><td><b>'+p+'</b></td>'+TF.map(tf=>'<td>'+currentTF(p,tf,horizon)+'</td>').join('')+'<td>'+chosen+'</td><td>'+fullTag+'</td></tr>'
+}).join('')||'<tr><td colspan="6" class="muted">No pairs match the filter.</td></tr>';
 E('pairs').querySelectorAll('tr[data-pair]').forEach(tr=>tr.addEventListener('click',()=>{selected=tr.dataset.pair;renderPairs();renderDetail()}));
-const all=PAIRS.map(p=>consensus(p,horizon));E('buyCount').textContent=all.filter(c=>c.aligned&&c.bias==='BUY').length;E('sellCount').textContent=all.filter(c=>c.aligned&&c.bias==='SELL').length;E('strongCount').textContent=all.filter(c=>c.eligible).length;
+const all=PAIRS.map(p=>consensus(p,horizon));
+E('buyCount').textContent=all.filter(c=>c.aligned&&c.bias==='BUY').length;
+E('sellCount').textContent=all.filter(c=>c.aligned&&c.bias==='SELL').length;
+E('strongCount').textContent=PAIRS.filter(p=>fullConsensus(p).eligible).length;
 }
 function renderMatrix(){const r=row(selected);E('matrix').innerHTML=TF.flatMap(tf=>H.map(h=>{const t=r.timeframes?.[tf]||{},f=t.forecasts?.[String(h)]||{};const b=f.bias||'—';return '<tr class="'+(h===horizon?'selected-h':'')+'"><td>'+tf.toUpperCase()+'</td><td>'+h+'</td><td class="'+(b==='BUY'?'buy':b==='SELL'?'sell':'muted')+'">'+safe(b)+'</td><td>'+num(f.signal)+'%</td><td class="buy">'+num(f.up)+'</td><td class="sell">'+num(f.down)+'</td><td>'+num(f.sideways)+'</td><td>'+num(f.gap)+'</td><td class="mini">'+(t.candle_time?myt(t.candle_time):safe(t.status||'Pending'))+'</td></tr>'})).join('');
-E('matrixFoot').textContent='Highlighted rows = '+horizon+'-bar horizon. All times Malaysia (MYT, UTC+8). Every 3/3 matching BUY or SELL bias is alert-qualified when its candles are fresh.';}
+E('matrixFoot').textContent='Highlighted rows = '+horizon+'-bar horizon. All times Malaysia (MYT, UTC+8). Only complete 12/12 matching BUY or SELL bias is alert-qualified when candles are fresh.';}
 function chart(){const t=row(selected).timeframes?.[chartTF]||{},c=t.candles||[],svg=E('chart');E('chartNote').textContent=chartTF.toUpperCase()+' · '+(t.candle_time?('Last completed candle '+myt(t.candle_time)+' MYT · '+t.status):(t.status||'Awaiting data'));
 if(c.length<2){svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="#a1b2c9">No completed candles yet</text>';return;}
 const low=Math.min(...c.map(x=>x.l)),high=Math.max(...c.map(x=>x.h)),delta=high-low||1,w=672/c.length,y=v=>215-194*(v-low)/delta;
 svg.innerHTML=c.map((v,i)=>{const x=14+(i+.5)*w,col=v.c>=v.o?'#59dfb3':'#ff8394';return '<line x1="'+x+'" y1="'+y(v.h)+'" x2="'+x+'" y2="'+y(v.l)+'" stroke="'+col+'"/><rect x="'+(x-.28*w)+'" y="'+Math.min(y(v.c),y(v.o))+'" width="'+(.56*w)+'" height="'+Math.max(1,Math.abs(y(v.o)-y(v.c)))+'" fill="'+col+'"/>'}).join('');}
-function renderDetail(){const c=consensus(selected,horizon);E('pairName').textContent=selected+' / all timeframes';E('pairBadge').textContent=c.aligned?c.bias:'WAIT';E('pairBadge').className='badge '+(c.bias==='BUY'?'buy':c.bias==='SELL'?'sell':'');E('consensusTitle').textContent=c.aligned?('3/3 aligned '+c.bias+' · '+horizon+' bars'):'15m + 1h + 1D · '+horizon+' bars';E('consensusReason').textContent=c.reason||'Awaiting complete data';E('signalGate').textContent=c.eligible?(c.strong?'ALERT-ELIGIBLE · STRONG':'ALERT-ELIGIBLE · LOW STRENGTH'):'NO ALIGNMENT';E('signalGate').className='badge '+(c.eligible?'buy':'');renderMatrix();chart()}
-function renderSettings(){const s=snapshot.settings||{},st=snapshot.status||{};E('updated').textContent=myt(snapshot.updated_at);E('status').textContent=snapshot.updated_at?'Snapshot loaded':'Awaiting scanner';E('coverage').textContent=(st.pairs_checked_this_run||0)+' pairs checked last run';E('scanInfo').textContent='Last scan: '+(st.pairs_checked_this_run||0)+' pairs checked, '+(st.errors?.length||0)+' feed/analysis errors. Watchlist scans each cycle; other pairs rotate. Old or incomplete data never triggers alerts.';E('rules').textContent='Alert horizons: '+(s.alert_horizons||[1,3,6,12]).join(', ')+' bars. Required: 15m + 1h + 1D all BUY or all SELL at the same horizon using fresh completed candles. Weak signals qualify too (no strength threshold). Strong badge is informational only.';E('telegramStatus').textContent=st.telegram_configured?'Telegram configured':'Telegram not configured';const h=snapshot.history||[];E('history').innerHTML=h.length?h.slice(-12).reverse().map(x=>'<li>'+safe(x.pair)+' · <b class="'+(x.bias==='BUY'?'buy':'sell')+'">'+safe(x.bias)+'</b> · '+safe(x.horizon||'?')+' bars · '+myt(x.at)+' MYT</li>').join(''):'<li class="muted">No delivered alerts yet.</li>'}
+function renderDetail(){
+const c=consensus(selected,horizon),full=fullConsensus(selected);
+E('pairName').textContent=selected+' / all timeframes';
+E('pairBadge').textContent=full.eligible?full.bias:(c.aligned?c.bias:'WAIT');
+E('pairBadge').className='badge '+(full.eligible?(full.bias==='BUY'?'buy':'sell'):'');
+E('consensusTitle').textContent=full.eligible?('12/12 aligned '+full.bias+' · ALL forecasts'):
+(c.aligned?('3/3 '+c.bias+' at '+horizon+' bars · NOT 12/12'):'15m + 1h + 1D · '+horizon+' bars');
+E('consensusReason').textContent=full.reason||'Waiting for 12/12 results';
+E('signalGate').textContent=full.eligible?'12/12 ALERT-QUALIFIED':'NO 12/12 ALERT';
+E('signalGate').className='badge '+(full.eligible?'buy':'');
+renderMatrix();chart();
+}
+function renderSettings(){
+const s=snapshot.settings||{},st=snapshot.status||{};
+E('updated').textContent=myt(snapshot.updated_at);
+E('status').textContent=snapshot.updated_at?'Snapshot loaded':'Awaiting scanner';
+E('coverage').textContent=(st.pairs_checked_this_run||0)+' pairs checked last run';
+E('scanInfo').textContent='Last scan: '+(st.pairs_checked_this_run||0)+' pairs checked, '+(st.errors?.length||0)+' feed/analysis errors. 3/3 columns are informative; only the 12/12 column can trigger an alert. Watchlist scans each cycle and other pairs rotate.';
+E('rules').textContent='Strict 12/12 rule: all three timeframes (15m, 1h, 1D) must agree on BUY or SELL across ALL four horizons (1, 3, 6, 12 bars), with fresh completed candles. No partial agreement qualifies. Signal strength is informational only. One short Telegram message groups newly qualified pairs.';
+E('telegramStatus').textContent=st.telegram_configured?'Telegram configured':'Telegram not configured';
+const h=snapshot.history||[];
+E('history').innerHTML=h.length?h.slice(-12).reverse().map(x=>'<li>'+safe(x.pair)+' · <b class="'+(x.bias==='BUY'?'buy':'sell')+'">'+safe(x.bias)+'</b> · '+(x.rule==='12/12'?'12/12 confirmed':'Older 3/3 rule')+' · '+myt(x.at)+' MYT</li>').join(''):'<li class="muted">No delivered alerts yet.</li>';
+}
 function render(){renderSettings();renderPairs();renderDetail()}
 async function load(){try{const r=await fetch('./data/snapshot.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);snapshot=await r.json();render()}catch(err){E('status').textContent='Snapshot unavailable';E('scanInfo').textContent='Unable to fetch scanner data: '+err.message;}}
 E('refresh').addEventListener('click',load);E('horizon').addEventListener('change',ev=>{horizon=Number(ev.target.value);renderPairs();renderDetail()});E('filterState').addEventListener('change',renderPairs);E('search').addEventListener('input',renderPairs);E('chartButtons').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{chartTF=b.dataset.tf;E('chartButtons').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.tf===chartTF)));chart()}));load();setInterval(load,120000);

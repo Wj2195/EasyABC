@@ -1,8 +1,9 @@
 """TradeLens online multi-timeframe scanner. Technical-only, non-execution alerts.
 
 Every scanned pair evaluates 15m, 1h and 1d at 1/3/6/12 future-bar horizons.
-Alerts require fresh 15m, 1h, and 1d BUY/SELL consensus at a horizon.
-One Telegram message per scan lists newly aligned, unambiguous pairs.
+A Telegram alert requires ALL 12 forecasts (15m / 1h / 1d times
+1 / 3 / 6 / 12 bars) to share one BUY or SELL bias on fresh closed candles.
+One Telegram message per scan lists newly aligned pairs.
 Strength is reported on the dashboard but does not block alignment.
 """
 import json
@@ -178,6 +179,28 @@ def alignment(timeframes, horizon, min_signal, min_gap):
             'minimum_gap': round(min(f['gap'] for f in forecasts), 3)}
 
 
+
+def full_alignment(timeframes):
+    """Require every one of the 12 timeframe/horizon forecasts to agree."""
+    biases = []
+    for tf in TIMEFRAMES:
+        entry = timeframes.get(tf, {})
+        if entry.get('status') != 'Updated':
+            return {'bias': 'WAIT', 'aligned': False, 'eligible': False,
+                    'reason': f'{tf}: missing, stale or unavailable'}
+        forecasts = entry.get('forecasts', {})
+        for horizon in HORIZONS:
+            f = forecasts.get(str(horizon))
+            if not isinstance(f, dict) or f.get('bias') not in ('BUY', 'SELL'):
+                return {'bias': 'WAIT', 'aligned': False, 'eligible': False,
+                        'reason': f'{tf} / {horizon}-bar: no valid BUY/SELL forecast'}
+            biases.append(f['bias'])
+    if len(biases) != len(TIMEFRAMES) * len(HORIZONS) or len(set(biases)) != 1:
+        return {'bias': 'MIXED', 'aligned': False, 'eligible': False,
+                'reason': 'The 12 forecast directions disagree'}
+    return {'bias': biases[0], 'aligned': True, 'eligible': True,
+            'reason': 'All 12 forecast directions agree: ' + biases[0]}
+
 def telegram_alert_summary(alerts):
     """One message, one concise line per qualifying pair."""
     return '\n'.join(f'{pair.replace("/", "")} - {direction}'
@@ -210,7 +233,6 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
     targets = list(dict.fromkeys(watch + rotating))
     min_signal = float(cfg.get('min_signal', 35))
     min_gap = float(cfg.get('min_gap', 7))
-    alert_horizons = [int(h) for h in cfg.get('alert_horizons', [1, 3, 6, 12]) if int(h) in HORIZONS]
     token = os.getenv('TELEGRAM_BOT_TOKEN', '')
     chat = os.getenv('TELEGRAM_CHAT_ID', '')
     last_alerts = state.setdefault('last_alerts', {})
@@ -228,6 +250,8 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
     errors = []
     sent = 0
     pending_alerts = []
+    # New 12/12 alert latch is independent of earlier, less strict 3/3 signals.
+    full_alerts = state.setdefault('last_alerts_12of12', {})
     with session_factory() as session:
         for position, pair in enumerate(targets):
             if position:
@@ -250,52 +274,40 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
                     pair_errors.append(f'{pair} {tf}: {type(exc).__name__}: {str(exc)[:90]}')
             alignments = {str(h): alignment(timeframes, h, min_signal, min_gap) for h in HORIZONS}
             fully_fresh = all(timeframes[tf]['status'] == 'Updated' for tf in TIMEFRAMES)
+            twelve = full_alignment(timeframes)
             row = {'pair': pair, 'ready': fully_fresh, 'status': 'Updated' if fully_fresh else 'Incomplete / old',
-                   'checked_at': iso(now), 'timeframes': timeframes, 'alignments': alignments}
+                   'checked_at': iso(now), 'timeframes': timeframes,
+                   'alignments': alignments, 'full_alignment': twelve}
             rows[pair] = row
             errors.extend(pair_errors)
-            # A pair gets only ONE direction in the concise Telegram summary.
-            # If different horizons disagree (BUY vs SELL), skip it:
-            # without listing horizons, such a message would be misleading.
-            eligible = [(h, alignments[str(h)]) for h in alert_horizons
-                        if alignments[str(h)]['eligible']]
-            directions = {result['bias'] for _, result in eligible}
-            key = f'pair:{pair}'
-            if fully_fresh and len(directions) != 1:
-                # Genuine disagreement or no alignment resets the alert latch.
-                # Feed outages do not reset it.
-                last_alerts.pop(key, None)
+            # No partial/3-of-3 matches may trigger Telegram; require all 12.
+            if twelve['eligible']:
+                if full_alerts.get(pair) != twelve['bias']:
+                    pending_alerts.append((pair, twelve['bias'], []))
             elif fully_fresh:
-                direction = next(iter(directions))
-                if last_alerts.get(key) != direction:
-                    pending_alerts.append((pair, direction, eligible))
+                # Re-arm only after a verified change; feed errors must not reset.
+                full_alerts.pop(pair, None)
         # Group ALL newly qualifying pairs in one Telegram notification.
         if pending_alerts and token and chat and cfg.get('enable_telegram', True):
             message = telegram_alert_summary(pending_alerts)
             if send(session, token, chat, message):
                 sent = 1
-                for pair, direction, eligible in pending_alerts:
-                    last_alerts[f'pair:{pair}'] = direction
+                for pair, direction, _ in pending_alerts:
+                    full_alerts[pair] = direction
                     history.append({
-                        'pair': pair, 'bias': direction,
-                        'horizon': eligible[0][0],
-                        'horizons': [h for h, _ in eligible],
-                        'at': iso(now),
-                        'minimum_signal': min(item.get('minimum_signal', 0)
-                                              for _, item in eligible),
-                        'strong': any(item.get('strong', False)
-                                      for _, item in eligible),
+                        'pair': pair, 'bias': direction, 'rule': '12/12',
+                        'horizons': list(HORIZONS), 'at': iso(now),
                     })
             else:
                 errors.append('Telegram summary delivery failed')
     state['run_index'] = run_index + 1
     state['history'] = history[-150:]
     state['last_run'] = iso(now)
-    output = {'app': 'TradeLens Online', 'version': '1.3.0', 'updated_at': iso(now),
+    output = {'app': 'TradeLens Online', 'version': '1.4.0', 'updated_at': iso(now),
         'model': 'Experimental 9-feature technical analog (no macro/news overlay)',
         'provider': 'Unofficial Yahoo Finance',
-        'settings': {**cfg, 'alert_horizons': alert_horizons, 'timeframes': list(TIMEFRAMES),
-                     'horizons': list(HORIZONS)},
+        'settings': {**cfg, 'alert_rule': 'all_12_agree', 'alert_horizons': list(HORIZONS),
+                     'timeframes': list(TIMEFRAMES), 'horizons': list(HORIZONS)},
         'status': {'pairs_checked_this_run': len(targets), 'checked_pairs': targets,
                    'errors': errors[:45], 'alerts_sent': sent,
                    'telegram_configured': bool(token and chat)},
