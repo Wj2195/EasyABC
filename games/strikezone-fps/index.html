@@ -779,7 +779,8 @@ function damagePlayer(dmg,source,zone='chest'){if(!player.alive||ended)return;dm
 // v3.14: deceased soldiers topple over, remain for exactly two seconds, then hide.
 const CORPSE_VISIBLE_SECONDS=2,DEATH_FALL_SECONDS=.42;
 function soldierVisible(b){
- return b.alive||(!b.alive&&Number.isFinite(b.diedAt)&&nowSec>=b.diedAt&&nowSec-b.diedAt<CORPSE_VISIBLE_SECONDS);
+ // Complete the fall, then leave the body on the floor for a full two seconds.
+ return b.alive||(!b.alive&&Number.isFinite(b.diedAt)&&nowSec>=b.diedAt&&nowSec-b.diedAt<DEATH_FALL_SECONDS+CORPSE_VISIBLE_SECONDS);
 }
 function soldierFallProgress(b){
  if(b.alive)return 0;
