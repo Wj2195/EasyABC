@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.16 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.17 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -424,6 +424,12 @@ async function startModernRenderer(THREE){
       cube(gun,[0,.174,.18],[.093,.049,.080],glass);
       cube(gun,[0,-.050,.568],[.205,.093,.266],wood);
       cube(gun,[0,-.10,-.333],[.254,.241,.096],dark);
+      // Short-lived firearm muzzle flash highlights automatic and burst fire.
+      // It is a visual-only effect: shot timing/damage remain owned by the game.
+      const gunFlash=new THREE.Mesh(new THREE.OctahedronGeometry(.16,0),
+        new THREE.MeshBasicMaterial({color:0xffd585,transparent:true,opacity:.86,depthWrite:false}));
+      gunFlash.position.set(0,1.255,1.66);torso.add(gunFlash);
+      gunFlash.visible=false;
       // Bot-equipment silhouettes adapt to the current AI weapon.
       const pistol=new THREE.Group();pistol.position.set(.08,1.21,.30);torso.add(pistol);
       cube(pistol,[0,0,.20],[.16,.13,.36],steel);
@@ -463,12 +469,12 @@ async function startModernRenderer(THREE){
         const maxDim=Math.max(m.scale.x,m.scale.y,m.scale.z);
         if(maxDim<.17&&m!==patch){smallDetails.push(m);m.castShadow=false;}
       });
-      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,gun,pistol,energyCannon,shadow};
+      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,gun,pistol,energyCannon,shadow,gunFlash};
     }
     const units=Array.from({length:10},build);
     let currentCount=0;
     return {
-      update(bots,viewpoint){
+      update(bots,viewpoint,nowSec){
         currentCount=Math.min(units.length,bots.length);
         for(let i=0;i<units.length;i++){
           const u=units[i],b=bots[i];u.root.visible=!!b;if(!b)continue;
@@ -479,6 +485,10 @@ async function startModernRenderer(THREE){
           u.pistol.visible=b.weapon===4;
           u.energyCannon.visible=b.weapon===6;
           u.gun.visible=![4,6,7].includes(b.weapon);
+          u.gunFlash.visible=!b.downed&&![6,7].includes(b.weapon)&&
+             Number.isFinite(b.lastFiredAt)&&nowSec-b.lastFiredAt>=0&&nowSec-b.lastFiredAt<.115;
+          u.gunFlash.position.z=b.weapon===4?.78:b.weapon===5?2.05:b.weapon===2?1.89:
+            b.weapon===1?1.40:1.65;
           const gunScale=b.weapon===1?[.92,.95,.73]:b.weapon===2?[1,1,1.28]:
             b.weapon===3?[1.16,1.12,.9]:b.weapon===5?[1,1,1.55]:[1,1,1];
           u.gun.scale.set(...gunScale);
@@ -634,7 +644,7 @@ async function startModernRenderer(THREE){
           g.rotation.set((bot.fallSide||1)*1.43*fall,-bot.yaw,0);
           teamPatches[i].material=bot.team===0?armorBlue:armorRed;
         }}}
-      if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position);
+      if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position,s.nowSec);
       renderEnergyFX();
       if(!realisticWeapons&&elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
       for(let i=0;i<tracerPool.length;i++){
