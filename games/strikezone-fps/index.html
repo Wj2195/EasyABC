@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.13 — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.14 — Fallen Soldiers — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -295,7 +295,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.13 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.14 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button type="button" id="hudSound" title="Mute / unmute sound" aria-label="Sound on">♪</button><button type="button" id="hudFullscreen" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
@@ -707,7 +707,7 @@ function teamFacingDirection(p){return p.z<0?0:Math.PI;}
 function createBots(){bots=[];const count=mode==='tdm'?9:8;
  for(let i=0;i<count;i++){const team=mode==='tdm'?(i<4?0:1):1,p=spawnPoint(team);
  const weapon=i%weapons.length;
- bots.push({id:i,name:botNames[i],team,x:p.x,z:p.z,yaw:rand(-3,3),hp:100,alive:true,until:0,kills:0,deaths:0,
+ bots.push({id:i,name:botNames[i],team,x:p.x,z:p.z,yaw:rand(-3,3),hp:100,alive:true,diedAt:-Infinity,fallSide:1,until:0,kills:0,deaths:0,
  target:null,targetRefresh:0,path:[],pathRefresh:0,shootCD:rand(.4,1.5),speed:rand(2.5,3.3),
  phase:rand(0,6.28),walk:0,weapon,preferredWeapon:weapon,
  ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),reloadUntil:0,
@@ -776,7 +776,17 @@ function showCombatFeedback(zone,damage){
  if(zone==='head'){announce('HEADSHOT!',1.25);beep('headshot');}
 }
 function damagePlayer(dmg,source,zone='chest'){if(!player.alive||ended)return;dmg=applyShieldDefense(player,dmg,source,zone);if(dmg<=0){updateHud();return;}player.hp=Math.max(0,player.hp-dmg);player.lastDamage=nowSec;player.hurt=.72;$('damageOverlay').style.opacity='.70';beep('hurt');if(player.hp<=0){player.deaths++;player.alive=false;player.shoot=false;cancelEnergyCharge();keys={};touchMove.x=touchMove.y=0;finishTime=nowSec+3;announce('YOU WERE ELIMINATED',1.5);$('respawnScreen').classList.remove('hidden');if(source){source.kills++;if(mode==='tdm')red++;}updateScores();}updateHud();}
-function eliminateBot(b,killer){b.alive=false;b.hp=0;b.until=nowSec+2.7;b.deaths++;if(killer===player){player.kills++;if(mode==='tdm')blue++;feedKill('YOU',b.name,true);beep('kill');announce(player.kills>0&&player.kills%5===0?'KILL STREAK ×'+player.kills:'ELIMINATION +100 XP',1);if(mode==='gun'){cancelEnergyCharge();player.weapon=(player.weapon+1)%weapons.length;player.ammo[player.weapon]=weapons[player.weapon].mag;player.lastShot=nowSec-.25;updateHud();if(player.kills>=10)endMatch();}}else if(killer){killer.kills++;if(mode==='tdm'){if(killer.team===0)blue++;else red++;}feedKill(killer.name,b.name,false);}updateScores();updateHud();}
+// v3.14: deceased soldiers topple over, remain for exactly two seconds, then hide.
+const CORPSE_VISIBLE_SECONDS=2,DEATH_FALL_SECONDS=.42;
+function soldierVisible(b){
+ return b.alive||(!b.alive&&Number.isFinite(b.diedAt)&&nowSec>=b.diedAt&&nowSec-b.diedAt<CORPSE_VISIBLE_SECONDS);
+}
+function soldierFallProgress(b){
+ if(b.alive)return 0;
+ const t=clamp((nowSec-b.diedAt)/DEATH_FALL_SECONDS,0,1);
+ return 1-(1-t)*(1-t)*(1-t);
+}
+function eliminateBot(b,killer){b.alive=false;b.hp=0;b.diedAt=nowSec;b.fallSide=b.id%2?-1:1;b.until=nowSec+2.7;b.deaths++;if(killer===player){player.kills++;if(mode==='tdm')blue++;feedKill('YOU',b.name,true);beep('kill');announce(player.kills>0&&player.kills%5===0?'KILL STREAK ×'+player.kills:'ELIMINATION +100 XP',1);if(mode==='gun'){cancelEnergyCharge();player.weapon=(player.weapon+1)%weapons.length;player.ammo[player.weapon]=weapons[player.weapon].mag;player.lastShot=nowSec-.25;updateHud();if(player.kills>=10)endMatch();}}else if(killer){killer.kills++;if(mode==='tdm'){if(killer.team===0)blue++;else red++;}feedKill(killer.name,b.name,false);}updateScores();updateHud();}
 function damageBot(b,damage,killer,zone='chest'){if(!b.alive)return;damage=applyShieldDefense(b,damage,killer,zone);if(damage<=0)return;b.hp-=damage;if(b.hp<=0)eliminateBot(b,killer);}
 // Shield absorbs only directional fire, with durability and exposed legs.
 function shieldFacingDefender(defender,attacker){
@@ -936,7 +946,7 @@ function updateBots(dt){
   if(!b.alive){
    b.chargeStart=-1;
    if(nowSec>b.until&&!ended){
-    const p=spawnPoint(b.team);b.x=p.x;b.z=p.z;b.hp=100;b.alive=true;
+    const p=spawnPoint(b.team);b.x=p.x;b.z=p.z;b.hp=100;b.alive=true;b.diedAt=-Infinity;b.fallSide=1;
     b.weapon=b.preferredWeapon;
     b.ammo=weapons.map(w=>w.mag);b.reserves=weapons.map(w=>w.reserve);
     b.shieldHP=weapons[7].shieldHP;b.shieldLastDamage=-99;b.chargeStart=-1;
@@ -1374,8 +1384,18 @@ function toggleSound(){
  refreshSoundButtons();
 }
 function botShape(out,b){
- const a=b.yaw,ox=b.x,oz=b.z,walk=Math.sin(b.walk+b.phase)*.20,baseY=floorSurfaceAt(b.x,b.z)+(b.airHeight||0);
- const B=(x,y,z,w,h,d,m)=>box(out,ox+x,y+baseY,oz+z,w,h,d,m,a,ox,oz);
+ const down=!b.alive,fall=down?soldierFallProgress(b):0;
+ const a=b.yaw,ox=b.x,oz=b.z,walk=down?0:Math.sin(b.walk+b.phase)*.20;
+ const baseY=floorSurfaceAt(b.x,b.z)+(down?0:(b.airHeight||0));
+ // Compatibility renderer rotates the soldier's limbs around the low pelvis.
+ const tilt=fall*1.39*(b.fallSide||1),sn=Math.sin(tilt),cs=Math.cos(tilt);
+ const B=(x,y,z,w,h,d,m)=>{
+  if(!down)return box(out,ox+x,y+baseY,oz+z,w,h,d,m,a,ox,oz);
+  const ty=.20+(y-.20)*cs-z*sn,tz=(y-.20)*sn+z*cs;
+  const hh=Math.max(.03,Math.abs(cs)*h+Math.abs(sn)*d);
+  const dd=Math.max(.03,Math.abs(sn)*h+Math.abs(cs)*d);
+  return box(out,ox+x,baseY+Math.max(hh*.51,ty+.03),oz+tz,w,hh,dd,m,a,ox,oz);
+ };
  const friendly=mode==='tdm'&&b.team===0,uniform=friendly?11:12,trim=friendly?25:27;
  const skin=14,armor=9,visor=21,accent=24;
  // More humanoid proportions: narrower shoulders, clearer waist, separate upper/lower limbs.
@@ -1422,8 +1442,9 @@ function botShape(out,b){
  B(.07,.97,.26,.08,.18,.18,9);                            // mag
  B(-.10,.95,.24,.12,.08,.18,skin);                        // support hand near rifle
  B(.22,.89,.34,.10,.08,.18,skin);                         // trigger hand near rifle
- // Subtle contact shadow for grounding
- B(0,.014,0,.52,.014,.46,17);
+ // Keep body shadow resting on the floor rather than rotating with the character.
+ if(down)box(out,ox,baseY+.013,oz+(b.fallSide||1)*fall*.7,.66,.016,.90,17,a,ox,oz);
+ else B(0,.014,0,.52,.014,.46,17);
 }function addTracer(out,t){const dx=t.X-t.x,dy=t.Y-t.y,dz=t.Z-t.z,len=Math.hypot(dx,dy,dz)||1,px=-dz/len*.03,pz=dx/len*.03;quad(out,[t.x+px,t.y+.02,t.z+pz],[t.X+px,t.Y+.02,t.Z+pz],[t.X-px,t.Y-.02,t.Z-pz],[t.x-px,t.y-.02,t.z-pz],[0,1,0],t.friendly?15:12);}
 function weaponShape(out){const i=player.weapon,aim=player.ads,recoil=player.recoil,walking=(keys.KeyW||keys.KeyA||keys.KeyD||keys.KeyS)?1:0, sway=Math.sin(player.bob*2)*.012*walking, lift=Math.abs(Math.sin(player.bob))*.011*walking;
 let muzzle=1.9;let gx=(aim?.16:.43)+sway,gy=(aim?-.31:-.43)+lift-recoil*.28,gz=.50+recoil*.55;const B=(x,y,z,w,h,d,m)=>box(out,gx+x,gy+y,gz+z,w,h,d,m);
@@ -1545,7 +1566,7 @@ if(!player.alive&&running){cy=1.45;pitch=-.10;}
 const DPR=Math.min(devicePixelRatio||1,1.6),W=Math.floor(innerWidth*DPR),H=Math.floor(innerHeight*DPR);if(canvas.width!==W||canvas.height!==H){canvas.width=W;canvas.height=H;gl.viewport(0,0,W,H);}
 gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.frontFace(gl.CW);gl.cullFace(gl.BACK);gl.uniform3f(loc.camera,cx,cy,cz);gl.uniform1f(loc.yaw,yaw);gl.uniform1f(loc.pitch,pitch);gl.uniform1f(loc.aspect,W/H);gl.uniform1f(loc.fov,scopeFov()*Math.PI/180);gl.uniform1f(loc.weapon,0);gl.uniform1f(loc.time,nowSec);
 drawBuffer(staticBuffer,null,staticCount,false);
-const actors=[];for(const b of bots)if(b.alive)botShape(actors,b);addEnergyBoxes(actors);for(const t of tracers){t.ttl-=dt;if(t.ttl>0)addTracer(actors,t);}for(let i=tracers.length-1;i>=0;i--)if(tracers[i].ttl<=0)tracers.splice(i,1);for(let i=impactParticles.length-1;i>=0;i--){const p=impactParticles[i];p.ttl-=dt;if(p.ttl<=0){impactParticles.splice(i,1);continue;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vy-=7*dt;box(actors,p.x,p.y,p.z,p.size||.04,p.size||.04,p.size||.04,p.mat);}if(actors.length)drawBuffer(movingBuffer,actors,actors.length/7);
+const actors=[];for(const b of bots)if(soldierVisible(b))botShape(actors,b);addEnergyBoxes(actors);for(const t of tracers){t.ttl-=dt;if(t.ttl>0)addTracer(actors,t);}for(let i=tracers.length-1;i>=0;i--)if(tracers[i].ttl<=0)tracers.splice(i,1);for(let i=impactParticles.length-1;i>=0;i--){const p=impactParticles[i];p.ttl-=dt;if(p.ttl<=0){impactParticles.splice(i,1);continue;}p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.vy-=7*dt;box(actors,p.x,p.y,p.z,p.size||.04,p.size||.04,p.size||.04,p.mat);}if(actors.length)drawBuffer(movingBuffer,actors,actors.length/7);
 if(running&&player.alive&&!sniperScoped()){gl.clear(gl.DEPTH_BUFFER_BIT);gl.uniform1f(loc.weapon,1);gl.uniform1f(loc.fov,73*Math.PI/180);const mesh=[];weaponShape(mesh);drawBuffer(gunBuffer,mesh,mesh.length/7);}
 }
 
@@ -1628,7 +1649,7 @@ function softwareScene(dt){
   }
  }
  // Combine world and moving geometry in one depth-sorted pass so bots are occluded by walls.
- const actors=[];for(const b of bots)if(b.alive)botShape(actors,b);addEnergyBoxes(actors);
+ const actors=[];for(const b of bots)if(soldierVisible(b))botShape(actors,b);addEnergyBoxes(actors);
  for(const t of tracers){t.ttl-=dt;if(t.ttl>0)addTracer(actors,t);}
  for(let i=tracers.length-1;i>=0;i--)if(tracers[i].ttl<=0)tracers.splice(i,1);
  for(let i=impactParticles.length-1;i>=0;i--){const p=impactParticles[i];p.ttl-=dt;if(p.ttl<=0){impactParticles.splice(i,1);continue;}
@@ -1838,10 +1859,14 @@ updatePlayer=function(dt){baseUpdatePlayer(dt);const cross=$('crosshair');const 
 window.StrikeZoneRenderBridge={
  geometry:()=>STATIC,
  materials:()=>palette,
- actorGeometry:()=>{const data=[];for(const b of bots)if(b.alive)botShape(data,b);return data;},
+ actorGeometry:()=>{const data=[];for(const b of bots)if(soldierVisible(b))botShape(data,b);return data;},
  weaponGeometry:()=>{if(!running||!player.alive)return [];const data=[];weaponShape(data);return data;},
  tracerData:()=>tracers.map(t=>({x:t.x,y:t.y,z:t.z,X:t.X,Y:t.Y,Z:t.Z,friendly:t.friendly})),
- botData:()=>bots.filter(b=>b.alive).map(b=>({x:b.x,z:b.z,team:b.team,yaw:b.yaw,phase:b.phase,walk:b.walk,airHeight:b.airHeight||0})),
+ botData:()=>bots.filter(soldierVisible).map(b=>({
+ x:b.x,z:b.z,team:b.team,yaw:b.yaw,phase:b.phase,walk:b.walk,
+ airHeight:b.alive?(b.airHeight||0):0,weapon:b.weapon,shieldHP:b.shieldHP||0,
+ downed:!b.alive,fall:soldierFallProgress(b),fallSide:b.fallSide||1
+})),
  energyFX:()=>({shots:energyShots.map(p=>({x:p.x,y:p.y,z:p.z})),waves:energyWaves.map(p=>({x:p.x,y:p.y,z:p.z,age:p.age,ttl:p.ttl,radius:p.radius}))}),
  state:()=>({x:player.x,z:player.z,y:player.y,yaw:player.yaw,pitch:player.pitch,ads:player.ads,precisionScoped:precisionScoped(),sniperScoped:sniperScoped(),scopeFov:scopeFov(),scopeZoom:player.scopeZoom,crouch:player.crouch,alive:player.alive,flash:player.flash,bob:player.bob,landBob:player.landBob,recoil:player.recoil,energyCharge:player.weapon===6&&player.energyChargeStart>=0?clamp((nowSec-player.energyChargeStart)/2,0,1):0,nowSec,running,paused,ended,weapon:player.weapon,reloadRemaining:Math.max(0,player.reloadUntil-nowSec),reloadDuration:weapons[player.weapon].reload,matchRemaining}),
  availableGPU:()=>!!gl,
@@ -1902,5 +1927,5 @@ if(!document.getElementById('rendererState').textContent.includes('renderer'))do
 })();
 
 </script>
-<script type="module" src="./ultra-renderer.js?v=3.13"></script>
+<script type="module" src="./ultra-renderer.js?v=3.14"></script>
 </body></html>
