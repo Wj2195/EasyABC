@@ -1429,6 +1429,7 @@ function createBots(){bots=[];const count=mode==='tdm'||mode==='zombie'?9:8;
  phase:rand(0,6.28),walk:0,weapon,preferredWeapon:weapon,
  ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),reloadUntil:0,
  shieldHP:shieldMaxHP(),shieldLastDamage:-99,chargeStart:-1,weaponHoldUntil:nowSec+6,
+ lastRangedWeapon:weapon<=6?weapon:0,
  burstShots:0,burstPauseUntil:0,burstTarget:null,burstIndex:0,lastFiredAt:-99,fireSide:1,
  aiMode:'patrol',lastDamageAt:-99,damageWindowStart:-99,damageWindow:0,lastAttacker:null,
  retreatUntil:0,retreatCooldown:0,retreatGoal:null,retreatReplan:0,recoverGoal:84,
@@ -1829,7 +1830,17 @@ function monsterSpawnLocation(big=false){
   }
  }
  if(!options.length)return {x:0,z:big?0:42};
- const pick=options[Math.floor(Math.random()*options.length)];
+ // Spread the larger horde between districts instead of stacking zombies
+ // at an identical doorway or directly on top of the Overlord.
+ let possible=options;
+ if(!big){
+  const crowd=zombies.filter(z=>z.alive);
+  possible=options.filter(([x,z])=>
+   (!boss?.alive||hypot(x-boss.x,z-boss.z)>4.2)&&
+   crowd.every(z=>hypot(x-z.x,z-z.z)>2.1));
+  if(!possible.length)possible=options;
+ }
+ const pick=possible[Math.floor(Math.random()*possible.length)];
  return {x:pick[0],z:pick[1]};
 }
 function makeZombie(id,agile=false){
@@ -2671,7 +2682,9 @@ function completeReload(){if(!player.reloadUntil||nowSec<player.reloadUntil)retu
 function switchWeapon(index){
  if(!Number.isInteger(index)||index<0||index>=weapons.length||mode==='gun'||!running||paused||!player.alive||player.weapon===index)return;
  if(index===7&&player.shieldHP<=0){announce('AEGIS SHIELD BROKEN · REPAIRED ON RESPAWN',1.4);return;}
- cancelEnergyCharge();player.weapon=index;player.reloadUntil=0;player.recoil=.14;player.lastShot=nowSec-.25;beep('switch');updateHud();
+ cancelEnergyCharge();
+ if(index<=6)player.lastRangedWeapon=index;
+ player.weapon=index;player.reloadUntil=0;player.recoil=.14;player.lastShot=nowSec-.25;beep('switch');updateHud();
  const w=weapons[index];announce(w.name+' • '+w.damage+' BASE DMG',1.0);
 }
 function updatePlayer(dt){
