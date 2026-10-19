@@ -793,61 +793,90 @@ async function startModernRenderer(THREE){
     }
   }
 
-  // Overlord's charged lightning storm: pooled zig-zag 3D arc meshes.
-  const boltSegments=18;
-  const lightningLines=[];
-  const stormCore=new THREE.LineBasicMaterial({color:0x8ffcff,transparent:true,opacity:.96,depthWrite:false});
-  const stormBranch=new THREE.LineBasicMaterial({color:0xb178ff,transparent:true,opacity:.80,depthWrite:false});
-  for(let i=0;i<22;i++){
-    const geo=new THREE.BufferGeometry();
-    const vertices=new Float32Array((boltSegments+1)*3);
-    const attribute=new THREE.BufferAttribute(vertices,3);
-    attribute.setUsage(THREE.DynamicDrawUsage);geo.setAttribute('position',attribute);
-    const line=new THREE.Line(geo,(i%2?stormBranch:stormCore).clone());
-    line.visible=false;line.frustumCulled=false;scene.add(line);
-    lightningLines.push(line);
+  // STRIKEZONE v3.29 — volumetric boss lightning. WebGL lineWidth stays
+  // one pixel on many GPUs, so use THREE.InstancedMesh cylinder segments
+  // with wide cyan cores and an additive violet halo. Geometry is pooled.
+  const ELECTRIC_SEGMENTS=18,ELECTRIC_ARCS=22;
+  const electricSegmentGeo=new THREE.CylinderGeometry(1,1,1,7,1);
+  const electricY=new THREE.Vector3(0,1,0);
+  const electricA=new THREE.Vector3(),electricB=new THREE.Vector3();
+  const electricDelta=new THREE.Vector3(),electricMid=new THREE.Vector3();
+  const electricDummy=new THREE.Object3D();
+  const electricLayers=[
+   {radius:.53,mat:new THREE.MeshBasicMaterial({color:0x693cff,transparent:true,
+     opacity:.32,blending:THREE.AdditiveBlending,depthWrite:false})},
+   {radius:.30,mat:new THREE.MeshBasicMaterial({color:0x28dcff,transparent:true,
+     opacity:.88,blending:THREE.AdditiveBlending,depthWrite:false})},
+   {radius:.12,mat:new THREE.MeshBasicMaterial({color:0xffffff,
+     transparent:true,opacity:1,depthWrite:false})}
+  ];
+  for(const layer of electricLayers){
+   layer.mesh=new THREE.InstancedMesh(electricSegmentGeo,layer.mat,
+      ELECTRIC_ARCS*ELECTRIC_SEGMENTS);
+   layer.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+   layer.mesh.count=0;layer.mesh.frustumCulled=false;
+   layer.mesh.renderOrder=11;scene.add(layer.mesh);
   }
-  const stormRing=new THREE.Mesh(new THREE.RingGeometry(3.7,4.4,48),
-    new THREE.MeshBasicMaterial({color:0x81dfff,transparent:true,opacity:.20,
-      side:THREE.DoubleSide,depthWrite:false}));
+  const stormRing=new THREE.Mesh(new THREE.RingGeometry(4.5,6.5,64),
+    new THREE.MeshBasicMaterial({color:0x5dceff,transparent:true,opacity:.48,
+      side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));
   stormRing.rotation.x=-Math.PI/2;stormRing.visible=false;scene.add(stormRing);
-  const stormLight=new THREE.PointLight(0x76caff,0,16,2);
-  scene.add(stormLight);
+  const chargeOrb=new THREE.Mesh(new THREE.SphereGeometry(.95,14,10),
+    new THREE.MeshBasicMaterial({color:0x9afaff,transparent:true,opacity:.60,
+       depthWrite:false,blending:THREE.AdditiveBlending}));
+  chargeOrb.visible=false;scene.add(chargeOrb);
+  const stormLight=new THREE.PointLight(0x7edbff,0,24,2);scene.add(stormLight);
   function updateLightningVisuals(time,attack){
-    const data=bridge.lightningData?.()||[];
-    for(let i=0;i<lightningLines.length;i++){
-      const line=lightningLines[i],bolt=data[i],alive=bolt&&time-bolt.t<bolt.ttl;
-      line.visible=!!alive;if(!alive)continue;
-      const pos=line.geometry.attributes.position;
+    const bolts=bridge.lightningData?.()||[];
+    let count=0;
+    for(let i=0;i<bolts.length&&count<ELECTRIC_ARCS*ELECTRIC_SEGMENTS;i++){
+      const bolt=bolts[i],age=time-bolt.t;
+      if(age<0||age>bolt.ttl)continue;
       const dx=bolt.X-bolt.x,dy=bolt.Y-bolt.y,dz=bolt.Z-bolt.z;
-      const norm=Math.max(.01,Math.hypot(dx,dz));
-      // Perpendicular offsets give a lightning silhouette from any camera angle.
-      const nx=-dz/norm,nz=dx/norm;
-      const age=(time-bolt.t)/bolt.ttl;
-      line.material.opacity=(bolt.chain?Math.max(.1,.82*(1-age)):Math.max(.1,.96*(1-age)));
-      for(let j=0;j<=boltSegments;j++){
-        const t=j/boltSegments;
-        const taper=Math.sin(Math.PI*t);
-        const flicker=Math.sin(bolt.seed+j*12.71+Math.floor(time*32)*1.87)*.47*taper;
-        const v=j*3;
-        pos.array[v]=bolt.x+dx*t+nx*flicker;
-        pos.array[v+1]=bolt.y+dy*t+
-          Math.cos(bolt.seed+j*6.33+Math.floor(time*21))*.24*taper;
-        pos.array[v+2]=bolt.z+dz*t+nz*flicker;
+      const horiz=Math.max(.02,Math.hypot(dx,dz));
+      const nx=-dz/horiz,nz=dx/horiz;
+      let fromX=bolt.x,fromY=bolt.y,fromZ=bolt.z;
+      const remaining=Math.max(.15,1-age/bolt.ttl);
+      for(let j=1;j<=ELECTRIC_SEGMENTS;j++){
+        const t=j/ELECTRIC_SEGMENTS,taper=Math.sin(Math.PI*t);
+        const wobble=Math.sin(bolt.seed+j*10.73+Math.floor(time*29)*2.17)*.87*taper;
+        const vertical=Math.sin(bolt.seed+j*9.41+Math.floor(time*31))*.40*taper;
+        const toX=bolt.x+dx*t+nx*wobble;
+        const toY=bolt.y+dy*t+vertical;
+        const toZ=bolt.z+dz*t+nz*wobble;
+        electricA.set(fromX,fromY,fromZ);
+        electricB.set(toX,toY,toZ);
+        electricDelta.subVectors(electricB,electricA);
+        const length=Math.max(.02,electricDelta.length());
+        electricMid.addVectors(electricA,electricB).multiplyScalar(.5);
+        electricDummy.position.copy(electricMid);
+        electricDummy.quaternion.setFromUnitVectors(electricY,electricDelta.normalize());
+        for(const layer of electricLayers){
+          const taperWidth=(bolt.chain?.85:1)*(.48+.52*remaining);
+          electricDummy.scale.set(layer.radius*taperWidth,length,layer.radius*taperWidth);
+          electricDummy.updateMatrix();
+          layer.mesh.setMatrixAt(count,electricDummy.matrix);
+        }
+        count++;fromX=toX;fromY=toY;fromZ=toZ;
       }
-      pos.needsUpdate=true;line.geometry.computeBoundingSphere();
+    }
+    for(const layer of electricLayers){
+      layer.mesh.count=count;
+      if(count>0)layer.mesh.instanceMatrix.needsUpdate=true;
     }
     const charging=!!(attack?.lightningUntil>attack?.now);
-    const b=(bridge.monsterData?.()||[]).find(m=>m.boss);
-    stormRing.visible=charging&&!!b;
+    const b=charging?(bridge.monsterData?.()||[]).find(m=>m.boss):null;
+    stormRing.visible=charging&&!!b;chargeOrb.visible=charging&&!!b;
     if(stormRing.visible){
-      stormRing.position.set(b.x,.095,b.z);
-      const flash=.85+.10*Math.sin(time*26);
-      stormRing.scale.setScalar(flash);
-      stormLight.position.set(b.x,3.5,b.z);stormLight.intensity=3.2+.7*Math.sin(time*22);
-    }else if(data.length){
-      const last=data[0];stormLight.position.set(last.X,last.Y,last.Z);
-      stormLight.intensity=2.0;
+      const pulse=1+.14*Math.sin(time*19);
+      stormRing.position.set(b.x,.10,b.z);stormRing.scale.setScalar(pulse);
+      chargeOrb.position.set(b.x,3.8,b.z);
+      chargeOrb.scale.setScalar(1.2+.3*Math.sin(time*21));
+      stormLight.position.set(b.x,3.8,b.z);
+      stormLight.intensity=6.2+2*Math.sin(time*20);
+    }else if(count>0){
+      const p=bolts[0];
+      stormLight.position.set(p.X,p.Y,p.Z);stormLight.intensity=4.6;
     }else stormLight.intensity=0;
   }
 
