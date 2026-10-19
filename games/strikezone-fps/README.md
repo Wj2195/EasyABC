@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo Tactical Training v3.28
+# STRIKEZONE FPS — Solo Tactical Training v3.29
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.28
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.29
 
 Original browser-based 3D FPS for one human player against AI bots. Multiplayer is not included.
 
@@ -427,3 +427,14 @@ The fourth operation is a **two-team Overlord boss race** on the existing 13-bui
 - **Kept unchanged:** 50,000 HP Overlord, 48 simultaneous zombies (10 agile), guaranteed ammo pickups, cross-team PvP and final-hit-only boss victory.
 
 **Validation:** JavaScript main game and enhanced renderer parse successfully. Isolated firing simulation over 2.4 seconds yielded 29 zombie-rapid rounds vs 24 ordinary burst rounds with the same weapon and mock target. Verified the boss warning, charge timing, chaining to blue/red soldiers, LOS blocking of a soldier behind cover, cooldown and lightning expiry. Browser playtesting is still necessary for actual frame rates, appearance and balance.
+
+
+## v3.29 — Boss-first soldier objective and huge electric lightning
+
+- **Mission-first navigation:** Zombie & Monster AI now routes directly toward the living 50,000 HP Overlord instead of pursuing every wandering zombie. Unlike v3.28, its firing target and its movement objective are independent.
+- **Short defensive engagements:** Bots only turn their guns onto visible zombies / rival soldiers within close danger range (8m for regular undead, 10m for agile undead, 12m for rivals; recently damaging attackers can be engaged within 17m). Their navigation goal remains the Overlord even while suppressing a close threat.
+- **Aggressive pursuit:** Bots move 14% faster toward the boss in this operation, preserve wall-aware navigation routes while firing, and switch to direct boss combat when close enough. Normal Deathmatch / Free For All / Gun Race pathing remains unchanged.
+- **Giant lightning visuals:** Enhanced WebGL2 now renders the boss's electrical strike as pooled, fully 3D **thick segmented cylinders**: white-hot center, bright cyan middle and wide violet additive glow. It uses large zig-zag distortion, a glowing charge orb, a larger ground ring and brighter electrical lighting. Its visible duration is 1.05 seconds. WebGL1/Canvas fallback lightning was thickened as well.
+- The prior behavior remains: random boss spawning, 48 zombies (10 agile), bot rapid-fire defense, ammo drops, Blue vs Red PvP, chain lightning across up to four exposed soldiers and final-boss-hit victory.
+
+**Validation:** JavaScript parses; unit simulations confirmed a bot selects close zombie and rival threats but refocuses on the Overlord when they are distant; its path destination remains the boss while shooting an immediate zombie; enhanced graphics module passes syntax validation. Full browser gameplay/visual testing remains recommended.
