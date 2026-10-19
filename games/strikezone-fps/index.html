@@ -1152,6 +1152,12 @@ function denseSectorBoundaries(){
    }
   }
  }
+ // Seal two unusably thin legacy doorway alcoves left between the new
+ // south checkpoint wall and existing room facades; no phantom bot pockets.
+ for(const side of [-1,1]){
+  cube(side*27,1.55,26.1,7.4,3.1,1.9,31,true);
+  cube(side*27,3.18,26.1,7.6,.18,2.1,21);
+ }
  // Smaller boundary sections reduce straight 80m firing lanes without
  // sealing the existing routes into the original eight side buildings.
  for(const side of [-1,1])for(const z of [-47,-10,10,47]){
