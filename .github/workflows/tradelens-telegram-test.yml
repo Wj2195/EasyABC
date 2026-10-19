@@ -1,0 +1,41 @@
+name: TradeLens Telegram connection test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Send one Telegram test message
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+          token = os.environ.get('TELEGRAM_BOT_TOKEN', '').strip()
+          chat_id = os.environ.get('TELEGRAM_CHAT_ID', '').strip()
+          if not token:
+              raise SystemExit('Missing GitHub Actions secret TELEGRAM_BOT_TOKEN.')
+          if not chat_id:
+              raise SystemExit('Missing GitHub Actions secret TELEGRAM_CHAT_ID.')
+          payload = json.dumps({
+              'chat_id': chat_id,
+              'text': 'TradeLens Online: Telegram connection successful. Future aligned BUY/SELL alerts will appear here when the scanner finds a qualifying signal.'
+          }).encode('utf-8')
+          url = 'https://api.telegram.org/bot' + token + '/sendMessage'
+          req = urllib.request.Request(url, data=payload, headers={'Content-Type': 'application/json'})
+          try:
+              with urllib.request.urlopen(req, timeout=18) as response:
+                  result = json.load(response)
+          except Exception:
+              raise SystemExit('Telegram test failed. Check both secrets and ensure you tapped Start in the bot chat.') from None
+          if not result.get('ok'):
+              raise SystemExit('Telegram refused the test message. Check the bot chat and secret values.')
+          print('Telegram test notification delivered successfully.')
+          PY
