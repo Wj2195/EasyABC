@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.22 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.23 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -815,7 +815,7 @@ function mazeRoom(cx,cz,index){
  const w=17.4,d=17.6,L=cx-w/2,R=cx+w/2,N=cz-d/2,S=cz+d/2;
  const themed=[32,31,36,32,36,32,33,31],mat=themed[index],
        trim=[31,25,9,10,21,12,21,33][index],h=[5.6,5.3,5.8,5.4,5.45,5.15,5.4,5.9][index];
- // Map 1 v3.22: Eight actual entryways per outer building, with both
+ // Map 1 v3.23: Eight actual entryways per outer building, with both
  // north/south and east/west exits leading to the linked building network.
  const doubleDoors=(mid)=>[
   {at:mid-4.9,w:3.55,kind:'door'},
@@ -1062,7 +1062,7 @@ function urbanStreetDetails(){
 }
 
 
-// MAP 001 v3.22: five additional fully traversable center buildings, sectional
+// MAP 001 v3.23: five additional fully traversable center buildings, sectional
 // airlock walls, and street-scale architectural obstacles. A wall has collision
 // ONLY if it touches the ground; door voids are true player/bot openings.
 const MAP_ONE_SECTORS=[
@@ -1342,7 +1342,11 @@ function createBots(){bots=[];const count=mode==='tdm'?9:8;
  phase:rand(0,6.28),walk:0,weapon,preferredWeapon:weapon,
  ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),reloadUntil:0,
  shieldHP:weapons[7].shieldHP,shieldLastDamage:-99,chargeStart:-1,weaponHoldUntil:nowSec+6,
- burstShots:0,burstPauseUntil:0,burstTarget:null,burstIndex:0,lastFiredAt:-99,fireSide:1});}
+ burstShots:0,burstPauseUntil:0,burstTarget:null,burstIndex:0,lastFiredAt:-99,fireSide:1,
+ aiMode:'patrol',lastDamageAt:-99,damageWindowStart:-99,damageWindow:0,lastAttacker:null,
+ retreatUntil:0,retreatCooldown:0,retreatGoal:null,retreatReplan:0,recoverGoal:84,
+ patrolGoal:null,patrolUntil:0,patrolRecent:[],patrolRegion:-1,patrolVisits:0,
+ coverPoint:null,coverUntil:0,stuckFor:0,strafeDir:i%2?1:-1,aimReadyAt:nowSec+.5});}
 }
 let startingWeapon=0;
 try{
@@ -1491,7 +1495,23 @@ function soldierFallProgress(b){
  return 1-(1-t)*(1-t)*(1-t);
 }
 function eliminateBot(b,killer){b.alive=false;b.hp=0;b.diedAt=nowSec;b.fallSide=b.id%2?-1:1;b.until=nowSec+2.7;b.deaths++;if(killer===player){player.kills++;if(mode==='tdm')blue++;feedKill('YOU',b.name,true);beep('kill');announce(player.kills>0&&player.kills%5===0?'KILL STREAK ×'+player.kills:'ELIMINATION +100 XP',1);if(mode==='gun'){cancelEnergyCharge();player.weapon=(player.weapon+1)%weapons.length;player.ammo[player.weapon]=weapons[player.weapon].mag;player.lastShot=nowSec-.25;updateHud();if(player.kills>=10)endMatch();}}else if(killer){killer.kills++;if(mode==='tdm'){if(killer.team===0)blue++;else red++;}feedKill(killer.name,b.name,false);}updateScores();updateHud();}
-function damageBot(b,damage,killer,zone='chest',impactSource=killer){if(!b.alive)return 0;damage=applyShieldDefense(b,damage,impactSource,zone);if(damage<=0)return 0;const actual=Math.min(b.hp,damage);b.hp-=damage;if(b.hp<=0)eliminateBot(b,killer);return actual;}
+function damageBot(b,damage,killer,zone='chest',impactSource=killer){
+ if(!b.alive)return 0;
+ const actualDamage=applyShieldDefense(b,damage,impactSource,zone);
+ // Protected shield impacts still register as incoming pressure.
+ if(killer&&killer!==b){
+  b.lastAttacker=killer;b.lastThreatAt=nowSec;
+ }
+ if(actualDamage<=0)return 0;
+ if(nowSec-(b.damageWindowStart??-99)>3){
+  b.damageWindowStart=nowSec;b.damageWindow=0;
+ }
+ b.damageWindow+=actualDamage;
+ b.lastDamageAt=nowSec;
+ const actual=Math.min(b.hp,actualDamage);b.hp-=actualDamage;
+ if(b.hp<=0)eliminateBot(b,killer);
+ return actual;
+}
 // v3.18: shield and hit detection must use the SAME yaw as the visible soldier.
 // Only a shot arriving from the shield-facing front can be absorbed.
 // The slight side tolerance keeps direct side-on hits consistent, while any
@@ -1537,17 +1557,36 @@ function pickTarget(bot){
  }
  return best;
 }
+// v3.23: cover discovery works across the FULL map, not just the old +/-29 arena.
 function chooseCoverPoint(bot,tar){
- let best=null,bestScore=-Infinity;
- for(const o of colliders){
-  const w=o.X-o.x,d=o.Z-o.z;if(w>5||d>5||o.h<.65)continue;
-  const cx=(o.x+o.X)/2,cz=(o.z+o.Z)/2;if(hypot(cx-bot.x,cz-bot.z)>9)continue;
-  const dx=cx-tar.x,dz=cz-tar.z,len=Math.hypot(dx,dz)||1;
-  const x=cx+dx/len*(Math.max(w,d)*.6+.65),z=cz+dz/len*(Math.max(w,d)*.6+.65);
-  if(Math.abs(x)>=29||Math.abs(z)>=29||collidesCircle(x,z,.54)||clearPath(tar.x,tar.z,x,z))continue;
-  const score=10-hypot(bot.x-x,bot.z-z);if(score>bestScore){best={x,z};bestScore=score;}
+ if(!tar)return null;
+ const candidates=[];
+ const tx=tar.x,tz=tar.z;
+ // Use a deterministic ring around the bot, including adjacent buildings,
+ // corners and the outer flanking lanes, instead of a tiny 9-unit radius.
+ for(const radius of [8,13,19,25]){
+  for(let k=0;k<16;k++){
+   const angle=(k+bot.id*.35)*Math.PI/8;
+   const x=Math.round(bot.x+Math.sin(angle)*radius),
+         z=Math.round(bot.z+Math.cos(angle)*radius);
+   if(collidesCircle(x,z,.48))continue;
+   const enemyDist=hypot(x-tx,z-tz),selfDist=hypot(x-bot.x,z-bot.z);
+   if(enemyDist<7||selfDist<3.5||clearPath(tx,tz,x,z))continue;
+   const away=((x-bot.x)*(bot.x-tx)+(z-bot.z)*(bot.z-tz))/
+     (Math.max(1,selfDist)*Math.max(1,hypot(bot.x-tx,bot.z-tz)));
+   const score=enemyDist*.45+selfDist*-.42+away*5+
+     (Math.abs(x)>30?1.5:0)+(Math.abs(z)>30?1.5:0);
+   candidates.push({x,z,score});
+  }
  }
- return best;
+ candidates.sort((a,b)=>b.score-a.score);
+ // Validate real bot paths: a hidden but unreachable pocket is not cover.
+ for(const point of candidates.slice(0,10)){
+  const path=navigation(bot.x,bot.z,point.x,point.z);
+  if(path.length||clearPath(bot.x,bot.z,point.x,point.z))
+   return {x:point.x,z:point.z};
+ }
+ return null;
 }
 function tacticalVector(b,tar,visible,dist,go){
  let vx=go.x-b.x,vz=go.z-b.z;
@@ -1563,8 +1602,120 @@ function tacticalVector(b,tar,visible,dist,go){
  return {x:vx/len,z:vz/len};
 }
 
+
+// v3.23 — squad decision system: varied building patrols, shield retreat,
+// safe health recovery, and deliberate re-engagement.
+// All landmarks are world positions inside the existing Map 1 geometry.
+const AI_PATROL_POINTS=[
+ ...[-35,-12,12,35].flatMap(z=>[[-24,z],[24,z]]),
+ ...[-45,-22,0,22,45].map(z=>[0,z]),
+ ...[-48,-24,0,24,48].flatMap(z=>[[-46,z],[46,z]]),
+ ...[-48,-24,0,24,48].flatMap(z=>[[-37,z],[37,z]]),
+ ...[-49,-36,-12,12,36,49].flatMap(z=>[[-14,z],[14,z]]),
+ [-7,-65],[7,-65],[-7,65],[7,65]
+];
+function botPatrolDestination(b){
+ const options=[];
+ for(let i=0;i<AI_PATROL_POINTS.length;i++){
+  const [x,z]=AI_PATROL_POINTS[i];
+  if(collidesCircle(x,z,.48))continue;
+  const d=hypot(x-b.x,z-b.z);
+  if(d<9||d>105)continue;
+  // No repeated central bottleneck: prefer unvisited sectors and low-density lanes.
+  const region=z< -27.5?0:z<27.5?1:2;
+  let score=Math.random()*11+Math.min(45,d)*.12;
+  if(b.patrolRecent.includes(i))score-=45;
+  if(region!==b.patrolRegion)score+=5;
+  if((i+b.id*7)%9===0)score+=3;
+  for(const ally of bots)if(ally!==b&&ally.alive&&ally.patrolGoal){
+   if(hypot(x-ally.patrolGoal.x,z-ally.patrolGoal.z)<10)score-=14;
+  }
+  // Move towards opposing territory but keep room to circle back/defend.
+  if((b.team===0&&z>0)||(b.team===1&&z<0))score+=3;
+  options.push({x,z,i,region,score});
+ }
+ options.sort((a,b)=>b.score-a.score);
+ for(const p of options.slice(0,15)){
+  if(!navigation(b.x,b.z,p.x,p.z).length&&!clearPath(b.x,b.z,p.x,p.z))continue;
+  b.patrolRecent.push(p.i);
+  if(b.patrolRecent.length>9)b.patrolRecent.shift();
+  b.patrolRegion=p.region;b.patrolVisits++;
+  return {x:p.x,z:p.z};
+ }
+ return null;
+}
+function botStartRetreat(b,threat){
+ b.aiMode='retreat';b.retreatUntil=nowSec+11;
+ b.retreatReplan=0;b.retreatGoal=null;
+ b.coverPoint=null;b.path=[];b.pathRefresh=0;
+ b.recoverGoal=rand(79,88);b.chargeStart=-1;b.reloadUntil=0;
+ b.weapon=7;b.weaponHoldUntil=0;resetBotBurst(b);
+ b.aimReadyAt=nowSec+.2;b.lastAttacker=threat||b.lastAttacker;
+}
+function botEndRetreat(b){
+ b.aiMode='patrol';b.retreatGoal=null;b.path=[];b.pathRefresh=0;
+ b.retreatCooldown=nowSec+rand(12,17);
+ b.damageWindow=0;b.damageWindowStart=nowSec;
+ b.weapon=b.preferredWeapon;b.weaponHoldUntil=nowSec+1.5;
+ b.patrolGoal=null;b.patrolUntil=0;b.coverPoint=null;
+ b.chargeStart=-1;resetBotBurst(b);
+}
+function botRecoveryDecision(b,threat,visible,dt){
+ const recovering=b.aiMode==='retreat'||b.aiMode==='recover';
+ const threatened=threat&&(
+    visible||hypot(threat.x-b.x,threat.z-b.z)<23||
+    nowSec-(b.lastDamageAt??-99)<2.5);
+ const underFire=nowSec-(b.lastDamageAt??-99)<3.2;
+ const damageBurst=b.damageWindowStart+3>=nowSec?b.damageWindow:0;
+ const losing=threat&&b.hp+20<threat.hp&&underFire;
+ const shouldRetreat=threatened&&nowSec>=b.retreatCooldown&&
+  (b.hp<=32||(b.hp<67&&underFire&&(damageBurst>=24||losing)));
+ if(!recovering&&shouldRetreat){botStartRetreat(b,threat);return;}
+ if(!recovering)return;
+ // No attack, re-equipping or crossfire while withdrawing/healing.
+ if(b.weapon!==7){b.weapon=7;b.weaponHoldUntil=0;resetBotBurst(b);}
+ if(b.aiMode==='retreat'){
+  if(nowSec>=b.retreatUntil){
+   // If there is no safely hidden position, bot still cannot heal in gunfire.
+   b.retreatUntil=nowSec+5;b.retreatReplan=0;
+  }
+  if(nowSec>=b.retreatReplan||!b.retreatGoal){
+   const fallback=b.lastAttacker?.alive?b.lastAttacker:threat;
+   b.retreatGoal=chooseCoverPoint(b,fallback);
+   // If all nearby hiding spots are occupied, use a viable flank waypoint
+   // away from the attacker rather than freeze in front of the player.
+   if(!b.retreatGoal){
+    const options=AI_PATROL_POINTS.map(([x,z])=>({x,z}))
+     .filter(p=>!collidesCircle(p.x,p.z,.48))
+     .sort((a,c)=>hypot(c.x-fallback?.x||0,c.z-fallback?.z||0)-
+                   hypot(a.x-fallback?.x||0,a.z-fallback?.z||0));
+    for(const p of options.slice(0,16)){
+     if(hypot(p.x-b.x,p.z-b.z)<5)continue;
+     if(navigation(b.x,b.z,p.x,p.z).length){b.retreatGoal=p;break;}
+    }
+   }
+   b.retreatReplan=nowSec+rand(2.2,3.5);b.path=[];b.pathRefresh=0;
+  }
+  const safe=b.retreatGoal&&hypot(b.retreatGoal.x-b.x,b.retreatGoal.z-b.z)<2.3;
+  const sighted=threat&&clearPath(threat.x,threat.z,b.x,b.z);
+  // Recovery requires actual cover and no recent damage, not just elapsed time.
+  if(safe&&!sighted&&nowSec-b.lastDamageAt>1.6){
+   b.aiMode='recover';b.path=[];b.pathRefresh=0;b.coverPoint=null;
+  }
+ }else{
+  const sighted=threat&&clearPath(threat.x,threat.z,b.x,b.z);
+  if(sighted||nowSec-b.lastDamageAt<1.5){
+   b.aiMode='retreat';b.retreatGoal=null;b.retreatReplan=0;return;
+  }
+  // Recover gradually up to 79–88 HP and then switch back to a real gun.
+  b.hp=Math.min(b.recoverGoal,b.hp+11.5*dt);
+  if(b.hp>=b.recoverGoal-.01)botEndRetreat(b);
+ }
+}
+
 // AI uses weapon-specific ranges, cadence, ammo and cover tactics.
 function botChooseWeapon(b,dist,visible){
+ if(b.aiMode==='retreat'||b.aiMode==='recover')return;
  const now=nowSec;
  const current=weapons[b.weapon];
  const empty=!current.shield&&b.ammo?.[b.weapon]<=0&&b.reserves?.[b.weapon]<=0;
@@ -1725,98 +1876,130 @@ function updateBots(dt){
     b.reloadUntil=0;b.weaponHoldUntil=nowSec+4;resetBotBurst(b);b.lastFiredAt=-99;
     b.path=[];b.target=null;b.pathRefresh=0;b.targetRefresh=0;
     b.stuckFor=0;b.coverPoint=null;b.coverUntil=0;b.aimReadyAt=nowSec+.5;
+    b.aiMode='patrol';b.lastDamageAt=-99;b.lastThreatAt=-99;
+    b.damageWindowStart=-99;b.damageWindow=0;b.lastAttacker=null;
+    b.retreatGoal=null;b.retreatReplan=0;b.retreatCooldown=nowSec+2;
+    b.patrolGoal=null;b.patrolUntil=0;b.patrolRecent=[];b.patrolRegion=-1;
+    b.lastSeenAt=-99;
    }
    continue;
   }
   if(!b.ammo){b.ammo=weapons.map(w=>w.mag);b.reserves=weapons.map(w=>w.reserve);}
-  if(b.strafeDir===undefined)b.strafeDir=Math.random()<.5?-1:1;
+  if(b.strafeDir===undefined)b.strafeDir=b.id%2?1:-1;
   if(b.preferredRange===undefined)b.preferredRange=rand(8,12);
   if(b.tacticUntil===undefined)b.tacticUntil=0;
   if(b.aimReadyAt===undefined)b.aimReadyAt=nowSec+.4;
   if(b.lastSeenAt===undefined)b.lastSeenAt=-99;
   if(b.stuckFor===undefined)b.stuckFor=0;
-  if(b.coverUntil===undefined)b.coverUntil=0;
   b.shootCD-=dt;b.targetRefresh-=dt;b.pathRefresh-=dt;
-  // AEGIS interception does not consume durability.
   const previous=b.target;
   if(b.targetRefresh<=0||!b.target||!b.target.alive){
-    b.target=pickTarget(b);b.targetRefresh=rand(.45,.8);
+   b.target=pickTarget(b);b.targetRefresh=rand(.45,.9);
   }
   if(previous!==b.target){
-    resetBotBurst(b);b.path=[];b.pathRefresh=0;b.coverPoint=null;b.aimReadyAt=nowSec+reaction+rand(.08,.24);
+   resetBotBurst(b);b.path=[];b.pathRefresh=0;
+   b.aimReadyAt=nowSec+reaction+rand(.08,.24);
   }
-  const tar=b.target;if(!tar){b.chargeStart=-1;resetBotBurst(b);continue;}
-  const dist=hypot(tar.x-b.x,tar.z-b.z),visible=dist<30&&clearPath(b.x,b.z,tar.x,tar.z);
+  const tar=b.target;
+  const dist=tar?hypot(tar.x-b.x,tar.z-b.z):Infinity;
+  const visible=!!tar&&dist<33&&clearPath(b.x,b.z,tar.x,tar.z);
   if(visible){
-    if(nowSec-b.lastSeenAt>2)b.aimReadyAt=Math.max(b.aimReadyAt,nowSec+reaction*.6);
-    b.lastSeenAt=nowSec;b.lastSeenX=tar.x;b.lastSeenZ=tar.z;
+   if(nowSec-b.lastSeenAt>2)b.aimReadyAt=Math.max(b.aimReadyAt,nowSec+reaction*.6);
+   b.lastSeenAt=nowSec;b.lastSeenX=tar.x;b.lastSeenZ=tar.z;
   }
-  botChooseWeapon(b,dist,visible);
+  const danger=b.lastAttacker?.alive?b.lastAttacker:tar;
+  botRecoveryDecision(b,danger,visible,dt);
+  const withdrawing=b.aiMode==='retreat'||b.aiMode==='recover';
+  // A target behind a wall on the other side of the map should not draw every
+  // bot down the same middle lane. Until contact, fan out around the map.
+  const seeking=!!tar&&(visible||dist<21||nowSec-b.lastSeenAt<4);
+  if(!withdrawing&&!seeking){
+   b.aiMode='patrol';
+   if(!b.patrolGoal||nowSec>b.patrolUntil||
+       hypot(b.patrolGoal.x-b.x,b.patrolGoal.z-b.z)<2.3){
+    b.patrolGoal=botPatrolDestination(b);
+    b.patrolUntil=nowSec+rand(18,34);
+    b.path=[];b.pathRefresh=0;
+   }
+  }else if(!withdrawing)b.aiMode='engage';
+  if(!withdrawing&&seeking)botChooseWeapon(b,dist,visible);
   const w=weapons[b.weapon];
   if(nowSec>b.tacticUntil){
-    b.strafeDir=Math.random()<.5?-1:1;
-    b.preferredRange=w.shield?1.5:w.energy?14:w.type==='SNIPER RIFLE'?23:
-      w.type==='MARKSMAN RIFLE'?18:w.type==='COMBAT SHOTGUN'?5:
-      w.type==='SUBMACHINE GUN'?8:w.type==='SIDEARM'?10:13;
-    b.tacticUntil=nowSec+rand(1.4,3.0);
+   b.strafeDir=Math.random()<.5?-1:1;
+   b.preferredRange=w.shield?1.5:w.energy?14:w.type==='SNIPER RIFLE'?23:
+    w.type==='MARKSMAN RIFLE'?18:w.type==='COMBAT SHOTGUN'?5:
+    w.type==='SUBMACHINE GUN'?8:w.type==='SIDEARM'?10:13;
+   b.tacticUntil=nowSec+rand(1.4,3);
   }
-  if(b.hp<43&&visible&&!w.shield&&nowSec>b.coverUntil){
-    b.coverPoint=chooseCoverPoint(b,tar);
-    b.coverUntil=nowSec+rand(2.6,4.2);b.pathRefresh=0;
-  }
-  if(nowSec>b.coverUntil)b.coverPoint=null;
-  const pursue=b.coverPoint||(visible?tar:
-    (nowSec-b.lastSeenAt<3.5?{x:b.lastSeenX,z:b.lastSeenZ}:tar));
+  const goRecovery=b.aiMode==='retreat'?b.retreatGoal:
+    b.aiMode==='recover'?{x:b.x,z:b.z}:null;
+  const pursue=goRecovery||
+    (b.aiMode==='patrol'?b.patrolGoal:
+     (tar&&(visible?tar:(nowSec-b.lastSeenAt<4?
+      {x:b.lastSeenX,z:b.lastSeenZ}:tar))))||{x:b.x,z:b.z};
   if(b.pathRefresh<=0){
-    b.path=(!visible||b.coverPoint)?navigation(b.x,b.z,pursue.x,pursue.z):[];
-    b.pathRefresh=rand(.55,1.0);
+   const directFight=b.aiMode==='engage'&&visible;
+   b.path=directFight?[]:navigation(b.x,b.z,pursue.x,pursue.z);
+   b.pathRefresh=b.aiMode==='retreat'?rand(.55,.85):rand(.8,1.4);
+   if(!b.path.length&&!clearPath(b.x,b.z,pursue.x,pursue.z)&&
+      b.aiMode==='patrol'){b.patrolGoal=null;b.patrolUntil=0;}
   }
   let go=b.path[0]||pursue;
-  if(b.path.length>1&&hypot(go.x-b.x,go.z-b.z)<.85){b.path.shift();go=b.path[0];}
-  let flankPoint=go;
-  if(visible&&tar.weapon===7&&tar.shieldHP>0&&b.weapon!==7&&dist<17){
-    // Approach shield holders from a side rather than running into their front plate.
-    const side=b.id%2?1:-1;
-    const tx=tar.x+Math.cos(tar.yaw)*side*3.0-Math.sin(tar.yaw)*.6;
-    const tz=tar.z-Math.sin(tar.yaw)*side*3.0-Math.cos(tar.yaw)*.6;
-    if(!collidesCircle(tx,tz,.45))flankPoint={x:tx,z:tz};
+  while(b.path.length&&hypot(go.x-b.x,go.z-b.z)<.9){
+   b.path.shift();go=b.path[0]||pursue;
   }
-  const dir=tacticalVector(b,tar,visible&&!b.coverPoint&&flankPoint===go,dist,flankPoint);
+  let flankPoint=go;
+  if(b.aiMode==='engage'&&visible&&tar.weapon===7&&
+      tar.shieldHP>0&&b.weapon!==7&&dist<17){
+   const side=b.id%2?1:-1;
+   const tx=tar.x+Math.cos(tar.yaw)*side*3-Math.sin(tar.yaw)*.6;
+   const tz=tar.z-Math.sin(tar.yaw)*side*3-Math.cos(tar.yaw)*.6;
+   if(!collidesCircle(tx,tz,.45))flankPoint={x:tx,z:tz};
+  }
+  const inCombat=b.aiMode==='engage'&&visible&&flankPoint===go;
+  let dir=tacticalVector(b,tar,inCombat,dist,flankPoint);
+  if(b.aiMode==='recover')dir={x:0,z:0};
   let rx=0,rz=0;
   for(const other of bots)if(other!==b&&other.alive){
-    const dx=b.x-other.x,dz=b.z-other.z,d=Math.hypot(dx,dz);
-    if(d>.02&&d<.9){rx+=dx/d*(.9-d);rz+=dz/d*(.9-d);}
+   const dx=b.x-other.x,dz=b.z-other.z,d=Math.hypot(dx,dz);
+   if(d>.02&&d<.9){rx+=dx/d*(.9-d);rz+=dz/d*(.9-d);}
   }
-  // Dodge a detectable inbound energy orb sideways before its shockwave arrives.
   for(const q of energyShots){
-    if(q.owner===b||(mode==='tdm'&&q.owner!==player&&q.owner?.team===b.team))continue;
-    const ahead=(b.x-q.x)*q.dx+(b.z-q.z)*q.dz;
-    const sideDist=Math.abs((b.x-q.x)*q.dz-(b.z-q.z)*q.dx);
-    if(ahead>0&&ahead<6&&sideDist<2.2){
-      const sign=b.id%2?1:-1;rx+=q.dz*sign*1.9;rz-=q.dx*sign*1.9;
-    }
+   if(q.owner===b||(mode==='tdm'&&q.owner!==player&&q.owner?.team===b.team))continue;
+   const ahead=(b.x-q.x)*q.dx+(b.z-q.z)*q.dz;
+   const sideDist=Math.abs((b.x-q.x)*q.dz-(b.z-q.z)*q.dx);
+   if(ahead>0&&ahead<6&&sideDist<2.2){
+    const sign=b.id%2?1:-1;rx+=q.dz*sign*1.9;rz-=q.dx*sign*1.9;
+   }
   }
   const vx=dir.x+rx*.82,vz=dir.z+rz*.82,len=Math.max(.001,Math.hypot(vx,vz));
   const bx=b.x,bz=b.z;
-  const slowdown=w.shield?.68:w.energy&&b.chargeStart>=0?.65:1;
-  const moved=resolveMovement(b.x,b.z,vx/len*b.speed*dt*(visible?.82:1)*slowdown,
-    vz/len*b.speed*dt*(visible?.82:1)*slowdown,.37);
+  const slowdown=w.shield?.78:w.energy&&b.chargeStart>=0?.65:1;
+  const nearGoal=hypot(pursue.x-b.x,pursue.z-b.z)<.75;
+  const step=(b.aiMode==='recover'||nearGoal)?0:
+   b.speed*dt*(inCombat?.82:1)*slowdown;
+  const moved=resolveMovement(b.x,b.z,vx/len*step,vz/len*step,.37);
   b.x=moved.x;b.z=moved.z;
   const travelled=Math.hypot(b.x-bx,b.z-bz);
   if(travelled>.0005)b.walk+=travelled*2.9;
-  b.stuckFor=travelled<dt*.11?b.stuckFor+dt:0;
-  if(b.stuckFor>.52){
-    b.stuckFor=0;b.strafeDir*=-1;b.tacticUntil=nowSec+1.2;b.path=[];b.pathRefresh=0;
-    const p=resolvePosition(b.x,b.z,.42);b.x=p.x;b.z=p.z;
+  b.stuckFor=(step>.002&&travelled<dt*.11)?b.stuckFor+dt:0;
+  if(b.stuckFor>.65){
+   b.stuckFor=0;b.strafeDir*=-1;b.tacticUntil=nowSec+1.2;
+   b.path=[];b.pathRefresh=0;
+   if(b.aiMode==='patrol'){b.patrolGoal=null;b.patrolUntil=0;}
+   if(b.aiMode==='retreat'){b.retreatGoal=null;b.retreatReplan=0;}
+   const p=resolvePosition(b.x,b.z,.42);b.x=p.x;b.z=p.z;
   }
-  const aim=visible?tar:go;
-  const yaw=Math.atan2(aim.x-b.x,aim.z-b.z);
+  // Keep AEGIS shield visibly facing the actual attacker while backing away,
+  // rather than pointing in the direction of retreat and exposing their back.
+  const face=(withdrawing&&danger?.alive&&hypot(danger.x-b.x,danger.z-b.z)<36)?
+    danger:(visible&&tar?tar:go);
+  const yaw=Math.atan2(face.x-b.x,face.z-b.z);
   const rotation=(yaw-b.yaw+Math.PI*3)%(Math.PI*2)-Math.PI;
-  // Shield bearers must physically turn their shield toward a threat before
-  // it can protect them; they cannot spin the plate instantly onto a rear attacker.
-  const angularSpeed=w.shield?1.75:4;
+  const angularSpeed=w.shield?2.35:4;
   b.yaw+=clamp(rotation,-dt*angularSpeed,dt*angularSpeed);
-  botAttack(b,tar,dist,visible,accuracy,cooldown,rotation);
+  if(b.aiMode==='engage'&&tar)botAttack(b,tar,dist,visible,accuracy,cooldown,rotation);
+  else{resetBotBurst(b);b.chargeStart=-1;}
  }
 }
 // v3.12 kinetic energy projectile (39 u/s = 65% of a 60 u/s reference bullet).
