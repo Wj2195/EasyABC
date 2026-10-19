@@ -1735,6 +1735,217 @@ const AI_PATROL_POINTS=[
  ...[-49,-36,-12,12,36,49].flatMap(z=>[[-14,z],[14,z]]),
  [-7,-65],[7,-65],[-7,65],[7,65]
 ];
+
+// v3.26 — Zombie & Monster operation. Both teams race for the final boss hit.
+let boss=null,zombies=[],bossDamage=[0,0],monsterWaves=0;
+function aliveMonsters(){
+ if(mode!=='zombie')return [];
+ return [...(boss?.alive?[boss]:[]),...zombies.filter(z=>z.alive)];
+}
+function validCreatureSpawn(x,z,r=.45){
+ return inPlayableArea(x,z,r)&&!collidesCircle(x,z,r);
+}
+function monsterSpawnLocation(big=false){
+ // Randomize safe spaces across every district; never put a huge boss inside a wall.
+ const options=[
+  ...AI_PATROL_POINTS,
+  ...[-49,-34,-12,12,34,49].flatMap(z=>[[-24,z],[24,z],[0,z]]),
+  ...[-45,-22,0,22,45].flatMap(z=>[[-8,z],[8,z]]),
+  ...[-48,-12,12,48].flatMap(z=>[[-44,z],[44,z]])
+ ].filter(([x,z])=>validCreatureSpawn(x,z,big?1.18:.48)&&
+  hypot(x-player.x,z-player.z)>(big?23:9));
+ if(!options.length){
+  for(let z=-48;z<=48;z+=4)for(let x=-48;x<=48;x+=4){
+   if(validCreatureSpawn(x,z,big?1.18:.48)&&hypot(x-player.x,z-player.z)>18)
+    options.push([x,z]);
+  }
+ }
+ if(!options.length)return {x:0,z:big?0:42};
+ const pick=options[Math.floor(Math.random()*options.length)];
+ return {x:pick[0],z:pick[1]};
+}
+function makeZombie(id,agile=false){
+ const p=monsterSpawnLocation();
+ return {id,monster:true,boss:false,agile,x:p.x,z:p.z,yaw:0,phase:rand(0,6.28),
+ hp:agile?60:90,maxHP:agile?60:90,alive:true,
+ speed:agile?rand(4.35,5.05):rand(1.85,2.45),
+ attackCd:nowSec+rand(.5,2.0),damage:agile?13:9,
+ target:null,path:[],pathRefresh:rand(0,1.5),targetRefresh:0,
+ diedAt:0,kills:0,stuckFor:0};
+}
+function updateBossHUD(){
+ const panel=$('bossHUD');if(!panel)return;
+ panel.classList.toggle('hidden',mode!=='zombie'||!boss);
+ if(!boss)return;
+ $('bossHPText').textContent=Math.ceil(boss.hp)+' / '+boss.maxHP+' HP';
+ $('bossHPFill').style.width=Math.max(0,100*boss.hp/boss.maxHP)+'%';
+ $('zombieCount').textContent=zombies.filter(z=>z.alive).length+' ZOMBIES · '+zombies.filter(z=>z.alive&&z.agile).length+' FAST';
+}
+function resetMonsterEncounter(){
+ boss=null;zombies=[];bossDamage=[0,0];monsterWaves=0;
+ if(mode==='zombie'){
+  const p=monsterSpawnLocation(true);
+  boss={id:'overlord',monster:true,boss:true,x:p.x,z:p.z,yaw:0,phase:0,
+   hp:5200,maxHP:5200,alive:true,speed:2.25,
+   attackCd:nowSec+3,attackPulse:0,attackRadius:7,
+   target:null,path:[],pathRefresh:0,targetRefresh:0,stuckFor:0,kills:0};
+  for(let i=0;i<23;i++)zombies.push(makeZombie('z'+i,i%5===0));
+ }
+ updateBossHUD();
+}
+function creatureTarget(m){
+ let best=null,value=Infinity;
+ const actors=[...(player.alive?[player]:[]),...bots.filter(b=>b.alive)];
+ for(const a of actors){
+  const d=hypot(a.x-m.x,a.z-m.z);
+  const score=d+(m.target===a?-5:0);
+  if(score<value){best=a;value=score;}
+ }
+ return best;
+}
+function damageMonster(m,amount,attacker){
+ if(mode!=='zombie'||!m?.alive||ended||amount<=0)return 0;
+ const dealt=Math.min(m.hp,Math.max(0,Math.round(amount)));
+ m.hp=Math.max(0,m.hp-dealt);
+ if(m.boss){
+  const team=attacker===player?0:attacker?.team;
+  if(team===0||team===1)bossDamage[team]+=dealt;
+  if(m.hp<=0){
+   m.alive=false;m.killedBy=team===0||team===1?team:null;
+   announce(m.killedBy===0?'OVERLORD ELIMINATED — BLUE TEAM WINS!':
+    m.killedBy===1?'OVERLORD ELIMINATED — RED TEAM WINS!':'OVERLORD ELIMINATED',3);
+   updateBossHUD();updateScores();endMatch();
+  }else{updateBossHUD();updateScores();}
+ }else if(m.hp<=0){
+  m.alive=false;m.diedAt=nowSec;
+  m.reviveAt=nowSec+rand(7.5,13.5);
+  if(attacker===player){player.kills++;feedKill('YOU',m.agile?'SPRINTER':'ZOMBIE',true);}
+  updateHud();updateBossHUD();
+ }
+ return dealt;
+}
+function hitMonsterRay(origin,ray,m){
+ const center={x:m.x,y:floorSurfaceAt(m.x,m.z)+(m.boss?2.28:m.agile?1.03:1.16),z:m.z};
+ return raySphere(origin,ray,center,m.boss?1.72:m.agile?.56:.65);
+}
+function monsterDamageSoldier(t,amount,attacker){
+ if(t===player)damagePlayer(amount,attacker,'chest',attacker);
+ else damageBot(t,amount,attacker,'chest',attacker);
+}
+function moveCreature(m,destination,dt){
+ if(!destination)return;
+ if(m.pathRefresh<=0){
+  m.path=navigation(m.x,m.z,destination.x,destination.z);
+  m.pathRefresh=m.boss?rand(1.0,1.5):rand(1.25,2.15);
+ }
+ const to=m.path[0]||destination;
+ if(m.path.length&&hypot(m.x-to.x,m.z-to.z)<(m.boss?1.3:.85))m.path.shift();
+ const node=m.path[0]||destination;
+ const dx=node.x-m.x,dz=node.z-m.z,d=Math.hypot(dx,dz);
+ if(d<.15)return;
+ const oldX=m.x,oldZ=m.z;
+ const wanted=Math.atan2(destination.x-m.x,destination.z-m.z);
+ const diff=(wanted-m.yaw+Math.PI*3)%(Math.PI*2)-Math.PI;
+ m.yaw+=clamp(diff,-dt*3,dt*3);
+ const step=Math.min(d,m.speed*dt),radius=m.boss?.95:.34;
+ const pos=resolveMovement(m.x,m.z,dx/d*step,dz/d*step,radius);
+ m.x=pos.x;m.z=pos.z;
+ if(Math.hypot(m.x-oldX,m.z-oldZ)<.02)m.stuckFor+=dt;else m.stuckFor=0;
+ if(m.stuckFor>1.1){m.stuckFor=0;m.path=[];m.pathRefresh=0;}
+}
+function updateMonsters(dt){
+ if(mode!=='zombie'||!boss||ended)return;
+ const m=boss;
+ if(m.alive){
+  m.targetRefresh-=dt;m.pathRefresh-=dt;
+  if(m.targetRefresh<=0||!m.target?.alive){
+   m.target=creatureTarget(m);m.targetRefresh=rand(.65,1.3);
+  }
+  if(m.target){
+   const target=m.target,dist=hypot(target.x-m.x,target.z-m.z);
+   if(dist>4.4)moveCreature(m,target,dt);
+   if(nowSec>=m.attackCd&&dist<m.attackRadius+1.5){
+    m.attackCd=nowSec+rand(2.4,3.0);
+    m.attackPulse=nowSec+.52;
+    // A sweep can hit multiple BLUE and RED combatants at the same time.
+    for(const target of [player,...bots]){
+     if(!target.alive)continue;
+     const d=hypot(target.x-m.x,target.z-m.z);
+     if(d>m.attackRadius||!clearPath(m.x,m.z,target.x,target.z))continue;
+     monsterDamageSoldier(target,22,m);
+     const force=Math.max(1,d),k=3.0;
+     if(target===player){player.shockVX+=(target.x-m.x)/force*k;player.shockVZ+=(target.z-m.z)/force*k;}
+     else{target.energyVX=(target.energyVX||0)+(target.x-m.x)/force*k;
+       target.energyVZ=(target.energyVZ||0)+(target.z-m.z)/force*k;}
+    }
+   }
+  }
+  m.phase+=dt*1.6;
+ }
+ for(const z of zombies){
+  if(!z.alive){
+   if(nowSec>=z.reviveAt){
+    const p=monsterSpawnLocation();z.x=p.x;z.z=p.z;z.hp=z.maxHP;z.alive=true;
+    z.target=null;z.path=[];z.pathRefresh=rand(0,.8);z.attackCd=nowSec+rand(.8,2.0);
+   }
+   continue;
+  }
+  z.phase+=dt*(z.agile?6:2.5);
+  z.targetRefresh-=dt;z.pathRefresh-=dt;
+  if(z.targetRefresh<=0||!z.target?.alive){
+   z.target=creatureTarget(z);z.targetRefresh=rand(.6,1.3);
+  }
+  if(!z.target)continue;
+  const dist=hypot(z.target.x-z.x,z.target.z-z.z);
+  if(dist>1.12)moveCreature(z,z.target,dt);
+  if(dist<1.55&&nowSec>=z.attackCd&&clearPath(z.x,z.z,z.target.x,z.target.z)){
+   z.attackCd=nowSec+(z.agile?rand(.8,1.1):rand(1.3,1.9));
+   monsterDamageSoldier(z.target,z.damage,z);
+  }
+ }
+ if(Math.floor(nowSec*3)%4===0)updateBossHUD();
+}
+function swingLightsaber(){
+ const w=weapons[8];
+ if(nowSec-player.lastShot<60/w.rate)return;
+ player.lastShot=nowSec;player.recoil=.28;player.flash=.18;beep('saber');
+ let hits=0,bestDamage=0;
+ const all=mode==='zombie'?aliveMonsters():bots.filter(b=>b.alive&&(mode!=='tdm'||b.team!==0));
+ for(const t of all){
+  const dx=t.x-player.x,dz=t.z-player.z,dist=hypot(dx,dz);
+  if(dist>w.range+(t.boss?1.3:0)||dist<.05)continue;
+  const facing=(dx*Math.sin(player.yaw)+dz*Math.cos(player.yaw))/dist;
+  if(facing<.28||!clearPath(player.x,player.z,t.x,t.z))continue;
+  const damage=t.boss?115:t.monster?98:68;
+  const actual=t.monster?damageMonster(t,damage,player):damageBot(t,damage,player,'chest');
+  if(actual>0){hits++;bestDamage=Math.max(bestDamage,actual);}
+ }
+ if(hits)showCombatFeedback('chest',bestDamage);
+}
+function monsterFallbackGeometry(out,m){
+ const x=m.x,z=m.z,a=m.yaw||0,cy=floorSurfaceAt(x,z);
+ const B=(dx,y,dz,w,h,d,mat)=>box(out,x+dx,cy+y,z+dz,w,h,d,mat,a,x,z);
+ if(m.boss){
+  B(0,1.65,0,2.35,2.45,1.6,12);B(0,3.3,0,1.55,1.35,1.37,9);
+  B(0,3.8,.75,1.12,.27,.18,18);
+  for(const side of [-1,1]){
+   B(side*1.4,2.0,.06,.82,1.2,.85,9);
+   B(side*1.75,1.25,.38,.66,1.35,.76,12);
+   B(side*.60,.52,0,.70,1.06,.92,21);
+   B(side*.57,4.4,.12,.20,.83,.28,34);
+  }
+  B(0,2.2,.87,1.17,.46,.27,34);B(0,3.15,.75,.60,.18,.20,18);
+ }else{
+  const limb=m.agile?25:21,skin=m.agile?34:26;
+  B(0,1.2,0,.62,.82,.45,limb);B(0,1.80,.02,.41,.43,.37,skin);
+  B(0,1.83,.28,.27,.10,.12,12);
+  for(const side of [-1,1]){
+   B(side*.44,1.18,.14,.18,.77,.20,skin);
+   B(side*.17,.52,0,.19,1.02,.21,limb);
+  }
+ }
+}
+
 function botPatrolDestination(b){
  const options=[];
  for(let i=0;i<AI_PATROL_POINTS.length;i++){
@@ -2448,7 +2659,14 @@ function updateScores(){
 function feedKill(a,b,byPlayer){let el=document.createElement('div');el.className='feedItem';el.innerHTML=`<b>${a}</b><i>✚</i>${b}`;$('feed').prepend(el);setTimeout(()=>el.remove(),3500);while($('feed').children.length>5)$('feed').lastChild.remove();}
 function announce(t,duration=1.5){$('announcement').textContent=t;$('announcement').classList.add('visible');announceUntil=nowSec+duration;}
 function endMatch(){if(ended||mode==='zombie'&&boss?.alive)return;
- ended=true;cancelEnergyCharge();player.shoot=false;const won=mode==='tdm'?blue>=red:(mode==='gun'?player.kills>=10:player.kills>=Math.max(...bots.map(b=>b.kills),0));openModal('result',won?'VICTORY':'MISSION COMPLETE',mode==='tdm'?`ALPHA ${blue} — ${red} DELTA`:`${player.kills} eliminations secured.`);}
+ ended=true;cancelEnergyCharge();player.shoot=false;const won=mode==='zombie'?boss?.killedBy===0:
+ mode==='tdm'?blue>=red:(mode==='gun'?player.kills>=10:player.kills>=Math.max(...bots.map(b=>b.kills),0));
+ const title=mode==='zombie'?(won?'VICTORY · BLUE ELIMINATED THE BOSS':'RED TEAM ELIMINATED THE BOSS'):
+ (won?'VICTORY':'MISSION COMPLETE');
+ const subtitle=mode==='zombie'?'FINAL BLOW WINS · BLUE '+Math.round(bossDamage[0])+
+ ' DMG / RED '+Math.round(bossDamage[1])+' DMG':
+ mode==='tdm'?`ALPHA ${blue} — ${red} DELTA`:`${player.kills} eliminations secured.`;
+ openModal('result',title,subtitle);}
 
 let soundEnabled=true,noiseBuffer=null;
 try{soundEnabled=localStorage.getItem('strikezone-sound-v31')!=='off';}catch(_){}
