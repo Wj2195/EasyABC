@@ -755,7 +755,7 @@ async function startModernRenderer(THREE){
     return {root,body,arms,legs,big};
   }
   const bossVisual=buildMonsterUnit(true);
-  const zombieVisuals=Array.from({length:26},()=>buildMonsterUnit(false));
+  const zombieVisuals=Array.from({length:48},()=>buildMonsterUnit(false));
   const bossRing=new THREE.Mesh(
     new THREE.RingGeometry(5.1,6.8,48),
     new THREE.MeshBasicMaterial({color:0xff5d8d,transparent:true,opacity:.20,
@@ -812,6 +812,31 @@ async function startModernRenderer(THREE){
     ring.visible=false;scene.add(ring);energyRings.push(ring);
   }
   const energyLight=new THREE.PointLight(0x5edaff,0,7,2);scene.add(energyLight);
+  // Stable ammo pickup mesh pool avoids allocations as 48 zombies respawn.
+  const ammoBaseMat=new THREE.MeshStandardMaterial({color:0x1b626e,roughness:.40,metalness:.55});
+  const ammoHighlightMat=new THREE.MeshBasicMaterial({color:0x7deeff});
+  const ammoFastMat=new THREE.MeshBasicMaterial({color:0xffcc67});
+  const ammoBodyGeo=new THREE.BoxGeometry(.55,.32,.40);
+  const ammoStripeGeo=new THREE.BoxGeometry(.31,.07,.43);
+  const ammoPickupMeshes=[];
+  for(let i=0;i<70;i++){
+   const crate=new THREE.Group();
+   const caseMesh=new THREE.Mesh(ammoBodyGeo,ammoBaseMat);
+   const stripeMesh=new THREE.Mesh(ammoStripeGeo,ammoHighlightMat);
+   stripeMesh.position.y=.18;crate.add(caseMesh,stripeMesh);
+   crate.userData.stripe=stripeMesh;crate.visible=false;scene.add(crate);
+   ammoPickupMeshes.push(crate);
+  }
+  function updateAmmoVisuals(nowSec){
+   const packs=bridge.ammoData?.()||[];
+   for(let i=0;i<ammoPickupMeshes.length;i++){
+    const u=ammoPickupMeshes[i],p=packs[i];
+    u.visible=!!p;if(!p)continue;
+    u.position.set(p.x,p.y+Math.sin(nowSec*3+p.id)*.065,p.z);
+    u.rotation.y=nowSec*.8+p.id;
+    u.userData.stripe.material=p.agile?ammoFastMat:ammoHighlightMat;
+   }
+  }
   function renderEnergyFX(){
     const fx=bridge.energyFX?.()||{shots:[],waves:[]};
     for(let i=0;i<energyOrbs.length;i++){
@@ -842,7 +867,7 @@ async function startModernRenderer(THREE){
   // lightweight gun meshes remain available as the fallback.
   let realisticWeapons=null;
   try{
-    const module=await import('./weapon-rig.js?v=3.26');
+    const module=await import('./weapon-rig.js?v=3.27');
     realisticWeapons=module.createWeaponRig(THREE,gunScene);
     if(realisticWeapons.weaponCount!==9)throw new Error('Incomplete weapon set');
   }catch(error){
@@ -892,7 +917,7 @@ async function startModernRenderer(THREE){
           teamPatches[i].material=bot.team===0?armorBlue:armorRed;
         }}}
       if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position,s.nowSec);
-      updateMonsterVisuals();renderEnergyFX();
+      updateMonsterVisuals();updateAmmoVisuals(s.nowSec);renderEnergyFX();
       if(!realisticWeapons&&elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
       for(let i=0;i<tracerPool.length;i++){
         const o=tracerPool[i],t=bridge.tracerData()[i];
