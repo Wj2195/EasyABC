@@ -649,9 +649,14 @@ function generateMapOne(){
  for(const side of [-1,1]){
   cube(0,-.23,side*71,baseHalf*2+.8,.46,22.8,side<0?11:18);
   cube(0,.016,side*70,baseHalf*2-1,.025,19.0,side<0?30:27);
+  // Short shelter supports leave the side circulation open. Full-length
+  // rails once stranded bots in four small strips beside the two spawn bases.
   for(const x of [-12,12]){
-   cube(x,2.2,side*71,.70,4.4,20,side<0?11:12,true);
-   cube(x,4.52,side*71,1.0,.28,21.3,side<0?25:24);
+   for(const z of [side*79,side*62.5]){
+    cube(x,2.2,z,.65,4.4,.65,side<0?11:12,true);
+    cube(x,4.52,z,.95,.24,.95,side<0?25:24);
+   }
+   cube(x,4.55,side*71,.55,.16,17,side<0?25:24);
   }
   mazeGatedH(side*baseEnd,-baseHalf,baseHalf,[],4.6,side<0?11:12);
   mazeGatedV(-baseHalf,Math.min(side*join,side*baseEnd),Math.max(side*join,side*baseEnd),[],4.6,side<0?11:12);
