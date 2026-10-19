@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.12 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.13 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -425,6 +425,17 @@ async function startModernRenderer(THREE){
       cube(gun,[0,-.050,.568],[.205,.093,.266],wood);
       cube(gun,[0,-.10,-.333],[.254,.241,.096],dark);
       for(const side of [-1,1])sphere(torso,[side*.206,1.086,.437],[.082,.071,.089],boots);
+      // Police-style AEGIS raised shield for AI bots, colored viewplate and reinforced frame.
+      const shield=new THREE.Group();shield.position.set(0,1.14,.53);torso.add(shield);
+      const shieldArmor=new THREE.MeshStandardMaterial({color:0x2b3b44,metalness:.45,roughness:.5});
+      const shieldGlass=new THREE.MeshPhysicalMaterial({color:0x70b9cc,metalness:.12,roughness:.22,transparent:true,opacity:.39,depthWrite:false,side:THREE.DoubleSide});
+      cube(shield,[0,-.16,.04],[.76,.75,.09],shieldArmor);
+      cube(shield,[0,.36,.04],[.76,.18,.1],shieldArmor);
+      cube(shield,[-.36,.06,.02],[.07,1.1,.11],steel);
+      cube(shield,[.36,.06,.02],[.07,1.1,.11],steel);
+      cube(shield,[0,.155,.08],[.64,.31,.022],shieldGlass);
+      cube(shield,[0,-.55,.04],[.76,.07,.13],steel);
+      shield.visible=false;
       const shadow=new THREE.Mesh(new THREE.CircleGeometry(.36,20),new THREE.MeshBasicMaterial({color:0x151714,transparent:true,opacity:.15,depthWrite:false}));
       shadow.position.y=.012;shadow.rotation.x=-Math.PI/2;root.add(shadow);
       // Distance-aware accessory details: keep silhouettes but suppress tiny parts far away.
@@ -434,7 +445,7 @@ async function startModernRenderer(THREE){
         const maxDim=Math.max(m.scale.x,m.scale.y,m.scale.z);
         if(maxDim<.17&&m!==patch){smallDetails.push(m);m.castShadow=false;}
       });
-      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null};
+      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,gun};
     }
     const units=Array.from({length:10},build);
     let currentCount=0;
@@ -446,6 +457,8 @@ async function startModernRenderer(THREE){
           // Feet will be placed against world floor after the walking pose is evaluated.
           u.root.position.set(b.x,0,b.z);
           u.root.rotation.y=-b.yaw;
+          u.shield.visible=b.weapon===7&&b.shieldHP>0;
+          u.gun.visible=b.weapon!==7;
           const far=viewpoint&&((b.x-viewpoint.x)**2+(b.z-viewpoint.z)**2)>19*19;
           for(const item of u.smallDetails)item.visible=!far;
           const shirt=b.team===0?uniforms[0]:uniforms[1];
@@ -534,9 +547,9 @@ async function startModernRenderer(THREE){
   // lightweight gun meshes remain available as the fallback.
   let realisticWeapons=null;
   try{
-    const module=await import('./weapon-rig.js?v=3.12');
+    const module=await import('./weapon-rig.js?v=3.13');
     realisticWeapons=module.createWeaponRig(THREE,gunScene);
-    if(realisticWeapons.weaponCount!==7)throw new Error('Incomplete weapon set');
+    if(realisticWeapons.weaponCount!==8)throw new Error('Incomplete weapon set');
   }catch(error){
     console.warn('STRIKEZONE: detailed weapon assets unavailable; using safe original gun meshes.',error);
     realisticWeapons?.dispose?.();
