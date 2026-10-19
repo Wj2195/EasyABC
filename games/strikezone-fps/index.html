@@ -297,13 +297,13 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    </div></section>
    <div class="armoryChooser"><label for="loadoutSelect">STARTING WEAPON</label><select id="loadoutSelect" aria-label="Starting weapon"></select><span id="loadoutInfo">Choose your loadout</span></div>
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
-   <div class="menuStat"><span>MAP 001</span><strong>THE SUNKEN OUTPOST</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
+   <div class="menuStat"><span>MAP 001</span><strong>TRI-SECTOR LABYRINTH</strong><span class="slash">/</span><span>4 MIN MATCHES · AI ONLY</span></div>
   </main>
   <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.18 — ART OVERHAUL — MOUSE CONTROL FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="hud" class="hidden">
  <div class="topHUD"><div class="hudBrand">S<span>Z</span> <small>TACTICAL ARENA</small></div><div class="scoreHead"><div id="blueScore" class="blueScore">00</div><div class="scoreCenter"><strong id="matchTime">04:00</strong><small id="matchMode">TEAM DEATHMATCH</small></div><div id="redScore" class="redScore">00</div></div><div class="hudTopRight"><span id="fpsCounter">60 FPS</span><button type="button" id="hudSound" title="Mute / unmute sound" aria-label="Sound on">♪</button><button type="button" id="hudFullscreen" title="Toggle fullscreen" aria-label="Toggle fullscreen">⛶</button><button id="pauseBtn" title="Pause / Settings">☰</button></div></div>
- <canvas id="minimap" width="164" height="164"></canvas><div class="mapLabel">THE SUNKEN OUTPOST</div>
+ <canvas id="minimap" width="164" height="164"></canvas><div class="mapLabel">TRI-SECTOR LABYRINTH</div>
  <div id="feed" class="killFeed"></div><div id="crosshair"><span class="cTop"></span><span class="cRight"></span><span class="cBottom"></span><span class="cLeft"></span><i></i></div><div id="sniperScope" class="hidden" aria-hidden="true">
   <div class="scopeLens"><svg viewBox="0 0 600 600" aria-hidden="true" focusable="false">
     <g stroke="#dceaf0" stroke-width="1.7" opacity=".90">
@@ -880,10 +880,68 @@ loadoutSelect.addEventListener('change',()=>{startingWeapon=Number(loadoutSelect
 });
 refreshLoadout();
 function resetGame(){energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=240;blue=0;red=0;ended=false;touchMove={x:0,y:0};createBots();spawnPlayer();updateHud();updateScores();}
-const gridN=30,gridStep=2,gridMin=-29;
-function cell(x,z){return {i:clamp(Math.round((x-gridMin)/gridStep),0,gridN-1),j:clamp(Math.round((z-gridMin)/gridStep),0,gridN-1)};}
-const walkable=Array.from({length:gridN*gridN},(_,n)=>{let i=n%gridN,j=Math.floor(n/gridN);return !overlaps(gridMin+i*gridStep,gridMin+j*gridStep,.45);});
-function navigation(x,z,X,Z){const s=cell(x,z),t=cell(X,Z),start=s.j*gridN+s.i,goal=t.j*gridN+t.i;if(!walkable[goal])return [];if(clearPath(x,z,X,Z))return [{x:X,z:Z}];let q=[start],seen=new Int16Array(gridN*gridN).fill(-1);seen[start]=start;let qi=0;while(qi<q.length&&q.length<900){let n=q[qi++];if(n===goal)break;const i=n%gridN,j=(n/gridN)|0;for(const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){const ni=i+di,nj=j+dj;if(ni<0||nj<0||ni>=gridN||nj>=gridN)continue;let idx=nj*gridN+ni;if(!walkable[idx]||seen[idx]>=0)continue;seen[idx]=n;q.push(idx);}}if(seen[goal]<0)return [];let path=[],c=goal;for(let step=0;step<100&&c!==start;step++){path.push({x:gridMin+(c%gridN)*gridStep,z:gridMin+Math.floor(c/gridN)*gridStep});c=seen[c];}path.reverse();let optimized=[],anchor={x,z};for(let i=0;i<path.length;i++){const nxt=path[i+1];if(!nxt||!clearPath(anchor.x,anchor.z,nxt.x,nxt.z)){optimized.push(path[i]);anchor=path[i];}}optimized.push({x:X,z:Z});return optimized;}
+// Navmesh over both bases and the enlarged maze. 2-unit cells + full BFS,
+// with enough search depth to reach from one end of this 164-unit map to the other.
+const gridN=85,gridStep=2,gridMin=-84;
+function cell(x,z){
+ return{i:clamp(Math.round((x-gridMin)/gridStep),0,gridN-1),
+        j:clamp(Math.round((z-gridMin)/gridStep),0,gridN-1)};
+}
+const walkable=new Uint8Array(gridN*gridN);
+for(let j=0;j<gridN;j++)for(let i=0;i<gridN;i++){
+ const x=gridMin+i*gridStep,z=gridMin+j*gridStep;
+ walkable[j*gridN+i]=!collidesCircle(x,z,.58)?1:0;
+}
+function closestNavCell(x,z){
+ const c=cell(x,z),start=c.j*gridN+c.i;
+ if(walkable[start])return start;
+ for(let r=1;r<=5;r++)for(let di=-r;di<=r;di++)for(let dj=-r;dj<=r;dj++){
+  if(Math.max(Math.abs(di),Math.abs(dj))!==r)continue;
+  const i=c.i+di,j=c.j+dj;
+  if(i<0||j<0||i>=gridN||j>=gridN)continue;
+  const idx=j*gridN+i;
+  if(walkable[idx])return idx;
+ }
+ return -1;
+}
+function navigation(x,z,X,Z){
+ if(clearPath(x,z,X,Z))return [{x:X,z:Z}];
+ const start=closestNavCell(x,z),goal=closestNavCell(X,Z);
+ if(start<0||goal<0)return [];
+ if(start===goal)return[{x:X,z:Z}];
+ const seen=new Int32Array(gridN*gridN).fill(-1),queue=new Int32Array(gridN*gridN);
+ let head=0,tail=1;
+ queue[0]=start;seen[start]=start;
+ const stepOffset=[1,-1,gridN,-gridN];
+ while(head<tail){
+  const n=queue[head++];if(n===goal)break;
+  const i=n%gridN,j=(n/gridN)|0;
+  for(let k=0;k<4;k++){
+   if(k===0&&i===gridN-1||k===1&&i===0||k===2&&j===gridN-1||k===3&&j===0)continue;
+   const next=n+stepOffset[k];
+   if(!walkable[next]||seen[next]>=0)continue;
+   seen[next]=n;queue[tail++]=next;
+  }
+ }
+ if(seen[goal]<0)return [];
+ let raw=[],current=goal;
+ for(let steps=0;current!==start&&steps<gridN*gridN;steps++){
+  raw.push({x:gridMin+(current%gridN)*gridStep,z:gridMin+((current/gridN)|0)*gridStep});
+  current=seen[current];if(current<0)return [];
+ }
+ raw.reverse();
+ // A few line-of-sight shortcuts avoid the stop/go movement on each grid cell.
+ const result=[],anchor={x,z};
+ for(let i=0;i<raw.length;){
+  let far=i;
+  for(let k=Math.min(raw.length-1,i+10);k>i;k--){
+   if(clearPath(anchor.x,anchor.z,raw[k].x,raw[k].z)){far=k;break;}
+  }
+  const chosen=raw[far];result.push(chosen);anchor.x=chosen.x;anchor.z=chosen.z;i=far+1;
+ }
+ if(clearPath(anchor.x,anchor.z,X,Z))result.push({x:X,z:Z});
+ return result;
+}
 function rayAabb(origin,dir,obj){let near=0,far=150;for(const [p,d,min,max] of [[origin.x,dir.x,obj.x,obj.X],[origin.y,dir.y,0,obj.h],[origin.z,dir.z,obj.z,obj.Z]]){if(Math.abs(d)<1e-6){if(p<min||p>max)return Infinity;}else{let a=(min-p)/d,b=(max-p)/d;if(a>b)[a,b]=[b,a];near=Math.max(near,a);far=Math.min(far,b);if(near>far)return Infinity;}}return near;}
 function worldImpact(origin,dir){let nearest=150;for(const o of colliders){let d=rayAabb(origin,dir,o);if(d<nearest)nearest=d;}return nearest;}
 function raySphere(o,d,c,r){const x=o.x-c.x,y=o.y-c.y,z=o.z-c.z;const b=x*d.x+y*d.y+z*d.z,cc=x*x+y*y+z*z-r*r,k=b*b-cc;if(k<0)return Infinity;const a=-b-Math.sqrt(k);return a>=0?a:Infinity;}
@@ -1712,7 +1770,15 @@ B(.18,-.26,.12,.28,.21,.40,13);B(.24,-.34,-.05,.28,.22,.3,14);B(-.23,-.36,.55,.2
 if(player.weapon===6&&player.energyChargeStart>=0){const q=clamp((nowSec-player.energyChargeStart)/2,0,1);B(0,.03,1.77,.14+q*.30,.14+q*.30,.17+q*.23,25);}
 if(player.flash>0){B(0,.045,muzzle,.37,.37,.22,18);B(0,.045,muzzle+.20,.14,.14,.28,15);}
 }
-function drawMinimap(){const can=$('minimap'),ctx=can.getContext('2d'),W=can.width,H=can.height,s=W/68;ctx.clearRect(0,0,W,H);ctx.fillStyle='#12202c';ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2,H/2);ctx.scale(s,s);ctx.fillStyle='#b5a68b';ctx.fillRect(-31.7,-31.7,63.4,63.4);ctx.fillStyle='#8e8975';for(const c of colliders){let w=c.X-c.x,d=c.Z-c.z;if(w>15&&d>15)continue;ctx.fillRect(c.x,c.z,w,d);}ctx.fillStyle='#6b88a6';ctx.fillRect(-7,-7,14,14);
+function drawMinimap(){const can=$('minimap'),ctx=can.getContext('2d'),W=can.width,H=can.height,s=Math.min((W-10)/112,(H-10)/168);
+ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d202c';ctx.fillRect(0,0,W,H);
+ctx.save();ctx.translate(W/2,H/2);ctx.scale(s,s);
+ctx.fillStyle='#9c68a0';ctx.fillRect(-54,-60,108,120);
+ctx.fillStyle='#347ba7';ctx.fillRect(-17,-82,34,22);
+ctx.fillStyle='#cc743c';ctx.fillRect(-17,60,34,22);
+ctx.fillStyle='#4b4655';
+for(const c of colliders){let w=c.X-c.x,d=c.Z-c.z;if(w>22&&d>22)continue;ctx.fillRect(c.x,c.z,w,d);}
+ctx.fillStyle='#cb8dda';ctx.fillRect(-10,-9,20,18);
 for(const b of bots){if(!b.alive)continue;ctx.fillStyle=b.team===0&&mode==='tdm'?'#60c2ff':'#f65750';ctx.beginPath();ctx.arc(b.x,b.z,.7,0,Math.PI*2);ctx.fill();}
 ctx.translate(player.x,player.z);ctx.rotate(-player.yaw);ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(0,1.6);ctx.lineTo(-1.1,-1.25);ctx.lineTo(1.1,-1.25);ctx.closePath();ctx.fill();ctx.restore();}
 
