@@ -1994,11 +1994,20 @@ function updateLightningEffects(){
 }
 function addLightningBoxes(out){
  for(const bolt of bossLightningBolts){
-  for(let k=0;k<15;k++){
-   const t=(k+.5)/15;
-   const n=Math.sin(bolt.seed+k*13.37+Math.floor(nowSec*25))*.18;
-   box(out,bolt.x+(bolt.X-bolt.x)*t+n,bolt.y+(bolt.Y-bolt.y)*t,
-     bolt.z+(bolt.Z-bolt.z)*t-n,.13,.16,.13,k%3===0?15:25);
+  // Fallback renderer: vivid, large bolt links instead of tiny isolated
+  // particles. Wide crossed ribbons keep the flash clear from any angle.
+  const count=18,dx=bolt.X-bolt.x,dy=bolt.Y-bolt.y,dz=bolt.Z-bolt.z;
+  const horizontal=Math.max(.1,Math.hypot(dx,dz));
+  for(let k=0;k<count;k++){
+   const t=(k+.5)/count,taper=Math.sin(Math.PI*t);
+   const n=Math.sin(bolt.seed+k*13.37+Math.floor(nowSec*25))*.66*taper;
+   const x=bolt.x+dx*t-dz/horizontal*n;
+   const y=bolt.y+dy*t+Math.sin(bolt.seed+k*7.13+nowSec*29)*.22*taper;
+   const z=bolt.z+dz*t+dx/horizontal*n;
+   const span=Math.max(.48,Math.hypot(dx,dy,dz)/count*1.4);
+   box(out,x,y,z,.55,.55,span,k%4===0?15:25,
+     Math.atan2(dx,dz),x,z);
+   box(out,x,y,z,.31,.31,span,15,Math.atan2(dx,dz),x,z);
   }
  }
 }
@@ -3585,5 +3594,5 @@ if(!document.getElementById('rendererState').textContent.includes('renderer'))do
 })();
 
 </script>
-<script type="module" src="./ultra-renderer.js?v=3.28"></script>
+<script type="module" src="./ultra-renderer.js?v=3.29"></script>
 </body></html>
