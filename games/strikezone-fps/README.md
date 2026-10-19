@@ -154,3 +154,18 @@ All six guns have unique weapon silhouettes. The change preserves gun race, bots
 - Existing six-gun base damage, anatomical headshots, enemy AI, control directions, floor positioning, fullscreen, audio, and regeneration are unchanged.
 
 **Verification:** JavaScript syntax checks passed for the page, enhanced renderer, and detailed weapon rig. Simulated weapon visibility cycles passed for draw→death→respawn, scoped sniper, returning to hipfire and switching models. Scope visibility/FOV simulations passed for all three zoom levels and states. Actual scope visuals, pointer lock and mobile zoom buttons still require testing on the target devices.
+
+
+## v3.11 — Clear DMR optics and precision aiming
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.11
+
+**Bug fixed:** A screenshot in v3.10 showed the opaque rear of the RANGER DMR scope filling the crosshair. The problem was caused by the gun rig using capped cylinders for scope glass and excluding the DMR from the precision-scoped camera mode.
+
+- The RANGER DMR now uses an unobstructed, transparent precision sight with **1.5× / 2× / 4×** magnification, 2× default, a reticle, zoom readout and lighter peripheral vignette. The PHANTOM SR sniper retains its **2× / 4× / 8×** scope, 4× default.
+- Scoped DMR and sniper weapon meshes are suppressed **only while precision aiming**, so neither the opaque optic nor the rifle receiver can hide targets. Non-precision rifles remain visible while aiming.
+- The base optics on all six detailed models now have open sight rings instead of opaque cylinder end caps, so their reticles no longer point at a solid disc.
+- Both precision weapons use Z/X or mouse wheel to change zoom on PC; touch browsers use +/−. The enhanced WebGL2 renderer, legacy WebGL renderer and software fallback use matching magnification and gun hiding.
+- Respawn weapon visibility, six independent firearm damage profiles, headshots, floor physics, solo AI and audio have been preserved.
+
+**Checks:** JavaScript syntax passed; scoped/unscoped state and field-of-view tests passed for DMR, sniper, assault rifle, death and return to hip fire. In-game visual verification in Chrome and phone browsers remains necessary.
