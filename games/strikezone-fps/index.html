@@ -602,7 +602,27 @@ function spawnPlayer(){
 }
 function teamFacingDirection(p){return p.z<0?0:Math.PI;}
 function createBots(){bots=[];const count=mode==='tdm'?9:8;for(let i=0;i<count;i++){const team=mode==='tdm'?(i<4?0:1):1,p=spawnPoint(team);bots.push({id:i,name:botNames[i],team,x:p.x,z:p.z,yaw:rand(-3,3),hp:100,alive:true,until:0,kills:0,deaths:0,target:null,targetRefresh:0,path:[],pathRefresh:0,shootCD:rand(.4,2),speed:rand(2.5,3.3),phase:rand(0,6.28),walk:0,weapon:Math.floor(rand(0,3))});}}
-function resetGame(){player.kills=0;player.deaths=0;player.weapon=0;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=240;blue=0;red=0;ended=false;touchMove={x:0,y:0};createBots();spawnPlayer();updateHud();updateScores();}
+let startingWeapon=0;
+try{
+ const n=Number(localStorage.getItem('strikezone-start-weapon-v38'));
+ if(Number.isInteger(n)&&n>=0&&n<weapons.length)startingWeapon=n;
+}catch(_){}
+const loadoutSelect=$('loadoutSelect'),loadoutInfo=$('loadoutInfo');
+for(let i=0;i<weapons.length;i++){
+ const w=weapons[i],opt=document.createElement('option');
+ opt.value=String(i);opt.textContent=(i+1)+'. '+w.name+' ('+w.damage+' DMG)';
+ loadoutSelect.appendChild(opt);
+}
+function refreshLoadout(){
+ const w=weapons[startingWeapon];loadoutSelect.value=String(startingWeapon);
+ loadoutInfo.textContent=w.damage+' BASE DMG · '+w.headMult.toFixed(2)+'× HEAD · '+(w.pellets||1)+' PROJECTILE'+(w.pellets?'S':'');
+}
+loadoutSelect.addEventListener('change',()=>{startingWeapon=Number(loadoutSelect.value);
+ try{localStorage.setItem('strikezone-start-weapon-v38',String(startingWeapon));}catch(_){}
+ refreshLoadout();
+});
+refreshLoadout();
+function resetGame(){player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=240;blue=0;red=0;ended=false;touchMove={x:0,y:0};createBots();spawnPlayer();updateHud();updateScores();}
 const gridN=30,gridStep=2,gridMin=-29;
 function cell(x,z){return {i:clamp(Math.round((x-gridMin)/gridStep),0,gridN-1),j:clamp(Math.round((z-gridMin)/gridStep),0,gridN-1)};}
 const walkable=Array.from({length:gridN*gridN},(_,n)=>{let i=n%gridN,j=Math.floor(n/gridN);return !overlaps(gridMin+i*gridStep,gridMin+j*gridStep,.45);});
@@ -645,7 +665,7 @@ function showCombatFeedback(zone,damage){
  if(zone==='head'){announce('HEADSHOT!',1.25);beep('headshot');}
 }
 function damagePlayer(dmg,source){if(!player.alive||ended)return;player.hp=Math.max(0,player.hp-dmg);player.lastDamage=nowSec;player.hurt=.72;$('damageOverlay').style.opacity='.70';beep('hurt');if(player.hp<=0){player.deaths++;player.alive=false;player.shoot=false;keys={};touchMove.x=touchMove.y=0;finishTime=nowSec+3;announce('YOU WERE ELIMINATED',1.5);$('respawnScreen').classList.remove('hidden');if(source){source.kills++;if(mode==='tdm')red++;}updateScores();}updateHud();}
-function eliminateBot(b,killer){b.alive=false;b.hp=0;b.until=nowSec+2.7;b.deaths++;if(killer===player){player.kills++;if(mode==='tdm')blue++;feedKill('YOU',b.name,true);beep('kill');announce(player.kills>0&&player.kills%5===0?'KILL STREAK ×'+player.kills:'ELIMINATION +100 XP',1);if(mode==='gun'){player.weapon=(player.weapon+1)%weapons.length;player.ammo[player.weapon]=weapons[player.weapon].mag;updateHud();if(player.kills>=10)endMatch();}}else if(killer){killer.kills++;if(mode==='tdm'){if(killer.team===0)blue++;else red++;}feedKill(killer.name,b.name,false);}updateScores();updateHud();}
+function eliminateBot(b,killer){b.alive=false;b.hp=0;b.until=nowSec+2.7;b.deaths++;if(killer===player){player.kills++;if(mode==='tdm')blue++;feedKill('YOU',b.name,true);beep('kill');announce(player.kills>0&&player.kills%5===0?'KILL STREAK ×'+player.kills:'ELIMINATION +100 XP',1);if(mode==='gun'){player.weapon=(player.weapon+1)%weapons.length;player.ammo[player.weapon]=weapons[player.weapon].mag;player.lastShot=nowSec-.25;updateHud();if(player.kills>=10)endMatch();}}else if(killer){killer.kills++;if(mode==='tdm'){if(killer.team===0)blue++;else red++;}feedKill(killer.name,b.name,false);}updateScores();updateHud();}
 function damageBot(b,damage,killer){if(!b.alive)return;b.hp-=damage;if(b.hp<=0)eliminateBot(b,killer);}
 // Tactical AI: threat evaluation, pursuit, line-of-sight, flanking, cover and wall recovery.
 function pickTarget(bot){
@@ -773,16 +793,57 @@ function updateBots(dt){
 }
 const tracers=[];
 function feedTracer(x,y,z,X,Y,Z,friendly){tracers.push({x,y,z,X,Y,Z,ttl:.10,friendly});if(tracers.length>18)tracers.shift();}
-function shoot(){if(!running||paused||!player.alive||ended)return;const w=weapons[player.weapon];if(nowSec-player.lastShot<60/w.rate)return;if(player.reloadUntil>nowSec)return;if(player.ammo[player.weapon]<=0){reload();return;}player.lastShot=nowSec;player.ammo[player.weapon]--;player.recoil=Math.min(.30,player.recoil+.09);player.flash=.075;beep('gun');
-const aim=player.ads?.34:1;const spread=w.spread*aim+(keys.ShiftLeft?.007:0);const yaw=player.yaw,pitch=player.pitch;const fx=Math.sin(yaw)*Math.cos(pitch),fy=Math.sin(pitch),fz=Math.cos(yaw)*Math.cos(pitch);const right={x:Math.cos(yaw),y:0,z:-Math.sin(yaw)},up={x:-Math.sin(yaw)*Math.sin(pitch),y:Math.cos(pitch),z:-Math.cos(yaw)*Math.sin(pitch)};let dx=fx+right.x*rand(-spread,spread)+up.x*rand(-spread,spread),dy=fy+up.y*rand(-spread,spread),dz=fz+right.z*rand(-spread,spread)+up.z*rand(-spread,spread),mag=Math.hypot(dx,dy,dz);const dir={x:dx/mag,y:dy/mag,z:dz/mag},origin={x:player.x,y:player.y+(player.crouch?.96:1.7),z:player.z};let impact=worldImpact(origin,dir),hit=null,hitDist=impact;
-for(const b of bots)if(b.alive&&(mode!=='tdm'||b.team===1)){let h=hitActor(origin,dir,b);if(h.dist<hitDist){hitDist=h.dist;hit={bot:b,head:h.head};}}
-let range=Math.min(hitDist,w.range);const end={x:origin.x+dir.x*range,y:origin.y+dir.y*range,z:origin.z+dir.z*range};feedTracer(origin.x,origin.y,origin.z,end.x,end.y,end.z,true);
-if(hit&&hitDist<w.range){damageBot(hit.bot,Math.round(w.damage*(hit.head?1.65:1)),player);$('hitmarker').style.opacity='1';window.clearTimeout(shoot.hitTimer);shoot.hitTimer=setTimeout(()=>$('hitmarker').style.opacity='0',90);}
-updateHud();if(player.ammo[player.weapon]===0)window.setTimeout(()=>{if(player.alive&&running)reload();},340);
+function shoot(){
+ if(!running||paused||ended||!player.alive)return;
+ const w=weapons[player.weapon];
+ if(nowSec-player.lastShot<60/w.rate||player.reloadUntil>nowSec)return;
+ if(player.ammo[player.weapon]<=0){reload();return;}
+ player.lastShot=nowSec;player.ammo[player.weapon]--;player.recoil=Math.min(.32,player.recoil+(player.weapon===5?.19:.09));player.flash=.075;beep('gun');
+ const yaw=player.yaw,pitch=player.pitch,aim=player.ads?.34:1;
+ const fx=Math.sin(yaw)*Math.cos(pitch),fy=Math.sin(pitch),fz=Math.cos(yaw)*Math.cos(pitch);
+ const right={x:Math.cos(yaw),y:0,z:-Math.sin(yaw)};
+ const up={x:-Math.sin(yaw)*Math.sin(pitch),y:Math.cos(pitch),z:-Math.cos(yaw)*Math.sin(pitch)};
+ const origin={x:player.x,y:player.y+(player.crouch?.96:1.7),z:player.z};
+ const pelletCount=w.pellets||1,hits=new Map();let tracerEnd=null;
+ for(let i=0;i<pelletCount;i++){
+  const spread=w.spread*aim+(keys.ShiftLeft?.007:0);
+  const dx=fx+right.x*rand(-spread,spread)+up.x*rand(-spread,spread);
+  const dy=fy+up.y*rand(-spread,spread);
+  const dz=fz+right.z*rand(-spread,spread)+up.z*rand(-spread,spread);
+  const len=Math.hypot(dx,dy,dz)||1,ray={x:dx/len,y:dy/len,z:dz/len};
+  let nearest=Math.min(w.range,worldImpact(origin,ray)),hit=null;
+  for(const bot of bots){
+   if(!bot.alive||(mode==='tdm'&&bot.team===0))continue;
+   const impact=hitActor(origin,ray,bot);
+   if(impact.dist<nearest){nearest=impact.dist;hit={bot,zone:impact.zone};}
+  }
+  if(i===0)tracerEnd={x:origin.x+ray.x*nearest,y:origin.y+ray.y*nearest,z:origin.z+ray.z*nearest};
+  if(!hit)continue;
+  const damage=hitDamage(w,hit.zone,nearest);
+  const saved=hits.get(hit.bot)||{damage:0,zone:hit.zone,head:false};
+  saved.damage+=damage;
+  if(hit.zone==='head'){saved.head=true;saved.zone='head';}
+  else if(!saved.head&&hit.zone==='abdomen')saved.zone='abdomen';
+  hits.set(hit.bot,saved);
+ }
+ if(tracerEnd)feedTracer(origin.x,origin.y,origin.z,tracerEnd.x,tracerEnd.y,tracerEnd.z,true);
+ let best=null;
+ for(const [bot,hit] of hits){
+  const actual=Math.min(bot.hp,hit.damage);
+  damageBot(bot,hit.damage,player);
+  if(!best||(hit.head&&!best.head)||(hit.head===best.head&&actual>best.damage))best={zone:hit.zone,damage:actual,head:hit.head};
+ }
+ if(best)showCombatFeedback(best.zone,best.damage);
+ updateHud();
+ if(player.ammo[player.weapon]===0)window.setTimeout(()=>{if(running&&player.alive)reload();},340);
 }
 function reload(){if(!running||!player.alive||player.reloadUntil>nowSec)return;const id=player.weapon,w=weapons[id];if(player.ammo[id]>=w.mag||player.reserves[id]<=0)return;player.reloadUntil=nowSec+w.reload;beep('reload');updateHud();}
 function completeReload(){if(!player.reloadUntil||nowSec<player.reloadUntil)return;const n=player.weapon,w=weapons[n],count=Math.min(w.mag-player.ammo[n],player.reserves[n]);player.reserves[n]-=count;player.ammo[n]+=count;player.reloadUntil=0;if(count>0)beep('reloadend');updateHud();}
-function switchWeapon(index){if(index<0||index>2||mode==='gun')return;player.weapon=index;player.reloadUntil=0;player.recoil=.14;beep('switch');updateHud();}
+function switchWeapon(index){
+ if(!Number.isInteger(index)||index<0||index>=weapons.length||mode==='gun'||!running||paused||!player.alive||player.weapon===index)return;
+ player.weapon=index;player.reloadUntil=0;player.recoil=.14;player.lastShot=nowSec-.25;beep('switch');updateHud();
+ const w=weapons[index];announce(w.name+' • '+w.damage+' BASE DMG',1.0);
+}
 function updatePlayer(dt){
  if(!player.alive)return;
  const before=resolvePosition(player.x,player.z,.34);
@@ -1138,7 +1199,7 @@ $('modal').classList.remove('hidden');$('resumeBtn').textContent=kind==='result'
 function closeModal(){if(modalType==='result')return;$('modal').classList.add('hidden');if(running){paused=false;if(!matchRemaining||ended)return;canvas.requestPointerLock?.();}else paused=false;}
 function pauseGame(){if(!running||ended)return;if(!$('modal').classList.contains('hidden'))closeModal();else openModal('pause','MATCH PAUSED','Take a moment, check the scoreboard, or return to the lobby.');}
 $('deploy').addEventListener('click',startGame);$('howTo').addEventListener('click',()=>openModal('help','CONTROLS & TACTICS','Master these controls before deploying into the arena.'));document.querySelectorAll('.modeCard').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.modeCard').forEach(c=>c.classList.remove('selected'));b.classList.add('selected');beep('switch');}));$('pauseBtn').addEventListener('click',pauseGame);$('closeModal').addEventListener('click',closeModal);$('resumeBtn').addEventListener('click',closeModal);$('menuBtn').addEventListener('click',goMenu);
-window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='KeyV')player.ads=!player.ads;});window.addEventListener('keyup',e=>{keys[e.code]=false;});
+window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='KeyV')player.ads=!player.ads;});window.addEventListener('keyup',e=>{keys[e.code]=false;});
 canvas.addEventListener('click',()=>{if(running&&!paused&&!ended&&document.pointerLockElement!==canvas&&matchRemaining>0)canvas.requestPointerLock?.();});canvas.addEventListener('mousedown',e=>{if(running&&!paused){if(e.button===0)player.shoot=true;if(e.button===2)player.ads=true;}});window.addEventListener('mouseup',e=>{if(e.button===0)player.shoot=false;if(e.button===2)player.ads=false;});canvas.addEventListener('contextmenu',e=>e.preventDefault());// v2.1: corrected look is the reverse of the previous build's X/Y mapping.
 let lookDirection='corrected';
 try{lookDirection=localStorage.getItem('strikezone-look-v21')==='original'?'original':'corrected';}catch(e){}
