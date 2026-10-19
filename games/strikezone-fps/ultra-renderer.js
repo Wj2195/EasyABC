@@ -1,4 +1,4 @@
-/* STRIKEZONE FPS v3.17 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
+/* STRIKEZONE FPS v3.18 | corrected raised floor footing and blue/red shirts tactical soldier overhaul with optional enhanced WebGL2 renderer
  * Keeps the solo gameplay, AI, collisions and software fallback in index.html.
  * Three.js ESM is loaded over HTTPS only when browser WebGL2 is usable.
  */
@@ -480,7 +480,9 @@ async function startModernRenderer(THREE){
           const u=units[i],b=bots[i];u.root.visible=!!b;if(!b)continue;
           // Feet will be placed against world floor after the walking pose is evaluated.
           u.root.position.set(b.x,0,b.z);
-          u.root.rotation.y=-b.yaw;
+          // Models face local +Z; gameplay forward is (+sin(yaw), +cos(yaw)).
+          // Inverting yaw made the visible shield face the opposite lateral direction.
+          u.root.rotation.y=b.yaw;
           u.shield.visible=b.weapon===7;
           u.pistol.visible=b.weapon===4;
           u.energyCannon.visible=b.weapon===6;
@@ -641,7 +643,7 @@ async function startModernRenderer(THREE){
         const b=bridge.botData();for(let i=0;i<botHelmets.length;i++){const g=botHelmets[i],bot=b[i];g.visible=!humanoidSystem&&!!bot;if(!humanoidSystem&&bot){
           const fall=bot.downed?Math.max(0,Math.min(1,bot.fall||0)):0;
           g.position.set(bot.x,floorSurfaceAt(bot.x,bot.z)+.12*fall+(bot.downed?0:(bot.airHeight||0)),bot.z);
-          g.rotation.set((bot.fallSide||1)*1.43*fall,-bot.yaw,0);
+          g.rotation.set((bot.fallSide||1)*1.43*fall,bot.yaw,0);
           teamPatches[i].material=bot.team===0?armorBlue:armorRed;
         }}}
       if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position,s.nowSec);
