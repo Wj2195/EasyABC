@@ -2,7 +2,7 @@
 
 Every scanned pair evaluates 15m, 1h and 1d at 1/3/6/12 future-bar horizons.
 A Telegram alert requires all THREE fresh, closed-candle forecasts at the SAME
-horizon to agree BUY or SELL, with directional class dominance and thresholds.
+horizon to agree BUY or SELL. Strength is reported but does not block alignment.
 """
 import json
 import math
@@ -170,24 +170,25 @@ def alignment(timeframes, horizon, min_signal, min_gap):
                 'reason': 'Timeframes disagree'}
     strong = all(f.get('direction_leads') and f.get('signal', 0) >= min_signal
                  and f.get('gap', 0) >= min_gap for f in forecasts)
-    return {'bias': biases[0], 'aligned': True, 'eligible': strong,
-            'reason': 'Strong 3/3 alignment' if strong else 'Aligned bias; strength gate not met',
+    return {'bias': biases[0], 'aligned': True, 'eligible': True, 'strong': strong,
+            'reason': 'All 3 timeframes agree; stronger technical confirmation' if strong
+                      else 'All 3 timeframes agree; low strength / sideways risk',
             'minimum_signal': round(min(f['signal'] for f in forecasts), 3),
             'minimum_gap': round(min(f['gap'] for f in forecasts), 3)}
 
 
-def telegram_alert(pair, horizon, row, result):
-    parts = []
-    for tf in TIMEFRAMES:
-        entry = row['timeframes'][tf]
-        f = entry['forecasts'][str(horizon)]
-        parts.append(f'{tf}: {f["bias"]} · up {f["up"]:.1f}% / down {f["down"]:.1f}% · gap {f["gap"]:.1f}pp')
+def telegram_alert_group(pair, matches, row):
+    lines = []
+    for horizon, result in matches:
+        values = [row['timeframes'][tf]['forecasts'][str(horizon)] for tf in TIMEFRAMES]
+        signal_scores = ' / '.join(f'{f["signal"]:.1f}%' for f in values)
+        strength = 'STRONG' if result.get('strong') else 'LOW STRENGTH'
+        lines.append(f'{horizon}-bar: {result["bias"]} (15m/1h/1D: {signal_scores}) · {strength}')
     return ('TradeLens · 3/3 TIMEFRAME ALIGNMENT\n'
-            f'{pair} · {result["bias"]} WATCH · {horizon}-bar horizon\n'
-            + '\n'.join(parts) + '\n'
-            f'15m / 1h / 1D all {result["bias"]} on completed candles.\n'
+            f'{pair} · NEW ALIGNED FORECASTS\n' + '\n'.join(lines) + '\n'
             f'Last 15m candle: {row["timeframes"]["15m"]["candle_time"]} UTC\n'
-            'Experimental model bias, not guaranteed entry or win rate. Verify spread/news and risk.')
+            'Bias means BUY stronger than SELL (or vice versa), even if SIDEWAYS is highest.\n'
+            'Experimental WATCH signals, not guaranteed entries or win rates. Verify spread/news and risk.')
 
 
 def send_telegram(session, token, chat, message):
@@ -249,31 +250,33 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
                    'checked_at': iso(now), 'timeframes': timeframes, 'alignments': alignments}
             rows[pair] = row
             errors.extend(pair_errors)
+            pending = []
             for h in HORIZONS:
                 if h not in alert_horizons:
                     continue
                 result = alignments[str(h)]
                 key = f'{pair}|{h}'
                 if not result['eligible']:
-                    # A data outage must not reset dedupe; an actual changed/weak signal does.
+                    # An actual fully-fresh change resets dedupe; data outages never do.
                     if fully_fresh:
                         last_alerts.pop(key, None)
                     continue
-                if last_alerts.get(key) == result['bias']:
-                    continue
-                if not token or not chat or not cfg.get('enable_telegram', True):
-                    continue
-                if send(session, token, chat, telegram_alert(pair, h, row, result)):
-                    last_alerts[key] = result['bias']
+                if last_alerts.get(key) != result['bias']:
+                    pending.append((h, result))
+            if pending and token and chat and cfg.get('enable_telegram', True):
+                if send(session, token, chat, telegram_alert_group(pair, pending, row)):
                     sent += 1
-                    history.append({'pair': pair, 'bias': result['bias'], 'horizon': h,
-                                    'at': iso(now), 'minimum_signal': result.get('minimum_signal')})
+                    for h, result in pending:
+                        last_alerts[f'{pair}|{h}'] = result['bias']
+                        history.append({'pair': pair, 'bias': result['bias'], 'horizon': h,
+                                        'at': iso(now), 'minimum_signal': result.get('minimum_signal'),
+                                        'strong': result.get('strong', False)})
                 else:
-                    errors.append(f'{pair} H{h}: Telegram delivery failed')
+                    errors.append(f'{pair}: Telegram delivery failed')
     state['run_index'] = run_index + 1
     state['history'] = history[-150:]
     state['last_run'] = iso(now)
-    output = {'app': 'TradeLens Online', 'version': '1.1.0', 'updated_at': iso(now),
+    output = {'app': 'TradeLens Online', 'version': '1.2.0', 'updated_at': iso(now),
         'model': 'Experimental 9-feature technical analog (no macro/news overlay)',
         'provider': 'Unofficial Yahoo Finance',
         'settings': {**cfg, 'alert_horizons': alert_horizons, 'timeframes': list(TIMEFRAMES),
