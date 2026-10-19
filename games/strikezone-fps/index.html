@@ -287,13 +287,42 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
 .bossFoot{font-size:9px;color:#f0bbae}
 @media(max-width:800px){#bossHUD{top:75px;width:calc(100vw - 165px);left:auto;right:8px;transform:none;padding:5px}
 .bossHeading,.bossFoot{font-size:7px}.bossMeter{height:7px;margin:4px 0}}
+
+/* Private room multiplayer lobby: no changes to offline UI */
+.onlinePanel{position:fixed;inset:0;display:grid;place-items:center;background:#030811dc;
+ z-index:100;padding:14px;color:#ebf5ff;font-family:inherit}
+.onlinePanel.hidden{display:none}
+.onlineBox{width:min(540px,96vw);background:#0a1827;border:1px solid #3d8eac;
+ border-radius:9px;padding:23px;box-shadow:0 20px 55px #000c}
+.onlineTop{display:flex;align-items:center;justify-content:space-between;gap:10px;
+ color:#9feaff;letter-spacing:.8px;font-size:14px}
+.onlineTop span{font-size:9px;color:#edb56e}
+#onlineClose{background:transparent;color:#fff;border:0;font-size:21px;cursor:pointer}
+.onlineBox p{font-size:12px;line-height:1.7;color:#b2c5d0;margin:14px 0}
+.onlineActions{display:grid;gap:12px}
+.onlineJoin{display:flex;gap:8px}
+.onlineJoin input{flex:1;min-width:0;background:#06101b;border:1px solid #3a6075;color:#fff;
+ font-size:17px;text-transform:uppercase;padding:12px;letter-spacing:2px;border-radius:4px}
+#onlineRoomInfo{display:grid;gap:10px;margin-top:15px}
+#onlineRoomInfo.hidden{display:none}
+.onlineCode{font-size:11px;color:#c0cfd9}.onlineCode strong{font-size:25px;letter-spacing:5px;
+ display:block;color:#7af7d7;margin-top:4px}
+#onlineStatus{font-size:12px;color:#a4d6e9;min-height:20px;margin-top:13px}
+#onlinePlayerList{font-size:12px;line-height:1.8;padding:8px 12px;
+ background:#0f2637;border:1px solid #274e65}
+.onlineBox small{display:block;color:#8299ad;font-size:10px;line-height:1.6;margin-top:12px}
+#onlineHUD{position:fixed;top:65px;left:14px;padding:5px 9px;z-index:12;
+ background:#0a2549cd;color:#a8f1ff;border:1px solid #3994b5;font:12px monospace;pointer-events:none}
+#onlineHUD.hidden{display:none}
+@media(max-width:640px){.onlineBox{padding:12px}.onlineTop{font-size:12px}
+.onlineJoin{flex-wrap:wrap}.onlineJoin button{width:100%}}
 </style>
 </head>
 <body>
 <canvas id="arena" aria-label="3D first-person shooter game"></canvas>
 <span id="gfxTag" aria-hidden="true" hidden>SMART GRAPHICS · LOADING</span><div id="vignette"></div><div id="damageOverlay"></div><div id="unstuckTip">PRESS U TO REPOSITION FROM OBSTACLE</div>
 <div id="gameToast" role="status" aria-live="polite"></div><div id="mobileRotateHint" aria-hidden="true">↻ ROTATE TO LANDSCAPE FOR BETTER CONTROLS</div><div id="mainMenu" class="screen">
-  <header class="menuHeader"><div class="brand"><div class="brandIcon">SZ</div><div>STRIKE<span>ZONE</span><small>TACTICAL ARENA</small></div></div><div class="headerRight"><div class="onlineBadge"><i></i> OFFLINE TRAINING BUILD</div><div class="pilot">◈ &nbsp; <span id="pilotRank">GUEST OPERATIVE</span></div></div></header>
+  <header class="menuHeader"><div class="brand"><div class="brandIcon">SZ</div><div>STRIKE<span>ZONE</span><small>TACTICAL ARENA</small></div></div><div class="headerRight"><div class="onlineBadge"><i></i> ONLINE ROOMS + OFFLINE TRAINING</div><div class="pilot">◈ &nbsp; <span id="pilotRank">GUEST OPERATIVE</span></div></div></header>
   <aside class="trainingOptions" aria-label="Single-player difficulty">
     <div class="optionHead">FIELD TRAINING <span>SOLO / OFFLINE</span></div>
     <div class="optionLabel">BOT DIFFICULTY</div>
@@ -326,11 +355,32 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
      <button class="modeCard" data-mode="zombie"><b>04</b><strong>ZOMBIE &amp; MONSTER</strong><small>First team to eliminate the boss wins</small></button>
    </div></section>
    <div class="armoryChooser"><label for="loadoutSelect">STARTING WEAPON</label><select id="loadoutSelect" aria-label="Starting weapon"></select><span id="loadoutInfo">Choose your loadout</span></div>
-   <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
+   <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="onlineBtn" class="secondaryBtn" type="button">🌐 ONLINE ROOM</button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>TRI-SECTOR LABYRINTH</strong><span class="slash">/</span><span>6 MIN · 13 ENTERABLE BUILDINGS · AI ONLY</span></div>
   </main>
   <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.21 — DENSE URBAN ROOM-CLEARING</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
+<div id="onlinePanel" class="onlinePanel hidden" role="dialog" aria-label="Online multiplayer room">
+  <div class="onlineBox">
+    <div class="onlineTop"><strong>STRIKEZONE · ONLINE MULTIPLAYER <span>BETA</span></strong>
+      <button type="button" id="onlineClose" aria-label="Close online menu">✕</button></div>
+    <p>Play Team Deathmatch with friends. One player hosts; invite up to five others. AI soldiers fill empty slots.</p>
+    <div class="onlineActions">
+      <button type="button" class="primaryBtn" id="onlineHost">CREATE PRIVATE ROOM</button>
+      <div class="onlineJoin"><input id="onlineRoomCode" placeholder="6-character room code" maxlength="6" autocomplete="off" spellcheck="false"/>
+        <button type="button" class="secondaryBtn" id="onlineJoin">JOIN ROOM</button></div>
+    </div>
+    <div id="onlineRoomInfo" class="hidden">
+      <div class="onlineCode">ROOM CODE <strong id="onlineCodeText"></strong></div>
+      <button type="button" class="secondaryBtn" id="onlineCopy">COPY INVITE LINK</button>
+      <div id="onlinePlayerList"></div>
+      <button type="button" class="primaryBtn hidden" id="onlineStart">START ONLINE MATCH</button>
+    </div>
+    <div id="onlineStatus">Not connected. Create a room or enter your friend's code.</div>
+    <small>Free peer-to-peer beta · Host must stay connected · Some networks may need TURN relay · No public matchmaking</small>
+  </div>
+</div>
+<div id="onlineHUD" class="hidden">🌐 <span id="onlineHUDRoom"></span> · <span id="onlineHUDStatus">CONNECTING</span></div>
 <div id="hud" class="hidden">
  <div id="bossHUD" class="hidden">
    <div class="bossHeading"><span>☠ OVERLORD · BOSS ENCOUNTER</span><strong id="bossHPText">0 / 0 HP</strong></div>
