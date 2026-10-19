@@ -3,7 +3,9 @@
 Every scanned pair evaluates 15m, 1h and 1d at 1/3/6/12 future-bar horizons.
 A Telegram alert requires ALL 12 forecasts (15m / 1h / 1d times
 1 / 3 / 6 / 12 bars) to share one BUY or SELL bias on fresh closed candles.
-One Telegram message per scan lists newly aligned pairs.
+One Telegram message per scan lists newly aligned pairs. Last delivered
+direction is remembered permanently per pair; only a new opposite confirmed
+12/12 direction qualifies, including across mixed or missing-data intervals.
 Strength is reported on the dashboard but does not block alignment.
 """
 import json
@@ -201,6 +203,17 @@ def full_alignment(timeframes):
     return {'bias': biases[0], 'aligned': True, 'eligible': True,
             'reason': 'All 12 forecast directions agree: ' + biases[0]}
 
+def should_notify_12of12(last_delivered, pair, result):
+    """Prevent duplicate BUY/SELL alerts across temporary loss of alignment.
+
+    Only a successful delivery of an opposite confirmed 12/12 signal changes
+    the per-pair latch. MIXED, WAIT, stale and unavailable data do not clear it.
+    """
+    return (result.get('eligible') is True
+            and result.get('bias') in ('BUY', 'SELL')
+            and last_delivered.get(pair) != result['bias'])
+
+
 def telegram_alert_summary(alerts):
     """One message, one concise line per qualifying pair."""
     return '\n'.join(f'{pair.replace("/", "")} - {direction}'
@@ -280,13 +293,11 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
                    'alignments': alignments, 'full_alignment': twelve}
             rows[pair] = row
             errors.extend(pair_errors)
-            # No partial/3-of-3 matches may trigger Telegram; require all 12.
-            if twelve['eligible']:
-                if full_alerts.get(pair) != twelve['bias']:
-                    pending_alerts.append((pair, twelve['bias'], []))
-            elif fully_fresh:
-                # Re-arm only after a verified change; feed errors must not reset.
-                full_alerts.pop(pair, None)
+            # Never re-arm an unchanged direction after MIXED/WAIT/unavailable.
+            # Only a successfully DELIVERED opposite 12/12 direction updates
+            # the persistent per-pair memory.
+            if should_notify_12of12(full_alerts, pair, twelve):
+                pending_alerts.append((pair, twelve['bias'], []))
         # Group ALL newly qualifying pairs in one Telegram notification.
         if pending_alerts and token and chat and cfg.get('enable_telegram', True):
             message = telegram_alert_summary(pending_alerts)
@@ -303,7 +314,7 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
     state['run_index'] = run_index + 1
     state['history'] = history[-150:]
     state['last_run'] = iso(now)
-    output = {'app': 'TradeLens Online', 'version': '1.4.0', 'updated_at': iso(now),
+    output = {'app': 'TradeLens Online', 'version': '1.4.1', 'updated_at': iso(now),
         'model': 'Experimental 9-feature technical analog (no macro/news overlay)',
         'provider': 'Unofficial Yahoo Finance',
         'settings': {**cfg, 'alert_rule': 'all_12_agree', 'alert_horizons': list(HORIZONS),
