@@ -217,3 +217,16 @@ When a soldier is eliminated, the humanoid model topples to the ground over appr
 - A match reset removes previous fallen bodies. Blue and red team uniforms remain distinct.
 
 **Verification:** Inline game JavaScript and enhanced WebGL2 renderer passed syntax checks. Simulated death timing and fallback mesh rendering verified intermediate falling, a completed fallen pose, corpse visibility during the two-second resting interval and removal before respawn. Actual GPU/mobile playback still needs visual confirmation.
+
+
+## v3.15 — AEGIS shield: zero damage on protected hits
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.15
+
+This supersedes the previous v3.13 partial-damage/durability rules. When the AEGIS S8 is equipped, **any incoming damage intercepted from the front or sides** to the chest, abdomen, arms or legs is **completely blocked (0 HP damage)**. This includes conventional bullets, shotgun pellets, energy-cannon splash damage and close-range bashes.
+
+**Exceptions:** **Headshots always deal damage**, even from the front. **Attacks originating from behind** bypass the shield and deal normal damage at every body zone. The rear 120-degree cone is considered "behind"; the front and sides (remaining 240 degrees) are protected. The shield no longer loses durability from intercepted hits and cannot break through sustained fire. The weapon HUD shows **SHD ∞** and **BODY BLOCKED · HEAD / REAR EXPOSED** instead of misleading shield health. Protected player shots display **SHIELD BLOCKED +0 DMG**.
+
+Damage calculation is shared by player and bot soldiers. For shotguns, head-hit pellets and body-hit pellets are applied separately: a headshot pellet cannot cause blocked body pellets to slip past the shield. Energy splash is tested against the **actual blast location**, rather than against the shooter position. Shockwave physical displacement may still occur even when the shield prevents HP damage.
+
+**Verification:** Direct simulations confirmed zero damage from front/side body, arm and leg hits, front blast damage, no shield wear, normal front headshot damage and full rear damage. WebGL/compatibility assets and previous weapon/AI behaviors remain unchanged. In-browser playtesting still recommended.
