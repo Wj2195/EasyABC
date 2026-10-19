@@ -318,7 +318,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
   </div>
 </div><div id="hitmarker">✕</div><div id="combatFeedback" role="status" aria-live="polite"></div><div id="damageDirection"></div>
  <div class="bottomHUD"><div class="healthPanel"><div class="unit">OPERATIVE <b>ALPHA 01</b></div><div class="hpRow"><span class="hpIcon">✚</span><strong id="hpText">100</strong><div class="hpTrack"><div id="hpFill"></div></div></div><div class="subStat"><span>ARMOR ▰▰▰</span><span id="killStat">0 KILLS · 0 DEATHS</span></div></div><div class="weaponPanel"><div class="weaponLabel"><span id="weaponType">ASSAULT RIFLE</span><span id="weaponName">VORTEX AR</span></div><div class="ammoRow"><strong id="ammoCount">30</strong><span class="ammoSlash">/</span><span id="reserveCount">150</span><span class="ammoBullet">▥</span></div><div id="reloadDisplay">R TO RELOAD</div></div></div>
- <div class="keyHints"><span>[SHIFT] SPRINT</span><span>[SPACE] JUMP</span><span>[R] RELOAD</span><span>[1–7] WEAPON</span><span>[U] UNSTUCK</span><span>[P] SCOREBOARD</span></div>
+ <div class="keyHints"><span>[SHIFT] SPRINT</span><span>[SPACE] JUMP</span><span>[R] RELOAD</span><span>[1–8] WEAPON</span><span>[U] UNSTUCK</span><span>[P] SCOREBOARD</span></div>
  <div id="energyChargeHUD" class="hidden"><span id="energyChargeText">HOLD FIRE 2s</span><div class="chargeMeter"><div id="energyChargeFill"></div></div></div>
 <div id="announcement" class="announcement"></div>
  <div id="respawnScreen" class="hidden"><div>YOU WERE ELIMINATED</div><strong id="respawnCountdown">3</strong><small>REDEPLOYMENT IN PROGRESS</small></div>
@@ -594,9 +594,10 @@ const weapons=[
 {name:'JUDGE 12',type:'COMBAT SHOTGUN',mag:8,reserve:48,damage:11,pellets:8,rate:95,spread:.075,reload:2.35,range:30,headMult:1.65,falloffStart:10,falloffRate:.033},
 {name:'SPECTRE P9',type:'SIDEARM',mag:18,reserve:108,damage:35,rate:390,spread:.019,reload:1.20,range:55,headMult:2.1,falloffStart:24,falloffRate:.010},
 {name:'PHANTOM SR',type:'SNIPER RIFLE',mag:5,reserve:30,damage:85,rate:55,spread:.0025,reload:2.70,range:130,headMult:2.6,falloffStart:100,falloffRate:.002},
-{name:'NOVA PULSE',type:'ENERGY CANNON',mag:4,reserve:20,damage:40,rate:50,spread:0,reload:3.3,range:80,headMult:1,falloffStart:80,falloffRate:0,energy:true,charge:2,projectileSpeed:39,blastRadius:5.4,blastDamage:24,knockback:10.5}
+{name:'NOVA PULSE',type:'ENERGY CANNON',mag:4,reserve:20,damage:40,rate:50,spread:0,reload:3.3,range:80,headMult:1,falloffStart:80,falloffRate:0,energy:true,charge:2,projectileSpeed:39,blastRadius:5.4,blastDamage:24,knockback:10.5},
+{name:'AEGIS S8',type:'BALLISTIC SHIELD',mag:1,reserve:0,damage:23,rate:56,spread:0,reload:0,range:1.9,headMult:1,falloffStart:5,falloffRate:0,shield:true,shieldHP:360,block:.92}
 ];
-const player={x:0,z:-17,y:0,groundY:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),scopeZoom:1,lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99,energyChargeStart:-1,energyReady:false,shockVX:0,shockVZ:0};
+const player={x:0,z:-17,y:0,groundY:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),scopeZoom:1,lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99,energyChargeStart:-1,energyReady:false,shockVX:0,shockVZ:0,shieldHP:360,shieldLastDamage:-99};
 let mode='tdm',running=false,paused=false,ended=false,showHelp=false,matchRemaining=240,blue=0,red=0,bots=[],keys={},last=0,frame=0,fpsMark=0,fps=60,nowSec=0,finishTime=0,announceUntil=0,gunLast=0,modalType='',touchMove={x:0,y:0},audioCtx=null,mobileCrouched=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),hypot=(x,z)=>Math.hypot(x,z),rand=(a,b)=>a+Math.random()*(b-a);
 function overlaps(x,z,r=.37){if(x<-30.6+r||x>30.6-r||z<-30.6+r||z>30.6-r)return true;for(const o of colliders){if(x+r>o.x&&x-r<o.X&&z+r>o.z&&z-r<o.Z)return true;}return false;}
@@ -698,12 +699,20 @@ window.addEventListener('wheel',e=>{
 function spawnPlayer(){
  const p=findOpenSpawn(0);player.x=p.x;player.z=p.z;player.lastSafeX=p.x;player.lastSafeZ=p.z;
  player.stuckTimer=0;player.groundY=playerFloorAt(p.x,p.z);player.y=player.groundY;player.yVel=0;player.yaw=teamFacingDirection(p);player.pitch=0;
- player.hp=100;player.alive=true;player.reloadUntil=0;player.hurt=0;player.shoot=false;player.energyChargeStart=-1;player.energyReady=false;player.shockVX=player.shockVZ=0;player.ads=false;player.scopeZoom=1;player.lastDamage=nowSec;mobileCrouched=false;$('mobileCrouch').classList.remove('active');$('mobileCrouch').setAttribute('aria-pressed','false');
+ player.hp=100;player.shieldHP=weapons[7].shieldHP;player.shieldLastDamage=-99;player.alive=true;player.reloadUntil=0;player.hurt=0;player.shoot=false;player.energyChargeStart=-1;player.energyReady=false;player.shockVX=player.shockVZ=0;player.ads=false;player.scopeZoom=1;player.lastDamage=nowSec;mobileCrouched=false;$('mobileCrouch').classList.remove('active');$('mobileCrouch').setAttribute('aria-pressed','false');
  keys={};touchMove.x=0;touchMove.y=0;
  $('respawnScreen').classList.add('hidden');updateHud();announce('SAFE REDEPLOYMENT',1.15);
 }
 function teamFacingDirection(p){return p.z<0?0:Math.PI;}
-function createBots(){bots=[];const count=mode==='tdm'?9:8;for(let i=0;i<count;i++){const team=mode==='tdm'?(i<4?0:1):1,p=spawnPoint(team);bots.push({id:i,name:botNames[i],team,x:p.x,z:p.z,yaw:rand(-3,3),hp:100,alive:true,until:0,kills:0,deaths:0,target:null,targetRefresh:0,path:[],pathRefresh:0,shootCD:rand(.4,2),speed:rand(2.5,3.3),phase:rand(0,6.28),walk:0,weapon:Math.floor(rand(0,3))});}}
+function createBots(){bots=[];const count=mode==='tdm'?9:8;
+ for(let i=0;i<count;i++){const team=mode==='tdm'?(i<4?0:1):1,p=spawnPoint(team);
+ const weapon=i%weapons.length;
+ bots.push({id:i,name:botNames[i],team,x:p.x,z:p.z,yaw:rand(-3,3),hp:100,alive:true,until:0,kills:0,deaths:0,
+ target:null,targetRefresh:0,path:[],pathRefresh:0,shootCD:rand(.4,1.5),speed:rand(2.5,3.3),
+ phase:rand(0,6.28),walk:0,weapon,preferredWeapon:weapon,
+ magazine:weapons[weapon].mag,ammoReserve:weapons[weapon].reserve,reloadUntil:0,
+ shieldHP:weapons[7].shieldHP,shieldLastDamage:-99,chargeStart:-1,weaponHoldUntil:0});}
+}
 let startingWeapon=0;
 try{
  const n=Number(localStorage.getItem('strikezone-start-weapon-v38'));
@@ -717,7 +726,7 @@ for(let i=0;i<weapons.length;i++){
 }
 function refreshLoadout(){
  const w=weapons[startingWeapon];loadoutSelect.value=String(startingWeapon);
- loadoutInfo.textContent=w.energy?'HOLD '+w.charge+'s · RELEASE · '+w.blastRadius+'m SHOCKWAVE':w.damage+' BASE DMG · '+w.headMult.toFixed(2)+'× HEAD · '+(w.pellets||1)+' PROJECTILE'+(w.pellets?'S':'');
+ loadoutInfo.textContent=w.shield?'FRONT PROTECTION '+w.shieldHP+' HP · FIRE TO SHIELD BASH':w.energy?'HOLD '+w.charge+'s · RELEASE · '+w.blastRadius+'m SHOCKWAVE':w.damage+' BASE DMG · '+w.headMult.toFixed(2)+'× HEAD · '+(w.pellets||1)+' PROJECTILE'+(w.pellets?'S':'');
 }
 loadoutSelect.addEventListener('change',()=>{startingWeapon=Number(loadoutSelect.value);
  try{localStorage.setItem('strikezone-start-weapon-v38',String(startingWeapon));}catch(_){}
@@ -766,9 +775,36 @@ function showCombatFeedback(zone,damage){
  showCombatFeedback.hitTimer=setTimeout(()=>{marker.style.opacity='0';marker.classList.remove('head')},120);
  if(zone==='head'){announce('HEADSHOT!',1.25);beep('headshot');}
 }
-function damagePlayer(dmg,source){if(!player.alive||ended)return;player.hp=Math.max(0,player.hp-dmg);player.lastDamage=nowSec;player.hurt=.72;$('damageOverlay').style.opacity='.70';beep('hurt');if(player.hp<=0){player.deaths++;player.alive=false;player.shoot=false;cancelEnergyCharge();keys={};touchMove.x=touchMove.y=0;finishTime=nowSec+3;announce('YOU WERE ELIMINATED',1.5);$('respawnScreen').classList.remove('hidden');if(source){source.kills++;if(mode==='tdm')red++;}updateScores();}updateHud();}
+function damagePlayer(dmg,source,zone='chest'){if(!player.alive||ended)return;dmg=applyShieldDefense(player,dmg,source,zone);if(dmg<=0){updateHud();return;}player.hp=Math.max(0,player.hp-dmg);player.lastDamage=nowSec;player.hurt=.72;$('damageOverlay').style.opacity='.70';beep('hurt');if(player.hp<=0){player.deaths++;player.alive=false;player.shoot=false;cancelEnergyCharge();keys={};touchMove.x=touchMove.y=0;finishTime=nowSec+3;announce('YOU WERE ELIMINATED',1.5);$('respawnScreen').classList.remove('hidden');if(source){source.kills++;if(mode==='tdm')red++;}updateScores();}updateHud();}
 function eliminateBot(b,killer){b.alive=false;b.hp=0;b.until=nowSec+2.7;b.deaths++;if(killer===player){player.kills++;if(mode==='tdm')blue++;feedKill('YOU',b.name,true);beep('kill');announce(player.kills>0&&player.kills%5===0?'KILL STREAK ×'+player.kills:'ELIMINATION +100 XP',1);if(mode==='gun'){cancelEnergyCharge();player.weapon=(player.weapon+1)%weapons.length;player.ammo[player.weapon]=weapons[player.weapon].mag;player.lastShot=nowSec-.25;updateHud();if(player.kills>=10)endMatch();}}else if(killer){killer.kills++;if(mode==='tdm'){if(killer.team===0)blue++;else red++;}feedKill(killer.name,b.name,false);}updateScores();updateHud();}
-function damageBot(b,damage,killer){if(!b.alive)return;b.hp-=damage;if(b.hp<=0)eliminateBot(b,killer);}
+function damageBot(b,damage,killer,zone='chest'){if(!b.alive)return;damage=applyShieldDefense(b,damage,killer,zone);if(damage<=0)return;b.hp-=damage;if(b.hp<=0)eliminateBot(b,killer);}
+// Shield absorbs only directional fire, with durability and exposed legs.
+function shieldFacingDefender(defender,attacker){
+ if(!attacker||!Number.isFinite(attacker.x)||!Number.isFinite(attacker.z))return false;
+ const dx=attacker.x-defender.x,dz=attacker.z-defender.z,dist=Math.hypot(dx,dz);
+ return dist>.01&&(Math.sin(defender.yaw)*dx+Math.cos(defender.yaw)*dz)/dist>Math.cos(65*Math.PI/180);
+}
+function applyShieldDefense(defender,damage,attacker,zone='chest'){
+ if(defender.weapon!==7||defender.shieldHP<=0||!shieldFacingDefender(defender,attacker))return damage;
+ const fraction=zone==='leg'?.56:weapons[7].block;
+ const amount=Math.min(defender.shieldHP,damage*fraction);
+ defender.shieldHP=Math.max(0,defender.shieldHP-amount);
+ defender.shieldLastDamage=nowSec;
+ return Math.max(0,damage-amount);
+}
+function shieldBashPlayer(){
+ const w=weapons[7];
+ if(nowSec-player.lastShot<60/w.rate)return;
+ player.lastShot=nowSec;player.recoil=.21;beep('shieldBash');
+ for(const b of bots){
+  if(!b.alive||(mode==='tdm'&&b.team===0))continue;
+  const dx=b.x-player.x,dz=b.z-player.z,dist=Math.hypot(dx,dz);
+  if(dist>1.95||dist<.01||(dx*Math.sin(player.yaw)+dz*Math.cos(player.yaw))/dist<.65)continue;
+  damageBot(b,w.damage,player,'chest');
+  b.energyVX=(b.energyVX||0)+dx/dist*5.0;b.energyVZ=(b.energyVZ||0)+dz/dist*5.0;
+  b.airVY=Math.max(b.airVY||0,2.3);announce('SHIELD BASH',.65);break;
+ }
+}
 // Tactical AI: threat evaluation, pursuit, line-of-sight, flanking, cover and wall recovery.
 function pickTarget(bot){
  let best=null,score=Infinity;
@@ -1032,6 +1068,7 @@ function shoot(){
  if(!running||paused||ended||!player.alive)return;
  const w=weapons[player.weapon];
  if(w.energy){beginEnergyCharge();return;}
+ if(w.shield){shieldBashPlayer();return;}
  if(nowSec-player.lastShot<60/w.rate||player.reloadUntil>nowSec)return;
  if(player.ammo[player.weapon]<=0){reload();return;}
  player.lastShot=nowSec;player.ammo[player.weapon]--;player.recoil=Math.min(.32,player.recoil+(player.weapon===5?.19:.09));player.flash=.075;beep('gun');
@@ -1066,14 +1103,14 @@ function shoot(){
  let best=null;
  for(const [bot,hit] of hits){
   const actual=Math.min(bot.hp,hit.damage);
-  damageBot(bot,hit.damage,player);
+  damageBot(bot,hit.damage,player,hit.zone);
   if(!best||(hit.head&&!best.head)||(hit.head===best.head&&actual>best.damage))best={zone:hit.zone,damage:actual,head:hit.head};
  }
  if(best)showCombatFeedback(best.zone,best.damage);
  updateHud();
  if(player.ammo[player.weapon]===0)window.setTimeout(()=>{if(running&&player.alive)reload();},340);
 }
-function reload(){if(!running||!player.alive||player.reloadUntil>nowSec)return;if(player.weapon===6)cancelEnergyCharge();const id=player.weapon,w=weapons[id];if(player.ammo[id]>=w.mag||player.reserves[id]<=0)return;player.reloadUntil=nowSec+w.reload;beep('reload');updateHud();}
+function reload(){if(!running||!player.alive||player.reloadUntil>nowSec)return;if(player.weapon===7)return;if(player.weapon===6)cancelEnergyCharge();const id=player.weapon,w=weapons[id];if(player.ammo[id]>=w.mag||player.reserves[id]<=0)return;player.reloadUntil=nowSec+w.reload;beep('reload');updateHud();}
 function completeReload(){if(!player.reloadUntil||nowSec<player.reloadUntil)return;const n=player.weapon,w=weapons[n],count=Math.min(w.mag-player.ammo[n],player.reserves[n]);player.reserves[n]-=count;player.ammo[n]+=count;player.reloadUntil=0;if(count>0)beep('reloadend');updateHud();}
 function switchWeapon(index){
  if(!Number.isInteger(index)||index<0||index>=weapons.length||mode==='gun'||!running||paused||!player.alive||player.weapon===index)return;
@@ -1087,7 +1124,7 @@ function updatePlayer(dt){
  let side=(keys.KeyD?1:0)-(keys.KeyA?1:0)+touchMove.x;
  let front=(keys.KeyW?1:0)-(keys.KeyS?1:0)-touchMove.y;
  const len=Math.hypot(side,front);player.crouch=!!keys.KeyC||mobileCrouched;
- let speed=player.crouch?2.65:(keys.ShiftLeft||keys.ShiftRight?9.2:5.9);if(player.energyChargeStart>=0)speed*=.60;
+ let speed=player.crouch?2.65:(keys.ShiftLeft||keys.ShiftRight?9.2:5.9);if(player.energyChargeStart>=0)speed*=.60;if(player.weapon===7)speed*=.73;
  if(len>.03){side/=len;front/=len;
   // The Three.js renderer's camera-right is reversed relative to the legacy renderer.
   // Invert only strafing in the enhanced 3D renderer. Forward/back and aim remain unchanged.
@@ -1131,8 +1168,9 @@ function updatePlayer(dt){
    if(previousShown!==Math.ceil(player.hp)||player.hp===100)updateHud();
  }
  if(player.shoot)shoot();updateEnergyChargeHUD();
+ if(player.weapon===7&&nowSec-player.shieldLastDamage>7&&player.shieldHP<weapons[7].shieldHP){player.shieldHP=Math.min(weapons[7].shieldHP,player.shieldHP+dt*16);updateHud();}
 }
-function updateHud(){const w=weapons[player.weapon];$('hpText').textContent=String(Math.ceil(player.hp));$('hpFill').style.width=player.hp+'%';$('hpFill').style.background=player.hp<35?'#f2564d':'#64e3b8';$('ammoCount').textContent=String(player.ammo[player.weapon]).padStart(2,'0');$('reserveCount').textContent=player.reserves[player.weapon];$('weaponType').textContent=w.type;$('weaponName').textContent=w.name;$('reloadDisplay').textContent=player.reloadUntil>nowSec?'RELOADING ...':'R TO RELOAD';$('killStat').textContent=`${player.kills} KILLS · ${player.deaths} DEATHS`;}
+function updateHud(){const w=weapons[player.weapon];$('hpText').textContent=String(Math.ceil(player.hp));$('hpFill').style.width=player.hp+'%';$('hpFill').style.background=player.hp<35?'#f2564d':'#64e3b8';$('ammoCount').textContent=String(player.ammo[player.weapon]).padStart(2,'0');$('reserveCount').textContent=player.reserves[player.weapon];$('weaponType').textContent=w.type;$('weaponName').textContent=w.name;$('reloadDisplay').textContent=w.shield?'SHIELD '+Math.ceil(player.shieldHP)+' / '+w.shieldHP+' · FIRE TO BASH':player.reloadUntil>nowSec?'RELOADING ...':'R TO RELOAD';$('killStat').textContent=`${player.kills} KILLS · ${player.deaths} DEATHS`;}
 function updateScores(){$('blueScore').textContent=String(mode==='tdm'?blue:player.kills).padStart(2,'0');$('redScore').textContent=String(mode==='tdm'?red:Math.max(...bots.map(b=>b.kills),0)).padStart(2,'0');}
 function feedKill(a,b,byPlayer){let el=document.createElement('div');el.className='feedItem';el.innerHTML=`<b>${a}</b><i>✚</i>${b}`;$('feed').prepend(el);setTimeout(()=>el.remove(),3500);while($('feed').children.length>5)$('feed').lastChild.remove();}
 function announce(t,duration=1.5){$('announcement').textContent=t;$('announcement').classList.add('visible');announceUntil=nowSec+duration;}
@@ -1183,6 +1221,7 @@ function beep(kind){
    audioNoise(ctx,t,shotgun?.21:pistol?.12:.15,shotgun?.13:pistol?.08:.105,shotgun?65:130,shotgun?2300:4400);
    audioTone(ctx,t,shotgun?115:pistol?210:170,shotgun?48:pistol?88:67,shotgun?.21:.12,shotgun?.145:.07,'sawtooth');
    audioTone(ctx,t+.027,gun===2?140:260,gun===2?64:125,.085,.022,'triangle');
+  }else if(kind==='shieldBash'){audioTone(ctx,t,220,80,.18,.10,'square');audioNoise(ctx,t,.11,.075,70,1200);
   }else if(kind==='energyCharge'){audioTone(ctx,t,180,510,.32,.052,'sine');
   }else if(kind==='energyReady'){audioTone(ctx,t,630,980,.24,.042,'triangle');
   }else if(kind==='energyFire'){audioTone(ctx,t,330,82,.48,.14,'sawtooth');audioNoise(ctx,t,.24,.06,180,1600);
@@ -1480,14 +1519,14 @@ if(running&&!paused&&!ended){matchRemaining-=dt;if(matchRemaining<=0){matchRemai
 syncSniperScope();renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
 function startGame(){document.body.classList.add('playing');ensureAudio();mode=document.querySelector('.modeCard.selected')?.dataset.mode||'tdm';resetGame();running=true;paused=false;ended=false;$('mainMenu').classList.add('hidden');hud.classList.remove('hidden');$('modal').classList.add('hidden');$('matchMode').textContent=mode==='tdm'?'TEAM DEATHMATCH':mode==='ffa'?'FREE FOR ALL':'GUN RACE';$('feed').innerHTML='';canvas.requestPointerLock?.();announce('MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
 function goMenu(){cancelEnergyCharge();energyShots.length=0;energyWaves.length=0;hud.classList.remove('sniper-scoped');$('sniperScope').classList.add('hidden');document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
-const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['DMR / SNIPER: Z / X / SCROLL','ZOOM IN / OUT'],['1 TO 7 / MOBILE SWAP','CHANGE WEAPON'],['NOVA PULSE · HOLD 2 SECONDS','RELEASE TO FIRE SHOCKWAVE'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
+const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['DMR / SNIPER: Z / X / SCROLL','ZOOM IN / OUT'],['1 TO 8 / MOBILE SWAP','CHANGE WEAPON'],['AEGIS S8','FRONT SHIELD · FIRE TO BASH'],['NOVA PULSE · HOLD 2 SECONDS','RELEASE TO FIRE SHOCKWAVE'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
 function openModal(kind,title,subtitle){cancelEnergyCharge();modalType=kind;if(running)paused=true;player.shoot=false;$('modalEyebrow').textContent=kind==='help'?'FIELD MANUAL //':kind==='result'?'AFTER ACTION REPORT //':'TACTICAL INTERFACE //';$('modalTitle').textContent=title;$('modalSubtitle').textContent=subtitle;
 const content=$('modalContent');if(kind==='help'){content.innerHTML='<div class="controlsGrid">'+helpEntries.map(([a,b])=>`<div>${b}<b>${a}</b></div>`).join('')+'</div><p>Mobile: move with the left joystick; swipe on the right to look; AIM and FIRE are together on the right, while JUMP and tap-to-toggle CROUCH are at the bottom center.</p>';}else{const others=bots.map(b=>({name:b.name,kills:b.kills,team:b.team})).sort((a,b)=>b.kills-a.kills).slice(0,5);content.innerHTML=`<div class="modalStat"><div><strong>${player.kills}</strong><small>KILLS</small></div><div><strong>${player.deaths}</strong><small>DEATHS</small></div><div><strong>${Math.max(0,Math.round(player.kills*100+player.kills*50))}</strong><small>XP EARNED</small></div></div><p style="margin:20px 0 7px;font-weight:bold">SCOREBOARD</p>${[['YOU',player.kills],...others.map(b=>[b.name,b.kills])].map(([n,v])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ffffff1c;padding:8px 0;color:#d8e6ed;font-size:12px"><span>${n}</span><b>${v} ELIMINATIONS</b></div>`).join('')}`;}
 $('modal').classList.remove('hidden');$('resumeBtn').textContent=kind==='result'?'PLAY AGAIN ▶':kind==='help'&&!running?'BACK TO LOBBY':'RESUME MATCH ▶';$('resumeBtn').onclick=()=>{if(kind==='result')startGame();else closeModal();};$('menuBtn').textContent=running?'BACK TO MENU':'CLOSE';$('menuBtn').onclick=()=>running?goMenu():closeModal();document.exitPointerLock?.();}
 function closeModal(){if(modalType==='result')return;$('modal').classList.add('hidden');if(running){paused=false;if(!matchRemaining||ended)return;canvas.requestPointerLock?.();}else paused=false;}
 function pauseGame(){if(!running||ended)return;if(!$('modal').classList.contains('hidden'))closeModal();else openModal('pause','MATCH PAUSED','Take a moment, check the scoreboard, or return to the lobby.');}
 $('deploy').addEventListener('click',startGame);$('howTo').addEventListener('click',()=>openModal('help','CONTROLS & TACTICS','Master these controls before deploying into the arena.'));document.querySelectorAll('.modeCard').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.modeCard').forEach(c=>c.classList.remove('selected'));b.classList.add('selected');beep('switch');}));$('pauseBtn').addEventListener('click',pauseGame);$('closeModal').addEventListener('click',closeModal);$('resumeBtn').addEventListener('click',closeModal);$('menuBtn').addEventListener('click',goMenu);
-window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='Digit7')switchWeapon(6);if(e.code==='KeyV')player.ads=!player.ads;if(e.code==='KeyZ')changeScopeZoom(1);if(e.code==='KeyX')changeScopeZoom(-1);});window.addEventListener('keyup',e=>{keys[e.code]=false;});
+window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='Digit7')switchWeapon(6);if(e.code==='Digit8')switchWeapon(7);if(e.code==='KeyV')player.ads=!player.ads;if(e.code==='KeyZ')changeScopeZoom(1);if(e.code==='KeyX')changeScopeZoom(-1);});window.addEventListener('keyup',e=>{keys[e.code]=false;});
 canvas.addEventListener('click',()=>{if(running&&!paused&&!ended&&document.pointerLockElement!==canvas&&matchRemaining>0)canvas.requestPointerLock?.();});canvas.addEventListener('mousedown',e=>{if(running&&!paused){if(e.button===0)player.shoot=true;if(e.button===2)player.ads=true;}});window.addEventListener('mouseup',e=>{if(e.button===0){releaseEnergyCharge();player.shoot=false;}if(e.button===2)player.ads=false;});canvas.addEventListener('contextmenu',e=>e.preventDefault());// v2.1: corrected look is the reverse of the previous build's X/Y mapping.
 let lookDirection='corrected';
 try{lookDirection=localStorage.getItem('strikezone-look-v21')==='original'?'original':'corrected';}catch(e){}
