@@ -793,6 +793,64 @@ async function startModernRenderer(THREE){
     }
   }
 
+  // Overlord's charged lightning storm: pooled zig-zag 3D arc meshes.
+  const boltSegments=18;
+  const lightningLines=[];
+  const stormCore=new THREE.LineBasicMaterial({color:0x8ffcff,transparent:true,opacity:.96,depthWrite:false});
+  const stormBranch=new THREE.LineBasicMaterial({color:0xb178ff,transparent:true,opacity:.80,depthWrite:false});
+  for(let i=0;i<22;i++){
+    const geo=new THREE.BufferGeometry();
+    const vertices=new Float32Array((boltSegments+1)*3);
+    const attribute=new THREE.BufferAttribute(vertices,3);
+    attribute.setUsage(THREE.DynamicDrawUsage);geo.setAttribute('position',attribute);
+    const line=new THREE.Line(geo,i%2?stormBranch:stormCore);
+    line.visible=false;line.frustumCulled=false;scene.add(line);
+    lightningLines.push(line);
+  }
+  const stormRing=new THREE.Mesh(new THREE.RingGeometry(3.7,4.4,48),
+    new THREE.MeshBasicMaterial({color:0x81dfff,transparent:true,opacity:.20,
+      side:THREE.DoubleSide,depthWrite:false}));
+  stormRing.rotation.x=-Math.PI/2;stormRing.visible=false;scene.add(stormRing);
+  const stormLight=new THREE.PointLight(0x76caff,0,16,2);
+  scene.add(stormLight);
+  function updateLightningVisuals(time,attack){
+    const data=bridge.lightningData?.()||[];
+    for(let i=0;i<lightningLines.length;i++){
+      const line=lightningLines[i],bolt=data[i],alive=bolt&&time-bolt.t<bolt.ttl;
+      line.visible=!!alive;if(!alive)continue;
+      const pos=line.geometry.attributes.position;
+      const dx=bolt.X-bolt.x,dy=bolt.Y-bolt.y,dz=bolt.Z-bolt.z;
+      const norm=Math.max(.01,Math.hypot(dx,dz));
+      // Perpendicular offsets give a lightning silhouette from any camera angle.
+      const nx=-dz/norm,nz=dx/norm;
+      const age=(time-bolt.t)/bolt.ttl;
+      line.material.opacity=(bolt.chain?Math.max(.1,.82*(1-age)):Math.max(.1,.96*(1-age)));
+      for(let j=0;j<=boltSegments;j++){
+        const t=j/boltSegments;
+        const taper=Math.sin(Math.PI*t);
+        const flicker=Math.sin(bolt.seed+j*12.71+Math.floor(time*32)*1.87)*.47*taper;
+        const v=j*3;
+        pos.array[v]=bolt.x+dx*t+nx*flicker;
+        pos.array[v+1]=bolt.y+dy*t+
+          Math.cos(bolt.seed+j*6.33+Math.floor(time*21))*.24*taper;
+        pos.array[v+2]=bolt.z+dz*t+nz*flicker;
+      }
+      pos.needsUpdate=true;line.geometry.computeBoundingSphere();
+    }
+    const charging=!!(attack?.lightningUntil>attack?.now);
+    const b=(bridge.monsterData?.()||[]).find(m=>m.boss);
+    stormRing.visible=charging&&!!b;
+    if(stormRing.visible){
+      stormRing.position.set(b.x,.095,b.z);
+      const flash=.85+.10*Math.sin(time*26);
+      stormRing.scale.setScalar(flash);
+      stormLight.position.set(b.x,3.5,b.z);stormLight.intensity=3.2+.7*Math.sin(time*22);
+    }else if(data.length){
+      const last=data[0];stormLight.position.set(last.X,last.Y,last.Z);
+      stormLight.intensity=2.0;
+    }else stormLight.intensity=0;
+  }
+
   // v3.12 pooled glowing energy orbs and expanding radial shockwave rings.
   const energyCoreMat=new THREE.MeshBasicMaterial({color:0x8cffff});
   const energyHaloMat=new THREE.MeshBasicMaterial({color:0x28bedd,transparent:true,opacity:.24,depthWrite:false});
@@ -917,7 +975,8 @@ async function startModernRenderer(THREE){
           teamPatches[i].material=bot.team===0?armorBlue:armorRed;
         }}}
       if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position,s.nowSec);
-      updateMonsterVisuals();updateAmmoVisuals(s.nowSec);renderEnergyFX();
+      updateMonsterVisuals();updateAmmoVisuals(s.nowSec);
+      updateLightningVisuals(s.nowSec,bridge.monsterAttack?.());renderEnergyFX();
       if(!realisticWeapons&&elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
       for(let i=0;i<tracerPool.length;i++){
         const o=tracerPool[i],t=bridge.tracerData()[i];
