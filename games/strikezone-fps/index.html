@@ -1951,7 +1951,7 @@ function lightningStrike(from,target,damage,chain){
   floorSurfaceAt(target.x,target.z)+(target.airHeight||0)+1.2;
  bossLightningBolts.push({
   x:from.x,y:from.y,z:from.z,X:target.x,Y:targetY,Z:target.z,
-  t:nowSec,ttl:.64,seed:rand(0,9999),chain
+  t:nowSec,ttl:1.05,seed:rand(0,9999),chain
  });
  if(bossLightningBolts.length>22)bossLightningBolts.shift();
  monsterDamageSoldier(target,damage,boss);
