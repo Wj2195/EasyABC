@@ -1266,8 +1266,8 @@ function softwareScene(dt){
   const size=p.size||.04;box(actors,p.x,p.y,p.z,size,size,size,p.mat);
  }
  paint(actors.length?staticFaces.concat(makeFaces(actors)):staticFaces);
- if(running&&player.alive){const gun=[];weaponShape(gun);paint(makeFaces(gun),true);}
- drawWeaponFlash(ctx,W,H);drawWorldOverlay(ctx,W,H);
+ if(running&&player.alive&&!sniperScoped()){const gun=[];weaponShape(gun);paint(makeFaces(gun),true);}
+ if(!sniperScoped())drawWeaponFlash(ctx,W,H);drawWorldOverlay(ctx,W,H);
 }
 function formatTime(t){let n=Math.max(0,Math.ceil(t));return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;}
 function tick(stamp){const sec=stamp/1000;let dt=Math.min(.045,sec-(last||sec));last=sec;nowSec=sec;frame++;if(sec-fpsMark>=1){fps=Math.round(frame/(sec-fpsMark));$('fpsCounter').textContent=`${fps} FPS`;frame=0;fpsMark=sec;}
