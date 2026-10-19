@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.26 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.27 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -1105,7 +1105,7 @@ function urbanStreetDetails(){
 }
 
 
-// MAP 001 v3.26: five additional fully traversable center buildings, sectional
+// MAP 001 v3.27: five additional fully traversable center buildings, sectional
 // airlock walls, and street-scale architectural obstacles. A wall has collision
 // ONLY if it touches the ground; door voids are true player/bot openings.
 const MAP_ONE_SECTORS=[
@@ -1651,12 +1651,18 @@ function shieldBashPlayer(){
  if(nowSec-player.lastShot<60/w.rate)return;
  player.lastShot=nowSec;player.recoil=.21;beep('shieldBash');
  for(const b of bots){
-  if(!b.alive||(mode==='tdm'&&b.team===0))continue;
+  if(!b.alive||((mode==='tdm'||mode==='zombie')&&b.team===0))continue;
   const dx=b.x-player.x,dz=b.z-player.z,dist=Math.hypot(dx,dz);
   if(dist>1.95||dist<.01||(dx*Math.sin(player.yaw)+dz*Math.cos(player.yaw))/dist<.65)continue;
   damageBot(b,w.damage,player,'chest');
   b.energyVX=(b.energyVX||0)+dx/dist*5.0;b.energyVZ=(b.energyVZ||0)+dz/dist*5.0;
   b.airVY=Math.max(b.airVY||0,2.3);announce('SHIELD BASH',.65);break;
+ }
+ if(mode==='zombie')for(const creature of aliveMonsters()){
+  const dx=creature.x-player.x,dz=creature.z-player.z,d=Math.hypot(dx,dz);
+  if(d>1.95+(creature.boss?1.3:0)||d<.05)continue;
+  if((dx*Math.sin(player.yaw)+dz*Math.cos(player.yaw))/d<.55)continue;
+  damageMonster(creature,w.damage,player);announce('SHIELD BASH',.65);break;
  }
 }
 // Tactical AI: threat evaluation, pursuit, line-of-sight, flanking, cover and wall recovery.
@@ -1664,11 +1670,22 @@ function pickTarget(bot){
  let best=null,score=Infinity;
  const targets=[];
  if(mode==='zombie'){
+   // Hunt the boss, but fight rival soldiers encountered on the way.
    for(const monster of aliveMonsters()){
      const d=hypot(monster.x-bot.x,monster.z-bot.z);
      const seen=d<39&&clearPath(bot.x,bot.z,monster.x,monster.z);
-     const priority=d+(seen?-9:4)+(monster.boss?-27:3);
+     const priority=d+(seen?-9:4)+(monster.boss?-27:7);
      if(priority<score){best=monster;score=priority;}
+   }
+   const opponents=[
+     ...(bot.team===1&&player.alive?[player]:[]),
+     ...bots.filter(other=>other!==bot&&other.alive&&other.team!==bot.team)
+   ];
+   for(const enemy of opponents){
+     const d=hypot(enemy.x-bot.x,enemy.z-bot.z);
+     const seen=d<35&&clearPath(bot.x,bot.z,enemy.x,enemy.z);
+     const threat=d+(seen?-19:7)+(d<16?-14:0)+(bot.target===enemy?-3:0);
+     if(threat<score){best=enemy;score=threat;}
    }
    return best;
  }
@@ -1681,7 +1698,7 @@ function pickTarget(bot){
  }
  return best;
 }
-// v3.26: cover discovery works across the FULL map, not just the old +/-29 arena.
+// v3.27: cover discovery works across the FULL map, not just the old +/-29 arena.
 function chooseCoverPoint(bot,tar){
  if(!tar)return null;
  const candidates=[];
@@ -1727,7 +1744,7 @@ function tacticalVector(b,tar,visible,dist,go){
 }
 
 
-// v3.26 — squad decision system: varied building patrols, shield retreat,
+// v3.27 — squad decision system: varied building patrols, shield retreat,
 // safe health recovery, and deliberate re-engagement.
 // All landmarks are world positions inside the existing Map 1 geometry.
 const AI_PATROL_POINTS=[
@@ -1739,8 +1756,56 @@ const AI_PATROL_POINTS=[
  [-7,-65],[7,-65],[-7,65],[7,65]
 ];
 
-// v3.26 — Zombie & Monster operation. Both teams race for the final boss hit.
-let boss=null,zombies=[],bossDamage=[0,0],monsterWaves=0;
+// v3.27 — Zombie & Monster operation. Both teams race for the final boss hit.
+let boss=null,zombies=[],bossDamage=[0,0],monsterWaves=0,ammoDrops=[],nextAmmoDropId=0;
+const ZOMBIE_COUNT=48,AGILE_ZOMBIE_FREQUENCY=5,OVERLORD_MAX_HP=50000;
+const AMMO_DROP_LIFETIME=48;
+function ammoWeaponFor(actor){
+ const id=actor.weapon;
+ return id>=0&&id<=6?id:(Number.isInteger(actor.lastRangedWeapon)?actor.lastRangedWeapon:0);
+}
+// Each eliminated zombie drops ammunition, collectible by either team.
+function spawnZombieAmmo(z){
+ const pack={id:nextAmmoDropId++,x:z.x,z:z.z,y:floorSurfaceAt(z.x,z.z)+.18,
+  createdAt:nowSec,expiresAt:nowSec+AMMO_DROP_LIFETIME,agile:!!z.agile};
+ ammoDrops.push(pack);
+ if(ammoDrops.length>70)ammoDrops.shift();
+ return pack;
+}
+function grantAmmoPickup(actor,pack){
+ const id=ammoWeaponFor(actor),weapon=weapons[id];
+ if(!weapon||weapon.melee||weapon.shield||!actor.ammo||!actor.reserves)return false;
+ const quantity=weapon.mag*(pack.agile?2:1);
+ const capacity=Math.max(0,weapon.mag-actor.ammo[id]);
+ const loaded=Math.min(quantity,capacity);
+ actor.ammo[id]+=loaded;
+ actor.reserves[id]+=quantity-loaded;
+ if(actor===player){
+  if(loaded>0)actor.reloadUntil=0;
+  updateHud();
+  announce('AMMO PICKED UP · '+weapon.name+' +'+quantity,1.1);
+ }
+ return true;
+}
+function updateAmmoDrops(){
+ if(mode!=='zombie'||!ammoDrops.length)return;
+ const actors=[...(player.alive?[player]:[]),...bots.filter(b=>b.alive)];
+ for(let i=ammoDrops.length-1;i>=0;i--){
+  const pack=ammoDrops[i];
+  if(nowSec>pack.expiresAt){ammoDrops.splice(i,1);continue;}
+  for(const actor of actors){
+   if(hypot(pack.x-actor.x,pack.z-actor.z)>1.95)continue;
+   if(grantAmmoPickup(actor,pack)){ammoDrops.splice(i,1);break;}
+  }
+ }
+}
+function ammoDropFallbackGeometry(out){
+ for(const drop of ammoDrops){
+  const y=floorSurfaceAt(drop.x,drop.z)+.22+Math.sin(nowSec*3+drop.id)*.06;
+  box(out,drop.x,y,drop.z,.50,.25,.36,drop.agile?34:25);
+  box(out,drop.x,y+.16,drop.z,.27,.09,.22,15);
+ }
+}
 function aliveMonsters(){
  if(mode!=='zombie')return [];
  return [...(boss?.alive?[boss]:[]),...zombies.filter(z=>z.alive)];
@@ -1785,14 +1850,14 @@ function updateBossHUD(){
  $('zombieCount').textContent=zombies.filter(z=>z.alive).length+' ZOMBIES · '+zombies.filter(z=>z.alive&&z.agile).length+' FAST';
 }
 function resetMonsterEncounter(){
- boss=null;zombies=[];bossDamage=[0,0];monsterWaves=0;
+ boss=null;zombies=[];bossDamage=[0,0];monsterWaves=0;ammoDrops=[];nextAmmoDropId=0;
  if(mode==='zombie'){
   const p=monsterSpawnLocation(true);
   boss={id:'overlord',monster:true,boss:true,x:p.x,z:p.z,yaw:0,phase:0,
-   hp:5200,maxHP:5200,alive:true,speed:2.25,
+   hp:OVERLORD_MAX_HP,maxHP:OVERLORD_MAX_HP,alive:true,speed:2.25,
    attackCd:nowSec+3,attackPulse:0,attackRadius:7,
    target:null,path:[],pathRefresh:0,targetRefresh:0,stuckFor:0,kills:0};
-  for(let i=0;i<23;i++)zombies.push(makeZombie('z'+i,i%5===0));
+  for(let i=0;i<ZOMBIE_COUNT;i++)zombies.push(makeZombie('z'+i,i%AGILE_ZOMBIE_FREQUENCY===0));
  }
  updateBossHUD();
 }
@@ -1822,6 +1887,7 @@ function damageMonster(m,amount,attacker){
  }else if(m.hp<=0){
   m.alive=false;m.diedAt=nowSec;
   m.reviveAt=nowSec+rand(7.5,13.5);
+  spawnZombieAmmo(m);
   if(attacker===player){player.kills++;feedKill('YOU',m.agile?'SPRINTER':'ZOMBIE',true);}
   updateHud();updateBossHUD();
  }
@@ -1906,6 +1972,7 @@ function updateMonsters(dt){
    monsterDamageSoldier(z.target,z.damage,z);
   }
  }
+ updateAmmoDrops();
  if(Math.floor(nowSec*3)%4===0)updateBossHUD();
 }
 function swingLightsaber(){
@@ -1913,7 +1980,8 @@ function swingLightsaber(){
  if(nowSec-player.lastShot<60/w.rate)return;
  player.lastShot=nowSec;player.recoil=.28;player.flash=.18;beep('saber');
  let hits=0,bestDamage=0;
- const all=mode==='zombie'?aliveMonsters():bots.filter(b=>b.alive&&(mode!=='tdm'||b.team!==0));
+ const all=mode==='zombie'?[...aliveMonsters(),...bots.filter(b=>b.alive&&b.team!==0)]:
+ bots.filter(b=>b.alive&&(mode!=='tdm'||b.team!==0));
  for(const t of all){
   const dx=t.x-player.x,dz=t.z-player.z,dist=hypot(dx,dz);
   if(dist>w.range+(t.boss?1.3:0)||dist<.05)continue;
@@ -2100,7 +2168,7 @@ function resetBotBurst(b){
  b.burstShots=0;b.burstTarget=null;b.burstIndex=0;
 }
 function botFiringLaneBlocked(b,tar){
- if(mode!=='tdm'||!tar)return false;
+ if(mode!=='tdm'&&mode!=='zombie'||!tar)return false;
  const dx=tar.x-b.x,dz=tar.z-b.z;
  const range=Math.hypot(dx,dz);
  if(range<.5)return false;
@@ -2438,7 +2506,8 @@ function blastEnergy(x,y,z,owner=player){
    bot.energyVX=(bot.energyVX||0)+p.vx;bot.energyVZ=(bot.energyVZ||0)+p.vz;
    bot.airVY=Math.max(bot.airVY||0,p.vy);
    // Blue teammates are thrown by the wave, but do not receive friendly fire damage.
-   if(bot!==owner&&(mode!=='tdm'||(owner===player?bot.team!==0:bot.team!==owner.team))){
+   if(bot!==owner&&((mode!=='tdm'&&mode!=='zombie')||
+  (owner===player?bot.team!==0:bot.team!==owner?.team))){
      damageBot(bot,Math.round(w.blastDamage*(.3+.7*p.power)),owner,'chest',{x,z});
    }
    pushed++;
@@ -2457,7 +2526,7 @@ function blastEnergy(x,y,z,owner=player){
      const p=boost(player,dist);
      player.shockVX+=p.vx;player.shockVZ+=p.vz;
      player.yVel=Math.max(player.yVel,p.vy);
-     if(owner!==player&&(mode!=='tdm'||owner.team!==0))
+     if(owner!==player&&((mode!=='tdm'&&mode!=='zombie')||owner.team!==0))
        damagePlayer(Math.round(w.blastDamage*(.3+.7*p.power)),owner,'chest',{x,z});
      pushed++;
    }
@@ -2473,7 +2542,10 @@ function updateEnergyEffects(dt){
    let travel=Math.min(step,wallDist),directHit=false;
    // Check swept collision against all soldiers instead of sampling only the endpoint.
    for(const b of bots){
-     if(!b.alive||b===q.owner)continue;
+     if(!b.alive||b===q.owner||(
+      (mode==='tdm'||mode==='zombie')&&
+      (q.owner===player?b.team===0:b.team===q.owner?.team)
+    ))continue;
      const centerY=floorSurfaceAt(b.x,b.z)+(b.airHeight||0)+1.00;
      const ux=b.x-start.x,uy=centerY-start.y,uz=b.z-start.z;
      const t=clamp(ux*q.dx+uy*q.dy+uz*q.dz,0,travel);
@@ -2489,7 +2561,9 @@ function updateEnergyEffects(dt){
        cy-(start.y+q.dy*t),creature.z-(start.z+q.dz*t));
      if(distance<radius){travel=t;directHit=true;}
    }
-   if(q.owner&&q.owner!==player&&player.alive){
+   if(q.owner&&q.owner!==player&&player.alive&&(
+     (mode!=='tdm'&&mode!=='zombie')||q.owner.team!==0
+   )){
      const centerY=player.y+1;
      const t=clamp((player.x-start.x)*q.dx+(centerY-start.y)*q.dy+(player.z-start.z)*q.dz,0,travel);
      if(Math.hypot(player.x-(start.x+q.dx*t),centerY-(start.y+q.dy*t),player.z-(start.z+q.dz*t))<.75){
@@ -2552,7 +2626,7 @@ function shoot(){
   const len=Math.hypot(dx,dy,dz)||1,ray={x:dx/len,y:dy/len,z:dz/len};
   let nearest=Math.min(w.range,worldImpact(origin,ray)),hit=null;
   for(const bot of bots){
-   if(!bot.alive||(mode==='tdm'&&bot.team===0)||mode==='zombie')continue;
+   if(!bot.alive||((mode==='tdm'||mode==='zombie')&&bot.team===0))continue;
    const impact=hitActor(origin,ray,bot);
    if(impact.dist<nearest){nearest=impact.dist;hit={actor:bot,zone:impact.zone};}
   }
@@ -2908,6 +2982,9 @@ if(mode==='zombie'){
   ctx.beginPath();ctx.arc(zombie.x,zombie.z,zombie.agile?.85:.56,0,Math.PI*2);ctx.fill();
  }
  if(boss?.alive){ctx.fillStyle='#fe72c9';ctx.beginPath();ctx.arc(boss.x,boss.z,2.4,0,Math.PI*2);ctx.fill();}
+ for(const pack of ammoDrops){
+  ctx.fillStyle='#72eeff';ctx.fillRect(pack.x-.65,pack.z-.65,1.3,1.3);
+ }
 }
 ctx.translate(player.x,player.z);ctx.rotate(-player.yaw);ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(0,1.6);ctx.lineTo(-1.1,-1.25);ctx.lineTo(1.1,-1.25);ctx.closePath();ctx.fill();ctx.restore();}
 
@@ -3090,7 +3167,7 @@ if(running&&!paused&&!ended){
 syncSniperScope();renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
 function startGame(){document.body.classList.add('playing');ensureAudio();mode=document.querySelector('.modeCard.selected')?.dataset.mode||'tdm';resetGame();running=true;paused=false;ended=false;$('mainMenu').classList.add('hidden');hud.classList.remove('hidden');$('modal').classList.add('hidden');$('matchMode').textContent=mode==='zombie'?'BOSS HUNT · TEAM DAMAGE':mode==='tdm'?'TEAM DEATHMATCH':mode==='ffa'?'FREE FOR ALL':'GUN RACE';$('feed').innerHTML='';canvas.requestPointerLock?.();announce(mode==='zombie'?'OVERLORD DETECTED · DEFEAT THE BOSS!':'MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
 function goMenu(){cancelEnergyCharge();energyShots.length=0;energyWaves.length=0;
- boss=null;zombies=[];updateBossHUD();hud.classList.remove('sniper-scoped');$('sniperScope').classList.add('hidden');document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
+ boss=null;zombies=[];ammoDrops=[];updateBossHUD();hud.classList.remove('sniper-scoped');$('sniperScope').classList.add('hidden');document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
 const helpEntries=[['F','TOGGLE FULLSCREEN'],['I','TOGGLE MOUSE DIRECTION'],['W A S D','MOVE'],['MOUSE','LOOK AROUND'],['LEFT CLICK','FIRE'],['RIGHT CLICK / V','AIM'],['SHIFT','SPRINT'],['SPACE','JUMP'],['R','RELOAD'],['DMR / SNIPER: Z / X / SCROLL','ZOOM IN / OUT'],['1 TO 9 / MOBILE SWAP','CHANGE WEAPON'],['LIGHTSABER','MELEE · NO AMMUNITION'],['ZOMBIE & MONSTER','FINAL HIT ON THE BOSS WINS'],['AEGIS S8','FRONT SHIELD · FIRE TO BASH'],['NOVA PULSE · HOLD 2 SECONDS','RELEASE TO FIRE SHOCKWAVE'],['C','CROUCH'],['U','UNSTUCK / REPOSITION'],['P / ESC','PAUSE / SCOREBOARD']];
 function openModal(kind,title,subtitle){cancelEnergyCharge();modalType=kind;if(running)paused=true;player.shoot=false;$('modalEyebrow').textContent=kind==='help'?'FIELD MANUAL //':kind==='result'?'AFTER ACTION REPORT //':'TACTICAL INTERFACE //';$('modalTitle').textContent=title;$('modalSubtitle').textContent=subtitle;
 const content=$('modalContent');if(kind==='help'){content.innerHTML='<div class="controlsGrid">'+helpEntries.map(([a,b])=>`<div>${b}<b>${a}</b></div>`).join('')+'</div><p>Mobile: move with the left joystick; swipe on the right to look; AIM and FIRE are together on the right, while JUMP and tap-to-toggle CROUCH are at the bottom center.</p>';}else{const others=bots.map(b=>({name:b.name,kills:b.kills,team:b.team})).sort((a,b)=>b.kills-a.kills).slice(0,5);content.innerHTML=`<div class="modalStat"><div><strong>${player.kills}</strong><small>KILLS</small></div><div><strong>${player.deaths}</strong><small>DEATHS</small></div><div><strong>${Math.max(0,Math.round(player.kills*100+player.kills*50))}</strong><small>XP EARNED</small></div></div><p style="margin:20px 0 7px;font-weight:bold">SCOREBOARD</p>${[['YOU',player.kills],...others.map(b=>[b.name,b.kills])].map(([n,v])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid #ffffff1c;padding:8px 0;color:#d8e6ed;font-size:12px"><span>${n}</span><b>${v} ELIMINATIONS</b></div>`).join('')}`;}
@@ -3288,11 +3365,16 @@ window.StrikeZoneRenderBridge={
  geometry:()=>STATIC,
  materials:()=>palette,
  actorGeometry:()=>{const data=[];for(const b of bots)if(soldierVisible(b))botShape(data,b);
- if(mode==='zombie')for(const m of aliveMonsters())monsterFallbackGeometry(data,m);
+ if(mode==='zombie'){
+  for(const m of aliveMonsters())monsterFallbackGeometry(data,m);
+  ammoDropFallbackGeometry(data);
+ }
  return data;},
  weaponGeometry:()=>{if(!running||!player.alive)return [];const data=[];weaponShape(data);return data;},
  tracerData:()=>tracers.map(t=>({x:t.x,y:t.y,z:t.z,X:t.X,Y:t.Y,Z:t.Z,friendly:t.friendly})),
  monsterAttack:()=>boss?.alive?{until:boss.attackPulse||0,now:nowSec}:null,
+ ammoData:()=>mode==='zombie'?ammoDrops.map(p=>({x:p.x,z:p.z,y:p.y,id:p.id,
+  agile:p.agile})):[],
  monsterData:()=>mode==='zombie'?aliveMonsters().map(m=>({
   id:m.id,x:m.x,z:m.z,yaw:m.yaw||0,hp:m.hp,maxHP:m.maxHP,
   boss:!!m.boss,agile:!!m.agile,phase:m.phase||0
