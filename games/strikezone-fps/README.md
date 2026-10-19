@@ -169,3 +169,18 @@ All six guns have unique weapon silhouettes. The change preserves gun race, bots
 - Respawn weapon visibility, six independent firearm damage profiles, headshots, floor physics, solo AI and audio have been preserved.
 
 **Checks:** JavaScript syntax passed; scoped/unscoped state and field-of-view tests passed for DMR, sniper, assault rifle, death and return to hip fire. In-game visual verification in Chrome and phone browsers remains necessary.
+
+
+## v3.12 — NOVA PULSE energy cannon
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.12
+
+A new **seventh weapon**, **NOVA PULSE**, is available as the starting loadout, by pressing **7** on PC, or using **SWAP** on mobile. It is a charge-and-release energy launcher rather than a normal hitscan gun.
+
+- **Charge:** Press and hold FIRE for a continuous **2 seconds**. The on-screen charge meter fills and changes to **FULL CHARGE — RELEASE FIRE**. Release FIRE to discharge. Releasing early cancels without consuming ammo. Moving while charging is 40% slower. Switching weapons, pausing, losing focus, death and respawn cancel an unfinished charge.
+- **Projectile:** Each shot consumes one energy cell (4 magazine / 20 reserve, 3.3-second reload). It travels at **39 game units/second**, exactly 65% of the defined 60-unit/second comparison speed; the six traditional guns remain instant-hit hitscan, so there is no actual bullet flight speed to multiply. Energy cells are visible luminous orbs and collide with the environment, soldiers or their maximum 80-unit range.
+- **Impact:** Releases an expanding **5.4-unit radius cyan shockwave** with a maximum **24 splash damage** (decreasing toward the edge) against enemies. The blast knocks **all** players and bots inside the radius away, including allied soldiers and the shooter. Allies and the shooter experience knockback without friendly-fire damage. Knockback creates a short airborne arc and respects movement collision constraints.
+- **Presentation:** New 3D energy cannon with luminous magnetic rails, cyan coils and charging core, synthesized charging/impact sound, animated projectile glow, shockwave rings and HUD charge meter. Enhanced WebGL2, legacy WebGL and software-mode visual fallbacks are supported.
+- **AI/gameplay:** Existing weapon damage, accuracy, headshot detection, team modes, mobile controls, fullscreen, respawn, player floor positioning and AI behavior stay in place.
+
+**Testing:** JavaScript syntax passed for HTML, renderer and 3D weapon rig. Seven weapon meshes initialized and updated. Deterministic simulations verified early-charge cancellation, 2-second charge release, 39-unit/sec projectile travel, enemy damage, allied and player knockback, airborne bots and targets outside the blast radius. Final visual/audio and mobile multitouch testing still requires playing on real devices.
