@@ -2443,7 +2443,11 @@ function updateBots(dt){
    b.target=pickTarget(b);b.targetRefresh=mode==='zombie'?rand(.24,.44):rand(.45,.9);
   }
   if(previous!==b.target){
-   resetBotBurst(b);b.path=[];b.pathRefresh=0;
+   resetBotBurst(b);
+   // Target changes are for SHOOTING only during a boss hunt.
+   // Never throw away the Overlord navigation route when a nearby zombie
+   // passes across a soldier's sights.
+   if(mode!=='zombie'||!boss?.alive){b.path=[];b.pathRefresh=0;}
    b.aimReadyAt=nowSec+(mode==='zombie'&&b.target?.monster?reaction*.43:reaction)+rand(.06,.14);
   }
   const tar=b.target;
