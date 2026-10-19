@@ -104,3 +104,25 @@ If the enhanced WebGL2 graphics path fails, the existing procedural bot renderin
 - Desktop/mobile controls, audio, health recovery, graphics quality, and single-player modes are unchanged.
 
 **Verification:** The deployed code was fetched back from GitHub. JavaScript syntax and deterministic floor-height tests passed; a simulated bot engagement showed movement, target tracking and attack behavior. Visual confirmation on the user's Chrome GPU remains outstanding.
+
+
+## v3.8 — Armory and anatomical damage
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.8
+
+Six independent firearm profiles are selectable using number keys **1–6**, the mobile **SWAP** button, or the main-menu **Starting Weapon** selector. Gun Race upgrades weapons automatically.
+
+| Weapon | Base damage / projectile | Head multiplier | Magazine | |
+| --- | ---: | ---: | ---: | --- |
+| VORTEX AR | 28 | 2.20× | 30 | Balanced rifle |
+| RAPTOR SMG | 19 | 1.95× | 40 | Fast close-range SMG |
+| RANGER DMR | 53 | 2.45× | 12 | Accurate marksman rifle |
+| JUDGE 12 | 11 × 8 pellets | 1.65× | 8 | Spread shotgun |
+| SPECTRE P9 | 35 | 2.10× | 18 | Compact sidearm |
+| PHANTOM SR | 85 | 2.60× | 5 | Precision sniper rifle |
+
+**Body-zone multipliers before distance falloff:** Head uses each weapon's multiplier; chest armor ×0.82, abdomen ×1.00, arms ×0.66, legs ×0.52. Actual applied damage also accounts for the range falloff configured per gun and remaining enemy health.
+
+Each gunshot consumes one round. Shotgun shells fire eight independently aimed pellets and total their damage on each target. Projectiles compare the nearest hit zone with the nearest solid wall, and the temporary feedback displays HEADSHOT!, ARMOR HIT, BODY HIT, ARM HIT or LEG HIT with damage points.
+
+All six guns have unique weapon silhouettes. The change preserves gun race, bots, solo matches, PC and mobile controls, health regeneration, audio and graphics. Verification included Javascript parsing, anatomical ray tests (including raised temple ground) and scripted firing/damage tests for all six guns. A full visual GPU playtest on the user's machine is still needed.
