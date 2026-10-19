@@ -883,9 +883,9 @@ function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
   if(tar===player)damagePlayer(dmg,b,'chest');
   else damageBot(tar,dmg,b,'chest');
   const dx=(tar.x-b.x)/(dist||1),dz=(tar.z-b.z)/(dist||1);
-  tar.energyVX=(tar.energyVX||0)+dx*4;
-  tar.energyVZ=(tar.energyVZ||0)+dz*4;
-  tar.airVY=Math.max(tar.airVY||0,2.2);
+  if(tar===player){player.shockVX+=dx*4;player.shockVZ+=dz*4;}
+  else{tar.energyVX=(tar.energyVX||0)+dx*4;tar.energyVZ=(tar.energyVZ||0)+dz*4;}
+  if(tar===player)player.yVel=Math.max(player.yVel,2.2);else tar.airVY=Math.max(tar.airVY||0,2.2);
   return;
  }
  if(!visible||dist>Math.min(w.range,55)){
@@ -1065,7 +1065,7 @@ function launchEnergyShot(){
  player.ammo[6]--;player.lastShot=nowSec;player.recoil=.30;player.flash=.14;
  beep('energyFire');updateHud();return true;
 }
-function blastEnergy(x,y,z){
+function blastEnergy(x,y,z,owner=player){
  const w=weapons[6],radius=w.blastRadius;
  energyWaves.push({x,y,z,age:0,ttl:.78,radius});
  if(energyWaves.length>8)energyWaves.shift();
@@ -1088,7 +1088,9 @@ function blastEnergy(x,y,z){
    bot.energyVX=(bot.energyVX||0)+p.vx;bot.energyVZ=(bot.energyVZ||0)+p.vz;
    bot.airVY=Math.max(bot.airVY||0,p.vy);
    // Blue teammates are thrown by the wave, but do not receive friendly fire damage.
-   if(mode!=='tdm'||bot.team!==0)damageBot(bot,Math.round(w.blastDamage*(.3+.7*p.power)),player);
+   if(bot!==owner&&(mode!=='tdm'||(owner===player?bot.team!==0:bot.team!==owner.team))){
+     damageBot(bot,Math.round(w.blastDamage*(.3+.7*p.power)),owner,'chest');
+   }
    pushed++;
  }
  if(player.alive){
@@ -1096,7 +1098,10 @@ function blastEnergy(x,y,z){
    if(dist<=radius&&Math.abs(player.y+1-y)<radius*.9){
      const p=boost(player,dist);
      player.shockVX+=p.vx;player.shockVZ+=p.vz;
-     player.yVel=Math.max(player.yVel,p.vy);pushed++;
+     player.yVel=Math.max(player.yVel,p.vy);
+     if(owner!==player&&(mode!=='tdm'||owner.team!==0))
+       damagePlayer(Math.round(w.blastDamage*(.3+.7*p.power)),owner,'chest');
+     pushed++;
    }
  }
  announce('ENERGY SHOCKWAVE · '+pushed+' THROWN',1.3);
@@ -1104,23 +1109,30 @@ function blastEnergy(x,y,z){
 function updateEnergyEffects(dt){
  for(let i=energyShots.length-1;i>=0;i--){
    const q=energyShots[i],step=Math.min(q.speed*dt,q.range-q.travelled);
-   if(step<=0){blastEnergy(q.x,q.y,q.z);energyShots.splice(i,1);continue;}
+   if(step<=0){blastEnergy(q.x,q.y,q.z,q.owner||player);energyShots.splice(i,1);continue;}
    const start={x:q.x,y:q.y,z:q.z},direction={x:q.dx,y:q.dy,z:q.dz};
    const wallDist=worldImpact(start,direction);
    let travel=Math.min(step,wallDist),directHit=false;
    // Check swept collision against all soldiers instead of sampling only the endpoint.
    for(const b of bots){
-     if(!b.alive)continue;
+     if(!b.alive||b===q.owner)continue;
      const centerY=floorSurfaceAt(b.x,b.z)+(b.airHeight||0)+1.00;
      const ux=b.x-start.x,uy=centerY-start.y,uz=b.z-start.z;
      const t=clamp(ux*q.dx+uy*q.dy+uz*q.dz,0,travel);
      const x=start.x+q.dx*t,y=start.y+q.dy*t,z=start.z+q.dz*t;
      if(Math.hypot(b.x-x,centerY-y,b.z-z)<.78){travel=t;directHit=true;}
    }
+   if(q.owner&&q.owner!==player&&player.alive){
+     const centerY=player.y+1;
+     const t=clamp((player.x-start.x)*q.dx+(centerY-start.y)*q.dy+(player.z-start.z)*q.dz,0,travel);
+     if(Math.hypot(player.x-(start.x+q.dx*t),centerY-(start.y+q.dy*t),player.z-(start.z+q.dz*t))<.75){
+       travel=t;directHit=true;
+     }
+   }
    q.x+=q.dx*travel;q.y+=q.dy*travel;q.z+=q.dz*travel;q.travelled+=travel;
    const collided=directHit||wallDist<=step+.005||q.travelled>=q.range-.01||
       q.y<=floorSurfaceAt(q.x,q.z)+.20||Math.abs(q.x)>30.2||Math.abs(q.z)>30.2;
-   if(collided){blastEnergy(q.x,q.y,q.z);energyShots.splice(i,1);}
+   if(collided){blastEnergy(q.x,q.y,q.z,q.owner||player);energyShots.splice(i,1);}
  }
  for(let i=energyWaves.length-1;i>=0;i--){
    const wave=energyWaves[i];wave.age+=dt;
