@@ -803,7 +803,7 @@ async function startModernRenderer(THREE){
     const vertices=new Float32Array((boltSegments+1)*3);
     const attribute=new THREE.BufferAttribute(vertices,3);
     attribute.setUsage(THREE.DynamicDrawUsage);geo.setAttribute('position',attribute);
-    const line=new THREE.Line(geo,i%2?stormBranch:stormCore);
+    const line=new THREE.Line(geo,(i%2?stormBranch:stormCore).clone());
     line.visible=false;line.frustumCulled=false;scene.add(line);
     lightningLines.push(line);
   }
