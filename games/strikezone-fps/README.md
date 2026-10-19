@@ -140,3 +140,17 @@ All six guns have unique weapon silhouettes. The change preserves gun race, bots
 - Damage profiles, headshot zones, ammo, gun race, bots, phone controls, floor physics, and sound effects remain unchanged.
 
 **Verification:** Six weapon meshes initialized (559 model components), switched, aimed, reloaded and disposed in a mocked renderer runtime. JavaScript and integration checks passed. The final appearance and frame rate should be confirmed on the target PC and phone with the WebGL2 renderer.
+
+
+## v3.10 — Respawn weapon visibility and real sniper zoom
+
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.10
+
+- Fixed an invisible first-person gun after dying/respawning with the same weapon. Weapon rig now re-enables visibility on each alive frame and resets its cached active weapon on death.
+- The PHANTOM SR sniper ADS mode is a clear scope viewport with magnification levels **2×, 4×, 8×** (perspective fields of view: 36°, 20°, 11°). The first-person sniper model is hidden while aiming through the scope; other guns remain visible while aiming.
+- **Desktop:** Right-click and hold to aim, then use the **mouse wheel** to zoom in/out, or **Z** to increase and **X** to decrease magnification. **V** can toggle aiming. The zoom starts at 4× and resets on respawn.
+- **Phone:** Tap **AIM** with the sniper selected, then tap the **+ / −** controls near the top right of the scope. Tap AIM again to lower the scope.
+- A transparent circular lens, reticle, zoom readout and light outside vignette show your current aim. Zoom works in enhanced WebGL2 and original WebGL compatibility renderers; the fallback 2D renderer follows the same FOV.
+- Existing six-gun base damage, anatomical headshots, enemy AI, control directions, floor positioning, fullscreen, audio, and regeneration are unchanged.
+
+**Verification:** JavaScript syntax checks passed for the page, enhanced renderer, and detailed weapon rig. Simulated weapon visibility cycles passed for draw→death→respawn, scoped sniper, returning to hipfire and switching models. Scope visibility/FOV simulations passed for all three zoom levels and states. Actual scope visuals, pointer lock and mobile zoom buttons still require testing on the target devices.
