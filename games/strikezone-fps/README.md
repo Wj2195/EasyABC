@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo Tactical Training v3.27
+# STRIKEZONE FPS — Solo Tactical Training v3.28
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.27
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.28
 
 Original browser-based 3D FPS for one human player against AI bots. Multiplayer is not included.
 
@@ -417,3 +417,13 @@ The fourth operation is a **two-team Overlord boss race** on the existing 13-bui
 
 **Validation:** Main, enhanced renderer and weapon rig JavaScript syntax verified. Simulated Blue and Red bot targeting, direct player rifle damage to Red while sparing Blue, normal and agile ammo collection by player/bots, boss survival at 100 HP, and final Red-team victory from the 50,000-HP boss. Manual live browser FPS/AI balancing is still recommended.
 
+
+
+## v3.28 — Intelligent Zombie Suppression and Overlord Chain Lightning
+
+- **Zombie-aware rapid fire AI:** soldiers handling hordes now prefer automatic SMG/AR weapons when at least two zombies are nearby, fire much longer controlled multi-round bursts, pause less between bursts, reacquire new undead targets faster and shoot more accurately. Existing PvP and boss-target gun profiles remain less aggressive.
+- **Overlord lightning attack:** every approximately 5.7–7.5 seconds when it has targets in sight, the boss charges for ~0.87 seconds with an electrical warning and ground glow. It then fires a long-range electrical bolt up to 36 units, capable of chaining through up to three additional soldiers within 11.5 units of the previous target. Damage decreases across links (35, 23, 17, 12); every link checks wall obstruction. Either team may be struck; shields absorb frontal strikes until broken.
+- **Visible lightning:** animated cyan/violet jagged world-space energy arcs, electrical charging glow and 3D light on the enhanced WebGL2 engine, plus fallback effect geometry on WebGL1/Canvas2D.
+- **Kept unchanged:** 50,000 HP Overlord, 48 simultaneous zombies (10 agile), guaranteed ammo pickups, cross-team PvP and final-hit-only boss victory.
+
+**Validation:** JavaScript main game and enhanced renderer parse successfully. Isolated firing simulation over 2.4 seconds yielded 29 zombie-rapid rounds vs 24 ordinary burst rounds with the same weapon and mock target. Verified the boss warning, charge timing, chaining to blue/red soldiers, LOS blocking of a soldier behind cover, cooldown and lightning expiry. Browser playtesting is still necessary for actual frame rates, appearance and balance.
