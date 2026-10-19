@@ -3653,7 +3653,10 @@ function onlineBroadcast(){
   effects:energyShots.slice(0,12).map(p=>({x:p.x,y:p.y,z:p.z,
    dx:p.dx,dy:p.dy,dz:p.dz,ownerId:p.owner?.id??-1}))};
  for(const member of onlineMembers.values())if(member.conn.open){
-  member.conn.send(state);
+  const b=bots.find(bot=>bot.id===member.slot);
+  // Send authoritative ammunition only to the player who owns the avatar.
+  member.conn.send({...state,supply:b?{ammo:b.ammo.slice(),
+   reserves:b.reserves.slice()}:null});
  }
 }
 function onlineGuestSnapshot(msg){
@@ -3676,6 +3679,15 @@ function onlineGuestSnapshot(msg){
   }else{
    const wasAlive=player.alive;
    player.hp=data.hp;player.shieldHP=data.shieldHP;
+   if(player.weapon===7&&player.shieldHP<=0)player.weapon=0;
+   if(msg.supply&&Array.isArray(msg.supply.ammo)&&
+      Array.isArray(msg.supply.reserves)&&data.alive){
+    for(let i=0;i<weapons.length;i++){
+     const ammo=Number(msg.supply.ammo[i]),reserve=Number(msg.supply.reserves[i]);
+     if(Number.isFinite(ammo))player.ammo[i]=Math.max(0,Math.floor(ammo));
+     if(Number.isFinite(reserve))player.reserves[i]=Math.max(0,Math.floor(reserve));
+    }
+   }
    if(!data.alive&&wasAlive){
     player.alive=false;player.shoot=false;
     $('respawnScreen').classList.remove('hidden');
