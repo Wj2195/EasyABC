@@ -338,7 +338,7 @@ let gl=null,softCtx=null,graphicsWarning='';
 try{gl=canvas.getContext('webgl',{antialias:true,alpha:true,premultipliedAlpha:false,depth:true,powerPreference:'default'});}catch(e){graphicsWarning=String(e?.message||e);}
 
 const VS=`attribute vec3 aPos;attribute vec3 aNormal;attribute float aMat;uniform vec3 uCamera;uniform float uYaw;uniform float uPitch;uniform float uAspect;uniform float uFov;uniform float uWeapon;varying vec3 vWorld;varying vec3 vNormal;varying float vMat;varying float vDistance;
-void main(){vec3 delta=aPos-uCamera;vec3 right=vec3(cos(uYaw),0.0,-sin(uYaw));vec3 front=vec3(sin(uYaw),0.0,cos(uYaw));float px;float py;float pz;if(uWeapon>0.5){px=aPos.x;py=aPos.y;pz=aPos.z;}else{px=dot(delta,right);float z=dot(delta,front);py=delta.y*cos(uPitch)-z*sin(uPitch);pz=delta.y*sin(uPitch)+z*cos(uPitch);}float f=1.0/tan(uFov*0.5);float near=0.045;float far=125.0;gl_Position=vec4(px*f/uAspect,py*f,pz*(far+near)/(far-near)-2.0*far*near/(far-near),pz);vWorld=aPos;vNormal=aNormal;vMat=aMat;vDistance=pz;}`;
+void main(){vec3 delta=aPos-uCamera;vec3 right=vec3(cos(uYaw),0.0,-sin(uYaw));vec3 front=vec3(sin(uYaw),0.0,cos(uYaw));float px;float py;float pz;if(uWeapon>0.5){px=aPos.x;py=aPos.y;pz=aPos.z;}else{px=dot(delta,right);float z=dot(delta,front);py=delta.y*cos(uPitch)-z*sin(uPitch);pz=delta.y*sin(uPitch)+z*cos(uPitch);}float f=1.0/tan(uFov*0.5);float near=0.045;float far=245.0;gl_Position=vec4(px*f/uAspect,py*f,pz*(far+near)/(far-near)-2.0*far*near/(far-near),pz);vWorld=aPos;vNormal=aNormal;vMat=aMat;vDistance=pz;}`;
 const FS=`precision mediump float;varying vec3 vWorld;varying vec3 vNormal;varying float vMat;varying float vDistance;uniform float uWeapon;uniform float uTime;uniform vec3 uCamera;
 float hash(vec3 p){return fract(sin(dot(floor(p),vec3(12.9898,78.233,39.425)))*43758.5453);}void main(){float m=floor(vMat+0.5);vec3 c=vec3(.6);if(m<.5)c=vec3(.48,.40,.32);else if(m<1.5)c=vec3(.79,.72,.59);else if(m<2.5)c=vec3(.94,.86,.67);else if(m<3.5)c=vec3(.27,.35,.43);else if(m<4.5)c=vec3(.50,.29,.14);else if(m<5.5)c=vec3(.83,.29,.17);else if(m<6.5)c=vec3(.22,.40,.20);else if(m<7.5)c=vec3(.35,.23,.15);else if(m<8.5)c=vec3(.48,.64,.73);else if(m<9.5)c=vec3(.105,.14,.18);else if(m<10.5)c=vec3(.12,.47,.70);else if(m<11.5)c=vec3(.10,.38,.69);else if(m<12.5)c=vec3(.76,.16,.11);else if(m<13.5)c=vec3(.38,.43,.32);else if(m<14.5)c=vec3(.75,.61,.42);else if(m<15.5)c=vec3(.94,.69,.29);else if(m<16.5)c=vec3(.15,.7,.42);else if(m<17.5)c=vec3(.25,.20,.16);else if(m<18.5)c=vec3(.94,.45,.19);else if(m<19.5)c=vec3(.86,.88,.81);else if(m<20.5)c=vec3(.04,.055,.07);
 else if(m<21.5)c=vec3(.30,.43,.51); /* weathered steel */
@@ -348,7 +348,9 @@ else if(m<24.5)c=vec3(.97,.73,.24); /* hazard amber */
 else if(m<25.5)c=vec3(.29,.57,.63); /* smoked teal glass */
 else if(m<26.5)c=vec3(.96,.88,.72); /* pale plaster */
 else if(m<27.5)c=vec3(.74,.29,.16); /* terracotta */
-else c=vec3(.38,.34,.28); /* sand shadow */
+else if(m<28.5)c=vec3(.38,.34,.28); /* sand shadow */
+else if(m<29.5)c=vec3(.63,.22,.63); /* magenta sector markings */
+else c=vec3(.12,.42,.60); /* blue team base paint */
 float shade=max(.0,dot(normalize(vNormal),normalize(vec3(-.52,.85,.49))));
 float bounce=max(.0,dot(normalize(vNormal),normalize(vec3(.62,.12,-.78))));
 c*=.48+.47*shade+.09*bounce;
@@ -1869,7 +1871,7 @@ if(running&&player.alive&&!sniperScoped()){gl.clear(gl.DEPTH_BUFFER_BIT);gl.unif
 
 // Compatibility renderer: projected original 3D mesh using Canvas 2D when WebGL or a shader is blocked.
 // Does not use any third-party libraries and keeps AI, controls, scoring and weapons operational.
-const palette=[[121,101,80],[218,193,153],[245,223,180],[47,73,89],[162,88,45],[211,67,44],[47,104,70],[75,55,41],[113,163,190],[23,38,51],[29,111,165],[26,94,182],[198,38,29],[103,118,84],[190,153,101],[248,187,65],[31,177,118],[57,44,38],[248,108,42],[228,234,220],[12,21,30],[65,99,121],[43,111,80],[112,96,76],[252,202,58],[63,165,184],[249,228,182],[191,70,39],[87,76,67]];
+const palette=[[121,101,80],[218,193,153],[245,223,180],[47,73,89],[162,88,45],[211,67,44],[47,104,70],[75,55,41],[113,163,190],[23,38,51],[29,111,165],[26,94,182],[198,38,29],[103,118,84],[190,153,101],[248,187,65],[31,177,118],[57,44,38],[248,108,42],[228,234,220],[12,21,30],[65,99,121],[43,111,80],[112,96,76],[252,202,58],[63,165,184],[249,228,182],[191,70,39],[87,76,67],[160,56,160],[31,107,153]];
 function makeFaces(data){const faces=[];for(let i=0;i+41<data.length;i+=42){const v=[0,7,14,35].map(o=>[data[i+o],data[i+o+1],data[i+o+2]]);const x=(v[0][0]+v[2][0])*.5,z=(v[0][2]+v[2][2])*.5;faces.push({v,x,y:(v[0][1]+v[2][1])*.5,z,nx:data[i+3],ny:data[i+4],nz:data[i+5],mat:Math.max(0,Math.min(palette.length-1,Math.round(data[i+6]))),shade:.52+.48*Math.max(0,data[i+4]*.77-data[i+3]*.51+data[i+5]*.38)});}return faces;}
 const staticFaces=makeFaces(STATIC);
 // Textures generated locally on Canvas: stone grain, masonry, wood and metal.
