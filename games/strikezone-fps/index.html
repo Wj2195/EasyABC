@@ -347,7 +347,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    <div class="eyebrow"><span class="redDash"></span> OPERATION // NEW DEPLOYMENT</div>
    <h1>LOCK ON.<br><em>MOVE FAST.</em><br>DOMINATE.</h1>
    <p class="subtitle">Enter the frontline in an original browser-based tactical shooter. Hone your aim, outplay intelligent opponents and climb the scoreboard.</p>
-   <div class="pillRow"><span>◈ URBAN WARFARE</span><span>⊕ 8 WEAPONS</span><span>◉ SMART AI COMBAT</span></div>
+   <div class="pillRow"><span>◈ URBAN WARFARE</span><span>⊕ 9 WEAPONS</span><span>◉ SMART AI COMBAT</span></div>
    <section class="modeSelect"><h3>SELECT OPERATION</h3><div class="modeCards">
      <button class="modeCard selected" data-mode="tdm"><b>01</b><strong>TEAM DEATHMATCH</strong><small>Blue team vs Red team</small></button>
      <button class="modeCard" data-mode="ffa"><b>02</b><strong>FREE FOR ALL</strong><small>Every operative for themselves</small></button>
@@ -356,9 +356,9 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    </div></section>
    <div class="armoryChooser"><label for="loadoutSelect">STARTING WEAPON</label><select id="loadoutSelect" aria-label="Starting weapon"></select><span id="loadoutInfo">Choose your loadout</span></div>
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="onlineBtn" class="secondaryBtn" type="button">🌐 ONLINE ROOM</button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
-   <div class="menuStat"><span>MAP 001</span><strong>TRI-SECTOR LABYRINTH</strong><span class="slash">/</span><span>6 MIN · 13 ENTERABLE BUILDINGS · AI ONLY</span></div>
+   <div class="menuStat"><span>MAP 001</span><strong>TRI-SECTOR LABYRINTH</strong><span class="slash">/</span><span>ONLINE ROOMS · 6 MIN · 13 ENTERABLE BUILDINGS</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • SOLO TRAINING V3.21 — DENSE URBAN ROOM-CLEARING</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.30 — 2–6 PLAYERS + AI</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="onlinePanel" class="onlinePanel hidden" role="dialog" aria-label="Online multiplayer room">
   <div class="onlineBox">
@@ -3408,7 +3408,7 @@ async function onlineLoadPeer(){
  return new Promise((resolve,reject)=>{
   const el=document.createElement('script');
   el.id='onlinePeerLibrary';
-  el.src='https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js';
+  el.src='https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js';
   el.onload=()=>window.Peer?resolve(window.Peer):reject(new Error('PeerJS did not load'));
   el.onerror=()=>reject(new Error('Connection library unavailable. Check your internet.'));
   document.head.appendChild(el);
@@ -3684,6 +3684,9 @@ function onlineGuestSnapshot(msg){
    if(data.alive&&!wasAlive){
     spawnPlayer();player.x=data.x;player.z=data.z;
     player.lastSafeX=data.x;player.lastSafeZ=data.z;
+    player.weapon=0;
+    player.ammo=weapons.map(w=>w.mag);
+    player.reserves=weapons.map(w=>w.reserve);
    }
   }
  }
