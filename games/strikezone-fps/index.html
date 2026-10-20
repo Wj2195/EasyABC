@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.30 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.31 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -1326,7 +1326,64 @@ function denseMapExpansion(){
  variedStreetTerrain();
  denseStreetClutter();
 }
-generateMapOne();urbanStreetDetails();denseMapExpansion();
+
+// v3.31 — four additional enterable service modules along the open flanks.
+// Walls are segmented at real door apertures and each module has its own
+// interior path, with two access points for AI movement.
+function serviceAnnex(x,z,id){
+ const w=9.4,d=11.0,l=x-w/2,r=x+w/2,n=z-d/2,t=z+d/2;
+ const wall=id%2?36:32,trim=id%2?31:21;
+ // Make two wide openings on opposite walls; a wall above the doorway
+ // has no ground-level collider.
+ archFacade('h',n,l,r,[{at:x+(id%2?.7:-.7),w:3.8,kind:'door'}],4.8,wall,trim);
+ archFacade('h',t,l,r,[{at:x+(id%2?-.7:.7),w:3.8,kind:'door'}],4.8,wall,trim);
+ archFacade('v',l,n,t,[{at:z,w:2.9,kind:'window'}],4.8,wall,trim);
+ archFacade('v',r,n,t,[{at:z,w:2.9,kind:'window'}],4.8,wall,trim);
+ // High partial metal roofs avoid visual occlusion from the ground.
+ cube(x-2.8,5.12,z,3.0,.19,d-.30,37);
+ cube(x+2.8,5.12,z,3.0,.19,d-.30,31);
+ for(const zz of [n+1.1,t-1.1])cube(x,5.0,zz,w-.3,.2,.13,trim);
+ cube(x,.029,z,w-.72,.038,d-.72,39);
+ // Furniture is low, offset from the doorways and does not fake a wall.
+ for(const zz of [z-2.9,z+2.9]){
+   cube(x+(id%2?2.1:-2.1),.50,zz,1.25,1.0,1.10,33,true);
+   cube(x+(id%2?2.1:-2.1),1.06,zz,1.37,.12,1.25,31);
+ }
+ for(const side of [-1,1]){
+  cube(x+side*3.8,3.8,z,.13,1.35,1.95,25);
+  cube(x+side*3.8,4.57,z,.25,.16,2.35,trim);
+ }
+}
+function compactCombatSectors(){
+ // Service wings occupy former empty lane pockets without enlarging the map.
+ // Adjacent long flank corridors remain available for alternative routes.
+ for(const [i,x,z] of [[0,-38,-31],[1,38,-31],[2,-38,31],[3,38,31]]){
+  serviceAnnex(x,z,i);
+ }
+ // Front and back choke-point gateways; entrances are kept wide for bots.
+ for(const z of [-53,53]){
+  mazeGatedH(z,-16,16,[-9,9],4.2,31);
+  for(const x of [-9,9]){
+    cube(x,4.38,z,4.7,.22,.83,21);
+    cube(x,4.65,z,3.35,.12,.35,34);
+  }
+ }
+ // Recognizable street fixtures, not extra opaque full-height boxes.
+ for(const z of [-43,-9,9,43])for(const x of [-15,15]){
+  cube(x,3.0,z,.22,6.0,.22,31);
+  cube(x,6.07,z,2.1,.15,.45,21);
+  cube(x,.045,z,1.3,.045,.20,34);
+ }
+ // Spawn floors stay stone/concrete, only narrow neutral-toned markers.
+ for(const side of [-1,1]){
+  for(const x of [-10,10]){
+   cube(x,.051,side*76,.22,.014,3.7,side<0?30:12);
+  }
+  cube(0,3.65,side*79.95,2.4,.32,.12,side<0?30:12);
+ }
+}
+
+generateMapOne();urbanStreetDetails();denseMapExpansion();compactCombatSectors();
 if(gl){gl.bindBuffer(gl.ARRAY_BUFFER,staticBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(STATIC),gl.STATIC_DRAW);}const staticCount=STATIC.length/7;
 function drawBuffer(buffer,data,count,dynamic=true){if(!gl)return;gl.bindBuffer(gl.ARRAY_BUFFER,buffer);if(data)gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),dynamic?gl.DYNAMIC_DRAW:gl.STATIC_DRAW);gl.vertexAttribPointer(loc.pos,3,gl.FLOAT,false,28,0);gl.enableVertexAttribArray(loc.pos);gl.vertexAttribPointer(loc.normal,3,gl.FLOAT,false,28,12);gl.enableVertexAttribArray(loc.normal);gl.vertexAttribPointer(loc.mat,1,gl.FLOAT,false,28,24);gl.enableVertexAttribArray(loc.mat);gl.drawArrays(gl.TRIANGLES,0,count);}
 // V3.8 — independent weapon profiles and damage per projectile.
