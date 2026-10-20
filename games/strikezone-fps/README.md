@@ -457,3 +457,17 @@ An initial **free 2–6 human player private-room Team Deathmatch** is available
 - Mocked room guest test: welcome/start, synced bot + host avatar, fire transmission, death and health/ammo restored on respawn passed.
 - No two-device WebRTC gameplay test has been performed by ChatGPT; treat this as a functional beta requiring real player testing.
 
+
+## v3.31 — Denser urban tactical arena (Map 1)
+
+Play: https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.31
+
+Built on top of the existing v3.30 version, preserving nine weapons and the previous map improvements.
+
+- Adds **four new enclosed and enterable service annex rooms** in formerly open flank areas, with framed doorways on opposite walls, windows, interior props, industrial roof elements and true obstacle collision.
+- Adds a pair of security gate choke-point partitions between the central district and the northern/southern approaches.
+- Adds nonblocking street fixtures and small room identity details without creating the huge unbroken blocks that previously obscured forward visibility.
+- **Spawn areas remain primarily neutral concrete**, using narrow blue/red accent markings, not large team-colored walls or floors.
+- Keeps the existing map dimensions, two opposed team spawns, main urban buildings, dense center rooms, navigation, AI, and weapons unchanged.
+
+**Validation:** Main JavaScript parses. Real collision-navigation simulations tested routes from both bases to all four new service rooms and the central hub; all 10 sampled routes reached their destination and none of the tested interior locations are blocked. Full browser performance/visual QA still required.
