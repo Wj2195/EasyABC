@@ -1,8 +1,8 @@
-# STRIKEZONE FPS — Solo + Online Multiplayer v3.30
+# STRIKEZONE FPS — Solo + Online Multiplayer v3.32
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.30
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.32
 
-Original browser-based 3D FPS for one human player against AI bots. Multiplayer is not included.
+Original browser-based 3D FPS with offline AI operations and private-room online Team Deathmatch.
 
 ## Graphics v2.0
 
@@ -471,3 +471,14 @@ Built on top of the existing v3.30 version, preserving nine weapons and the prev
 - Keeps the existing map dimensions, two opposed team spawns, main urban buildings, dense center rooms, navigation, AI, and weapons unchanged.
 
 **Validation:** Main JavaScript parses. Real collision-navigation simulations tested routes from both bases to all four new service rooms and the central hub; all 10 sampled routes reached their destination and none of the tested interior locations are blocked. Full browser performance/visual QA still required.
+
+
+## v3.32 — Mobile joystick, camera swipe, compact boss HUD and automatic landscape
+
+- **Mobile left-stick input repaired:** a physically grounded, radius-aware virtual joystick now provides independent forward, backward, left, right and diagonal directions with a dead zone. Its active pointer is followed at window level so dragging outside the joystick circle does not freeze or force forward movement. Thumb movement and camera look have independent pointer IDs and remain active simultaneously.
+- **Mobile swipe look:** the transparent camera touch region spans the open gameplay area starting 31% from the left edge (behind the other higher-priority controls). Sliding another finger across the screen rotates the player's view/body horizontally, and dragging vertically adjusts pitch. Touch movement remains active even when the finger leaves its original region. Touch aim sensitivity updated to 0.0062 radians per pixel.
+- **No mobile pointer lock:** phone touch gestures no longer compete with desktop mouse pointer locking when Deploy is pressed or the game canvas is tapped.
+- **Mobile boss health bar:** overrides high-DPI, wide-screen landscape breakpoints for coarse-pointer devices and displays a compact, unobtrusive max ~290px (34vw) status strip immediately below the top scoreboard; secondary text is hidden only on touch screens. The crosshair and main sightline are clear.
+- **Auto fullscreen and landscape:** tapping **DEPLOY NOW** requests the native Fullscreen API within the user gesture, followed by `screen.orientation.lock('landscape')` where supported. The same is attempted when joining an online room. The existing PWA manifest already declares fullscreen display and landscape orientation. Unsupported browsers show rotate-phone guidance; web pages cannot physically rotate the device against browser restrictions.
+- **Regression checks:** JavaScript syntax validated; cardinal/diagonal/neutral joystick tests; world movement heading tests in normal and enhanced WebGL rendering; independent joystick and second-finger swipe event simulation; fullscreen and landscape API mock sequence verified. Live testing on the player's specific phone/browser remains to be done.
+
