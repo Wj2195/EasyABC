@@ -288,6 +288,32 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
 @media(max-width:800px){#bossHUD{top:75px;width:calc(100vw - 165px);left:auto;right:8px;transform:none;padding:5px}
 .bossHeading,.bossFoot{font-size:7px}.bossMeter{height:7px;margin:4px 0}}
 
+/* v3.32: landscape touch HUD. The previous 800px-only boss rule did not
+   cover high-DPI landscape phones with wide CSS viewports. */
+@media (pointer:coarse), (hover:none) {
+ #hud #bossHUD:not(.hidden) {
+  position:absolute;z-index:6;
+  top:clamp(70px,17vh,112px);
+  left:50%;right:auto;bottom:auto;transform:translateX(-50%);
+  box-sizing:border-box;width:min(360px,44vw);min-width:220px;
+  max-width:calc(100vw - 36px);padding:4px 9px;
+  border-radius:5px;background:rgba(13,14,25,.90);
+  box-shadow:0 2px 8px #0007;
+ }
+ #hud .bossHeading {font-size:9px;letter-spacing:.25px;gap:7px;line-height:1.3;
+  white-space:nowrap;overflow:hidden}
+ #hud .bossHeading span{overflow:hidden;text-overflow:ellipsis;min-width:0}
+ #hud .bossHeading strong{font-size:10px;flex-shrink:0}
+ #hud .bossMeter{height:5px;margin:3px 0 0}
+ #hud .bossFoot{display:none}
+ #mobileControls #lookZone{left:31%;right:0;width:auto;top:62px;bottom:0;
+  z-index:1;touch-action:none;pointer-events:auto}
+ #mobileControls #joyBase{z-index:5;touch-action:none;pointer-events:auto}
+ #mobileControls button{z-index:6;touch-action:none;pointer-events:auto}
+}
+@media (pointer:coarse) and (orientation:portrait){
+ #hud #bossHUD:not(.hidden){top:80px;width:min(285px,80vw);min-width:0}
+}
 /* Private room multiplayer lobby: no changes to offline UI */
 .onlinePanel{position:fixed;inset:0;display:grid;place-items:center;background:#030811dc;
  z-index:100;padding:14px;color:#ebf5ff;font-family:inherit}
@@ -2930,6 +2956,13 @@ function switchWeapon(index){
  player.weapon=index;player.reloadUntil=0;player.recoil=.14;player.lastShot=nowSec-.25;beep('switch');updateHud();
  const w=weapons[index];announce(w.name+' • '+w.damage+' BASE DMG',1.0);
 }
+// Screen-space input resolved into world motion. Forward, reverse and strafing
+// remain distinct for the legacy (+X-right) and enhanced (-X-right) cameras.
+function worldMoveVector(yaw,strafe,forward,enhanced){
+ const lateral=enhanced?-strafe:strafe;
+ return{x:Math.cos(yaw)*lateral+Math.sin(yaw)*forward,
+        z:-Math.sin(yaw)*lateral+Math.cos(yaw)*forward};
+}
 function updatePlayer(dt){
  if(!player.alive)return;
  const before=resolvePosition(player.x,player.z,.34);
@@ -2939,11 +2972,9 @@ function updatePlayer(dt){
  const len=Math.hypot(side,front);player.crouch=!!keys.KeyC||mobileCrouched;
  let speed=player.crouch?2.65:(keys.ShiftLeft||keys.ShiftRight?9.2:5.9);if(player.energyChargeStart>=0)speed*=.60;if(player.weapon===7)speed*=.73;
  if(len>.03){side/=len;front/=len;
-  // The Three.js renderer's camera-right is reversed relative to the legacy renderer.
-  // Invert only strafing in the enhanced 3D renderer. Forward/back and aim remain unchanged.
-  const strafe=window.__strike3DActive?-side:side;
-  const dx=(Math.cos(player.yaw)*strafe+Math.sin(player.yaw)*front)*speed*dt;
-  const dz=(-Math.sin(player.yaw)*strafe+Math.cos(player.yaw)*front)*speed*dt;
+  const vector=worldMoveVector(player.yaw,side,front,!!window.__strike3DActive);
+  const dx=vector.x*speed*dt;
+  const dz=vector.z*speed*dt;
   const moved=resolveMovement(player.x,player.z,dx,dz,.34);
   const distMoved=Math.hypot(moved.x-player.x,moved.z-player.z);
   player.x=moved.x;player.z=moved.z;
@@ -3923,29 +3954,70 @@ window.addEventListener('blur',()=>{keys={};cancelEnergyCharge();player.shoot=fa
  if(running&&!paused&&!ended&&!onlineStarted)
   openModal('pause','MATCH PAUSED','The game was paused when you switched away.');
 });document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement!==canvas){cancelEnergyCharge();player.shoot=false;} });
-// Mobile: left thumb joystick and right-hand look drag.
-const joy=$('joyBase'),nub=$('joyNub');let joyId=null;function moveStick(ev){const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=ev.clientX-cx,dy=ev.clientY-cy,m=Math.max(1,Math.hypot(dx,dy)),range=40;if(m>range){dx=dx*range/m;dy=dy*range/m;}touchMove.x=dx/range;touchMove.y=dy/range;nub.style.transform=`translate(${dx}px,${dy}px)`;}
-joy.addEventListener('pointerdown',e=>{if(joyId!==null||!running||paused)return;e.preventDefault();joyId=e.pointerId;try{joy.setPointerCapture(e.pointerId);}catch(_){}moveStick(e);});
-joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId){e.preventDefault();moveStick(e);}});
-function stopStick(e){if(e&&e.pointerId!==joyId)return;joyId=null;touchMove.x=touchMove.y=0;nub.style.transform='translate(0,0)';}
-joy.addEventListener('pointerup',stopStick);joy.addEventListener('pointercancel',stopStick);joy.addEventListener('lostpointercapture',stopStick);
-// Multi-touch mobile look: one finger owns camera, another can use FIRE or joystick.
+// v3.32: independent mobile joystick and camera pointers. Pointer movement
+// is listened for on WINDOW because a swipe frequently leaves its original
+// button; this prevents a lost touch from locking the player to "forward".
+function normalizedStick(clientX,clientY,rect){
+ const radius=Math.max(28,Math.min(rect.width,rect.height)*.40);
+ const dx=(clientX-rect.left-rect.width*.5)/radius;
+ const dy=(clientY-rect.top-rect.height*.5)/radius;
+ const mag=Math.hypot(dx,dy);
+ if(mag<.10)return{x:0,y:0,nubX:0,nubY:0};
+ const output=Math.min(1,(mag-.10)/.90);
+ const x=dx/mag,y=dy/mag;
+ return{x:x*output,y:y*output,nubX:x*Math.min(1,mag)*radius,
+   nubY:y*Math.min(1,mag)*radius};
+}
+const joy=$('joyBase'),nub=$('joyNub');let joyId=null;
+function moveStick(e){
+ if(e.pointerId!==joyId)return;
+ const v=normalizedStick(e.clientX,e.clientY,joy.getBoundingClientRect());
+ touchMove.x=v.x;touchMove.y=v.y;
+ nub.style.transform=`translate(${v.nubX.toFixed(1)}px,${v.nubY.toFixed(1)}px)`;
+}
+function stopStick(e){
+ if(e&&e.pointerId!==joyId)return;
+ joyId=null;touchMove.x=0;touchMove.y=0;
+ nub.style.transform='translate(0,0)';
+}
+joy.addEventListener('pointerdown',e=>{
+ if(joyId!==null||!running||paused||!player.alive)return;
+ e.preventDefault();joyId=e.pointerId;
+ try{joy.setPointerCapture(e.pointerId);}catch(_){}
+ moveStick(e);
+});
+window.addEventListener('pointermove',e=>{
+ if(e.pointerId!==joyId)return;
+ if(e.cancelable)e.preventDefault();
+ moveStick(e);
+},{passive:false});
+window.addEventListener('pointerup',stopStick);
+window.addEventListener('pointercancel',stopStick);
+joy.addEventListener('lostpointercapture',stopStick);
+
+// Finger #2 turns the body and aim while finger #1 holds the joystick.
+// The transparent look surface spans the open arena behind action buttons.
 const look=$('lookZone');let lookId=null,lastLook=null;
-function resetTouchLook(e){if(e&&e.pointerId!==lookId)return;lookId=null;lastLook=null;}
+function resetTouchLook(e){
+ if(e&&e.pointerId!==lookId)return;
+ lookId=null;lastLook=null;
+}
 look.addEventListener('pointerdown',e=>{
  if(!running||paused||ended||!player.alive||lookId!==null)return;
- e.preventDefault();lookId=e.pointerId;lastLook={x:e.clientX,y:e.clientY};
+ e.preventDefault();lookId=e.pointerId;
+ lastLook={x:e.clientX,y:e.clientY};
  try{look.setPointerCapture(e.pointerId);}catch(_){}
 });
-look.addEventListener('pointermove',e=>{
+window.addEventListener('pointermove',e=>{
  if(!running||paused||ended||!player.alive||e.pointerId!==lookId||!lastLook)return;
- e.preventDefault();
- const dx=clamp(e.clientX-lastLook.x,-55,55),dy=clamp(e.clientY-lastLook.y,-55,55);
+ if(e.cancelable)e.preventDefault();
+ const dx=clamp(e.clientX-lastLook.x,-68,68);
+ const dy=clamp(e.clientY-lastLook.y,-68,68);
  lastLook={x:e.clientX,y:e.clientY};
- applyLookDelta(dx,dy,.0045,'touch');
-});
-look.addEventListener('pointerup',resetTouchLook);
-look.addEventListener('pointercancel',resetTouchLook);
+ applyLookDelta(dx,dy,.0062,'touch');
+},{passive:false});
+window.addEventListener('pointerup',resetTouchLook);
+window.addEventListener('pointercancel',resetTouchLook);
 look.addEventListener('lostpointercapture',resetTouchLook);
 function mobileButton(id,onDown,onUp){const b=$(id);let activePointer=null;
  b.addEventListener('pointerdown',e=>{if(activePointer!==null)return;e.preventDefault();activePointer=e.pointerId;try{b.setPointerCapture(e.pointerId);}catch(_){}onDown();});
