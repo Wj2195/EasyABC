@@ -1,0 +1,211 @@
+/* EasyABC / Graphite + Crimson Robot Edition
+   Redesign layer. Actual prices, products and purchase logic stay in the main app.
+   Uses an original animated SVG mascot — no video player, sample inventory or fake stats. */
+:root{
+ --bg:#0b0c10;--card:rgba(177,182,190,.08);--line:rgba(222,222,226,.15);
+ --text:#f6f3f4;--muted:#b1adb3;--a:#ff4a5b;--b:#ed3347;
+ --violet:#7b3b49;--cyan:#fb5368;
+ --studio-ink:#0d0e11;--studio-navy:#141519;--studio-aqua:#ff6676;
+ --studio-coral:#fc5366;--studio-lime:#ffb6bd;--studio-line:rgba(213,212,218,.2)
+}
+body{background:radial-gradient(ellipse at 72% 3%,rgba(140,34,51,.12),transparent 32%),linear-gradient(180deg,#0c0d10 0%,#101116 45%,#09090c 100%);color:#f6f3f5}
+body:before{background:radial-gradient(circle,#db3a4d,transparent 67%)!important;opacity:.09!important}
+body:after{background:radial-gradient(circle,#828089,transparent 67%)!important;opacity:.09!important}
+.top{background:rgba(13,13,17,.94);border-bottom-color:rgba(216,210,215,.13);box-shadow:0 9px 27px rgba(0,0,0,.19)}
+.brand span,.footer-logo span{background:linear-gradient(115deg,#ff7582,#f93d55)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
+.nav .primary,.primary{background:linear-gradient(120deg,#ff6674,#f0384c);color:#16090b}
+.primary:hover{filter:brightness(1.08)}
+.tag{background:rgba(243,68,86,.1);border-color:rgba(243,68,86,.29);color:#ffb9c1}
+.nav button,.ghost{border-color:rgba(234,220,229,.14)}
+.nav .nav-cart{color:#110b10!important;background:linear-gradient(130deg,#ff6174,#f73a4e)!important;box-shadow:0 9px 30px rgba(234,46,71,.23)!important}
+.top .nav button:not(.primary):hover,.top .nav button:not(.primary):focus-visible{background:rgba(255,89,103,.06);border-color:rgba(255,113,128,.31)}
+/* Hero is the star: deep graphite, red rings, luminous silver robot. */
+.cinema-hero{
+ min-height:704px;background:
+ radial-gradient(ellipse at 74% 51%,rgba(219,46,68,.23),transparent 41%),
+ radial-gradient(ellipse at 98% 88%,rgba(213,48,61,.11),transparent 39%),
+ radial-gradient(ellipse at 9% 91%,rgba(114,74,79,.13),transparent 42%),
+ linear-gradient(115deg,#101114 0%,#131419 46%,#090b10 100%);
+ border:1px solid rgba(217,207,213,.22);
+ box-shadow:0 40px 110px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.045)
+}
+.cinema-hero:before{background-image:linear-gradient(rgba(221,218,221,.029) 1px,transparent 1px),linear-gradient(90deg,rgba(221,218,221,.029) 1px,transparent 1px)}
+.cinema-hero:after{background:radial-gradient(circle at var(--hero-mouse-x) var(--hero-mouse-y),rgba(255,67,93,.095),transparent 31%)}
+.cinema-blur-orb.one{border-color:rgba(246,86,109,.17);box-shadow:inset 0 0 105px rgba(247,51,86,.10),0 0 100px rgba(218,64,82,.07)}
+.cinema-blur-orb.two{border-color:rgba(185,156,162,.17);box-shadow:inset 0 0 80px rgba(142,61,69,.10)}
+.cinema-hero-core{grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:0;min-height:560px}
+.cinema-hero-copy{position:relative;z-index:6}
+.cinema-eyebrow{color:#c4b9c0}.cinema-eyebrow i{background:#ff596d}
+.cinema-eyebrow .cinema-dot-live{background:#ff566d;box-shadow:0 0 15px rgba(250,55,79,.7)}
+.cinema-title{font-size:clamp(55px,6.05vw,98px);letter-spacing:-.092em}
+.cinema-title .cinema-title-outline{-webkit-text-stroke:1.5px rgba(235,229,233,.67)}
+.cinema-title .cinema-title-gradient{background:linear-gradient(100deg,#ff7b8a,#f3324e 70%,#ffabb2);-webkit-background-clip:text;background-clip:text}
+.cinema-title .cinema-mark{-webkit-text-fill-color:#ff8693;color:#ff8693}
+.cinema-description{color:#bfb7be}
+.cinema-hero-actions .primary{background:#fa4459;color:#fff;box-shadow:0 13px 34px rgba(234,42,64,.2);border:1px solid rgba(255,146,163,.22)}
+.cinema-hero-actions .primary:hover{background:#ff677a}
+.cinema-hero-actions .cinema-ghost{color:#f8f5f7;background:rgba(235,223,228,.035);border-color:rgba(215,202,209,.26)}
+.cinema-hero-actions .cinema-ghost:hover{background:rgba(246,83,101,.1)}
+.cinema-hero-stats{border-top-color:rgba(210,203,207,.15)}
+.cinema-hero-stats span{color:#b4adb3}
+.cinema-hero-stats .stat-divider{background:rgba(215,202,211,.19)}
+.cinema-hero-base{border-top-color:rgba(217,197,207,.15);color:#b0a3ac}
+.cinema-kicker-index{color:#f1b6bd}
+.cinema-scroll-mark i{border-color:rgba(245,110,124,.3);color:#ff8797}
+/* New layout: robot takes the right-side background, with a miniature REAL product preview in front. */
+.cinema-artstage{min-height:555px;position:relative;isolation:isolate;overflow:visible;perspective:1200px}
+.cinema-artstage:before{width:101%;height:100%;background:radial-gradient(ellipse at 68% 43%,rgba(252,67,89,.18),rgba(151,44,57,.06) 46%,transparent 74%)}
+.cinema-artstage:after{content:"";position:absolute;z-index:-1;right:-10%;top:6%;width:90%;height:84%;pointer-events:none;border-radius:50%;background:radial-gradient(ellipse at 50% 50%,rgba(240,58,79,.11),transparent 68%);filter:blur(15px)}
+.cinema-art-ring{width:96%;height:74%;max-height:480px;border:1px solid rgba(255,102,119,.15);box-shadow:0 0 50px rgba(246,49,70,.08);transform:rotateX(68deg) rotateZ(-20deg);right:-7%;left:auto}
+.cinema-art-ring:after{border-color:rgba(255,128,145,.16)}
+.cinema-robot{position:absolute;z-index:2;display:block;top:-12%;right:-17%;width:clamp(400px,39vw,590px);max-width:none;height:auto;pointer-events:none;filter:drop-shadow(0 15px 36px rgba(0,0,0,.42));animation:cinemaRobotArrival .85s ease-out both,cinemaRobotFloat 6s ease-in-out 1s infinite}
+.cinema-artstage .featured-shell{
+ position:absolute;z-index:4;bottom:6%;left:-8%;right:auto;top:auto;
+ width:min(66%,345px);border-radius:17px;
+ transform:rotateY(-8deg) rotateZ(-3deg);
+ background:linear-gradient(160deg,#23242a,#13151c);
+ border:1px solid rgba(232,214,222,.32);
+ box-shadow:0 19px 55px rgba(0,0,0,.59),0 0 30px rgba(255,78,102,.07);
+ animation:cinemaProductFloat 7s ease-in-out infinite
+}
+.cinema-artstage .featured-topbar{padding:10px 13px;background:rgba(9,9,13,.82);font-size:8px;letter-spacing:.08em}
+.window-dots i:first-child{background:#f95869}.window-dots i:nth-child(2){background:#aea0a4}.window-dots i:nth-child(3){background:#ee8c98}
+.featured-live{color:#ff8595}
+.cinema-artstage .featured-picture{height:134px;padding:9px;background:radial-gradient(circle at 45% 43%,rgba(240,86,113,.11),transparent 66%),linear-gradient(135deg,#28272d,#171921)}
+.cinema-artstage .featured-picture img{filter:drop-shadow(0 7px 12px rgba(0,0,0,.42))}
+.cinema-artstage .featured-empty{width:100%;height:100%;transform:none;background:linear-gradient(140deg,#383239,#1d1c23);box-shadow:none;border:1px dashed rgba(232,204,213,.19)}
+.cinema-artstage .featured-empty:before{color:#f2aab5;font-size:7px;top:9px;left:11px;transform:none}
+.cinema-artstage .featured-empty>span{font-size:36px}
+.cinema-artstage .featured-bottom{padding:13px 15px 14px;background:linear-gradient(145deg,#24242b,#14161b)}
+.cinema-artstage .featured-category{color:#ff8b9c;font-size:8px}
+.cinema-artstage .featured-product-row{margin:7px 0 11px;gap:8px}
+.cinema-artstage .featured-product-row h2{font-size:15px;line-height:1.2}
+.cinema-artstage .featured-product-row p{font-size:10px;line-height:1.35;margin:4px 0 0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.cinema-artstage .featured-price{font-size:13px;white-space:nowrap}
+.cinema-artstage .featured-view{background:rgba(242,72,95,.14);border:1px solid rgba(250,119,135,.37);color:#ffcbd1;font-size:10px;padding:8px 10px}
+.cinema-artstage .featured-view:hover{background:rgba(254,87,105,.25)}
+.cinema-artstage .featured-navigation{gap:5px}.cinema-artstage .featured-navigation button{height:25px;width:25px}
+.cinema-artstage .featured-dot.is-active{background:#ff5b73}
+.cinema-floating-label{background:rgba(30,28,35,.8);border-color:rgba(244,174,185,.25);color:#f5d4d8;backdrop-filter:blur(14px)}
+.cinema-floating-label strong{color:#ff8596}
+.cinema-floating-label.one{top:10%;right:-6%;z-index:4}
+.cinema-floating-label.two{bottom:29%;left:0%;z-index:3}
+@keyframes cinemaRobotArrival{from{opacity:0;transform:translateY(35px) scale(.91) rotate(5deg)}to{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
+@keyframes cinemaRobotFloat{0%,100%{translate:0 0}50%{translate:0 -15px}}
+@keyframes cinemaProductFloat{0%,100%{translate:0 0}50%{translate:0 -7px}}
+/* Everything below the robot stays a live store, recolored to match. */
+.cinema-ticker{background:linear-gradient(90deg,transparent,rgba(205,69,85,.06),transparent);border-color:rgba(214,189,195,.13)}
+.cinema-ticker span{color:#938b92}.cinema-ticker .cinema-ticker-bright{color:#ebc8cd}.cinema-ticker b{color:#fd5f76}
+.cinema-trust-rail .trust-point{background:linear-gradient(155deg,rgba(41,40,46,.93),rgba(23,23,29,.9));border-color:rgba(223,212,220,.16)}
+.cinema-trust-rail .trust-point:hover{border-color:rgba(248,104,124,.45)}
+.trust-symbol{color:#ff8190;background:rgba(242,73,95,.095);border-color:rgba(243,90,111,.22)}
+.cinema-overline{color:#ff8998}.cinema-overline:before{background:#ff596e}
+.cinema-section-top h2 em,.cinema-heading em{color:#ff8596}
+.cinema-section-top p{color:#a9a1a9}
+.cinema-story-card{background:#2b282c;border:1px solid rgba(223,209,214,.2)}
+.cinema-story-card[data-variation="1"]{background:#2b2328}
+.cinema-story-card[data-variation="2"]{background:#343137}
+.cinema-story-card:before{background:radial-gradient(circle at 58% 35%,rgba(230,93,107,.15),transparent 60%),linear-gradient(160deg,transparent 17%,rgba(15,10,15,.26) 58%,rgba(12,11,17,.92))}
+.cinema-story-card[data-variation="2"]:before{background:radial-gradient(circle at 58% 25%,rgba(235,69,93,.17),transparent 60%),linear-gradient(160deg,transparent,rgba(13,11,16,.91))}
+.cinema-story-card:hover,.cinema-story-card:focus-visible{border-color:rgba(255,123,144,.52)}
+.cinema-story-card .story-category{color:#ff95a5}
+.cinema-story-card .story-pill{background:rgba(32,23,30,.63)}
+.cinema-story-card .story-arrow{background:#ff556b;color:#fff}
+.cinema-story-card .story-summary{color:#c8bac3}
+#home .tools h2{color:#f7f2f4}
+#home .search-wrap input{background:#28272e;border-color:rgba(221,202,215,.19);color:#fff}
+#home .tools input:focus{border-color:rgba(255,97,122,.64);box-shadow:0 0 0 3px rgba(247,76,98,.07)}
+#home .cat-btn{background:rgba(220,210,221,.055);color:#cfc5cc;border-color:rgba(231,214,220,.2)}
+#home .cat-btn.active{background:#ff546a;color:#fff;box-shadow:0 7px 24px rgba(231,59,81,.16)}
+#home .card{background:linear-gradient(155deg,#28282f,#171820);border-color:rgba(225,213,218,.19)}
+#home .card:before{background:radial-gradient(circle at var(--px) var(--py),rgba(249,120,132,.32),transparent 43%)}
+#home .card:hover,#home .card:focus-within{border-color:rgba(250,111,129,.5);box-shadow:0 25px 60px rgba(0,0,0,.32),0 0 0 1px rgba(234,68,88,.05)}
+#home .card .pic{background:linear-gradient(135deg,#343138,#2a2930 67%,#29262f)}
+#home .card[data-accent="1"] .pic{background:linear-gradient(135deg,#392b31,#31232d 67%,#29242c)}
+#home .card[data-accent="2"] .pic{background:linear-gradient(135deg,#413036,#28252f 67%,#211d26)}
+#home .card[data-accent="3"] .pic{background:linear-gradient(135deg,#302e33,#3a3337 67%,#28262e)}
+#home .card .pic .preview-label{background:rgba(30,22,28,.74);border-color:rgba(241,212,218,.16)}
+#home .card .product-cat{color:#ff9aaa}
+#home .card .product-summary{color:#b8aab4}
+#home .card .product-price-row{border-top-color:rgba(220,207,216,.18)}
+#home .card .primary{background:#ff596e;color:#fff}
+#home .card .primary:hover{background:#ff7588}
+#home .card .view-details{color:#ffadb9}
+#home .how-section{border-top-color:rgba(226,210,220,.15)}
+#home .how-step{background:linear-gradient(150deg,#28252d,#1b1c22);border-color:rgba(222,208,215,.15)}
+#home .how-step:hover{border-color:rgba(255,120,140,.4)}
+#home .how-icon{background:rgba(252,74,96,.10);border-color:rgba(255,110,125,.26);color:#ff8b98}
+#home .faq-panel{background:linear-gradient(130deg,rgba(107,73,84,.15),rgba(37,32,40,.71));border-color:rgba(232,204,217,.18)}
+#home .faq-list details{background:rgba(19,17,23,.6)}
+#home .faq-list details[open]{border-color:rgba(249,117,128,.33)}
+#home .community{background:linear-gradient(130deg,rgba(43,38,47,.94),rgba(24,23,30,.94));border-color:rgba(229,215,222,.2)}
+#home .community-meta{color:#ffa3ae}
+#home .community-compose{background:rgba(20,19,25,.62)}
+#home .community-compose input:focus,#home .community-compose textarea:focus,#home .community-compose select:focus{border-color:#fb6177}
+#home .community-post{background:rgba(35,33,41,.85)}
+#home .community-post:hover{border-color:rgba(255,112,130,.29)}
+#home .community-reply{border-left-color:#ff6175}
+.site-footer{border-top-color:rgba(221,204,215,.15)}
+.site-footer .footer-links button:hover{color:#ff8b9a}
+.modal-card,.panel,.purchase-card{background:linear-gradient(155deg,#29272f,#171821);border-color:rgba(232,209,218,.17)}
+.modal-benefits{background:rgba(242,83,103,.06);border-color:rgba(255,113,127,.21);color:#ffd1d7}
+.modal-info h2{color:#f9f4f7}
+.gallery-thumb.active{border-color:#fa6072}
+.checkout-handoff,.product-modal,.announcement-modal{background:rgba(8,6,10,.77)}
+.handoff-card,.announcement-card{background:linear-gradient(155deg,#342b34,#17161e 62%,#18151b);border-color:rgba(240,185,199,.25)}
+.handoff-provider{background:rgba(240,86,103,.07);border-color:rgba(246,117,128,.2);color:#ffd1d8}
+.handoff-shield{background:linear-gradient(135deg,#ff9aa5,#f7435e)}
+.payment-trust{border-color:rgba(240,189,205,.19);background:rgba(229,211,219,.045)}
+.payment-trust .provider{background:rgba(253,72,96,.085);border-color:rgba(252,103,122,.22);color:#ffbdc5}
+.qr{background:#f8f7f8}
+.checkout-locked .payment-progress{background:rgba(7,6,10,.93)}
+.payment-progress-card{background:linear-gradient(155deg,#302932,#15151c 61%,#18151c);border-color:rgba(248,102,126,.3)}
+.progress-brand span{color:#ff6b7d}
+.progress-spinner{border-color:rgba(255,104,123,.16);border-top-color:#ff5873;border-right-color:#ff9aaa}
+.progress-inner{background:rgba(251,83,109,.075)}
+.progress-tag{border-color:rgba(255,123,136,.25);background:rgba(245,77,99,.065);color:#ffb5be}
+.progress-steps span.current{border-color:rgba(248,99,120,.33);background:rgba(248,90,107,.095);color:#ffd0d5}
+.progress-order{border-color:rgba(231,197,209,.2)}
+/* Tablet/mobile: ensure the robot doesn't cover the text, CTA, or real product preview. */
+@media(max-width:1140px){
+ .cinema-hero{padding:43px 35px 0}
+ .cinema-hero-core{grid-template-columns:1fr}
+ .cinema-title{font-size:clamp(55px,9vw,95px)}
+ .cinema-artstage{min-height:535px;margin:5px auto 0;width:100%;max-width:680px}
+ .cinema-robot{width:min(83%,550px);right:-4%;top:-10%}
+ .cinema-artstage .featured-shell{left:0;bottom:5%;width:300px}
+ .cinema-floating-label.one{right:9%}.cinema-floating-label.two{left:12%}
+}
+@media(max-width:620px){
+ .cinema-hero{padding:28px 18px 0}
+ .cinema-title{font-size:clamp(46px,11.7vw,70px)}
+ .cinema-artstage{min-height:397px;margin:12px 0 0}
+ .cinema-robot{width:clamp(280px,81vw,410px);top:-6%;right:-24%}
+ .cinema-art-ring{right:-11%;top:3%;max-width:90%}
+ .cinema-artstage .featured-shell{width:min(68%,245px);left:-1%;bottom:0;border-radius:13px;transform:rotateY(-4deg) rotateZ(-2deg)}
+ .cinema-artstage .featured-topbar{padding:7px 9px;font-size:7px}
+ .cinema-artstage .featured-picture{height:95px;padding:6px}
+ .cinema-artstage .featured-bottom{padding:10px}
+ .cinema-artstage .featured-category{font-size:7px}
+ .cinema-artstage .featured-product-row{margin:5px 0 8px}
+ .cinema-artstage .featured-product-row h2{font-size:12px}
+ .cinema-artstage .featured-product-row p{font-size:8px;-webkit-line-clamp:1}
+ .cinema-artstage .featured-price{font-size:11px}
+ .cinema-artstage .featured-controls{gap:4px}
+ .cinema-artstage .featured-view{font-size:8px;padding:6px}
+ .cinema-artstage .featured-navigation{gap:3px}
+ .cinema-artstage .featured-navigation button{width:21px;height:21px;font-size:15px}
+ .cinema-artstage .featured-dots{display:none}
+ .cinema-hero-stats{margin-top:20px}
+ .cinema-floating-label{display:none}
+}
+@media(max-width:375px){
+ .cinema-title{font-size:clamp(41px,11.2vw,48px)}
+ .cinema-artstage{min-height:345px}
+ .cinema-robot{right:-24%;width:290px}
+ .cinema-artstage .featured-shell{width:205px}
+ .cinema-artstage .featured-picture{height:72px}
+}
+@media(prefers-reduced-motion:reduce){
+ .cinema-robot,.cinema-artstage .featured-shell{animation:none!important;translate:none!important}
+}
