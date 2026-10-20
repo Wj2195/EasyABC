@@ -143,6 +143,10 @@ body.checkout-locked{overflow:hidden}
 .bill-expiry-info{margin-top:11px;border:1px solid rgba(85,225,231,.23);border-radius:12px;padding:11px 13px;font-size:12px;line-height:1.6;color:#c2e8eb;background:rgba(85,225,231,.04)}
 .bill-expiry-info.expired{color:#ffd6a3;background:rgba(255,198,99,.07);border-color:rgba(255,198,99,.28)}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cinematic.css?v=20261020-1">
 </head>
 <body>
 <header class="top">
@@ -157,20 +161,19 @@ body.checkout-locked{overflow:hidden}
 </header>
 
 <section id="home" class="page active">
-<div class="hero">
-  <div class="hero-copy">
-    <div class="hero-kicker"><span class="tag"><span class="live-dot"></span>SMART DIGITAL TOOLS</span><span class="hero-subline">Made to save your time</span></div>
-    <h1>Less busywork.<br><span class="hero-highlight">More progress.</span></h1>
-    <p>Apps, trading tools and Excel templates that help you automate repetitive tasks, review information faster and get back to what matters.</p>
-    <div class="hero-actions">
-      <button class="primary hero-primary" onclick="scrollToSection('products')">Explore Tools <span aria-hidden="true">↗</span></button>
-      <button class="ghost hero-secondary" onclick="scrollToSection('how-it-works')">How It Works <span aria-hidden="true">→</span></button>
+<section class="cinema-hero" aria-label="EasyABC digital tools showcase">
+  <div class="cinema-blur-orb one" aria-hidden="true"></div><div class="cinema-blur-orb two" aria-hidden="true"></div>
+  <div class="cinema-hero-core">
+    <div class="cinema-hero-copy">
+      <div class="cinema-eyebrow"><span class="cinema-dot-live"></span><span>EASYABC / DIGITAL WORKSHOP</span><i></i><span>BUILT TO SIMPLIFY</span></div>
+      <h1 class="cinema-title"><span class="cinema-title-line">MAKE WORK</span><span class="cinema-title-line cinema-title-outline">FEEL</span><span class="cinema-title-line cinema-title-gradient">EASIER<span class="cinema-mark">.</span></span></h1>
+      <p class="cinema-description">Less time doing the same things over and over. More time making things happen. Discover thoughtfully built apps, trading tools and templates for everyday work.</p>
+      <div class="cinema-hero-actions"><button class="primary" onclick="scrollToSection('products')">Explore the collection ↗</button><button class="cinema-ghost" onclick="scrollToSection('how-it-works')">How EasyABC works →</button></div>
+      <div class="cinema-hero-stats"><div><b id="cinemaToolCount">—</b><span>Tools to explore</span></div><span class="stat-divider" aria-hidden="true"></span><div><b>100%</b><span>Digital products</span></div><span class="stat-divider" aria-hidden="true"></span><div><b>01</b><span>Simple checkout</span></div></div>
     </div>
-    <div class="hero-caption"><span class="live-dot"></span>Practical downloads for everyday work and analysis</div>
-  </div>
-  <div class="visual" aria-label="EasyABC featured product showcase">
-    <div class="showcase-halo"></div>
-    <div class="featured-shell">
+    <div class="cinema-artstage" aria-label="Browse an actual featured EasyABC product">
+      <div class="cinema-art-ring" aria-hidden="true"></div>
+      <div class="featured-shell">
       <div class="featured-topbar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>FEATURED ON EASYABC</span><span class="featured-live">● CATALOG</span></div>
       <div id="featuredPicture" class="featured-picture"><div class="featured-empty"><span aria-hidden="true">✦</span><small>Discover our latest tools</small></div></div>
       <div class="featured-bottom">
@@ -182,23 +185,36 @@ body.checkout-locked{overflow:hidden}
         </div>
       </div>
     </div>
-    <div class="showcase-float showcase-float-a" aria-hidden="true">✦ <span>WORK SMARTER</span></div>
-    <div class="showcase-float showcase-float-b" aria-hidden="true">↗ <span>MAKE IT SIMPLE</span></div>
+      <div class="cinema-floating-label one" aria-hidden="true"><strong>↗</strong>BUILD SMARTER</div>
+      <div class="cinema-floating-label two" aria-hidden="true"><strong>✦</strong>YOUR DIGITAL TOOLKIT</div>
+    </div>
   </div>
-</div>
-<div class="trust-strip" aria-label="Shopping with EasyABC">
+  <div class="cinema-hero-base"><span class="cinema-kicker-index">EASYABC © 2026 / BUILT TO SIMPLIFY</span><span class="cinema-scroll-mark">DISCOVER THE TOOLS <i aria-hidden="true">↓</i></span></div>
+</section>
+<div class="cinema-ticker" aria-label="Practical digital tools, big ideas, less manual work"><div class="cinema-ticker-line" aria-hidden="true">
+  <span class="cinema-ticker-bright">LESS MANUAL WORK</span><b>✳</b><span>MORE GOOD IDEAS</span><b>✳</b><span class="cinema-ticker-bright">MADE TO BE USEFUL</span><b>✳</b><span>DIGITAL FIRST</span><b>✳</b>
+  <span class="cinema-ticker-bright">LESS MANUAL WORK</span><b>✳</b><span>MORE GOOD IDEAS</span><b>✳</b><span class="cinema-ticker-bright">MADE TO BE USEFUL</span><b>✳</b><span>DIGITAL FIRST</span><b>✳</b>
+</div></div>
+<div class="trust-strip cinema-trust-rail" aria-label="Shopping with EasyABC">
   <div class="trust-point"><span class="trust-symbol">🔒</span><div><strong>Secure checkout</strong><span>Payment through ToyyibPay</span></div></div>
   <div class="trust-point"><span class="trust-symbol">↓</span><div><strong>Digital delivery</strong><span>Download after confirmed payment</span></div></div>
   <div class="trust-point"><span class="trust-symbol">▦</span><div><strong>Convenient payment</strong><span>DuitNow QR &amp; FPX</span></div></div>
   <div class="trust-point"><span class="trust-symbol">↺</span><div><strong>Purchase recovery</strong><span>Access again using your email</span></div></div>
 </div>
+<section class="cinema-editorial" id="featured-collection" aria-labelledby="cinemaCollectionTitle">
+  <div class="cinema-section-top" data-studio-reveal>
+    <div><div class="cinema-overline">CURATED FOR YOUR WORKFLOW</div><h2 id="cinemaCollectionTitle">A little less work.<br><em>A lot more done.</em></h2></div>
+    <p>Meet the latest picks from the EasyABC catalog. Explore details, real previews and prices before choosing.</p>
+  </div>
+  <div id="cinemaStoryGrid" class="cinema-story-grid" aria-live="polite"><div class="cinema-story-empty">Loading the latest tools…</div></div>
+</section>
 <div id="dbDebug" class="db"><span class="live-dot"></span>Syncing live catalog…</div>
-<div id="products" class="tools"><div><span class="tag">EXPLORE EASYABC</span><h2>Find your next time-saver</h2><p class="products-lead">Simple tools for trading, reporting, automation and more.</p></div><label class="search-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input id="search" aria-label="Search products" placeholder="Search tools and templates..." oninput="render()"></label></div>
+<div id="products" class="tools" data-studio-reveal><div><span class="cinema-overline">THE EASYABC TOOLKIT</span><h2>Good tools.<br>Better workflows.</h2><p class="products-lead">Explore digital downloads for trading, productivity, reporting and everyday tasks — built to make your day easier.</p></div><label class="search-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input id="search" aria-label="Search products" placeholder="Search tools and templates..." oninput="render()"></label></div>
 <div id="categoryBar" class="category-bar"></div>
 <div id="grid" class="grid"></div>
 
 <section id="how-it-works" class="how-section" aria-labelledby="howTitle">
- <div class="section-heading"><span class="tag">SIMPLE FROM START TO FINISH</span><h2 id="howTitle">From browsing to using, in four steps.</h2><p>Know what happens before you buy a digital tool.</p></div>
+ <div class="section-heading" data-studio-reveal><span class="cinema-overline">SIMPLE FROM START TO FINISH</span><h2 id="howTitle">Discover it. Get it.<br>Make it yours.</h2><p>From browsing your favourite tool to unlocking the download.</p></div>
  <div class="how-grid">
    <div class="how-step"><span class="how-number">01</span><span class="how-icon" aria-hidden="true">⌕</span><h3>Explore products</h3><p>Open a product to review its description, screenshots and price.</p></div>
    <div class="how-step"><span class="how-number">02</span><span class="how-icon" aria-hidden="true">🔒</span><h3>Checkout safely</h3><p>Review your cart and complete payment using ToyyibPay.</p></div>
@@ -836,13 +852,13 @@ function render(){
     const matchesCategory=activeCategory==='all'||String(p.category_id||'')===activeCategory;
     return matchesSearch&&matchesCategory;
   });
-  document.getElementById('grid').innerHTML=filtered.length?filtered.map(p=>{
+  document.getElementById('grid').innerHTML=filtered.length?filtered.map((p,idx)=>{
     const cat=categoryName(p.category_id);
     const cover=coverForProduct(p);
     const img=cover?mediaUrl(cover.storage_path):'';
     const media=img?'<img src="'+esc(img)+'" alt="Preview of '+esc(p.n)+'" loading="lazy" decoding="async">':esc(p.e);
     const selected=qty(p.id)>=1;
-    return '<article class="card" role="group" aria-label="'+esc(p.n)+'"><div class="pic">'+media+'<span class="preview-label">'+(img?'PRODUCT PREVIEW':'DIGITAL PRODUCT')+'</span></div>'+
+    return '<article class="card" data-accent="'+(idx%4)+'" role="group" aria-label="'+esc(p.n)+'"><div class="pic" data-art="EA/">'+media+'<span class="preview-label">'+(img?'PRODUCT PREVIEW':'DIGITAL PRODUCT')+'</span></div>'+
       '<div class="body">'+(cat?'<span class="product-cat">'+esc(cat)+'</span>':'')+
       '<h3>'+esc(p.n)+'</h3><p class="product-summary">'+esc(productSummary(p.d))+'</p>'+
       '<div class="row product-price-row"><span class="price">'+M(p.p)+'</span><span class="product-format">Digital download</span></div>'+
@@ -856,6 +872,7 @@ function render(){
   document.getElementById('cartTotal').textContent=M(t);
   document.querySelector('.sticky')?.classList.toggle('has-items',n>0);
   renderFeatured();
+  window.EasyABCCinema?.renderStories();
   renderPay();
 }
 
@@ -1909,4 +1926,5 @@ async function init(){
 }
 init().catch(e=>{console.error(e);setDb('Connecting to live catalog • retrying…','warn');setTimeout(retryCatalog,3000)});
 </script>
+<script src="cinematic.js?v=20261020-1"></script>
 </body></html>
