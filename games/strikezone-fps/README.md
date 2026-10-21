@@ -575,3 +575,13 @@ GitHub client and SQL setup are committed, but **database migration execution an
 - Real-world geometry/pathfinding simulation: 30/30 random BLUE/RED spawn tests found reachable patrol targets and nearby fallback targets.
 - Host-simulated AI movement test across actual game geometry: all 9 autonomous bots moved over a four-second sample. Damage unit simulations validated enemy hits, friendly-fire protection, invalid-damage rejection, and lethal elimination.
 - **Both devices must refresh** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.39 and re-create the private room. In-browser two-device validation is still required.
+
+
+## v3.40 — Friendly-player overhead usernames (2026-10-21)
+
+- Multiplayer matches now display a compact blue-tinted name tag positioned above the head of each **living human teammate**, updating with the player's 3D position and camera aim.
+- Tags are deliberately hidden for enemy players, AI soldiers, the local player, eliminated characters, targets behind map walls, and teammates more than 48 world units away. Labels are rendered as plain text, avoiding HTML injection from display names.
+- The host's actual Supabase username now travels in authoritative match snapshots, so other Blue players see the host's registered name rather than a generic HOST label. Existing guest soldier usernames continue to come from the host's authoritative snapshot.
+- Uses the same camera projection as the classic renderer and works with enhanced WebGL2, WebGL1 and software graphics. The browser UI does not require a new Supabase migration.
+- **Testing:** Updated GitHub HTML was fetched back and its embedded JavaScript passed syntax parsing; seven teammate/enemy/self/bot visibility logic cases passed. Physical two-device 3D visual alignment still needs an in-game test on the target devices.
+- **Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.40
