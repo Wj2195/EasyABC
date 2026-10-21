@@ -531,8 +531,9 @@ async function startModernRenderer(THREE){
       cube(torso,[0,.968,.149],[.434,.075,.075],gear);
       cube(torso,[0,.968,.194],[.113,.070,.038],plates);
       // Team identification is a patch on neutral armor, not a full-color uniform.
+      const teamTrims=[];
       for(const side of [-1,1]){
-        cube(torso,[side*.316,1.431,.045],[.012,.075,.126],allied);
+        teamTrims.push(cube(torso,[side*.316,1.431,.045],[.012,.075,.126],allied));
         cube(torso,[side*.313,1.350,.047],[.013,.024,.118],gear);
       }
       const patch=cube(torso,[.246,1.386,.211],[.079,.040,.024],enemy);
@@ -617,6 +618,21 @@ async function startModernRenderer(THREE){
       cube(shield,[0,.155,.08],[.64,.31,.022],shieldGlass);
       cube(shield,[0,-.55,.04],[.76,.07,.13],steel);
       shield.visible=false;
+      // Six accessory sets share the same humanoid rig and match the player's weapon.
+      const roles=Array.from({length:6},()=>new THREE.Group());
+      for(const group of roles){torso.add(group);group.visible=false;}
+      for(const side of [-1,1]){
+        cube(roles[0],[side*.275,1.17,.22],[.11,.14,.07],plates);
+        cube(roles[1],[side*.32,1.26,.01],[.075,.12,.16],gear);
+        cube(roles[2],[side*.254,1.13,.21],[.06,.17,.055],dark);
+        cube(roles[3],[side*.30,1.42,.07],[.17,.20,.24],plates);
+        cube(roles[4],[side*.28,1.20,.12],[.12,.15,.12],gear);
+        cube(roles[5],[side*.235,1.03,.07],[.06,.09,.10],steel);
+      }
+      const cyanGlow=new THREE.MeshBasicMaterial({color:0x39bcdf});
+      for(const side of [-1,1])cube(roles[4],[side*.325,1.26,.21],[.035,.08,.045],cyanGlow);
+      cube(roles[2],[0,1.46,-.16],[.48,.14,.09],helmet);
+      cube(roles[3],[0,1.29,-.21],[.46,.34,.09],gear);
       const shadow=new THREE.Mesh(new THREE.CircleGeometry(.36,20),new THREE.MeshBasicMaterial({color:0x151714,transparent:true,opacity:.15,depthWrite:false}));
       shadow.position.y=.012;shadow.rotation.x=-Math.PI/2;root.add(shadow);
       // Distance-aware accessory details: keep silhouettes but suppress tiny parts far away.
@@ -626,7 +642,7 @@ async function startModernRenderer(THREE){
         const maxDim=Math.max(m.scale.x,m.scale.y,m.scale.z);
         if(maxDim<.17&&m!==patch){smallDetails.push(m);m.castShadow=false;}
       });
-      return {root,torso,shirtPieces,legs,arms,patch,smallDetails,material:null,shield,shieldArmor,shieldGlass,gun,pistol,energyCannon,saber,shadow,gunFlash};
+      return {root,torso,shirtPieces,legs,arms,patch,teamTrims,roles,smallDetails,material:null,shield,shieldArmor,shieldGlass,gun,pistol,energyCannon,saber,shadow,gunFlash};
     }
     const units=Array.from({length:10},build);
     let currentCount=0;
@@ -641,6 +657,9 @@ async function startModernRenderer(THREE){
           // Inverting yaw made the visible shield face the opposite lateral direction.
           u.root.rotation.y=b.yaw;
           u.shield.visible=b.weapon===7&&b.shieldHP>0;
+          const role=b.weapon===1?1:b.weapon===2||b.weapon===5?2:
+            b.weapon===7?3:b.weapon===6?4:b.weapon===8?5:0;
+          for(let k=0;k<u.roles.length;k++)u.roles[k].visible=k===role;
           if(b.shieldMax&&b.shieldHP>0){
             const ratio=Math.max(0,Math.min(1,b.shieldHP/b.shieldMax));
             const tint=ratio>.66?0x2b3b44:ratio>.33?0x685b40:0x9a4935;
@@ -667,6 +686,7 @@ async function startModernRenderer(THREE){
           if(u.material!==shirt){
             u.shirtPieces.forEach(m=>m.material=shirt);
             u.patch.material=b.team===0?allied:enemy;
+            for(const strip of u.teamTrims)strip.material=b.team===0?allied:enemy;
             u.material=shirt;
           }
           // Death animation: all body parts, armor and held weapon topple together.
@@ -718,6 +738,10 @@ async function startModernRenderer(THREE){
             const shirt=team===0?uniforms[0]:uniforms[1];
             for(const mesh of u.shirtPieces)mesh.material=shirt;
             u.patch.material=team===0?allied:enemy;
+            for(const strip of u.teamTrims)strip.material=team===0?allied:enemy;
+            const role=weapon===1?1:weapon===2||weapon===5?2:
+              weapon===7?3:weapon===6?4:weapon===8?5:0;
+            for(let k=0;k<u.roles.length;k++)u.roles[k].visible=k===role;
             u.pistol.visible=weapon===4;
             u.energyCannon.visible=weapon===6;
             u.saber.visible=weapon===8;
@@ -759,8 +783,8 @@ async function startModernRenderer(THREE){
       const rimLight=new THREE.DirectionalLight(0x70caff,2.75);
       rimLight.position.set(3,3,-2.5);previewScene.add(rimLight);
       const previewCam=new THREE.PerspectiveCamera(35,1,.1,20);
-      previewCam.position.set(0,1.18,4.45);
-      previewCam.lookAt(0,1.03,0);
+      previewCam.position.set(0,1.17,3.72);
+      previewCam.lookAt(0,1.04,0);
       const previewRenderer=new THREE.WebGLRenderer({
         canvas:lobbyCanvas,alpha:true,antialias:true,powerPreference:'low-power'});
       previewRenderer.setPixelRatio(Math.min(1.4,window.devicePixelRatio||1));
@@ -768,7 +792,7 @@ async function startModernRenderer(THREE){
       previewRenderer.outputColorSpace=THREE.SRGBColorSpace;
       previewRenderer.toneMapping=THREE.ACESFilmicToneMapping;
       previewRenderer.toneMappingExposure=1.45;
-      let selected=Number(document.getElementById('loadoutSelect')?.value||0);
+      let selected=Number(document.getElementById('loadoutSelect')?.value||0),selectedTeam=0;
       let angle=.32,dragging=false,lastDrag=0,paintedAt=0,w=0,h=0;
       const fallback=document.getElementById('szPreviewFallback');
       fallback?.setAttribute('aria-hidden','true');
@@ -785,6 +809,9 @@ async function startModernRenderer(THREE){
       window.addEventListener('strike-zone-lobby-loadout',event=>{
         if(Number.isInteger(event.detail?.weapon))selected=event.detail.weapon;
       });
+      window.addEventListener('strike-zone-lobby-team',event=>{
+        selectedTeam=event.detail?.team===1?1:0;
+      });
       lobbyPreview={paint(stamp,active){
         if(!active||stamp-paintedAt<35)return;
         paintedAt=stamp;
@@ -796,7 +823,7 @@ async function startModernRenderer(THREE){
           previewCam.aspect=w/h;previewCam.updateProjectionMatrix();
         }
         if(!dragging)angle=.34+Math.sin(stamp*.00025)*.075;
-        previewRig.update(selected,0,stamp*.001,angle);
+        previewRig.update(selected,selectedTeam,stamp*.001,angle);
         previewRenderer.render(previewScene,previewCam);
       }};
     }
