@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo + Online Multiplayer v3.32
+# STRIKEZONE FPS — Solo + Online Multiplayer v3.33
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.32
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.33
 
 Original browser-based 3D FPS with offline AI operations and private-room online Team Deathmatch.
 
@@ -482,3 +482,24 @@ Built on top of the existing v3.30 version, preserving nine weapons and the prev
 - **Auto fullscreen and landscape:** tapping **DEPLOY NOW** requests the native Fullscreen API within the user gesture, followed by `screen.orientation.lock('landscape')` where supported. The same is attempted when joining an online room. The existing PWA manifest already declares fullscreen display and landscape orientation. Unsupported browsers show rotate-phone guidance; web pages cannot physically rotate the device against browser restrictions.
 - **Regression checks:** JavaScript syntax validated; cardinal/diagonal/neutral joystick tests; world movement heading tests in normal and enhanced WebGL rendering; independent joystick and second-finger swipe event simulation; fullscreen and landscape API mock sequence verified. Live testing on the player's specific phone/browser remains to be done.
 
+
+
+## v3.33 — Eleven-point mobile HUD remap and local discovery minimap
+
+Applied the mobile-landscape reference layout (the user's numbered screenshot):
+
+1. Compact left-bottom health panel, HP and shield status in a short strip.
+2. Larger, lower movement joystick for all directions.
+3. Added a small secondary FIRE control in the upper-left play region, near the minimap. Both fire buttons share independent touch state so releasing one doesn't interrupt the other.
+4. Reduced minimap to roughly 64–83 CSS pixels and replaced full-map rendering with a **47-unit, player-centered local minimap**. Player movement reveals nearby 3.5-unit map cells; previously explored cells remain discovered for the match. Reset on new match. Enemy/boss and ammo markers are only displayed in discovered regions.
+5. Larger main FIRE button on the mid-right.
+6. Smaller AIM button near the upper-right edge.
+7. Compact right-bottom weapon/ammo/reload HUD.
+8. JUMP repositioned along the lower-right row.
+9. CROUCH next to JUMP.
+10. SWAP next to CROUCH.
+11. RELOAD next to SWAP.
+
+The new positions activate for touch/coarse-pointer **landscape mobile view**, without changing desktop controls. Existing mobile full-screen and landscape requests remain available.
+
+**Checks:** Embedded script syntax validation; test that local minimap explores new cells (38 initial, 74 after moving in a synthetic scenario), preserves visited tiles and resets between rounds; test that both FIRE buttons can be held simultaneously and independently released; CSS checks for all 11 layout targets. Device-specific landscape visual testing is still recommended.
