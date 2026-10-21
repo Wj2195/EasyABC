@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./social.css?v=3.39"><title>STRIKEZONE FPS — Tactical Arena · Solo + Friends Beta v3.40 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./social.css?v=3.39"><title>STRIKEZONE FPS — Tactical Arena · Solo + Friends Beta v3.41 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -794,7 +794,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="onlineBtn" class="secondaryBtn" type="button">🌐 ONLINE ROOM</button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>TRI-SECTOR LABYRINTH</strong><span class="slash">/</span><span>ONLINE ROOMS · 6 MIN · 13 ENTERABLE BUILDINGS</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.40 — TEAMMATE NAME TAGS</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.41 — ADVANCED TACTICAL AI</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="onlinePanel" class="onlinePanel hidden" role="dialog" aria-label="Online multiplayer room">
   <div class="onlineBox">
@@ -2979,35 +2979,61 @@ function botRecoveryDecision(b,threat,visible,dt){
 }
 
 // AI uses weapon-specific ranges, cadence, ammo and cover tactics.
+// v3.41 — choose a complete nine-weapon loadout from actual threat conditions.
 function botChooseWeapon(b,dist,visible){
- if(b.aiMode==='retreat'||b.aiMode==='recover')return;
- const now=nowSec;
+ if(b.aiMode==='retreat'||b.aiMode==='recover'||!b.target?.alive)return;
  const current=weapons[b.weapon];
- const empty=!current.shield&&b.ammo?.[b.weapon]<=0&&b.reserves?.[b.weapon]<=0;
+ const empty=!current.melee&&!current.shield&&b.ammo[b.weapon]<=0&&b.reserves[b.weapon]<=0;
  const broken=b.weapon===7&&b.shieldHP<=0;
- const horde=mode==='zombie'&&b.target?.monster&&!b.target.boss;
- if(b.weaponHoldUntil&&now<b.weaponHoldUntil&&!empty&&!broken&&!horde)return;
- let target=b.preferredWeapon;
- if(horde&&b.hp>=32){
-  const nearby=aliveMonsters().filter(m=>!m.boss&&hypot(m.x-b.x,m.z-b.z)<19).length;
-  if(nearby>=2){
-   if(b.ammo[1]>0||b.reserves[1]>0)target=1;
-   else if(b.ammo[0]>0||b.reserves[0]>0)target=0;
-   else if(b.ammo[4]>0||b.reserves[4]>0)target=4;
-  }
+ if(nowSec<(b.weaponHoldUntil||0)&&!empty&&!broken)return;
+ const target=b.target;
+ const opponentShield=target.weapon===7&&target.shieldHP>0;
+ const bodyGuards=bots.reduce((total,t)=>total+(t.alive&&t.team!==b.team&&
+   hypot(t.x-target.x,t.z-target.z)<6?1:0),0);
+ const horde=mode==='zombie'&&!!target.monster&&!target.boss;
+ const threats=horde?Math.max(2,bodyGuards):bodyGuards;
+ const profile=[
+  // VORTEX AR: solid assault option at mid-range.
+  (dist>=7&&dist<34?9:5)+(dist>32?-2:0),
+  // RAPTOR SMG: close-range automatic suppression.
+  dist<15?(dist>3?11:8):dist<22?7:2,
+  // RANGER DMR: precise mid/long range rifle.
+  dist>16?(dist>24?11:9):dist>9?6:2,
+  // JUDGE 12: extremely dangerous indoors.
+  dist<5?13:dist<9?11:dist<13?5:-5,
+  // SPECTRE P9: quick handgun backup and light flanking.
+  dist<13?7:dist<22?5:3,
+  // PHANTOM SR: long-range first-shot advantage.
+  dist>25?13:dist>17?9:dist>10?4:-6,
+  // NOVA PULSE: explosive crowd control; meaningful 2s charging risk.
+  dist>7&&dist<26?(threats>=2?14:opponentShield?11:6):-6,
+  // AEGIS S8: advance under pressure; bash when close.
+  b.shieldHP>0&&visible&&dist<11?
+    (b.hp<57?14:dist<3.6?9:2):-10,
+  // LIGHTSABER: lethal only in very tight quarters.
+  dist<2.7?15:dist<4.2?6:-12
+ ];
+ let choice=b.weapon,high=-Infinity;
+ for(let i=0;i<weapons.length;i++){
+  const w=weapons[i];
+  if(w.shield&&b.shieldHP<=0)continue;
+  if(!w.melee&&!w.shield&&b.ammo[i]<=0&&b.reserves[i]<=0)continue;
+  let score=profile[i];
+  // Preference and stickiness prevent oscillation or every bot using one gun.
+  if(i===b.preferredWeapon)score+=3;
+  if(i===b.weapon)score+=2;
+  if(i===4&&b.ammo[0]===0&&b.reserves[0]===0)score+=5;
+  if(i===6&&target.shieldPowerUntil>nowSec)score-=9;
+  if(i===7&&target.weapon===5&&dist>6)score+=2;
+  if(i===5&&target.monster&&!target.boss)score-=5;
+  score+=((b.id*7+i*11)%9)*.12;
+  if(score>high){high=score;choice=i;}
  }
- if(empty||broken)target=b.ammo?.[4]>0?4:b.ammo?.[0]>0?0:7;
- if(!empty&&!broken&&b.hp<34&&b.shieldHP>shieldMaxHP()*.15&&visible&&dist<15)target=7;
- else if(!empty&&!broken&&dist<3.1&&b.shieldHP>shieldMaxHP()*.15&&(b.preferredWeapon===7||b.weapon===7))target=7;
- else if(!empty&&!broken&&dist>19&&!horde){if([1,3,4,7].includes(target))target=b.id%2?2:5;}
- else if(!empty&&!broken&&dist<6){if([2,5].includes(target))target=b.id%2?1:3;}
- else if(!empty&&!broken&&dist>9&&dist<23&&b.preferredWeapon===6&&!horde)target=6;
- else if(!empty&&!broken&&dist>7&&dist<15&&b.preferredWeapon===7&&b.hp>65)target=0;
- if(target===7&&b.shieldHP<=0)target=b.ammo?.[0]>0?0:4;
- if(target!==b.weapon){
-  b.weapon=target;b.chargeStart=-1;b.reloadUntil=0;resetBotBurst(b);b.shootCD=Math.max(.25,b.shootCD);
-  b.aimReadyAt=now+.20;b.weaponHoldUntil=now+rand(4.8,7.3);
- }
+ if(choice===b.weapon)return;
+ b.weapon=choice;b.chargeStart=-1;b.reloadUntil=0;resetBotBurst(b);
+ b.shootCD=nowSec-b.lastFiredAt>.4?Math.min(b.shootCD,.12):Math.max(b.shootCD,.1);
+ b.aimReadyAt=Math.min(b.aimReadyAt,nowSec+.12);
+ b.weaponHoldUntil=nowSec+(choice===7?2.2:choice===8?1.4:rand(2.7,4.3));
 }
 function botReload(b){
  const w=weapons[b.weapon],i=b.weapon;
@@ -3187,7 +3213,7 @@ function updateBots(dt){
     b.patrolGoal=null;b.patrolUntil=0;b.patrolRecent=[];b.patrolRegion=-1;
     b.lastSeenAt=-99;b.missionThreatUntil=0;
     b.heardID=0;b.heardX=undefined;b.heardZ=undefined;b.alertUntil=0;
-    b.nextSight=0;b.nextHear=0;b.flankTarget=null;b.flankPoint=null;
+    b.nextSight=0;b.nextHear=0;b.flankTarget=null;b.flankPoint=null;b._engagedBefore=false;
    }
    continue;
   }
@@ -3247,7 +3273,11 @@ function updateBots(dt){
     b.path=[];b.pathRefresh=0;
    }
   }else if(!withdrawing)b.aiMode=searching?'investigate':'engage';
-  if(!withdrawing&&seeking)botChooseWeapon(b,dist,visible);
+  if(!withdrawing&&seeking){
+   // First combat contact overrides the initial loadout grace period.
+   if(visible&&!b._engagedBefore){b._engagedBefore=true;b.weaponHoldUntil=0;}
+   botChooseWeapon(b,dist,visible);
+  }
   const w=weapons[b.weapon];
   if(nowSec>b.tacticUntil){
    b.strafeDir=Math.random()<.5?-1:1;
