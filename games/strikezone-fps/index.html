@@ -497,6 +497,40 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
  body.playing #shieldPowerFx{inset:4px;border-radius:10px}
 }
 
+/* v3.38 — private-room team picker for invited players and guests. */
+#onlineTeamPicker.hidden{display:none!important}
+#onlineTeamPicker{display:grid;gap:9px;padding:11px;background:#0c2234;
+ border:1px solid #426b86;border-radius:6px;min-width:0}
+.onlineTeamTitle{font:800 11px Arial;letter-spacing:1px;color:#eaf6fc}
+.onlineTeamTitle small{display:block;font:10px/1.7 Arial;letter-spacing:.3px;color:#a1b9c9}
+.onlineTeamChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.onlineTeamOption{display:flex;flex-direction:column;gap:4px;
+ align-items:center;justify-content:center;min-height:62px;
+ padding:8px 6px;border-radius:5px;cursor:pointer;
+ transition:background .12s,border-color .12s,opacity .12s}
+.onlineTeamOption strong{font:900 12px Arial;letter-spacing:1px}
+.onlineTeamOption small{font:10px Arial;letter-spacing:.3px}
+.onlineTeamOption.blue{border:1px solid #458bc1;background:#122c44;color:#c4eaff}
+.onlineTeamOption.red{border:1px solid #b9616c;background:#3d1e2a;color:#ffced1}
+.onlineTeamOption.blue.selected{border:2px solid #78d8ff;
+ background:#17517b;box-shadow:0 0 13px #3494ff60}
+.onlineTeamOption.red.selected{border:2px solid #ff9ba7;
+ background:#7e2e3d;box-shadow:0 0 13px #fb556d60}
+.onlineTeamOption:disabled{opacity:.40;cursor:not-allowed}
+#onlineTeamHint{color:#9bd9df;font:10px/1.5 Arial}
+#onlinePlayerList{display:grid;gap:5px;min-height:26px}
+.onlineRosterRow{display:flex;justify-content:space-between;align-items:center;gap:8px;
+ font:11px Arial;padding:5px 7px;border-left:3px solid #5180a0;
+ background:#091d2bab;min-width:0}
+.onlineRosterRow b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.onlineRosterRow.blue{border-left-color:#53b9ff;color:#bcecff}
+.onlineRosterRow.red{border-left-color:#f47183;color:#ffd0d5}
+.onlineRosterRow span{font-size:9px;flex-shrink:0;letter-spacing:.6px}
+@media(max-width:480px){
+ .onlineTeamChoices{gap:6px}
+ .onlineTeamOption strong{font-size:10px}
+ .onlineTeamOption{min-height:55px}
+}
 /* v3.35 — systematic, vertically scrollable MOBILE MAIN MENU.
    Use CSS contents to rearrange the existing semantic sections without
    cloning controls or breaking their event listeners. This only applies to
@@ -750,7 +784,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="onlineBtn" class="secondaryBtn" type="button">🌐 ONLINE ROOM</button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>TRI-SECTOR LABYRINTH</strong><span class="slash">/</span><span>ONLINE ROOMS · 6 MIN · 13 ENTERABLE BUILDINGS</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.37 — SECURE ACCOUNTS + FRIENDS</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.38 — CHOOSE YOUR TEAM</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="onlinePanel" class="onlinePanel hidden" role="dialog" aria-label="Online multiplayer room">
   <div class="onlineBox">
@@ -765,7 +799,19 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
     <div id="onlineRoomInfo" class="hidden">
       <div class="onlineCode">ROOM CODE <strong id="onlineCodeText"></strong></div>
       <button type="button" class="secondaryBtn" id="onlineCopy">COPY INVITE LINK</button>
-      <div id="onlinePlayerList"></div>
+      <div id="onlinePlayerList" aria-live="polite"></div>
+      <div id="onlineTeamPicker" class="onlineTeamPicker hidden">
+        <div class="onlineTeamTitle">CHOOSE YOUR TEAM <small>BEFORE THE MATCH STARTS</small></div>
+        <div class="onlineTeamChoices">
+          <button type="button" id="onlineTeamBlue" class="onlineTeamOption blue">
+            <strong>BLUE TEAM</strong><small id="onlineBlueCount">0 / 5 PLAYERS</small>
+          </button>
+          <button type="button" id="onlineTeamRed" class="onlineTeamOption red">
+            <strong>RED TEAM</strong><small id="onlineRedCount">0 / 5 PLAYERS</small>
+          </button>
+        </div>
+        <div id="onlineTeamHint">Choose your side. You can switch teams until the host starts.</div>
+      </div>
       <button type="button" class="primaryBtn hidden" id="onlineStart">START ONLINE MATCH</button>
     </div>
     <div id="onlineStatus">Not connected. Create a room or enter your friend's code.</div>
@@ -4013,7 +4059,42 @@ let onlineRole='',onlineRoom='',onlinePeer=null,onlineHostConn=null;
 let onlineMembers=new Map(),onlineSlot=-1,onlineTeam=0,onlineStarted=false;
 let onlinePoseLast=0,onlineSnapshotLast=0,onlineInitialSnapshot=false;
 let onlineHostAvatar=null,onlineEndShown=false,onlineStartPending=false;
-const ONLINE_SLOTS=[4,0,5,1,6],ONLINE_PROTOCOL=1;
+let onlineRoster=[];
+const ONLINE_TEAM_SLOTS={0:[0,1,2,3],1:[4,5,6,7,8]};
+const ONLINE_MAX_GUESTS=5,ONLINE_PROTOCOL=2;
+function onlineHostRoster(){
+ return [
+  {name:window.SZSocial?.current()?.name||'HOST',team:0,host:true},
+  ...Array.from(onlineMembers.values()).filter(m=>m.conn.open)
+   .map(m=>({name:m.name==='GUEST-UNSET'?'PLAYER '+m.slot:m.name,
+    team:m.team,host:false,slot:m.slot}))
+ ];
+}
+function onlineOpenSlot(team,member=null){
+ return ONLINE_TEAM_SLOTS[team]?.find(slot=>
+  !Array.from(onlineMembers.values()).some(m=>m!==member&&m.slot===slot));
+}
+function onlineRosterCounts(){
+ const roster=onlineRole==='host'?onlineHostRoster():onlineRoster;
+ return [0,1].map(team=>roster.filter(p=>p.team===team).length);
+}
+function onlineBroadcastLobby(){
+ if(onlineRole!=='host')return;
+ onlineRoster=onlineHostRoster();
+ const message={t:'lobby',v:ONLINE_PROTOCOL,players:onlineRoster};
+ for(const member of onlineMembers.values())if(member.conn.open)
+  member.conn.send(message);
+ onlineUIRoom();
+}
+function onlineSelectTeam(team){
+ if(onlineRole!=='guest'||onlineStarted||onlineSlot<0)return;
+ if(team===onlineTeam)return;
+ if(!onlineHostConn?.open){
+  onlineUIStatus('Waiting for the host connection.');return;
+ }
+ onlineUIStatus('Requesting '+(team===0?'Blue':'Red')+' Team...');
+ onlineHostConn.send({t:'team-select',team});
+}
 function onlineUIStatus(message){$('onlineStatus').textContent=message;}
 function onlineLobby(show=true){$('onlinePanel').classList.toggle('hidden',!show);}
 function onlineShortCode(){
@@ -4025,11 +4106,39 @@ function onlineUIRoom(){
  $('onlineRoomInfo').classList.toggle('hidden',!onlineRoom);
  $('onlineCodeText').textContent=onlineRoom;
  $('onlineStart').classList.toggle('hidden',onlineRole!=='host'||onlineStarted);
- $('onlinePlayerList').textContent=onlineRole==='host'?
-  (window.SZSocial?.current()?.name||'HOST')+' · BLUE / HOST  |  '+
-  Array.from(onlineMembers.values()).filter(p=>p.conn.open)
-    .map(p=>(p.name||'PLAYER '+p.slot)+' · '+(p.team===0?'BLUE':'RED')).join('  |  '):
-  onlineRole==='guest'?'JOINED · '+(onlineTeam===0?'BLUE':'RED')+' TEAM':'';
+ const roster=onlineRole==='host'?onlineHostRoster():onlineRoster;
+ const list=$('onlinePlayerList');list.replaceChildren();
+ if(!roster.length){
+  const info=document.createElement('div');
+  info.className='onlineRosterRow';info.textContent='Waiting for player list...';
+  list.append(info);
+ }
+ for(const participant of roster){
+  const row=document.createElement('div');
+  row.className='onlineRosterRow '+(participant.team===0?'blue':'red');
+  const name=document.createElement('b');
+  name.textContent=participant.name+(participant.host?' · HOST':'');
+  const team=document.createElement('span');
+  team.textContent=participant.team===0?'BLUE':'RED';
+  row.append(name,team);list.append(row);
+ }
+ const choose=onlineRole==='guest'&&!onlineStarted&&onlineSlot>=0;
+ $('onlineTeamPicker').classList.toggle('hidden',!choose);
+ const counts=onlineRosterCounts();
+ for(const team of [0,1]){
+  const button=$(team===0?'onlineTeamBlue':'onlineTeamRed');
+  const selected=onlineRole==='guest'&&onlineTeam===team;
+  button.classList.toggle('selected',selected);
+  button.disabled=!choose||(counts[team]>=
+   ONLINE_TEAM_SLOTS[team].length+(team===0?1:0)&&!selected);
+  button.setAttribute('aria-pressed',String(selected));
+  $(team===0?'onlineBlueCount':'onlineRedCount').textContent=
+   counts[team]+' / '+(ONLINE_TEAM_SLOTS[team].length+(team===0?1:0))+' PLAYERS';
+ }
+ if(choose){
+  $('onlineTeamHint').textContent='Selected: '+(onlineTeam===0?'BLUE':'RED')+
+   '. You can change teams until the host starts the match.';
+ }
  $('onlineHUD').classList.toggle('hidden',!onlineRole);
  $('onlineHUDRoom').textContent=onlineRoom;
  $('onlineHUDStatus').textContent=onlineRole==='host'?
@@ -4053,6 +4162,7 @@ function onlineStop(){
  const conns=[...onlineMembers.values()];
  onlineRole='';onlineStarted=false;onlineRoom='';onlineSlot=-1;
  onlineInitialSnapshot=false;onlineHostAvatar=null;onlineStartPending=false;
+ onlineRoster=[];onlineTeam=0;
  for(const {conn} of conns)try{conn.close();}catch(_){}
  onlineMembers.clear();
  try{onlineHostConn?.close();}catch(_){}
@@ -4070,7 +4180,7 @@ function onlineConnClosed(isHost=false,peerId=''){
    const b=bots.find(q=>q.id===member.slot);
    if(b)b.remoteHuman=false;
   }
-  onlineUIRoom();
+  onlineBroadcastLobby();
   if(onlineRole==='host'&&running)announce('ONLINE PLAYER DISCONNECTED',2);
  }else if(onlineRole==='guest'){
   onlineUIStatus('Host disconnected. The room has ended.');
@@ -4081,19 +4191,31 @@ function onlineConnClosed(isHost=false,peerId=''){
 }
 function onlineInstallHostConn(conn){
  if(onlineRole!=='host'){conn.close();return;}
- if(onlineStarted||onlineMembers.size>=ONLINE_SLOTS.length){
-  conn.on('open',()=>conn.send({t:'reject',reason:'Match started or room full'}));
+ if(onlineStarted||onlineMembers.size>=ONLINE_MAX_GUESTS){
+  conn.on('open',()=>{
+   conn.send({t:'reject',reason:'Match started or room full'});
+   conn.close();
+  });
   return;
  }
- const allocated=ONLINE_SLOTS.find(id=>![...onlineMembers.values()].some(a=>a.slot===id));
- if(allocated===undefined){conn.close();return;}
- const team=allocated<4?0:1;
+ const counts=onlineRosterCounts();
+ // Balance the default placement. Players can change teams immediately.
+ let team=counts[1]<=counts[0]?1:0;
+ let allocated=onlineOpenSlot(team);
+ if(allocated===undefined){
+  team=1-team;allocated=onlineOpenSlot(team);
+ }
+ if(allocated===undefined){
+  conn.on('open',()=>{
+   conn.send({t:'reject',reason:'Both teams are full'});conn.close();
+  });return;
+ }
  const member={conn,slot:allocated,team,lastFire:-99,name:'GUEST-UNSET'};
  onlineMembers.set(conn.peer,member);
  conn.on('open',()=>{
   conn.send({t:'welcome',v:ONLINE_PROTOCOL,slot:allocated,team,room:onlineRoom});
-  onlineUIStatus('Friend joined! Start when everybody is ready.');
-  onlineUIRoom();
+  onlineUIStatus('Friend joined! Let them select a team before starting.');
+  onlineBroadcastLobby();
  });
  conn.on('data',message=>onlineHostReceive(member,message));
  conn.on('close',()=>onlineConnClosed(true,conn.peer));
@@ -4190,9 +4312,21 @@ function onlineGuestReceive(msg){
  }else if(msg.t==='welcome'){
   if(msg.v!==ONLINE_PROTOCOL){onlineUIStatus('Different game versions. Refresh both browsers.');return;}
   onlineSlot=msg.slot;onlineTeam=msg.team;
+  onlineRoster=[];
   if(onlineHostConn?.open)
    onlineHostConn.send({t:'identity',name:window.SZSocial?.current()?.name||'GUEST'});
-  onlineUIStatus('Joined '+onlineRoom+'. Waiting for host to start.');
+  onlineUIStatus('Joined '+onlineRoom+'. Choose Blue or Red Team before the host starts.');
+  onlineUIRoom();
+ }else if(msg.t==='team-confirm'&&!onlineStarted){
+  onlineSlot=msg.slot;onlineTeam=msg.team;
+  onlineUIStatus('Joined '+(onlineTeam===0?'Blue':'Red')+' Team. Waiting for host.');
+  onlineUIRoom();
+ }else if(msg.t==='team-error'&&!onlineStarted){
+  onlineUIStatus(String(msg.reason||'Cannot change team.'));
+ }else if(msg.t==='lobby'&&!onlineStarted){
+  if(msg.v!==ONLINE_PROTOCOL||!Array.isArray(msg.players))return;
+  onlineRoster=msg.players.filter(p=>(p.team===0||p.team===1)&&
+   typeof p.name==='string').slice(0,ONLINE_MAX_GUESTS+1);
   onlineUIRoom();
  }else if(msg.t==='start')onlineGuestStart(msg);
  else if(msg.t==='snapshot'&&onlineStarted)onlineGuestSnapshot(msg);
@@ -4209,11 +4343,32 @@ function onlineHostReceive(member,msg){
   const username=String(msg.name||'').trim().slice(0,20);
   member.name=/^[a-zA-Z0-9_-]{3,20}$/.test(username)?
     username:'GUEST-'+member.slot;
-  onlineUIRoom();
+  onlineBroadcastLobby();
   if(onlineStarted){
    const operator=bots.find(b=>b.id===member.slot);
    if(operator)operator.name=member.name;
   }
+  return;
+ }
+ if(msg.t==='team-select'){
+  if(onlineStarted){
+   if(member.conn.open)member.conn.send({t:'team-error',
+    reason:'Teams are locked after the match starts.'});
+   return;
+  }
+  const desired=msg.team;
+  if(desired!==0&&desired!==1)return;
+  const nextSlot=desired===member.team?member.slot:onlineOpenSlot(desired,member);
+  if(nextSlot===undefined){
+   if(member.conn.open)member.conn.send({t:'team-error',
+    reason:(desired===0?'Blue':'Red')+' Team is full. Choose another team.'});
+   onlineBroadcastLobby();
+   return;
+  }
+  member.team=desired;member.slot=nextSlot;
+  if(member.conn.open)
+   member.conn.send({t:'team-confirm',team:member.team,slot:member.slot});
+  onlineBroadcastLobby();
   return;
  }
  if(!onlineStarted)return;
@@ -4458,6 +4613,8 @@ $('onlineJoin').addEventListener('click',()=>{
  onlineJoinRoom($('onlineRoomCode').value);
 });
 $('onlineStart').addEventListener('click',onlineHostStart);
+$('onlineTeamBlue').addEventListener('click',()=>onlineSelectTeam(0));
+$('onlineTeamRed').addEventListener('click',()=>onlineSelectTeam(1));
 $('onlineCopy').addEventListener('click',()=>{
  const url=new URL(location.href);url.searchParams.set('room',onlineRoom);
  navigator.clipboard?.writeText(url.toString()).then(
