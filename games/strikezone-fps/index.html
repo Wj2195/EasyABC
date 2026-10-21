@@ -448,6 +448,54 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
        (hover:none) and (orientation:landscape){
  body.playing #mobileControls #mobileFireSmall{display:flex}
 }
+
+/* v3.34 – independent 3-second Shield Power with a 60-second recharge. */
+#shieldPowerHUD{
+ position:absolute;bottom:75px;left:50%;transform:translateX(-50%);
+ min-width:158px;box-sizing:border-box;display:flex;align-items:center;gap:7px;
+ border:1px solid #6ce1ee8c;border-radius:6px;background:#0c2339dd;
+ padding:7px 10px;z-index:7;color:#cdeeff;font:bold 10px Arial;
+ box-shadow:0 0 14px #44dffa22;white-space:nowrap;
+}
+#shieldPowerHUD .powerGlyph{font-size:24px;color:#72f3ff}
+#shieldPowerText{margin-left:auto;color:#8efff8;letter-spacing:.5px}
+#shieldPowerMeter{position:absolute;bottom:0;left:0;right:0;height:3px;
+ background:#223342;overflow:hidden}
+#shieldPowerFill{display:block;width:100%;height:100%;background:#64f2ff}
+#shieldPowerHUD.recharging{border-color:#819eb077;color:#9cb8c8}
+#shieldPowerHUD.recharging .powerGlyph{color:#6a8394}
+#shieldPowerHUD.active{background:#10425bdd;border-color:#a1ffff;
+ box-shadow:0 0 22px #55e8ff70}
+#shieldPowerFx{position:absolute;inset:0;z-index:3;pointer-events:none;
+ opacity:0;transition:opacity .13s ease;box-shadow:inset 0 0 0 4px #86ffff8c,
+ inset 0 0 45px 13px #24e5ff48,inset 0 0 110px 16px #70dcff1d;
+ border-radius:14px;}
+#shieldPowerFx.active{opacity:1;animation:szPowerPulse .65s ease-in-out infinite alternate}
+@keyframes szPowerPulse{from{filter:brightness(.86)}to{filter:brightness(1.35)}}
+#mobileShieldPower{display:none}
+@media (pointer:coarse),(hover:none){
+ body.playing #shieldPowerHUD{display:none}
+ body.playing #mobileControls #mobileShieldPower{
+  display:flex!important;left:19.5vw!important;top:57%!important;
+  bottom:auto!important;right:auto!important;
+  width:clamp(51px,5.4vw,67px)!important;
+  height:clamp(51px,5.4vw,67px)!important;
+  border:2px solid #6de4ff!important;background:#12435bcd!important;
+  box-shadow:0 0 12px #55c8ff88;
+  font-size:25px!important;z-index:9!important;
+ }
+ body.playing #mobileControls #mobileShieldPower small{
+  font-size:8px!important;letter-spacing:.2px
+ }
+ body.playing #mobileControls #mobileShieldPower.active{
+  background:#26b9d9dc!important;color:white!important;
+  animation:szPowerPulse .65s alternate infinite
+ }
+ body.playing #mobileControls #mobileShieldPower.recharging{
+  border-color:#70899c!important;background:#233c4cbf!important;color:#a5bac7!important
+ }
+ body.playing #shieldPowerFx{inset:4px;border-radius:10px}
+}
 </style>
 </head>
 <body>
@@ -514,6 +562,12 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
 </div>
 <div id="onlineHUD" class="hidden">🌐 <span id="onlineHUDRoom"></span> · <span id="onlineHUDStatus">CONNECTING</span></div>
 <div id="hud" class="hidden">
+ <div id="shieldPowerFx" aria-hidden="true"></div>
+ <div id="shieldPowerHUD" aria-live="off">
+  <span class="powerGlyph">◈</span><span>Q · SHIELD POWER</span>
+  <strong id="shieldPowerText">READY</strong>
+  <div id="shieldPowerMeter"><i id="shieldPowerFill"></i></div>
+ </div>
  <div id="bossHUD" class="hidden">
    <div class="bossHeading"><span>☠ OVERLORD · BOSS ENCOUNTER</span><strong id="bossHPText">0 / 0 HP</strong></div>
    <div class="bossMeter"><div id="bossHPFill"></div></div>
@@ -543,7 +597,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
  <div id="energyChargeHUD" class="hidden"><span id="energyChargeText">HOLD FIRE 2s</span><div class="chargeMeter"><div id="energyChargeFill"></div></div></div>
 <div id="announcement" class="announcement"></div>
  <div id="respawnScreen" class="hidden"><div>YOU WERE ELIMINATED</div><strong id="respawnCountdown">3</strong><small>REDEPLOYMENT IN PROGRESS</small></div>
- <div id="mobileControls"><div id="joyBase"><div id="joyNub"></div></div><div id="lookZone"></div><button id="mobileFireSmall" type="button" aria-label="Fire with left thumb">●<small>FIRE</small></button><button id="mobileFire">● <small>FIRE</small></button><button id="mobileAds">◎<small>AIM</small></button><button id="mobileJump">⬆<small>JUMP</small></button><button id="mobileCrouch" type="button" aria-pressed="false">⬇<small>CROUCH</small></button><button id="mobileReload">↻<small>RELOAD</small></button><button id="mobileSwitch">⇄<small>SWAP</small></button></div>
+ <div id="mobileControls"><div id="joyBase"><div id="joyNub"></div></div><div id="lookZone"></div><button id="mobileFireSmall" type="button" aria-label="Fire with left thumb">●<small>FIRE</small></button><button id="mobileShieldPower" type="button" aria-label="Activate Shield Power, 3 second immunity, 60 second cooldown">◈<small id="shieldPowerMobileText">SHIELD</small></button><button id="mobileFire">● <small>FIRE</small></button><button id="mobileAds">◎<small>AIM</small></button><button id="mobileJump">⬆<small>JUMP</small></button><button id="mobileCrouch" type="button" aria-pressed="false">⬇<small>CROUCH</small></button><button id="mobileReload">↻<small>RELOAD</small></button><button id="mobileSwitch">⇄<small>SWAP</small></button></div>
 </div>
 <div id="modal" class="hidden"><div class="modalBox"><div class="modalTop"><span id="modalEyebrow">COMBAT DATA //</span><button id="closeModal" title="Close">✕</button></div><h2 id="modalTitle">PAUSED</h2><p id="modalSubtitle">You are temporarily out of combat.</p><div id="modalContent"></div><div id="modalActions"><button id="resumeBtn" class="primaryBtn">RESUME MATCH ▶</button><button id="menuBtn" class="secondaryBtn">BACK TO MENU</button></div></div></div>
 <script>
@@ -1554,7 +1608,7 @@ document.querySelectorAll('#shieldDurabilityBtns button').forEach(btn=>btn.addEv
 }));
 weapons[7].shieldHP=shieldMaxHP();
 updateShieldMenu();
-const player={x:0,z:-17,y:0,groundY:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),scopeZoom:1,lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99,energyChargeStart:-1,energyReady:false,shockVX:0,shockVZ:0,shieldHP:360,shieldLastDamage:-99};
+const player={x:0,z:-17,y:0,groundY:0,yVel:0,yaw:0,pitch:0,hp:100,alive:true,kills:0,deaths:0,weapon:0,ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),scopeZoom:1,lastShot:0,reloadUntil:0,ads:false,crouch:false,shoot:false,bob:0,recoil:0,flash:0,hurt:0,lastSafeX:0,lastSafeZ:-17,stuckTimer:0,landBob:0,lastDamage:-99,energyChargeStart:-1,energyReady:false,shockVX:0,shockVZ:0,shieldHP:360,shieldLastDamage:-99,shieldPowerUntil:0,shieldPowerReadyAt:0};
 let mode='tdm',running=false,paused=false,ended=false,showHelp=false,matchRemaining=240,blue=0,red=0,bots=[],keys={},last=0,frame=0,fpsMark=0,fps=60,nowSec=0,finishTime=0,announceUntil=0,gunLast=0,modalType='',touchMove={x:0,y:0},audioCtx=null,mobileCrouched=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),hypot=(x,z)=>Math.hypot(x,z),rand=(a,b)=>a+Math.random()*(b-a);
 function overlaps(x,z,r=.37){if(!inPlayableArea(x,z,r))return true;for(const o of colliders){if(x+r>o.x&&x-r<o.X&&z+r>o.z&&z-r<o.Z)return true;}return false;}
@@ -1653,6 +1707,8 @@ window.addEventListener('wheel',e=>{
  e.preventDefault();if(Math.abs(e.deltaY)>1)changeScopeZoom(e.deltaY<0?1:-1);
 },{passive:false});
 function spawnPlayer(){
+ // Retain cooldown after death; respawning must not reset this power.
+ player.shieldPowerUntil=0;
  const p=findOpenSpawn(onlineRole==='guest'?onlineTeam:0);
  player.x=p.x;player.z=p.z;player.lastSafeX=p.x;player.lastSafeZ=p.z;
  player.stuckTimer=0;player.groundY=playerFloorAt(p.x,p.z);player.y=player.groundY;player.yVel=0;player.yaw=teamFacingDirection(p);player.pitch=0;
@@ -1669,6 +1725,7 @@ function createBots(){bots=[];const count=mode==='tdm'||mode==='zombie'?9:8;
  phase:rand(0,6.28),walk:0,weapon,preferredWeapon:weapon,
  ammo:weapons.map(w=>w.mag),reserves:weapons.map(w=>w.reserve),reloadUntil:0,
  shieldHP:shieldMaxHP(),shieldLastDamage:-99,chargeStart:-1,weaponHoldUntil:nowSec+6,
+ shieldPowerUntil:0,shieldPowerReadyAt:0,
  lastRangedWeapon:weapon<=6?weapon:0,
  burstShots:0,burstPauseUntil:0,burstTarget:null,burstIndex:0,lastFiredAt:-99,fireSide:1,
  aiMode:'patrol',lastDamageAt:-99,damageWindowStart:-99,damageWindow:0,lastAttacker:null,
@@ -1696,7 +1753,7 @@ loadoutSelect.addEventListener('change',()=>{startingWeapon=Number(loadoutSelect
  refreshLoadout();
 });
 refreshLoadout();
-function resetGame(){activeMobileFire.clear();energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=mode==='zombie'?0:360;blue=0;red=0;ended=false;touchMove={x:0,y:0};resetMinimapDiscovery();
+function resetGame(){activeMobileFire.clear();player.shieldPowerUntil=0;player.shieldPowerReadyAt=0;energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=mode==='zombie'?0:360;blue=0;red=0;ended=false;touchMove={x:0,y:0};resetMinimapDiscovery();
  createBots();spawnPlayer();resetMonsterEncounter();updateHud();updateScores();}
 // Navmesh over both bases and the enlarged maze. 2-unit cells + full BFS,
 // with enough search depth to reach from one end of this 164-unit map to the other.
@@ -1812,7 +1869,69 @@ function showCombatFeedback(zone,damage){
  showCombatFeedback.hitTimer=setTimeout(()=>{marker.style.opacity='0';marker.classList.remove('head')},120);
  if(zone==='head'){announce('HEADSHOT!',1.25);beep('headshot');}
 }
-function damagePlayer(dmg,source,zone='chest',impactSource=source){if(!player.alive||ended)return 0;dmg=applyShieldDefense(player,dmg,impactSource,zone);if(dmg<=0){updateHud();return 0;}const actual=Math.min(player.hp,dmg);player.hp=Math.max(0,player.hp-dmg);player.lastDamage=nowSec;player.hurt=.72;$('damageOverlay').style.opacity='.70';beep('hurt');if(player.hp<=0){player.deaths++;player.alive=false;player.shoot=false;cancelEnergyCharge();keys={};touchMove.x=touchMove.y=0;finishTime=nowSec+3;announce('YOU WERE ELIMINATED',1.5);$('respawnScreen').classList.remove('hidden');if(source){source.kills++;if(mode==='tdm')red++;}updateScores();}updateHud();return actual;}
+
+// SHIELD POWER is an independent operative ability, not a swappable weapon.
+// The cooldown starts at activation; immunity lasts exactly three seconds.
+const SHIELD_POWER_DURATION=3,SHIELD_POWER_COOLDOWN=60;
+function shieldPowerActive(actor){
+ return !!actor?.alive&&Number.isFinite(actor.shieldPowerUntil)&&
+  nowSec<actor.shieldPowerUntil;
+}
+function shieldPowerRemaining(actor){
+ return Math.max(0,(actor?.shieldPowerReadyAt||0)-nowSec);
+}
+function activateShieldPower(actor){
+ if(!actor?.alive||ended||!running||paused||shieldPowerActive(actor)||
+    shieldPowerRemaining(actor)>0)return false;
+ if(actor===player&&onlineRole==='guest'&&onlineStarted){
+  if(!onlineHostConn?.open)return false;
+  onlineHostConn.send({t:'shieldPower'});
+ }
+ actor.shieldPowerUntil=nowSec+SHIELD_POWER_DURATION;
+ actor.shieldPowerReadyAt=nowSec+SHIELD_POWER_COOLDOWN;
+ if(actor===player){
+  beep('switch');announce('SHIELD POWER · INVULNERABLE 3 SECONDS',1.3);
+  updateShieldPowerHUD();
+ }else if(actor.name&&Math.hypot(actor.x-player.x,actor.z-player.z)<18){
+  announce(actor.name+' ACTIVATED SHIELD POWER',.8);
+ }
+ return true;
+}
+function updateShieldPowerHUD(){
+ const active=shieldPowerActive(player);
+ const remain=shieldPowerRemaining(player);
+ const cd=Math.ceil(remain);
+ const text=active?'ACTIVE '+Math.max(0,(player.shieldPowerUntil-nowSec)).toFixed(1)+'s':
+  remain>0?cd+'s':'READY';
+ const hud=$('shieldPowerHUD'),button=$('mobileShieldPower');
+ if(!hud||!button)return;
+ hud.classList.toggle('active',active);hud.classList.toggle('recharging',!active&&remain>0);
+ hud.querySelector('#shieldPowerText').textContent=text;
+ $('shieldPowerMobileText').textContent=active?'3s ON':remain>0?cd+'s':'SHIELD';
+ button.classList.toggle('active',active);
+ button.classList.toggle('recharging',!active&&remain>0);
+ button.setAttribute('aria-label',active?'Shield Power active':
+  remain>0?'Shield Power recharging '+cd+' seconds':'Activate Shield Power');
+ $('shieldPowerFill').style.width=active?'100%':
+  remain>0?Math.max(0,100*(1-remain/SHIELD_POWER_COOLDOWN))+'%':'100%';
+ $('shieldPowerFx').classList.toggle('active',active);
+}
+function maybeBotShieldPower(b,tar,dist,visible){
+ if(!b.alive||shieldPowerActive(b)||shieldPowerRemaining(b)>0)return false;
+ const recentDamage=nowSec-(b.lastDamageAt??-99)<2.2;
+ const seriousThreat=b.hp<66&&recentDamage&&visible&&dist<25;
+ const closeThreat=visible&&dist<5.5&&b.hp<82;
+ const horde=mode==='zombie'&&zombies.filter(z=>z.alive&&
+   Math.hypot(z.x-b.x,z.z-b.z)<7).length>=4;
+ const lightning=mode==='zombie'&&boss?.alive&&
+  boss.lightningChargeUntil>nowSec&&hypot(boss.x-b.x,boss.z-b.z)<36&&
+  clearPath(b.x,b.z,boss.x,boss.z);
+ if(seriousThreat||closeThreat||horde||lightning)
+  return activateShieldPower(b);
+ return false;
+}
+
+function damagePlayer(dmg,source,zone='chest',impactSource=source){if(!player.alive||ended||shieldPowerActive(player))return 0;dmg=applyShieldDefense(player,dmg,impactSource,zone);if(dmg<=0){updateHud();return 0;}const actual=Math.min(player.hp,dmg);player.hp=Math.max(0,player.hp-dmg);player.lastDamage=nowSec;player.hurt=.72;$('damageOverlay').style.opacity='.70';beep('hurt');if(player.hp<=0){player.deaths++;player.alive=false;player.shoot=false;cancelEnergyCharge();keys={};touchMove.x=touchMove.y=0;finishTime=nowSec+3;announce('YOU WERE ELIMINATED',1.5);$('respawnScreen').classList.remove('hidden');if(source){source.kills++;if(mode==='tdm')red++;}updateScores();}updateHud();return actual;}
 // v3.14: deceased soldiers topple over, remain for exactly two seconds, then hide.
 const CORPSE_VISIBLE_SECONDS=2,DEATH_FALL_SECONDS=.42;
 function soldierVisible(b){
@@ -1827,7 +1946,7 @@ function soldierFallProgress(b){
 }
 function eliminateBot(b,killer){b.alive=false;b.hp=0;b.diedAt=nowSec;b.fallSide=b.id%2?-1:1;b.until=nowSec+2.7;b.deaths++;if(killer===player){player.kills++;if(mode==='tdm')blue++;feedKill('YOU',b.name,true);beep('kill');announce(player.kills>0&&player.kills%5===0?'KILL STREAK ×'+player.kills:'ELIMINATION +100 XP',1);if(mode==='gun'){cancelEnergyCharge();player.weapon=(player.weapon+1)%weapons.length;player.ammo[player.weapon]=weapons[player.weapon].mag;player.lastShot=nowSec-.25;updateHud();if(player.kills>=10)endMatch();}}else if(killer){killer.kills++;if(mode==='tdm'){if(killer.team===0)blue++;else red++;}feedKill(killer.name,b.name,false);}updateScores();updateHud();}
 function damageBot(b,damage,killer,zone='chest',impactSource=killer){
- if(!b.alive)return 0;
+ if(!b.alive||shieldPowerActive(b))return 0;
  const actualDamage=applyShieldDefense(b,damage,impactSource,zone);
  // Protected shield impacts still register as incoming pressure.
  if(killer&&killer!==b){
@@ -2662,6 +2781,8 @@ function updateBots(dt){
     b.weapon=b.preferredWeapon;
     b.ammo=weapons.map(w=>w.mag);b.reserves=weapons.map(w=>w.reserve);
     b.shieldHP=shieldMaxHP();b.shieldLastDamage=-99;b.chargeStart=-1;
+    b.shieldPowerUntil=0; // Cooldown persists across bot respawns.
+    b.shieldPowerReadyAt=b.shieldPowerReadyAt||0;
     b.reloadUntil=0;b.weaponHoldUntil=nowSec+4;resetBotBurst(b);b.lastFiredAt=-99;
     b.path=[];b.target=null;b.pathRefresh=0;b.targetRefresh=0;
     b.stuckFor=0;b.coverPoint=null;b.coverUntil=0;b.aimReadyAt=nowSec+.5;
@@ -2696,6 +2817,7 @@ function updateBots(dt){
   const tar=b.target;
   const dist=tar?hypot(tar.x-b.x,tar.z-b.z):Infinity;
   const visible=!!tar&&dist<33&&clearPath(b.x,b.z,tar.x,tar.z);
+  maybeBotShieldPower(b,tar,dist,visible);
   if(visible){
    if(nowSec-b.lastSeenAt>2)b.aimReadyAt=Math.max(b.aimReadyAt,nowSec+reaction*.6);
    b.lastSeenAt=nowSec;b.lastSeenX=tar.x;b.lastSeenZ=tar.z;
@@ -4085,6 +4207,7 @@ if(running&&!paused&&!ended){
  $('matchTime').textContent=formatTime(matchRemaining);
  if(Math.floor(sec*10)%4===0)drawMinimap();
 }
+if(running&&!paused)updateShieldPowerHUD();
 syncSniperScope();renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
 function startGame(){
  // Fullscreen must be requested in the original PLAY/DEPLOY user gesture.
@@ -4112,7 +4235,9 @@ function pauseGame(){if(!running||ended)return;
    'Take a moment, check the scoreboard, or return to the lobby.');
 }
 $('deploy').addEventListener('click',()=>onlineRole?onlineLobby(true):startGame());$('howTo').addEventListener('click',()=>openModal('help','CONTROLS & TACTICS','Master these controls before deploying into the arena.'));document.querySelectorAll('.modeCard').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.modeCard').forEach(c=>c.classList.remove('selected'));b.classList.add('selected');beep('switch');}));$('pauseBtn').addEventListener('click',pauseGame);$('closeModal').addEventListener('click',closeModal);$('resumeBtn').addEventListener('click',closeModal);$('menuBtn').addEventListener('click',goMenu);
-window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='Digit7')switchWeapon(6);if(e.code==='Digit8')switchWeapon(7);if(e.code==='Digit9')switchWeapon(8);if(e.code==='KeyV')player.ads=!player.ads;if(e.code==='KeyZ')changeScopeZoom(1);if(e.code==='KeyX')changeScopeZoom(-1);});window.addEventListener('keyup',e=>{keys[e.code]=false;});
+window.addEventListener('keydown',e=>{if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyI'&&!e.repeat){toggleLookDirection();return;}if(e.code==='KeyF'&&!e.repeat){toggleGameFullscreen();return;}keys[e.code]=true;if(e.repeat)return;if(e.code==='KeyP'||e.code==='Escape'){if(running)pauseGame();}if(!running||paused)return;if(e.code==='KeyR')reload();
+ if(e.code==='KeyQ')activateShieldPower(player);
+ if(e.code==='Digit1')switchWeapon(0);if(e.code==='Digit2')switchWeapon(1);if(e.code==='Digit3')switchWeapon(2);if(e.code==='Digit4')switchWeapon(3);if(e.code==='Digit5')switchWeapon(4);if(e.code==='Digit6')switchWeapon(5);if(e.code==='Digit7')switchWeapon(6);if(e.code==='Digit8')switchWeapon(7);if(e.code==='Digit9')switchWeapon(8);if(e.code==='KeyV')player.ads=!player.ads;if(e.code==='KeyZ')changeScopeZoom(1);if(e.code==='KeyX')changeScopeZoom(-1);});window.addEventListener('keyup',e=>{keys[e.code]=false;});
 canvas.addEventListener('click',()=>{
  if(!isMobileGameDevice()&&running&&!paused&&!ended&&
    document.pointerLockElement!==canvas&&matchRemaining>0)
@@ -4224,6 +4349,7 @@ function mobileFireUp(which){
 }
 mobileButton('mobileFire',()=>mobileFireDown('right'),()=>mobileFireUp('right'));
 mobileButton('mobileFireSmall',()=>mobileFireDown('left'),()=>mobileFireUp('left'));
+mobileButton('mobileShieldPower',()=>activateShieldPower(player));
 mobileButton('mobileAds',()=>player.ads=!player.ads);
 mobileButton('mobileJump',()=>{keys.Space=true;},()=>keys.Space=false);
 mobileButton('mobileCrouch',()=>{
