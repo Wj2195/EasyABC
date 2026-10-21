@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.34 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.35 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -496,6 +496,218 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
  }
  body.playing #shieldPowerFx{inset:4px;border-radius:10px}
 }
+
+/* v3.35 — systematic, vertically scrollable MOBILE MAIN MENU.
+   Use CSS contents to rearrange the existing semantic sections without
+   cloning controls or breaking their event listeners. This only applies to
+   the menu; actual FPS gameplay remains fullscreen and non-scrollable. */
+@media screen and (max-width:900px), screen and (hover:none) and (pointer:coarse){
+  #mainMenu:not(.hidden){
+    position:fixed!important;inset:0!important;
+    display:flex!important;flex-direction:column!important;
+    align-items:stretch!important;justify-content:flex-start!important;
+    width:100%!important;height:100dvh!important;max-height:100dvh!important;
+    overflow-y:auto!important;overflow-x:hidden!important;
+    overscroll-behavior-y:contain!important;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y!important;
+    box-sizing:border-box!important;
+    padding:0 16px calc(116px + env(safe-area-inset-bottom))!important;
+    background:linear-gradient(155deg,#08111b,#111e2b 62%,#09121b);
+    scrollbar-width:thin;scrollbar-color:#476073 #10202e;
+  }
+  #mainMenu .menuHeader{
+    position:relative!important;top:auto!important;left:auto!important;
+    right:auto!important;z-index:3;order:0;flex:0 0 auto;
+    height:68px!important;min-height:68px!important;
+    margin:0 -16px 0!important;padding:0 17px!important;
+    width:calc(100% + 32px)!important;background:#0a1725ec;
+    border-bottom:1px solid #83a4bb40;
+  }
+  #mainMenu .menuHeader .brand{font-size:clamp(15px,4.1vw,19px);gap:9px}
+  #mainMenu .brandIcon{width:39px;height:39px;font-size:19px}
+  #mainMenu .brand small{font-size:7px;letter-spacing:2.3px;margin-top:5px}
+  #mainMenu .headerRight{gap:5px;min-width:0}
+  #mainMenu .onlineBadge{
+    display:block;font-size:8px;line-height:1.5;letter-spacing:.35px;
+    max-width:114px;text-align:right;color:#b9d8e7;
+  }
+  #mainMenu .pilot{display:none}
+  #mainMenu .menuContent{
+    display:contents!important;position:static!important;inset:auto!important;
+    top:auto!important;left:auto!important;right:auto!important;
+    width:auto!important;max-width:none!important;
+    height:auto!important;transform:none!important;
+  }
+  #mainMenu .menuContent > .eyebrow{
+    order:1;align-self:stretch;font-size:9px;letter-spacing:2px;
+    margin:20px 0 0;line-height:1.45;color:#c5d7e3;
+  }
+  #mainMenu .redDash{width:21px;margin-right:7px}
+  #mainMenu .menuContent > h1{
+    order:2;position:static;transform:none;filter:none;
+    font-size:clamp(41px,10.5vw,62px)!important;
+    line-height:.92!important;letter-spacing:1.1px;
+    margin:11px 0 7px!important;max-width:100%;
+    text-shadow:0 6px 27px #0009;
+  }
+  #mainMenu .menuContent > .subtitle{
+    order:3;font-size:12px!important;line-height:1.5!important;
+    color:#b1c9d8;margin:5px 0 0!important;
+    max-width:580px;
+  }
+  #mainMenu .pillRow{display:none!important}
+  #mainMenu .menuContent > .modeSelect{
+    order:4;position:relative;width:100%;margin:25px 0 0!important;
+    min-width:0;
+  }
+  #mainMenu .modeSelect h3{
+    margin:0 0 11px!important;font-size:11px;letter-spacing:1.7px;
+    color:#deeff5;
+  }
+  #mainMenu .modeCards{
+    display:grid!important;grid-template-columns:1fr!important;
+    gap:9px!important;width:100%;min-width:0;
+  }
+  #mainMenu .modeCards > .modeCard,
+  #mainMenu .modeCards > .modeCard[data-mode="zombie"]{
+    display:grid!important;grid-template-columns:36px minmax(0,1fr);
+    grid-template-rows:auto auto;align-content:center;
+    column-gap:9px;row-gap:3px;
+    width:100%!important;min-width:0;max-width:none!important;
+    min-height:72px!important;padding:10px 13px!important;
+    border-radius:6px;text-align:left;
+    background:#102232e8;
+  }
+  #mainMenu .modeCard.selected{background:#352530;border-color:#f57769}
+  #mainMenu .modeCard b{
+    grid-column:1;grid-row:1 / 3;align-self:center;
+    margin:0!important;font-size:18px;line-height:1;
+  }
+  #mainMenu .modeCard strong{
+    grid-column:2;grid-row:1;line-height:1.3;
+    font-size:12px!important;letter-spacing:.5px;
+  }
+  #mainMenu .modeCard small{
+    grid-column:2;grid-row:2;margin:0!important;
+    font-size:10px!important;line-height:1.35;
+  }
+  #mainMenu .menuContent > .armoryChooser{
+    order:5;display:grid!important;grid-template-columns:1fr;
+    gap:7px!important;align-items:stretch;
+    width:100%;min-width:0;margin:22px 0 0!important;
+    padding:15px;border:1px solid #5c849a52;border-radius:8px;
+    background:#102333d9;
+  }
+  #mainMenu .armoryChooser label{
+    font-size:11px;font-weight:850;letter-spacing:1.2px;
+  }
+  #mainMenu .armoryChooser select{
+    display:block;width:100%;max-width:100%;min-width:0;
+    min-height:43px;font-size:13px;padding:10px 12px;
+  }
+  #mainMenu #loadoutInfo{
+    font-size:10px;line-height:1.45;min-width:0;
+  }
+  #mainMenu .trainingOptions{
+    order:6;position:relative!important;inset:auto!important;
+    top:auto!important;right:auto!important;bottom:auto!important;
+    transform:none!important;display:block;
+    width:100%!important;min-width:0;max-width:none!important;
+    max-height:none!important;overflow:visible!important;
+    margin:14px 0 0!important;padding:17px 15px!important;
+    border:1px solid #648aa053;border-top:2px solid #f3695d;
+    border-radius:8px;background:#0c1d2bdc;box-shadow:none;
+  }
+  #mainMenu .trainingOptions::before{
+    content:'MATCH SETTINGS';display:block;
+    font-weight:850;font-size:11px;letter-spacing:1.8px;
+    color:#eef4f8;margin-bottom:12px;
+  }
+  #mainMenu .trainingOptions .optionHead{
+    display:block;font-size:11px;letter-spacing:1px;color:#b1e5ee;
+  }
+  #mainMenu .trainingOptions .optionHead span{
+    display:inline;color:#8da4b1;font-size:9px;
+    letter-spacing:.6px;margin-left:5px;
+  }
+  #mainMenu .trainingOptions .optionLabel{
+    font-size:10px!important;line-height:1.35;
+    margin:16px 0 8px!important;letter-spacing:.75px;
+  }
+  #mainMenu .difficultyBtns,#mainMenu .qualityBtns{
+    display:flex;gap:7px;margin:6px 0;
+  }
+  #mainMenu .diffBtn,#mainMenu .qualityBtns button{
+    flex:1;min-width:0;min-height:43px;
+    padding:10px 4px!important;font-size:11px!important;
+    border-radius:4px;
+  }
+  #mainMenu .rendererState{
+    min-height:0;font-size:10px;line-height:1.45;
+    margin:7px 0 8px;
+  }
+  #mainMenu .lookModeBtn{
+    min-height:44px;padding:10px;font-size:10px;line-height:1.4;
+    border-radius:4px;
+  }
+  #mainMenu .careerStats{gap:7px;margin-top:8px}
+  #mainMenu .careerStats > div{padding:10px 4px}
+  #mainMenu .careerStats strong{font-size:20px}
+  #mainMenu .careerStats small{font-size:9px}
+  #mainMenu .trainingOptions p{
+    display:block;font-size:10px;line-height:1.45;margin:11px 0 0;
+  }
+  #mainMenu .menuContent > .menuActions{
+    order:7;display:grid!important;grid-template-columns:1fr 1fr;
+    gap:9px!important;align-items:stretch;
+    width:100%;min-width:0;margin:16px 0 0!important;
+    padding:0!important;
+  }
+  #mainMenu .menuActions > .secondaryBtn{
+    min-width:0;min-height:46px;padding:12px 6px!important;
+    border-radius:5px;font-size:10px!important;
+    line-height:1.35;letter-spacing:.45px;white-space:normal;
+  }
+  #mainMenu #deploy{
+    position:fixed!important;z-index:40;
+    top:auto!important;bottom:calc(9px + env(safe-area-inset-bottom))!important;
+    left:16px!important;right:16px!important;
+    width:calc(100% - 32px)!important;
+    min-height:58px;padding:14px 18px!important;
+    border-radius:7px;font-size:15px!important;
+    background:linear-gradient(180deg,#fa726b,#e34742);
+    box-shadow:0 0 0 9px #091522f2,0 -5px 28px 13px #091522b8;
+    letter-spacing:1.4px;touch-action:manipulation;
+  }
+  #mainMenu #deploy .arrow{float:right;margin:0!important}
+  #mainMenu .menuContent > .menuStat{
+    order:8;display:flex;flex-wrap:wrap;gap:7px;
+    align-items:center;margin:18px 0 0;font-size:9px;
+    letter-spacing:.4px;line-height:1.4;
+  }
+  #mainMenu .menuFooter{
+    order:9;display:flex!important;position:relative!important;
+    top:auto!important;bottom:auto!important;left:auto!important;
+    right:auto!important;flex:0 0 auto;
+    width:100%;gap:8px;flex-direction:column;
+    text-align:center;margin:17px 0 0!important;
+    padding:14px 0!important;
+    font-size:9px;line-height:1.5;letter-spacing:.6px;
+    border-top:1px solid #bdd3e62b;
+  }
+  #mainMenu .menuFooter span:last-child{display:block}
+  /* Also prevent a tall online-room dialog becoming impossible to scroll. */
+  #onlinePanel:not(.hidden){
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+    align-items:flex-start;justify-content:center;
+  }
+  #onlinePanel .onlineBox{margin:auto 0;max-height:none}
+}
+@media screen and (min-width:520px) and (max-width:900px){
+  #mainMenu .modeCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
 </style>
 </head>
 <body>
@@ -538,7 +750,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="onlineBtn" class="secondaryBtn" type="button">🌐 ONLINE ROOM</button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>TRI-SECTOR LABYRINTH</strong><span class="slash">/</span><span>ONLINE ROOMS · 6 MIN · 13 ENTERABLE BUILDINGS</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.30 — 2–6 PLAYERS + AI</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.35 — MOBILE MENU REDESIGN</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="onlinePanel" class="onlinePanel hidden" role="dialog" aria-label="Online multiplayer room">
   <div class="onlineBox">
