@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./social.css?v=3.37"><title>STRIKEZONE FPS — Tactical Arena · Solo + Friends Beta v3.36 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./social.css?v=3.39"><title>STRIKEZONE FPS — Tactical Arena · Solo + Friends Beta v3.39 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -784,7 +784,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="onlineBtn" class="secondaryBtn" type="button">🌐 ONLINE ROOM</button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>TRI-SECTOR LABYRINTH</strong><span class="slash">/</span><span>ONLINE ROOMS · 6 MIN · 13 ENTERABLE BUILDINGS</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.38 — CHOOSE YOUR TEAM</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.39 — AI + DAMAGE FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="onlinePanel" class="onlinePanel hidden" role="dialog" aria-label="Online multiplayer room">
   <div class="onlineBox">
@@ -858,7 +858,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
  <div id="mobileControls"><div id="joyBase"><div id="joyNub"></div></div><div id="lookZone"></div><button id="mobileFireSmall" type="button" aria-label="Fire with left thumb">●<small>FIRE</small></button><button id="mobileShieldPower" type="button" aria-label="Activate Shield Power, 3 second immunity, 60 second cooldown">◈<small id="shieldPowerMobileText">SHIELD</small></button><button id="mobileFire">● <small>FIRE</small></button><button id="mobileAds">◎<small>AIM</small></button><button id="mobileJump">⬆<small>JUMP</small></button><button id="mobileCrouch" type="button" aria-pressed="false">⬇<small>CROUCH</small></button><button id="mobileReload">↻<small>RELOAD</small></button><button id="mobileSwitch">⇄<small>SWAP</small></button></div>
 </div>
 <div id="modal" class="hidden"><div class="modalBox"><div class="modalTop"><span id="modalEyebrow">COMBAT DATA //</span><button id="closeModal" title="Close">✕</button></div><h2 id="modalTitle">PAUSED</h2><p id="modalSubtitle">You are temporarily out of combat.</p><div id="modalContent"></div><div id="modalActions"><button id="resumeBtn" class="primaryBtn">RESUME MATCH ▶</button><button id="menuBtn" class="secondaryBtn">BACK TO MENU</button></div></div></div>
-<script src="./social.js?v=3.37"></script>
+<script src="./social.js?v=3.39"></script>
 <script>
 /* STRIKEZONE FPS v2.0 — Advanced graphics pipeline with safe software fallback. Original solo browser shooter. */
 (() => {
@@ -2190,7 +2190,26 @@ function maybeBotShieldPower(b,tar,dist,visible){
  return false;
 }
 
-function damagePlayer(dmg,source,zone='chest',impactSource=source){if(!player.alive||ended||shieldPowerActive(player))return 0;dmg=applyShieldDefense(player,dmg,impactSource,zone);if(dmg<=0){updateHud();return 0;}const actual=Math.min(player.hp,dmg);player.hp=Math.max(0,player.hp-dmg);player.lastDamage=nowSec;player.hurt=.72;$('damageOverlay').style.opacity='.70';beep('hurt');if(player.hp<=0){player.deaths++;player.alive=false;player.shoot=false;cancelEnergyCharge();keys={};touchMove.x=touchMove.y=0;finishTime=nowSec+3;announce('YOU WERE ELIMINATED',1.5);$('respawnScreen').classList.remove('hidden');if(source){source.kills++;if(mode==='tdm')red++;}updateScores();}updateHud();return actual;}
+// v3.39: Reject undefined/NaN damage so a player never becomes immortal.
+function damagePlayer(dmg,source,zone='chest',impactSource=source){
+ if(!player.alive||ended||shieldPowerActive(player))return 0;
+ if(!Number.isFinite(player.hp))player.hp=100;
+ if(!Number.isFinite(dmg)||dmg<=0)return 0;
+ if(onlineRole==='host'&&onlineStarted&&source?.team===0)return 0;
+ dmg=applyShieldDefense(player,dmg,impactSource,zone);
+ if(!Number.isFinite(dmg)||dmg<=0){updateHud();return 0;}
+ const actual=Math.min(player.hp,dmg);
+ player.hp=clamp(player.hp-dmg,0,100);player.lastDamage=nowSec;
+ player.hurt=.72;$('damageOverlay').style.opacity='.70';beep('hurt');
+ if(player.hp<=0){
+  player.deaths++;player.alive=false;player.shoot=false;cancelEnergyCharge();
+  keys={};touchMove.x=touchMove.y=0;finishTime=nowSec+3;
+  announce('YOU WERE ELIMINATED',1.5);$('respawnScreen').classList.remove('hidden');
+  if(source){source.kills++;if(mode==='tdm')red++;}
+  updateScores();
+ }
+ updateHud();return actual;
+}
 // v3.14: deceased soldiers topple over, remain for exactly two seconds, then hide.
 const CORPSE_VISIBLE_SECONDS=2,DEATH_FALL_SECONDS=.42;
 function soldierVisible(b){
@@ -2206,7 +2225,10 @@ function soldierFallProgress(b){
 function eliminateBot(b,killer){b.alive=false;b.hp=0;b.diedAt=nowSec;b.fallSide=b.id%2?-1:1;b.until=nowSec+2.7;b.deaths++;if(killer===player){player.kills++;if(mode==='tdm')blue++;feedKill('YOU',b.name,true);beep('kill');announce(player.kills>0&&player.kills%5===0?'KILL STREAK ×'+player.kills:'ELIMINATION +100 XP',1);if(mode==='gun'){cancelEnergyCharge();player.weapon=(player.weapon+1)%weapons.length;player.ammo[player.weapon]=weapons[player.weapon].mag;player.lastShot=nowSec-.25;updateHud();if(player.kills>=10)endMatch();}}else if(killer){killer.kills++;if(mode==='tdm'){if(killer.team===0)blue++;else red++;}feedKill(killer.name,b.name,false);}updateScores();updateHud();}
 function damageBot(b,damage,killer,zone='chest',impactSource=killer){
  if(!b.alive||shieldPowerActive(b))return 0;
+ if(!Number.isFinite(b.hp))b.hp=100;
+ if(!Number.isFinite(damage)||damage<=0)return 0;
  const actualDamage=applyShieldDefense(b,damage,impactSource,zone);
+ if(!Number.isFinite(actualDamage)||actualDamage<=0)return 0;
  // Protected shield impacts still register as incoming pressure.
  if(killer&&killer!==b){
   b.lastAttacker=killer;b.lastThreatAt=nowSec;
@@ -2742,6 +2764,21 @@ function monsterFallbackGeometry(out,m){
  }
 }
 
+function botLocalPatrolDestination(b){
+ // Accessible near-base movement when global maze routing fails.
+ // This prevents AI standing forever next to an unreachable route.
+ const heading=(b.team===0?0:Math.PI)+(b.id%3-1)*.45;
+ for(const radius of [13,8,20,5]){
+  for(let n=0;n<16;n++){
+   const a=heading+(n%2?1:-1)*Math.ceil(n/2)*Math.PI/10;
+   const x=b.x+Math.sin(a)*radius,z=b.z+Math.cos(a)*radius;
+   if(collidesCircle(x,z,.50))continue;
+   if(clearPath(b.x,b.z,x,z)||navigation(b.x,b.z,x,z).length)
+    return {x,z};
+  }
+ }
+ return null;
+}
 function botPatrolDestination(b){
  const options=[];
  for(let i=0;i<AI_PATROL_POINTS.length;i++){
@@ -2770,7 +2807,7 @@ function botPatrolDestination(b){
   b.patrolRegion=p.region;b.patrolVisits++;
   return {x:p.x,z:p.z};
  }
- return null;
+ return botLocalPatrolDestination(b);
 }
 function botStartRetreat(b,threat){
  b.aiMode='retreat';b.retreatUntil=nowSec+11;
@@ -3096,8 +3133,8 @@ function updateBots(dt){
    b.aiMode='patrol';
    if(!b.patrolGoal||nowSec>b.patrolUntil||
        hypot(b.patrolGoal.x-b.x,b.patrolGoal.z-b.z)<2.3){
-    b.patrolGoal=botPatrolDestination(b);
-    b.patrolUntil=nowSec+rand(18,34);
+    b.patrolGoal=botPatrolDestination(b)||botLocalPatrolDestination(b);
+    b.patrolUntil=nowSec+(b.patrolGoal?rand(10,20):1);
     b.path=[];b.pathRefresh=0;
    }
   }else if(!withdrawing)b.aiMode='engage';
@@ -3175,7 +3212,10 @@ function updateBots(dt){
   if(b.stuckFor>.65){
    b.stuckFor=0;b.strafeDir*=-1;b.tacticUntil=nowSec+1.2;
    b.path=[];b.pathRefresh=0;
-   if(b.aiMode==='patrol'){b.patrolGoal=null;b.patrolUntil=0;}
+   if(b.aiMode==='patrol'){
+    b.patrolGoal=botLocalPatrolDestination(b);
+    b.patrolUntil=nowSec+5;
+   }
    if(b.aiMode==='retreat'){b.retreatGoal=null;b.retreatReplan=0;}
    const p=resolvePosition(b.x,b.z,.42);b.x=p.x;b.z=p.z;
   }
@@ -3459,6 +3499,7 @@ function worldMoveVector(yaw,strafe,forward,enhanced){
         z:-Math.sin(yaw)*lateral+Math.cos(yaw)*forward};
 }
 function updatePlayer(dt){
+ if(!Number.isFinite(player.hp))player.hp=100;
  if(!player.alive)return;
  const before=resolvePosition(player.x,player.z,.34);
  if(before.hit){player.x=before.x;player.z=before.z;}
@@ -3510,6 +3551,9 @@ function updatePlayer(dt){
  // AEGIS shield has limited HP and is repaired only on respawn.
 }
 function updateHud(){
+ if(!Number.isFinite(player.hp))player.hp=100;
+ player.hp=clamp(player.hp,0,100);
+ if(!Number.isFinite(player.shieldHP))player.shieldHP=shieldMaxHP();
  const w=weapons[player.weapon],max=shieldMaxHP(),hp=Math.ceil(player.shieldHP);
  $('hpText').textContent=String(Math.ceil(player.hp));
  $('hpFill').style.width=player.hp+'%';
@@ -4477,17 +4521,24 @@ function onlineBroadcast(){
 function onlineGuestSnapshot(msg){
  if(!onlineInitialSnapshot){onlineInitialSnapshot=true;onlineUIStatus('Connected and playing.');}
  if(!Array.isArray(msg.bots))return;
+ // Ignore malformed host snapshots; never poison world or health with NaN.
+ if(!Number.isFinite(msg.time)||!Number.isFinite(msg.blue)||!Number.isFinite(msg.red))return;
  matchRemaining=msg.time;blue=msg.blue;red=msg.red;
  for(const data of msg.bots){
   let b=bots.find(b=>b.id===data.id);
   if(!b)continue;
   const own=data.id===onlineSlot;
+  if(!Number.isFinite(data.x)||!Number.isFinite(data.z))continue;
   if(!own){
    // Make the network state authoritative; interpolate positions in render tick.
    b.targetX=data.x;b.targetZ=data.z;
    if(b.networkSeen!==true){b.x=data.x;b.z=data.z;b.networkSeen=true;}
-   b.yaw=data.yaw;b.hp=data.hp;b.alive=data.alive;b.team=data.team;
-   b.shieldHP=data.shieldHP;b.weapon=data.weapon;
+   if(Number.isFinite(data.yaw))b.yaw=data.yaw;
+   if(Number.isFinite(data.hp))b.hp=clamp(data.hp,0,100);
+   b.alive=!!data.alive;b.team=data.team;
+   if(Number.isFinite(data.shieldHP))
+    b.shieldHP=clamp(data.shieldHP,0,shieldMaxHP());
+   b.weapon=data.weapon;
    b.shieldPowerUntil=nowSec+Math.max(0,data.powerLeft||0);
    b.shieldPowerReadyAt=nowSec+Math.max(0,data.powerCooldown||0);
    b.walk=data.walk;b.phase=data.phase;b.airHeight=data.airHeight;
@@ -4495,7 +4546,14 @@ function onlineGuestSnapshot(msg){
    b.name=data.name;b.remoteHuman=data.remoteHuman;
   }else{
    const wasAlive=player.alive;
-   player.hp=data.hp;player.shieldHP=data.shieldHP;
+   const previousHP=Number.isFinite(player.hp)?player.hp:100;
+   if(Number.isFinite(data.hp))player.hp=clamp(data.hp,0,100);
+   if(Number.isFinite(data.shieldHP))
+    player.shieldHP=clamp(data.shieldHP,0,shieldMaxHP());
+   if(wasAlive&&data.alive&&player.hp<previousHP){
+    player.hurt=.55;$('damageOverlay').style.opacity='.55';beep('hurt');
+    player.lastDamage=nowSec;
+   }
    player.shieldPowerUntil=nowSec+Math.max(0,data.powerLeft||0);
    player.shieldPowerReadyAt=nowSec+Math.max(0,data.powerCooldown||0);
    if(player.weapon===7&&player.shieldHP<=0)player.weapon=0;
@@ -4529,6 +4587,7 @@ function onlineGuestSnapshot(msg){
  }
  if(onlineHostAvatar&&msg.player){
   const p=msg.player;
+  if(!Number.isFinite(p.x)||!Number.isFinite(p.z))return;
   onlineHostAvatar.targetX=p.x;onlineHostAvatar.targetZ=p.z;
   if(!onlineHostAvatar.networkSeen){
    onlineHostAvatar.x=p.x;onlineHostAvatar.z=p.z;
