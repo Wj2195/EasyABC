@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo + Online Multiplayer v3.38
+# STRIKEZONE FPS — Solo + Online Multiplayer v3.39
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.38
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.39
 
 Original browser-based 3D FPS with offline AI operations and private-room online Team Deathmatch.
 
@@ -565,3 +565,13 @@ GitHub client and SQL setup are committed, but **database migration execution an
 - Works for both registered friends and guests who were given a room code; guests still cannot host or invite players.
 - Private-room protocol is now v2, so **both host and joining players must refresh the game to v3.38** before connecting.
 - Automated mocked host and guest simulations validated team changes, free-slot assignment, full-side rejection, roster updates, and spawning on the confirmed team; physical two-device browser multiplayer still needs live validation.
+
+
+## v3.39 — AI and hit-point integrity repair (2026-10-21)
+- Fix NaN health: rejects invalid incoming damage, repairs corrupted HP before simulation/HUD, and clamps all displayed and applied health to finite values.
+- A real enemy shot reduces HP and a lethal shot eliminates the player. Friendly Blue fire is rejected on the online host. Player and bot damage pathways are validated.
+- Guest health snapshots are checked for valid numbers; hit feedback now appears when the host reports a legitimate reduction in guest health. Invalid world coordinates are not interpolated into the scene.
+- Add nearby reachable patrol fallback destinations and new path goals when bots cannot find a route or get stuck, so AI continues looking for navigable movement instead of remaining idle.
+- Real-world geometry/pathfinding simulation: 30/30 random BLUE/RED spawn tests found reachable patrol targets and nearby fallback targets.
+- Host-simulated AI movement test across actual game geometry: all 9 autonomous bots moved over a four-second sample. Damage unit simulations validated enemy hits, friendly-fire protection, invalid-damage rejection, and lethal elimination.
+- **Both devices must refresh** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.39 and re-create the private room. In-browser two-device validation is still required.
