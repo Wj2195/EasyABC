@@ -165,6 +165,11 @@ export async function loadTacticalSoldiers(THREE,scene){
   let lastWalking=0,phase=0;
   return {
    root:container,
+   bodyBounds(){
+    if(!calibrated)return null;
+    normalizedBody.updateWorldMatrix(true,true);
+    return new THREE.Box3().setFromObject(normalizedBody,true);
+   },
    sync(actor,delta,previewTime,rotation){
     container.visible=!!actor;
     if(!actor)return;
