@@ -794,7 +794,27 @@ async function startModernRenderer(THREE){
       previewRenderer.toneMappingExposure=1.45;
       let selected=Number(document.getElementById('loadoutSelect')?.value||0),selectedTeam=0;
       let angle=.32,dragging=false,lastDrag=0,paintedAt=0,w=0,h=0;
-      let importedPreview=null;
+      let importedPreview=null,previewFramed=false;
+      function fitFullSoldier(){
+        if(!importedPreview)return;
+        const bbox=importedPreview.bodyBounds?.();
+        if(!bbox||bbox.isEmpty())return;
+        const size=bbox.getSize(new THREE.Vector3());
+        const center=bbox.getCenter(new THREE.Vector3());
+        if(!Number.isFinite(size.y)||size.y<.4||size.y>4)
+          throw new Error('Invalid live preview bounds: '+size.y);
+        const tanHalf=Math.tan(THREE.MathUtils.degToRad(previewCam.fov)*.5);
+        // Fit both height and width of the actual animated body; account for
+        // the preview's real aspect ratio rather than a hard-coded zoom.
+        const distance=Math.max(3.2,
+          size.y/(2*tanHalf)*1.27,
+          size.x/(2*tanHalf*previewCam.aspect)*1.37);
+        const lookY=center.y-.055;
+        previewCam.position.set(center.x,lookY+.045,center.z+distance);
+        previewCam.lookAt(center.x,lookY,center.z);
+        previewCam.updateProjectionMatrix();
+        previewFramed=true;
+      }
       const fallback=document.getElementById('szPreviewFallback');
       fallback?.setAttribute('aria-hidden','true');
       fallback?.style.setProperty('display','none');
@@ -817,6 +837,7 @@ async function startModernRenderer(THREE){
         installModel(unit){
           if(!unit?.root)return;
           importedPreview=unit;
+          previewFramed=false;
           previewRig.root.visible=false;
           previewScene.add(unit.root);
           unit.root.visible=true;
@@ -833,10 +854,19 @@ async function startModernRenderer(THREE){
         if(w!==width||h!==height){
           w=width;h=height;previewRenderer.setSize(w,h,false);
           previewCam.aspect=w/h;previewCam.updateProjectionMatrix();
+          previewFramed=false;
         }
         if(!dragging)angle=.34+Math.sin(stamp*.00025)*.075;
         if(importedPreview){
-          importedPreview.sync({weapon:selected,team:selectedTeam},step,stamp*.001,angle);
+          try{
+            importedPreview.sync({weapon:selected,team:selectedTeam},step,stamp*.001,angle);
+            if(!previewFramed)fitFullSoldier();
+          }catch(error){
+            console.warn('STRIKEZONE: live preview fit failed; falling back safely.',error);
+            importedPreview.root?.parent?.remove(importedPreview.root);
+            importedPreview=null;previewRig.root.visible=true;previewFramed=false;
+            previewRig.update(selected,selectedTeam,stamp*.001,angle);
+          }
         }else previewRig.update(selected,selectedTeam,stamp*.001,angle);
         previewRenderer.render(previewScene,previewCam);
       }};
@@ -852,12 +882,19 @@ async function startModernRenderer(THREE){
   // in the menu AND matches. Asset/model failures leave the old FPS playable.
   // Keep loading async: don't freeze gameplay or wait before showing the lobby.
   let detailedHumans=null;
-  import('./tactical-soldier.js?v=3.44')
+  import('./tactical-soldier.js?v=3.45')
     .then(module=>module.loadTacticalSoldiers(THREE,scene))
     .then(system=>{
+      // Validate the animated mesh and its bounds BEFORE activating it in
+      // gameplay. A broken animation should never take down the whole FPS.
+      const preview=system.createPreview();
+      preview.sync({weapon:0,team:0},.04,0,.34);
+      const box=preview.bodyBounds?.();
+      if(!box||box.isEmpty()||box.getSize(new THREE.Vector3()).y>3.0)
+        throw new Error('Rigged model failed validation after animation');
+      lobbyPreview?.installModel(preview);
       detailedHumans=system;
-      lobbyPreview?.installModel(system.createPreview());
-      console.info('STRIKEZONE v3.43: rigged tactical characters loaded');
+      console.info('STRIKEZONE v3.45: animated human mesh validated and loaded');
     })
     .catch(error=>{
       console.warn('STRIKEZONE: rigged character asset failed; keeping procedural fallback.',error);
@@ -1222,8 +1259,14 @@ async function startModernRenderer(THREE){
           teamPatches[i].material=bot.team===0?armorBlue:armorRed;
         }}}
       if(detailedHumans){
-        humanoidSystem?.update([],camera.position,s.nowSec);
-        detailedHumans.update(bridge.botData(),dt,s.nowSec,floorSurfaceAt);
+        try{
+          detailedHumans.update(bridge.botData(),dt,s.nowSec,floorSurfaceAt);
+          humanoidSystem?.update([],camera.position,s.nowSec);
+        }catch(error){
+          console.warn('STRIKEZONE: character rig failed; original graphics restored.',error);
+          detailedHumans.hide();detailedHumans=null;
+          humanoidSystem?.update(bridge.botData(),camera.position,s.nowSec);
+        }
       }else if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position,s.nowSec);
       updateMonsterVisuals();updateAmmoVisuals(s.nowSec);
       updatePowerBubbles(s.nowSec);
