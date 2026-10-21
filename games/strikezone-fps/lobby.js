@@ -170,22 +170,26 @@ function closeDrawer(){
  for(const id of ['howTo','menuFullscreen','menuSound']){
   if(buttons[id].parentElement!==controls)controls.append(buttons[id]);
  }
- if(modes.parentElement!==content)content.insertBefore(modes,armory);
+ if(modes.parentElement!==content)content.append(modes);
  drawerContent.replaceChildren();
  menu.classList.remove('drawerOpen');
 }
 function openDrawer(label,nodes){
- closeDrawer();title.textContent=label;
+ title.textContent=label;
  for(const node of nodes)drawerContent.append(node);
  drawer.hidden=false;menu.classList.add('drawerOpen');
 }
 function makeParagraph(t){const p=document.createElement('p');p.textContent=t;return p;}
 function openSettings(){
  const wrap=document.createElement('div');wrap.className='szSettingsWrap';
+ // closeDrawer must run BEFORE moving the controls, otherwise it returns them
+ // to their hidden storage and the popup appears empty on the second opening.
+ closeDrawer();
  wrap.append(training,buttons.howTo,buttons.menuFullscreen,buttons.menuSound);
  openDrawer('FIELD TRAINING / SETTINGS',[wrap]);
 }
 function openMatch(){
+ closeDrawer();
  const wrap=document.createElement('div');wrap.className='szMatchDrawer';
  wrap.append(makeParagraph('Choose your match mode, then press START CUSTOM MATCH.'),modes);
  const start=document.createElement('button');start.type='button';start.className='szDrawerAction';
@@ -194,6 +198,7 @@ function openMatch(){
  wrap.append(start);openDrawer('CUSTOM MATCH',[wrap]);
 }
 function openTab(tab){
+ closeDrawer();
  if(tab==='friends'){window.SZSocial?.openFriends?.();return;}
  if(tab==='equipment'){
   const description=makeParagraph('Select your operator below or change to any of the nine starting weapons.');
