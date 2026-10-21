@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo + Online Multiplayer v3.35
+# STRIKEZONE FPS — Solo + Online Multiplayer v3.36
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.35
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.36
 
 Original browser-based 3D FPS with offline AI operations and private-room online Team Deathmatch.
 
@@ -525,3 +525,23 @@ The new positions activate for touch/coarse-pointer **landscape mobile view**, w
 - A large **DEPLOY NOW** button remains fixed at the screen bottom, respecting the phone's safe area. Scrollable menu content includes extra bottom padding so all settings and controls can still be reached.
 - Room invitation dialog also receives overflow scrolling so it doesn't become trapped on short phone displays. Desktop game and in-match HUD styles are unchanged.
 - JavaScript syntax and mobile CSS rule consistency verified; live phone appearance/scroll checks remain recommended.
+
+## v3.36 — Accounts, usernames, guests, Friends list and game invitations
+
+### Implemented in the GitHub Pages client
+- **Register/Login:** users register with a unique 3–20 character username (case-insensitive, letter first) and password of at least 8 characters. Log back in later using username + password. Password hashing and sessions are handled exclusively by Supabase Auth, NOT browser localStorage or GitHub code. The client stores only Supabase session tokens under an isolated STRIKEZONE auth storage key.
+- **Guest users:** choose "PLAY AS GUEST" to receive a random name such as \`GUEST-KM7EP\`. The name stays stable within that browser tab/session. Guests can play offline and **JOIN** a private online room when given its code, but cannot create/host rooms, send game invitations or manage friends.
+- **Friends:** registered users may request friends by their exact username. Other users accept or decline pending requests. Accepted friends appear in the Friends list.
+- **Game invitation:** a registered host creates an Online Room, opens Friends, and selects INVITE next to an accepted friend. Invites are stored in Supabase with a 15-minute expiration. The recipient may accept (join the existing PeerJS room) or decline. Clients check pending requests/invitations about every 12 seconds; no open websocket is needed.
+- **Multiplayer identity:** the host and guests show chosen account/guest names in the room lobby and bot/avatar labels. PeerJS display names are client-provided labels in this beta, NOT independently verified authentication claims. Actual friend requests and game invitations are restricted by Supabase Row Level Security / authenticated database functions.
+- **Account UI:** persistent account and Friends controls are added to the desktop and scrollable mobile menu; the new menus scroll correctly on phones.
+
+### REQUIRED backend activation before accounts or Friends can actually work
+1. Open the STRIKEZONE database setup file: [supabase_social_setup.sql](./supabase_social_setup.sql).
+2. Run the SQL in the Supabase project used by STRIKEZONE. This sets up the profiles, username uniqueness constraint, friend requests, accepted friendships and room invites, security-definer invitation methods, Auth sign-up trigger, row-level security and **explicit** data API permissions. No password table is created; passwords remain with Supabase Auth.
+3. STRIKEZONE currently uses the existing EasyABC Supabase publishable URL/key in \`social.js\`. **Important security consideration:** username-only sign-up maps usernames to synthetic Auth email addresses (\`sz_<username>@accounts.strikezone.invalid\`). To complete such sign-ups, the Supabase Auth provider must NOT require email confirmation. Disabling email confirmation changes authentication behavior for **all apps using that Supabase project**, not only STRIKEZONE. **Do not disable verification globally on the shared EasyABC project unless you intentionally accept that impact.** Recommended for production: create a dedicated STRIKEZONE Supabase project, update \`SB_URL\`/\`SB_KEY\` in \`social.js\`, run the SQL there, and enable username-only registration on that separate project. Alternatively, add verified real-email registration/recovery in a future version.
+4. STRIKEZONE must have new-user sign-up enabled and normal Supabase abuse protection / CAPTCHA / rate limits configured. Before opening registration publicly, test real two-device sign-up/login, concurrent username collision, and guest/registered permissions.
+5. There is currently **no password recovery** for synthetic-email accounts. Warn players to keep passwords securely until a real recovery method is implemented.
+
+### Status
+GitHub client and SQL setup are committed, but **database migration execution and Supabase Auth configuration are not yet verified or activated** from this chat. Account registration/invitations must not be represented as functioning live until those backend operations succeed and a real signup test passes.
