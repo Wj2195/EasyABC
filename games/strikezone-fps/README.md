@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo + Online Multiplayer v3.37
+# STRIKEZONE FPS — Solo + Online Multiplayer v3.38
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.37
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.38
 
 Original browser-based 3D FPS with offline AI operations and private-room online Team Deathmatch.
 
@@ -553,3 +553,15 @@ GitHub client and SQL setup are committed, but **database migration execution an
 - `social.js` now uses the **new** project's URL and public publishable API key. Previously deployed EasyABC site and project remain unchanged.
 - **Final required dashboard setting:** In the STRIKEZONE project at https://supabase.com/dashboard/project/txcgpfbnpaewggxdseeo/auth/providers, open Email provider settings and turn **Confirm email** OFF (only for STRIKEZONE). The frontend uses username/password plus synthetic internal Auth addresses on the dedicated project; it cannot deliver confirmation emails. Keep Email authentication and new-user signups enabled.
 - Once the above setting is applied, test two real browser registrations, a duplicate username rejection, login, accepted friendships and invitations. These end-to-end flows have not been verified live yet. Password recovery is not supported with synthetic-email accounts.
+
+
+## v3.38 — Player team selection in online lobby
+
+- Players entering a hosted private room through a friend invitation or six-character room code can now **select BLUE TEAM or RED TEAM** before the match begins.
+- The host starts on Blue. Guests are initially assigned to the less populated side, but their selected side is authoritative once accepted by the host.
+- Both teams have limited online slots. The host validates every team change, assigns a distinct free soldier slot for that team, and rejects attempts to select a full team. The game still supports **2–6 human players total** with AI soldiers filling unoccupied positions.
+- A continuously updated pre-match lobby roster shows each participant's display name and current team. Counts and choice availability update after joins, departures, or team changes.
+- Team selection locks on START ONLINE MATCH. The host's chosen team assignment determines the soldier's blue/red allegiance, spawn position, and network snapshot mapping.
+- Works for both registered friends and guests who were given a room code; guests still cannot host or invite players.
+- Private-room protocol is now v2, so **both host and joining players must refresh the game to v3.38** before connecting.
+- Automated mocked host and guest simulations validated team changes, free-slot assignment, full-side rejection, roster updates, and spawning on the confirmed team; physical two-device browser multiplayer still needs live validation.
