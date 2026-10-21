@@ -852,7 +852,7 @@ async function startModernRenderer(THREE){
   // in the menu AND matches. Asset/model failures leave the old FPS playable.
   // Keep loading async: don't freeze gameplay or wait before showing the lobby.
   let detailedHumans=null;
-  import('./tactical-soldier.js?v=3.43')
+  import('./tactical-soldier.js?v=3.44')
     .then(module=>module.loadTacticalSoldiers(THREE,scene))
     .then(system=>{
       detailedHumans=system;
