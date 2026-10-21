@@ -342,6 +342,112 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
 #onlineHUD.hidden{display:none}
 @media(max-width:640px){.onlineBox{padding:12px}.onlineTop{font-size:12px}
 .onlineJoin{flex-wrap:wrap}.onlineJoin button{width:100%}}
+
+/* v3.33 — mobile HUD anchored to the eleven numbered reference positions. */
+@media (pointer:coarse) and (orientation:landscape),
+       (hover:none) and (orientation:landscape){
+ body.playing #mobileControls{display:block}
+ body.playing #mobileControls #joyBase{
+   left:max(24px,3.7vw)!important;top:auto!important;right:auto!important;
+   bottom:clamp(48px,12vh,68px)!important;
+   width:clamp(122px,13.6vw,158px)!important;
+   height:clamp(122px,13.6vw,158px)!important;
+   border-width:2px;z-index:5;
+ }
+ body.playing #mobileControls #joyNub{
+   width:clamp(53px,5.7vw,70px);height:clamp(53px,5.7vw,70px);
+ }
+ body.playing #mobileControls #lookZone{
+   left:28%!important;right:0!important;width:auto!important;
+   top:64px!important;bottom:0!important;z-index:1;
+ }
+ body.playing #hud #minimap{
+   top:clamp(62px,17vh,88px)!important;left:max(9px,env(safe-area-inset-left) + 4px)!important;
+   width:clamp(64px,7.2vw,83px)!important;
+   height:clamp(64px,7.2vw,83px)!important;clip-path:none;
+   border:1px solid #91d6d4a8;border-radius:4px;image-rendering:auto;
+ }
+ body.playing #mobileControls button{
+   box-sizing:border-box;
+   z-index:8;
+   width:clamp(45px,5vw,59px)!important;height:clamp(45px,5vw,59px)!important;
+   font-size:clamp(19px,2vw,25px);line-height:1;
+ }
+ body.playing #mobileControls button small{font-size:clamp(7px,.7vw,9px)}
+ body.playing #mobileControls #mobileFireSmall{
+   display:flex!important;left:clamp(116px,13.5vw,160px)!important;
+   top:clamp(106px,34vh,162px)!important;right:auto!important;bottom:auto!important;
+   width:clamp(36px,3.7vw,44px)!important;height:clamp(36px,3.7vw,44px)!important;
+   font-size:14px!important;background:#ba4536b8!important;
+   border-color:#ffc2a3!important;box-shadow:0 0 12px #f3564c40;
+ }
+ body.playing #mobileControls #mobileFireSmall small{font-size:6px}
+ body.playing #mobileControls #mobileFire{
+   top:auto!important;left:auto!important;
+   right:max(38px,6.4vw)!important;bottom:clamp(74px,19vh,104px)!important;
+   width:clamp(108px,14.1vw,160px)!important;
+   height:clamp(108px,14.1vw,160px)!important;
+   font-size:37px!important;border-width:2px;
+   background:#c3423cc9!important;box-shadow:0 0 22px #b9292c50;
+ }
+ body.playing #mobileControls #mobileFire small{font-size:13px}
+ body.playing #mobileControls #mobileAds{
+   left:auto!important;bottom:auto!important;
+   top:40%!important;right:max(10px,env(safe-area-inset-right) + 5px)!important;
+   width:clamp(45px,5vw,58px)!important;height:clamp(45px,5vw,58px)!important;
+ }
+ body.playing #mobileControls #mobileJump,
+ body.playing #mobileControls #mobileCrouch,
+ body.playing #mobileControls #mobileSwitch,
+ body.playing #mobileControls #mobileReload{
+   left:auto!important;top:auto!important;
+   bottom:max(37px,7.5vh)!important;
+ }
+ body.playing #mobileControls #mobileJump{right:clamp(220px,29vw,344px)!important}
+ body.playing #mobileControls #mobileCrouch{right:clamp(162px,22.5vw,267px)!important}
+ body.playing #mobileControls #mobileSwitch{right:clamp(105px,16vw,198px)!important}
+ body.playing #mobileControls #mobileReload{right:clamp(48px,9.5vw,125px)!important}
+ body.playing #hud .bottomHUD{
+   bottom:max(4px,env(safe-area-inset-bottom) + 2px)!important;
+   left:max(8px,env(safe-area-inset-left) + 4px)!important;
+   right:max(7px,env(safe-area-inset-right) + 4px)!important;
+   align-items:flex-end;gap:7px;
+ }
+ body.playing #hud .bottomHUD .healthPanel,
+ body.playing #hud .bottomHUD .weaponPanel{
+   transform:none!important;min-width:0!important;box-sizing:border-box;
+   padding:3px 7px!important;min-height:0!important;
+   border-top-width:2px;line-height:1;
+ }
+ body.playing #hud .bottomHUD .healthPanel{
+   width:clamp(180px,27.4vw,298px)!important;max-width:31vw!important;
+   display:flex;align-items:center;gap:10px;flex-wrap:nowrap;
+ }
+ body.playing #hud .healthPanel .unit{display:none!important}
+ body.playing #hud .healthPanel .hpRow{margin:0;gap:5px}
+ body.playing #hud .healthPanel .hpIcon{font-size:14px}
+ body.playing #hud .healthPanel .hpRow strong{font-size:20px;line-height:1}
+ body.playing #hud .healthPanel .hpTrack{width:clamp(48px,7vw,83px);height:6px}
+ body.playing #hud .healthPanel .subStat{margin:0;gap:0;font-size:7px;white-space:nowrap}
+ body.playing #hud .healthPanel #killStat{display:none}
+ body.playing #hud .weaponPanel{
+   width:clamp(160px,21vw,235px)!important;max-width:23vw!important;
+ }
+ body.playing #hud .weaponPanel .weaponLabel{font-size:7px;gap:6px;letter-spacing:.4px}
+ body.playing #hud .weaponPanel .ammoRow{gap:3px}
+ body.playing #hud .weaponPanel .ammoRow strong{font-size:20px!important;line-height:1.05}
+ body.playing #hud .weaponPanel .ammoSlash,
+ body.playing #hud .weaponPanel .ammoRow #reserveCount{font-size:10px!important}
+ body.playing #hud .weaponPanel .ammoBullet{font-size:11px;margin-left:2px}
+ body.playing #hud .weaponPanel #reloadDisplay{font-size:7px;letter-spacing:.4px}
+ body.playing #hud #crosshair{width:38px;height:38px}
+}
+/* Hide the extra left fire trigger on desktop and outside gameplay. */
+#mobileFireSmall{display:none}
+@media (pointer:coarse) and (orientation:landscape),
+       (hover:none) and (orientation:landscape){
+ body.playing #mobileControls #mobileFireSmall{display:flex}
+}
 </style>
 </head>
 <body>
@@ -437,7 +543,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
  <div id="energyChargeHUD" class="hidden"><span id="energyChargeText">HOLD FIRE 2s</span><div class="chargeMeter"><div id="energyChargeFill"></div></div></div>
 <div id="announcement" class="announcement"></div>
  <div id="respawnScreen" class="hidden"><div>YOU WERE ELIMINATED</div><strong id="respawnCountdown">3</strong><small>REDEPLOYMENT IN PROGRESS</small></div>
- <div id="mobileControls"><div id="joyBase"><div id="joyNub"></div></div><div id="lookZone"></div><button id="mobileFire">● <small>FIRE</small></button><button id="mobileAds">◎<small>AIM</small></button><button id="mobileJump">⬆<small>JUMP</small></button><button id="mobileCrouch" type="button" aria-pressed="false">⬇<small>CROUCH</small></button><button id="mobileReload">↻<small>RELOAD</small></button><button id="mobileSwitch">⇄<small>SWAP</small></button></div>
+ <div id="mobileControls"><div id="joyBase"><div id="joyNub"></div></div><div id="lookZone"></div><button id="mobileFireSmall" type="button" aria-label="Fire with left thumb">●<small>FIRE</small></button><button id="mobileFire">● <small>FIRE</small></button><button id="mobileAds">◎<small>AIM</small></button><button id="mobileJump">⬆<small>JUMP</small></button><button id="mobileCrouch" type="button" aria-pressed="false">⬇<small>CROUCH</small></button><button id="mobileReload">↻<small>RELOAD</small></button><button id="mobileSwitch">⇄<small>SWAP</small></button></div>
 </div>
 <div id="modal" class="hidden"><div class="modalBox"><div class="modalTop"><span id="modalEyebrow">COMBAT DATA //</span><button id="closeModal" title="Close">✕</button></div><h2 id="modalTitle">PAUSED</h2><p id="modalSubtitle">You are temporarily out of combat.</p><div id="modalContent"></div><div id="modalActions"><button id="resumeBtn" class="primaryBtn">RESUME MATCH ▶</button><button id="menuBtn" class="secondaryBtn">BACK TO MENU</button></div></div></div>
 <script>
