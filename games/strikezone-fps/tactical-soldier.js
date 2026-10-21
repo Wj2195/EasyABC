@@ -92,9 +92,19 @@ export async function loadTacticalSoldiers(THREE,scene){
   const container=new THREE.Group();
   const figure=new THREE.Group();container.add(figure);
   const rig=cloneSkeleton(asset.scene);
-  rig.scale.setScalar(norm);
-  rig.position.copy(moved);
-  figure.add(rig);
+  // Preserve the imported GLB scene's native transform. Overwriting rig.scale
+  // is why boots became enormous while world-sized weapon props floated.
+  const normalizedBody=new THREE.Group();
+  normalizedBody.scale.setScalar(norm);
+  normalizedBody.position.copy(moved);
+  normalizedBody.rotation.y=Math.PI; // Soldier faces -Z, our game uses +Z
+  normalizedBody.add(rig);
+  figure.add(normalizedBody);
+  normalizedBody.updateMatrixWorld(true);
+  const visibleBody=new THREE.Box3().setFromObject(normalizedBody);
+  const visibleHeight=visibleBody.getSize(new THREE.Vector3()).y;
+  if(!Number.isFinite(visibleHeight)||visibleHeight<1.1||visibleHeight>2.6)
+   throw new Error('Invalid normalized soldier height: '+visibleHeight);
   const bodyColors=[];
   rig.traverse(object=>{
    if(!object.isMesh)return;
@@ -114,6 +124,9 @@ export async function loadTacticalSoldiers(THREE,scene){
    patch.rotation.z=side*.12;patches.push(patch);
   }
   const weaponHost=new THREE.Group();figure.add(weaponHost);
+  // Do not show uncalibrated block weapons in the close-up operator preview:
+  // the imported human silhouette should be visible without floating props.
+  weaponHost.visible=!preview;
   const muzzle=new THREE.Mesh(new THREE.OctahedronGeometry(.09,0),
    new THREE.MeshBasicMaterial({color:0xffdb7e,transparent:true,opacity:.88}));
   muzzle.position.set(0,1.28,1.13);figure.add(muzzle);muzzle.visible=false;
