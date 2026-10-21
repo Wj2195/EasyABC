@@ -1,3 +1,6 @@
+/* v3.45: The .hidden state MUST override the lobby's display:block!important.
+   Otherwise matches run underneath the always-visible lobby after Quick Battle. */
+#mainMenu.szLobby.hidden{display:none!important;visibility:hidden!important;pointer-events:none!important}
 /* STRIKEZONE v3.42 — responsive cinematic tactical lobby */
 #mainMenu.szLobby{--gold:#ffd039;--line:#6f83904d;--ink:#0c131a;
  position:fixed!important;inset:0!important;display:block!important;
