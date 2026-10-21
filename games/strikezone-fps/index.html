@@ -2336,8 +2336,9 @@ function shieldBashPlayer(){
 const aiSounds=[],aiRadio=new Map();let aiNoiseID=0;
 function aiNoise(actor,radius=55,kind='gun',x=actor?.x,z=actor?.z){
  if(!running||ended||!actor||!Number.isFinite(x)||!Number.isFinite(z))return;
- if(nowSec-(actor._lastAiNoise??-99)<(kind==='steps'?.65:.17))return;
- actor._lastAiNoise=nowSec;
+ const noiseTimer=kind==='steps'?'_lastAiFootstep':kind==='boom'?'_lastAiExplosion':'_lastAiShot';
+ if(nowSec-(actor[noiseTimer]??-99)<(kind==='steps'?.65:kind==='boom'?.10:.17))return;
+ actor[noiseTimer]=nowSec;
  aiSounds.push({id:++aiNoiseID,actor,x,z,radius,time:nowSec,kind});
  if(aiSounds.length>24)aiSounds.shift();
 }
