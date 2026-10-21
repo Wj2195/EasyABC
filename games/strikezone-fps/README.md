@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo + Online Multiplayer v3.34
+# STRIKEZONE FPS — Solo + Online Multiplayer v3.35
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.34
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.35
 
 Original browser-based 3D FPS with offline AI operations and private-room online Team Deathmatch.
 
@@ -515,3 +515,13 @@ The new positions activate for touch/coarse-pointer **landscape mobile view**, w
 - **Private online rooms:** host-authoritative activation for joining players, replicated duration/cooldown in snapshots, and visible barriers around host, guests, and AI combatants. PvP and existing guns still follow prior rules.
 
 **Automated checks:** HTML game JS and enhanced 3D renderer both passed syntax validation; unit tests verified 3-second immunity, damage resuming after expiry, 60-second cooldown, reactive bot activation, and 14 integration checks for UI, rendering, multiplayer replication, and collision/damage handling. Live two-device multiplayer and mobile graphical testing are still recommended.
+
+## v3.35 — Mobile Menu Redesign and Vertical Scrolling
+
+- Fixes mobile menu content getting cut off and unable to scroll. When the main menu is visible on a phone/tablet or a narrow browser viewport, **#mainMenu** becomes its own viewport-height vertical scroll container with `overflow-y:auto`, momentum scrolling, touch-action `pan-y`, and a bottom safe-area buffer; the actual 3D game stays full-screen/non-scrollable.
+- Reorders the existing, original control elements without breaking their JS event handlers via responsive CSS `display:contents` on the menu content wrapper. Mobile section order: compact branded header; shortened introductory hero; four operation selections; starting weapon; Field Training / match settings; training record; controls/online/fullscreen/sound buttons; and footer.
+- Replaces overlapping absolute settings sidebar with a full-width responsive card; restores readable buttons/labels for bot difficulty, shield durability, graphics quality and horizontal look. Training record remains visible below the settings.
+- Operations become a one-column stack on narrow portrait phones, with a two-column layout on larger mobile/tablet widths.
+- A large **DEPLOY NOW** button remains fixed at the screen bottom, respecting the phone's safe area. Scrollable menu content includes extra bottom padding so all settings and controls can still be reached.
+- Room invitation dialog also receives overflow scrolling so it doesn't become trapped on short phone displays. Desktop game and in-match HUD styles are unchanged.
+- JavaScript syntax and mobile CSS rule consistency verified; live phone appearance/scroll checks remain recommended.
