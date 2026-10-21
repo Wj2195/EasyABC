@@ -585,3 +585,18 @@ GitHub client and SQL setup are committed, but **database migration execution an
 - Uses the same camera projection as the classic renderer and works with enhanced WebGL2, WebGL1 and software graphics. The browser UI does not require a new Supabase migration.
 - **Testing:** Updated GitHub HTML was fetched back and its embedded JavaScript passed syntax parsing; seven teammate/enemy/self/bot visibility logic cases passed. Physical two-device 3D visual alignment still needs an in-game test on the target devices.
 - **Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.40
+
+
+## v3.41 — Tactical AI, gunfire hearing, rapid engagement and smarter weapons (2026-10-21)
+
+**Play (permanent URL):** https://wj2195.github.io/EasyABC/games/strikezone-fps/
+
+- Bots now hear enemy gunfire (different radii for sniper, shotgun, ordinary gunfire and NOVA PULSE), energy explosions, shield bashes, lightsabers and running footsteps. Thick walls muffle distant noises. Hearing provides an **investigation location**, not the ability to hit through walls.
+- Throttled ~0.11–0.19s **vision scan** lets AI acquire a new unobstructed enemy without waiting for the old ~0.45–0.9s target refresh. Newly visible enemies get quicker aiming/first shot, faster but gradual turning and weapon-appropriate fire cadence. Existing line-of-sight and teammate-fire-blocking rules remain.
+- AI teams share recent visual contacts, investigate sounds, remember locations briefly, select traversable flanking positions on opposite sides of targets, and continue existing patrol/cover/recovery behavior.
+- Bots evaluate **all nine weapons** according to combat range, cluster size, armor/shield, health, ammunition and previous preferred weapon. Shotguns/SMGs favor close engagements, DMR/snipers favor sightlines, NOVA prioritizes groups, AEGIS is a pressure/low-HP defense, and the lightsaber is chosen at melee range.
+- Defensive AI uses shield-power immunity when engaging dangerous firing targets or recently hit; existing cooldown limits still apply. AI with a physical AEGIS shield notices the attacker even when its shield absorbs the shot.
+- Each noise category has its own rate limit, so sprint footfalls cannot suppress gunshot alerts. The human Blue host is classified as friendly to Blue AI, and enemy to Red AI. Guest-player gunshots also register in the authoritative host simulation.
+- Sound/vision/weapon decisions run **only on the host** in online matches; guests receive the host's existing authoritative position/damage snapshots. No Supabase database changes or fees.
+- **Validation:** embedded game JavaScript parsed; nine targeted hearing/vision checks passed (enemy gunfire, teammate immunity, walls, stale audio, field of view) and seven weapon-selection scenarios passed (SMG, shotgun, DMR, sniper, lightsaber, shield and NOVA).
+- **Remaining verification:** two real devices should test actual AI aggression, frame rates, networking and all equipped weapons. These unit tests do not substitute for a WebGL2/in-browser gameplay test.
