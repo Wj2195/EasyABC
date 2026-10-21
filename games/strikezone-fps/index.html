@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./social.css?v=3.39"><title>STRIKEZONE FPS — Tactical Arena · Solo + Friends Beta v3.41 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./social.css?v=3.39"><title>STRIKEZONE FPS — Tactical Arena · Solo + Friends Beta v3.42 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -753,6 +753,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
 .onlineTeammateName::before{content:'◆';font-size:8px;color:#6ad5ff;margin-right:5px}
 @media(max-width:800px){.onlineTeammateName{font-size:9px;padding:2px 5px;max-width:110px}}
 </style>
+<link rel="stylesheet" href="./lobby.css?v=3.42">
 </head>
 <body>
 <canvas id="arena" aria-label="3D first-person shooter game"></canvas>
@@ -794,7 +795,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="onlineBtn" class="secondaryBtn" type="button">🌐 ONLINE ROOM</button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>TRI-SECTOR LABYRINTH</strong><span class="slash">/</span><span>ONLINE ROOMS · 6 MIN · 13 ENTERABLE BUILDINGS</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.41 — ADVANCED TACTICAL AI</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.42 — CINEMATIC OPERATOR LOBBY</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="onlinePanel" class="onlinePanel hidden" role="dialog" aria-label="Online multiplayer room">
   <div class="onlineBox">
@@ -5350,5 +5351,6 @@ if(!document.getElementById('rendererState').textContent.includes('renderer'))do
 })();
 
 </script>
-<script type="module" src="./ultra-renderer.js?v=3.34"></script>
+<script type="module" src="./ultra-renderer.js?v=3.42"></script>
+<script src="./lobby.js?v=3.42"></script>
 </body></html>
