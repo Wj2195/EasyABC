@@ -637,3 +637,13 @@ Permanent link: https://wj2195.github.io/EasyABC/games/strikezone-fps/
 - Hide uncalibrated block weapons in the close-up menu preview until proper skeletal grip alignment is available. All nine loadout selections and weapon controls continue to work; gameplay retains weapon meshes.
 - Bumped the tactical asset and enhanced renderer import versions to **3.44** so browsers do not reuse the buggy module from cache.
 - **Verification:** All modified HTML, lobby, renderer, and soldier module JavaScript passed syntax parsing; integration and cache-version checks passed. Visual verification in a live Chrome/WebGL2 browser still required.
+
+
+## v3.45 — Lobby no longer blocks matches; animated humanoid auto-framing (2026-10-22)
+
+- Resolved the stuck-on-menu issue: `#mainMenu.szLobby` had `display:block!important`, which overrode the global `.hidden` CSS class when Quick Battle or a selected Custom Match called `startGame()`. `#mainMenu.szLobby.hidden` now explicitly hides the screen while the actual game runs, restoring the standard HUD and controls.
+- Replaced the static rig normalization by measuring the **actual skinned mesh after the Idle animation has been evaluated**. Character geometry is scaled and aligned into a 1.83 world-unit avatar in both game and preview.
+- The lobby preview now uses live full-body bounds to aim and fit its camera across device aspect ratios, rather than a hard-coded camera position; recalculates after preview resizes.
+- The rig loader validates its animated bounds before accepting the new model. A malformed model or bad camera fit falls back to the original working procedural model rather than breaking the match renderer.
+- Version-bumped lobby CSS, GPU renderer and rigged soldier modules to 3.45 to bypass cached earlier buggy assets; no new game URL or Supabase migration required.
+- Verification: GitHub files reread, syntax and 16 source-level integration checks passed. The new actual visual and multiplayer behavior still require a real-browser test.
