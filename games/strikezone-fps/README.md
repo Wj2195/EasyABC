@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo + Online Multiplayer v3.36
+# STRIKEZONE FPS — Solo + Online Multiplayer v3.37
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.36
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.37
 
 Original browser-based 3D FPS with offline AI operations and private-room online Team Deathmatch.
 
@@ -545,3 +545,11 @@ The new positions activate for touch/coarse-pointer **landscape mobile view**, w
 
 ### Status
 GitHub client and SQL setup are committed, but **database migration execution and Supabase Auth configuration are not yet verified or activated** from this chat. Account registration/invitations must not be represented as functioning live until those backend operations succeed and a real signup test passes.
+
+## v3.37 — Dedicated Singapore Supabase Auth Project Connected (2026-10-21)
+
+- Supabase project **STRIKEZONE**, reference `txcgpfbnpaewggxdseeo`, created in organization EasyABC, region `ap-southeast-1` (Singapore), quoted US$0/month on its Free plan.
+- Installed database migration `strikezone_social_accounts_v1` successfully: `public.sz_profiles`, `public.sz_friend_requests`, `public.sz_friendships` and `public.sz_room_invites`; all four have RLS enabled. Verified six `sz_*` functions and username availability query.
+- `social.js` now uses the **new** project's URL and public publishable API key. Previously deployed EasyABC site and project remain unchanged.
+- **Final required dashboard setting:** In the STRIKEZONE project at https://supabase.com/dashboard/project/txcgpfbnpaewggxdseeo/auth/providers, open Email provider settings and turn **Confirm email** OFF (only for STRIKEZONE). The frontend uses username/password plus synthetic internal Auth addresses on the dedicated project; it cannot deliver confirmation emails. Keep Email authentication and new-user signups enabled.
+- Once the above setting is applied, test two real browser registrations, a duplicate username rejection, login, accepted friendships and invitations. These end-to-end flows have not been verified live yet. Password recovery is not supported with synthetic-email accounts.
