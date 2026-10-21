@@ -793,6 +793,59 @@ async function startModernRenderer(THREE){
     }
   }
 
+  // v3.34: Shield Power spherical barrier. A semi-transparent shell plus
+  // bright latitude/meridian rings ensures teammates AND opponents can see it
+  // clearly at a distance, including the local player in first-person view.
+  // Geometry is pooled: no allocations during gameplay or ability activation.
+  const POWER_BUBBLE_MAX=12;
+  const powerBubbleSphereGeo=new THREE.SphereGeometry(1.83,22,16);
+  const powerBubbleWireGeo=new THREE.SphereGeometry(1.89,12,9);
+  const powerBubbleRingGeo=new THREE.TorusGeometry(1.83,.035,6,64);
+  function createPowerBubble(){
+    const group=new THREE.Group();scene.add(group);
+    const shellMat=new THREE.MeshBasicMaterial({color:0x52f3ff,transparent:true,
+      opacity:.17,depthWrite:false,side:THREE.DoubleSide,
+      blending:THREE.AdditiveBlending});
+    const wireMat=new THREE.MeshBasicMaterial({color:0xc4fdff,transparent:true,
+      opacity:.27,depthWrite:false,wireframe:true,blending:THREE.AdditiveBlending});
+    const ringMat=new THREE.MeshBasicMaterial({color:0x8efaff,transparent:true,
+      opacity:.84,depthWrite:false,blending:THREE.AdditiveBlending});
+    const shell=new THREE.Mesh(powerBubbleSphereGeo,shellMat);
+    const wire=new THREE.Mesh(powerBubbleWireGeo,wireMat);
+    shell.renderOrder=9;wire.renderOrder=10;group.add(shell,wire);
+    const rings=[];
+    for(let i=0;i<3;i++){
+      const ring=new THREE.Mesh(powerBubbleRingGeo,ringMat);
+      if(i===1)ring.rotation.x=Math.PI*.5;
+      if(i===2)ring.rotation.y=Math.PI*.5;
+      ring.renderOrder=11;group.add(ring);rings.push(ring);
+    }
+    group.visible=false;
+    return {group,shell,wire,rings,shellMat,wireMat,ringMat};
+  }
+  const powerBubbles=Array.from({length:POWER_BUBBLE_MAX},createPowerBubble);
+  function updatePowerBubbles(time){
+    const active=bridge.powerData?.()||[];
+    for(let i=0;i<powerBubbles.length;i++){
+      const u=powerBubbles[i],a=active[i];
+      u.group.visible=!!a;if(!a)continue;
+      const ground=floorSurfaceAt(a.x,a.z);
+      u.group.position.set(a.x,ground+(a.airHeight||0)+1.34,a.z);
+      u.group.scale.setScalar(1+.022*Math.sin(time*11+i));
+      u.wire.rotation.y=time*.38;
+      u.rings[0].rotation.z=time*.22;
+      u.rings[1].rotation.y=time*.18;
+      u.rings[2].rotation.x=time*.15;
+      const red=a.team===1;
+      const outer=red?0xff91da:0x66edff;
+      const core=red?0xffd7ec:0xc7ffff;
+      u.shellMat.color.setHex(outer);
+      u.wireMat.color.setHex(core);
+      u.ringMat.color.setHex(red?0xffa5d5:0x97fbff);
+      u.shellMat.opacity=a.self?.12:.20;
+    }
+  }
+
   // STRIKEZONE v3.29 — volumetric boss lightning. WebGL lineWidth stays
   // one pixel on many GPUs, so use THREE.InstancedMesh cylinder segments
   // with wide cyan cores and an additive violet halo. Geometry is pooled.
@@ -1005,6 +1058,7 @@ async function startModernRenderer(THREE){
         }}}
       if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position,s.nowSec);
       updateMonsterVisuals();updateAmmoVisuals(s.nowSec);
+      updatePowerBubbles(s.nowSec);
       updateLightningVisuals(s.nowSec,bridge.monsterAttack?.());renderEnergyFX();
       if(!realisticWeapons&&elapsed-lastGun>.035){cleanup(activeGun);activeGun=grouped(bridge.weaponGeometry(),{weapon:true,dynamic:true});for(const m of activeGun)gunGroup.add(m);lastGun=elapsed;}
       for(let i=0;i<tracerPool.length;i++){
