@@ -6,13 +6,21 @@
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkeleton } from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/utils/SkeletonUtils.js';
 
-const MODEL_URL='https://threejs.org/examples/models/gltf/Soldier.glb';
+const MODEL_URLS=[
+ 'https://threejs.org/examples/models/gltf/Soldier.glb',
+ 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/models/gltf/Soldier.glb',
+ 'https://raw.githubusercontent.com/mrdoob/three.js/r160/examples/models/gltf/Soldier.glb'
+];
 const LIMIT=10;
 function poseClass(id){return id===1?'raptor':id===2||id===5?'ranger':id===7?'aegis':id===6?'nova':id===8?'blade':'vanguard';}
 export async function loadTacticalSoldiers(THREE,scene){
  const loader=new GLTFLoader();
- const asset=await loader.loadAsync(MODEL_URL);
- if(!asset?.scene)throw new Error('No rigged soldier scene');
+ let asset=null,lastError=null;
+ for(const url of MODEL_URLS){
+  try{asset=await loader.loadAsync(url);if(asset?.scene)break;}
+  catch(error){lastError=error;console.warn('STRIKEZONE soldier mirror unavailable:',url,error);}
+ }
+ if(!asset?.scene)throw new Error('Rigged soldier failed to load: '+(lastError?.message||'asset missing'));
  const clips=Object.fromEntries(asset.animations.map(a=>[a.name.toLowerCase(),a]));
  const bounds=new THREE.Box3().setFromObject(asset.scene);
  const height=bounds.max.y-bounds.min.y;
@@ -141,7 +149,7 @@ export async function loadTacticalSoldiers(THREE,scene){
     const move=preview?0:Math.abs((actor.walk??0)-lastWalking);
     lastWalking=actor.walk??0;
     const walking=!preview&&move>.04&&!actor.downed;
-    changePose(walking?(move>.65?'run':'walk'):'idle');
+    changePose(walking?(move>.23?'run':'walk'):'idle');
     // Only advance animation clocks when visible, cap to avoid giant jumps.
     mixer.update(Math.min(.07,Math.max(.001,delta)));
     if(preview){
