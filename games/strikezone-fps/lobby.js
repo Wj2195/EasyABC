@@ -215,6 +215,7 @@ for(const button of menu.querySelectorAll('[data-lobby-tab]')){
  button.addEventListener('click',()=>openTab(button.dataset.lobbyTab));
 }
 const summary=document.createElement('div');summary.id='szTrainingSummary';summary.className='szTrainingSummary';
+summary.hidden=true;menu.append(summary);
 summary.textContent='BATTLE RECORD · Matches, Kills and XP';
 function refreshProfile(){
  if(menu.classList.contains('hidden'))return;
@@ -227,8 +228,21 @@ function refreshProfile(){
   ' · KILLS: '+($('careerKills')?.textContent||'0')+
   ' · XP: '+($('careerXp')?.textContent||'0');
 }
+function syncLobbyTeam(){
+ const red=$('onlineTeamRed')?.classList.contains('selected');
+ const team=red?1:0;
+ const badge=menu.querySelector('.szTeamBadge');
+ if(badge){
+  badge.classList.toggle('red',!!team);
+  badge.lastChild.textContent=team?' RED TEAM':' BLUE TEAM';
+ }
+ window.dispatchEvent(new CustomEvent('strike-zone-lobby-team',{detail:{team}}));
+}
+for(const id of ['onlineTeamRed','onlineTeamBlue']){
+ $(id)?.addEventListener('click',syncLobbyTeam);
+}
 window.addEventListener('focus',refreshProfile);
 setInterval(refreshProfile,2500);
-refreshProfile();updateSelection();
+refreshProfile();updateSelection();syncLobbyTeam();
 window.StrikeZoneLobby={updateSelection,selectWeapon,openTab};
 })();
