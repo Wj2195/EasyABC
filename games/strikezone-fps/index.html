@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./social.css?v=3.39"><title>STRIKEZONE FPS — Tactical Arena · Solo + Friends Beta v3.39 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./social.css?v=3.39"><title>STRIKEZONE FPS — Tactical Arena · Solo + Friends Beta v3.40 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -742,6 +742,16 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
   #mainMenu .modeCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 
+
+/* v3.40 — compact labels for friendly real players only */
+#onlineNameTags{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden}
+.onlineTeammateName{position:absolute;transform:translate(-50%,-100%);max-width:148px;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:3px 7px;
+ border:1px solid rgba(125,210,255,.48);border-radius:4px;background:rgba(5,22,35,.82);
+ color:#e4f6ff;box-shadow:0 2px 9px rgba(0,0,0,.72);
+ font:700 10px/1.2 Arial,sans-serif;letter-spacing:.25px;text-align:center;user-select:none;pointer-events:none}
+.onlineTeammateName::before{content:'◆';font-size:8px;color:#6ad5ff;margin-right:5px}
+@media(max-width:800px){.onlineTeammateName{font-size:9px;padding:2px 5px;max-width:110px}}
 </style>
 </head>
 <body>
@@ -784,7 +794,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="onlineBtn" class="secondaryBtn" type="button">🌐 ONLINE ROOM</button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>TRI-SECTOR LABYRINTH</strong><span class="slash">/</span><span>ONLINE ROOMS · 6 MIN · 13 ENTERABLE BUILDINGS</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.39 — AI + DAMAGE FIX</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.40 — TEAMMATE NAME TAGS</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="onlinePanel" class="onlinePanel hidden" role="dialog" aria-label="Online multiplayer room">
   <div class="onlineBox">
@@ -820,6 +830,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
 </div>
 <div id="onlineHUD" class="hidden">🌐 <span id="onlineHUDRoom"></span> · <span id="onlineHUDStatus">CONNECTING</span></div>
 <div id="hud" class="hidden">
+ <div id="onlineNameTags" aria-hidden="true"></div>
  <div id="shieldPowerFx" aria-hidden="true"></div>
  <div id="shieldPowerHUD" aria-live="off">
   <span class="powerGlyph">◈</span><span>Q · SHIELD POWER</span>
@@ -4498,7 +4509,7 @@ function onlineHostFire(member,actor,msg){
 function onlineBroadcast(){
  if(onlineRole!=='host'||!onlineStarted)return;
  const state={t:'snapshot',v:ONLINE_PROTOCOL,time:matchRemaining,
-  blue,red,ended,player:{x:player.x,z:player.z,yaw:player.yaw,hp:player.hp,
+  blue,red,ended,player:{name:window.SZSocial?.current()?.name||'HOST',x:player.x,z:player.z,yaw:player.yaw,hp:player.hp,
    weapon:player.weapon,shieldHP:player.shieldHP,alive:player.alive,
    powerLeft:Math.max(0,player.shieldPowerUntil-nowSec),
    powerCooldown:shieldPowerRemaining(player),
@@ -4587,6 +4598,7 @@ function onlineGuestSnapshot(msg){
  }
  if(onlineHostAvatar&&msg.player){
   const p=msg.player;
+  if(typeof p.name==='string'&&p.name.trim())onlineHostAvatar.name=p.name.trim().slice(0,20);
   if(!Number.isFinite(p.x)||!Number.isFinite(p.z))return;
   onlineHostAvatar.targetX=p.x;onlineHostAvatar.targetZ=p.z;
   if(!onlineHostAvatar.networkSeen){
@@ -4664,6 +4676,50 @@ function onlineTick(dt){
   }
  }
 }
+// v3.40: world-anchored teammate names, never enemy names or AI names.
+const onlineNameNodes=new Map();
+function updateTeammateLabels(){
+ const layer=$('onlineNameTags');
+ if(!layer)return;
+ if(!running||!onlineStarted||ended||paused||!player.alive){
+  if(onlineNameNodes.size){layer.replaceChildren();onlineNameNodes.clear();}
+  return;
+ }
+ const ownTeam=onlineRole==='guest'?onlineTeam:0;
+ const W=innerWidth,H=innerHeight;
+ const yaw=player.yaw,pitch=player.pitch+Math.sin(player.bob*1.6)*player.landBob*.12;
+ const sy=Math.sin(yaw),cy=Math.cos(yaw),sp=Math.sin(pitch),cp=Math.cos(pitch);
+ const cameraY=player.y+(player.crouch?.98:1.72)-player.landBob;
+ const focal=(H*.5)/Math.tan(scopeFov()*Math.PI/360);
+ const visible=new Set();
+ for(const b of bots){
+  const human=b.id==='online-host'||b.remoteHuman===true;
+  if(!human||!b.alive||b.team!==ownTeam||
+      (onlineRole==='guest'&&b.id===onlineSlot))continue;
+  if(!Number.isFinite(b.x)||!Number.isFinite(b.z))continue;
+  const range=Math.hypot(b.x-player.x,b.z-player.z);
+  if(range<.8||range>48||!clearPath(player.x,player.z,b.x,b.z))continue;
+  const dx=b.x-player.x,dz=b.z-player.z;
+  const dy=floorSurfaceAt(b.x,b.z)+(Number.isFinite(b.airHeight)?b.airHeight:0)+2.33-cameraY;
+  const ahead=dx*sy+dz*cy,depth=dy*sp+ahead*cp;
+  if(depth<=.16)continue;
+  const side=dx*cy-dz*sy,up=dy*cp-ahead*sp;
+  const x=W*.5+side*focal/depth,y=H*.5-up*focal/depth;
+  if(!Number.isFinite(x)||!Number.isFinite(y)||x<8||x>W-8||y<35||y>H-8)continue;
+  const name=String(b.name||'TEAMMATE').trim().slice(0,20)||'TEAMMATE',key=String(b.id);
+  let label=onlineNameNodes.get(key);
+  if(!label){
+   label=document.createElement('span');label.className='onlineTeammateName';
+   layer.appendChild(label);onlineNameNodes.set(key,label);
+  }
+  if(label.textContent!==name)label.textContent=name;
+  label.style.left=x.toFixed(1)+'px';label.style.top=y.toFixed(1)+'px';
+  visible.add(key);
+ }
+ for(const [key,label] of onlineNameNodes)if(!visible.has(key)){
+  label.remove();onlineNameNodes.delete(key);
+ }
+}
 $('onlineBtn').addEventListener('click',()=>onlineLobby(true));
 $('onlineClose').addEventListener('click',()=>onlineLobby(false));
 $('onlineHost').addEventListener('click',onlineCreate);
@@ -4732,7 +4788,7 @@ if(running&&!paused&&!ended){
  if(Math.floor(sec*10)%4===0)drawMinimap();
 }
 if(running&&!paused)updateShieldPowerHUD();
-syncSniperScope();renderScene(dt);requestAnimationFrame(tick);}requestAnimationFrame(tick);
+syncSniperScope();renderScene(dt);updateTeammateLabels();requestAnimationFrame(tick);}requestAnimationFrame(tick);
 function startGame(){
  // Fullscreen must be requested in the original PLAY/DEPLOY user gesture.
  requestMobileLandscape();
