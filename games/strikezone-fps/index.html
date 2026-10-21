@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.35 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo + Friends Beta v3.36 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -750,7 +750,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
    <div class="menuActions"><button id="deploy" class="primaryBtn"><span>▶</span> DEPLOY NOW <span class="arrow">↗</span></button><button id="onlineBtn" class="secondaryBtn" type="button">🌐 ONLINE ROOM</button><button id="howTo" class="secondaryBtn">⌨ &nbsp; CONTROLS</button><button type="button" id="menuFullscreen" class="secondaryBtn" title="Enter fullscreen / mobile landscape">⛶ FULLSCREEN</button><button type="button" id="menuSound" class="secondaryBtn" aria-pressed="true">♪ SOUND ON</button></div>
    <div class="menuStat"><span>MAP 001</span><strong>TRI-SECTOR LABYRINTH</strong><span class="slash">/</span><span>ONLINE ROOMS · 6 MIN · 13 ENTERABLE BUILDINGS</span></div>
   </main>
-  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.35 — MOBILE MENU REDESIGN</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
+  <footer class="menuFooter"><span>STRIKEZONE FPS • ONLINE BETA V3.36 — ACCOUNTS + FRIENDS</span><span>ORIGINAL GAME • NO THIRD-PARTY ASSETS</span></footer>
 </div>
 <div id="onlinePanel" class="onlinePanel hidden" role="dialog" aria-label="Online multiplayer room">
   <div class="onlineBox">
@@ -804,7 +804,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
     <small>MOUSE WHEEL OR Z / X</small>
   </div>
 </div><div id="hitmarker">✕</div><div id="combatFeedback" role="status" aria-live="polite"></div><div id="damageDirection"></div>
- <div class="bottomHUD"><div class="healthPanel"><div class="unit">OPERATIVE <b>ALPHA 01</b></div><div class="hpRow"><span class="hpIcon">✚</span><strong id="hpText">100</strong><div class="hpTrack"><div id="hpFill"></div></div></div><div class="subStat"><span id="shieldStatus">SHIELD READY</span><span id="killStat">0 KILLS · 0 DEATHS</span></div></div><div class="weaponPanel"><div class="weaponLabel"><span id="weaponType">ASSAULT RIFLE</span><span id="weaponName">VORTEX AR</span></div><div class="ammoRow"><strong id="ammoCount">30</strong><span class="ammoSlash">/</span><span id="reserveCount">150</span><span class="ammoBullet">▥</span></div><div id="reloadDisplay">R TO RELOAD</div></div></div>
+ <div class="bottomHUD"><div class="healthPanel"><div class="unit">OPERATIVE <b id="szHudUsername">ALPHA 01</b></div><div class="hpRow"><span class="hpIcon">✚</span><strong id="hpText">100</strong><div class="hpTrack"><div id="hpFill"></div></div></div><div class="subStat"><span id="shieldStatus">SHIELD READY</span><span id="killStat">0 KILLS · 0 DEATHS</span></div></div><div class="weaponPanel"><div class="weaponLabel"><span id="weaponType">ASSAULT RIFLE</span><span id="weaponName">VORTEX AR</span></div><div class="ammoRow"><strong id="ammoCount">30</strong><span class="ammoSlash">/</span><span id="reserveCount">150</span><span class="ammoBullet">▥</span></div><div id="reloadDisplay">R TO RELOAD</div></div></div>
  <div class="keyHints"><span>[SHIFT] SPRINT</span><span>[SPACE] JUMP</span><span>[R] RELOAD</span><span>[1–9] WEAPON</span><span>[U] UNSTUCK</span><span>[P] SCOREBOARD</span></div>
  <div id="energyChargeHUD" class="hidden"><span id="energyChargeText">HOLD FIRE 2s</span><div class="chargeMeter"><div id="energyChargeFill"></div></div></div>
 <div id="announcement" class="announcement"></div>
@@ -812,6 +812,8 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
  <div id="mobileControls"><div id="joyBase"><div id="joyNub"></div></div><div id="lookZone"></div><button id="mobileFireSmall" type="button" aria-label="Fire with left thumb">●<small>FIRE</small></button><button id="mobileShieldPower" type="button" aria-label="Activate Shield Power, 3 second immunity, 60 second cooldown">◈<small id="shieldPowerMobileText">SHIELD</small></button><button id="mobileFire">● <small>FIRE</small></button><button id="mobileAds">◎<small>AIM</small></button><button id="mobileJump">⬆<small>JUMP</small></button><button id="mobileCrouch" type="button" aria-pressed="false">⬇<small>CROUCH</small></button><button id="mobileReload">↻<small>RELOAD</small></button><button id="mobileSwitch">⇄<small>SWAP</small></button></div>
 </div>
 <div id="modal" class="hidden"><div class="modalBox"><div class="modalTop"><span id="modalEyebrow">COMBAT DATA //</span><button id="closeModal" title="Close">✕</button></div><h2 id="modalTitle">PAUSED</h2><p id="modalSubtitle">You are temporarily out of combat.</p><div id="modalContent"></div><div id="modalActions"><button id="resumeBtn" class="primaryBtn">RESUME MATCH ▶</button><button id="menuBtn" class="secondaryBtn">BACK TO MENU</button></div></div></div>
+<link rel="stylesheet" href="./social.css?v=3.36">
+<script src="./social.js?v=3.36"></script>
 <script>
 /* STRIKEZONE FPS v2.0 — Advanced graphics pipeline with safe software fallback. Original solo browser shooter. */
 (() => {
@@ -4025,8 +4027,9 @@ function onlineUIRoom(){
  $('onlineCodeText').textContent=onlineRoom;
  $('onlineStart').classList.toggle('hidden',onlineRole!=='host'||onlineStarted);
  $('onlinePlayerList').textContent=onlineRole==='host'?
-  'YOU · BLUE / HOST  |  '+Array.from(onlineMembers.values()).filter(p=>p.conn.open)
-    .map(p=>'PLAYER '+p.slot+' · '+(p.team===0?'BLUE':'RED')).join('  |  '):
+  (window.SZSocial?.current()?.name||'HOST')+' · BLUE / HOST  |  '+
+  Array.from(onlineMembers.values()).filter(p=>p.conn.open)
+    .map(p=>(p.name||'PLAYER '+p.slot)+' · '+(p.team===0?'BLUE':'RED')).join('  |  '):
   onlineRole==='guest'?'JOINED · '+(onlineTeam===0?'BLUE':'RED')+' TEAM':'';
  $('onlineHUD').classList.toggle('hidden',!onlineRole);
  $('onlineHUDRoom').textContent=onlineRoom;
@@ -4086,7 +4089,7 @@ function onlineInstallHostConn(conn){
  const allocated=ONLINE_SLOTS.find(id=>![...onlineMembers.values()].some(a=>a.slot===id));
  if(allocated===undefined){conn.close();return;}
  const team=allocated<4?0:1;
- const member={conn,slot:allocated,team,lastFire:-99};
+ const member={conn,slot:allocated,team,lastFire:-99,name:'GUEST-UNSET'};
  onlineMembers.set(conn.peer,member);
  conn.on('open',()=>{
   conn.send({t:'welcome',v:ONLINE_PROTOCOL,slot:allocated,team,room:onlineRoom});
@@ -4098,6 +4101,10 @@ function onlineInstallHostConn(conn){
  conn.on('error',()=>onlineConnClosed(true,conn.peer));
 }
 async function onlineCreate(){
+ if(!window.SZSocial?.canHost()){
+  onlineUIStatus('Only registered players can create rooms or invite friends. Guests can JOIN rooms.');
+  window.SZSocial?.openAccount('register');return;
+ }
  if(onlineRole)onlineStop();
  onlineUIStatus('Connecting to the free room service...');
  try{
@@ -4140,7 +4147,8 @@ async function onlineJoinRoom(raw){
  }catch(e){onlineStop();onlineUIStatus('Unable to join: '+e.message);}
 }
 function onlineHostStart(){
- if(onlineRole!=='host'||onlineStarted||!onlinePeer?.open)return;
+ if(onlineRole!=='host'||onlineStarted||!onlinePeer?.open||
+    !window.SZSocial?.canHost())return;
  onlineStarted=true;onlineEndShown=false;
  document.querySelectorAll('.modeCard').forEach(c=>
   c.classList.toggle('selected',c.dataset.mode==='tdm'));
@@ -4148,7 +4156,8 @@ function onlineHostStart(){
  for(const member of onlineMembers.values()){
   const b=bots.find(b=>b.id===member.slot);
   if(!b)continue;
-  b.remoteHuman=true;b.name='PLAYER '+member.slot;
+  b.remoteHuman=true;b.name=member.name&&member.name!=='GUEST-UNSET'?
+  member.name:'GUEST-'+member.slot;
   b.weapon=0;b.preferredWeapon=0;b.hp=100;b.alive=true;
   b.until=0;b.lastFiredAt=-99;
   const p=findOpenSpawn(member.team);b.x=p.x;b.z=p.z;
@@ -4182,6 +4191,8 @@ function onlineGuestReceive(msg){
  }else if(msg.t==='welcome'){
   if(msg.v!==ONLINE_PROTOCOL){onlineUIStatus('Different game versions. Refresh both browsers.');return;}
   onlineSlot=msg.slot;onlineTeam=msg.team;
+  if(onlineHostConn?.open)
+   onlineHostConn.send({t:'identity',name:window.SZSocial?.current()?.name||'GUEST'});
   onlineUIStatus('Joined '+onlineRoom+'. Waiting for host to start.');
   onlineUIRoom();
  }else if(msg.t==='start')onlineGuestStart(msg);
@@ -4194,7 +4205,19 @@ function onlineGuestReceive(msg){
  }else if(msg.t==='closed')onlineConnClosed(false);
 }
 function onlineHostReceive(member,msg){
- if(onlineRole!=='host'||!onlineStarted||!msg||typeof msg!=='object')return;
+ if(onlineRole!=='host'||!msg||typeof msg!=='object')return;
+ if(msg.t==='identity'){
+  const username=String(msg.name||'').trim().slice(0,20);
+  member.name=/^[a-zA-Z0-9_-]{3,20}$/.test(username)?
+    username:'GUEST-'+member.slot;
+  onlineUIRoom();
+  if(onlineStarted){
+   const operator=bots.find(b=>b.id===member.slot);
+   if(operator)operator.name=member.name;
+  }
+  return;
+ }
+ if(!onlineStarted)return;
  const b=bots.find(b=>b.id===member.slot);
  if(!b||!b.remoteHuman)return;
  if(msg.t==='pose'&&b.alive){
@@ -4441,6 +4464,29 @@ $('onlineCopy').addEventListener('click',()=>{
  navigator.clipboard?.writeText(url.toString()).then(
  ()=>onlineUIStatus('Invite link copied. Send it to your friends.'),
  ()=>onlineUIStatus('Copy this room code: '+onlineRoom));
+});
+// Account/profile is UI state; server-side Supabase RLS/RPC enforces friend
+// permissions and database uniqueness. Guests can still join room codes.
+window.SZSocial?.init({
+ getHostRoom:()=>onlineRole==='host'&&onlinePeer?.open?onlineRoom:null,
+ openRoom:()=>{
+  if(running)goMenu();
+  onlineLobby(true);
+  onlineUIStatus('Create a private room, then choose your friends to invite.');
+ },
+ joinRoom:code=>{
+  if(running)goMenu();
+  onlineLobby(true);$('onlineRoomCode').value=code;
+  onlineJoinRoom(code);
+ },
+ onIdentity:info=>{
+  const name=$('szHudUsername');
+  if(name)name.textContent=info.name;
+  if(info.kind==='guest'&&onlineRole==='host'){
+   onlineStop();
+   if(running)goMenu();
+  }
+ }
 });
 const inviteCode=new URLSearchParams(location.search).get('room');
 if(inviteCode&&/^[A-Z2-9]{6}$/i.test(inviteCode)){
