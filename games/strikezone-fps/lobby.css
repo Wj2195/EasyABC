@@ -274,3 +274,37 @@
  #mainMenu.szLobby .szRosterCard{min-height:85px}
  #mainMenu.szLobby .szLobbyTabs{margin-bottom:14px}
 }
+
+/* v3.43: No legacy Field Training dropdown floating over match buttons. */
+#szTrainingControlStorage,#szTrainingControlStorage[hidden]{display:none!important}
+#mainMenu.szLobby .szLobbyPlay #szFieldTraining{
+ width:100%;min-height:41px!important;height:auto!important;
+ padding:10px 8px!important;position:relative!important;inset:auto!important;
+ margin-top:0!important;color:#cedee6!important;
+ background:linear-gradient(180deg,#243b48,#112531)!important;
+ border:1px solid #7894a570!important;
+ box-shadow:0 5px 12px #0005!important;
+ letter-spacing:1.1px!important;font:850 10px Arial!important;
+ text-shadow:none!important;text-align:center;
+}
+#mainMenu.szLobby .szSettingsWrap .trainingOptions{
+ position:relative!important;z-index:auto!important;
+ transform:none!important;inset:auto!important;
+ top:auto!important;bottom:auto!important;
+ left:auto!important;right:auto!important;
+ width:100%!important;max-width:none!important;max-height:none!important;
+ margin:0!important;padding:13px!important;overflow:visible!important;
+ box-sizing:border-box!important;background:#102433f0!important;
+}
+#mainMenu.szLobby .szSettingsWrap #howTo,
+#mainMenu.szLobby .szSettingsWrap #menuFullscreen,
+#mainMenu.szLobby .szSettingsWrap #menuSound{
+ display:block!important;width:100%!important;
+ min-height:45px!important;margin:0!important;font-size:11px!important;
+ white-space:normal!important;
+}
+@media(max-width:700px){
+ #mainMenu.szLobby .szLobbyPlay #szFieldTraining{
+  font-size:9px!important;min-height:40px!important;
+ }
+}
