@@ -1,8 +1,8 @@
-/* STRIKEZONE v3.36: Supabase accounts, friend requests and private room invites. */
+/* STRIKEZONE v3.37: Supabase accounts, friend requests and private room invites. */
 (function(){
 'use strict';
-const SB_URL='https://rygtjnzccemtpkjellgs.supabase.co';
-const SB_KEY='sb_publishable_WQibr98hDPjOIVqA0twL1g_OVUxgynh';
+const SB_URL='https://txcgpfbnpaewggxdseeo.supabase.co';
+const SB_KEY='sb_publishable_tyokYBfOI3EIFWv-jBKKHA_5rdH5hL5';
 const NAME=/^[a-z][a-z0-9_]{2,19}$/;
 const $=id=>document.getElementById(id);
 let db=null,sdkLoading=null,identity=null,handlers={},initialized=false;
