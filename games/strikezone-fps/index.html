@@ -2238,8 +2238,17 @@ function damageBot(b,damage,killer,zone='chest',impactSource=killer){
  if(!b.alive||shieldPowerActive(b))return 0;
  if(!Number.isFinite(b.hp))b.hp=100;
  if(!Number.isFinite(damage)||damage<=0)return 0;
+ const beforeShield=b.shieldHP;
  const actualDamage=applyShieldDefense(b,damage,impactSource,zone);
- if(!Number.isFinite(actualDamage)||actualDamage<=0)return 0;
+ // Shield impacts also reveal danger; blocking a shot must not make AI oblivious.
+ if(!Number.isFinite(actualDamage)||actualDamage<=0){
+  if(b.shieldHP<beforeShield&&killer?.alive&&
+     ((mode!=='tdm'&&mode!=='zombie')||killer.team!==b.team)){
+   b.lastAttacker=killer;b.lastThreatAt=nowSec;b.nextSight=0;
+   b.heardX=killer.x;b.heardZ=killer.z;b.alertUntil=nowSec+5;
+  }
+  return 0;
+ }
  // Protected shield impacts still register as incoming pressure.
  if(killer&&killer!==b){
   b.lastAttacker=killer;b.lastThreatAt=nowSec;
@@ -2306,7 +2315,7 @@ function shieldBashPlayer(){
  if(player.shieldHP<=0)return;
  const w=weapons[7];
  if(nowSec-player.lastShot<60/w.rate)return;
- player.lastShot=nowSec;player.recoil=.21;beep('shieldBash');
+ player.lastShot=nowSec;player.recoil=.21;beep('shieldBash');aiNoise(player,17,'bash');
  for(const b of bots){
   if(!b.alive||((mode==='tdm'||mode==='zombie')&&b.team===0))continue;
   const dx=b.x-player.x,dz=b.z-player.z,dist=Math.hypot(dx,dz);
@@ -2821,7 +2830,7 @@ function updateMonsters(dt){
 function swingLightsaber(){
  const w=weapons[8];
  if(nowSec-player.lastShot<60/w.rate)return;
- player.lastShot=nowSec;player.recoil=.28;player.flash=.18;beep('saber');
+ player.lastShot=nowSec;player.recoil=.28;player.flash=.18;beep('saber');aiNoise(player,17,'melee');
  let hits=0,bestDamage=0;
  const all=mode==='zombie'?[...aliveMonsters(),...bots.filter(b=>b.alive&&b.team!==0)]:
  bots.filter(b=>b.alive&&(mode!=='tdm'||b.team!==0));
