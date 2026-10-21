@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.33 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.34 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -288,7 +288,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
 @media(max-width:800px){#bossHUD{top:75px;width:calc(100vw - 165px);left:auto;right:8px;transform:none;padding:5px}
 .bossHeading,.bossFoot{font-size:7px}.bossMeter{height:7px;margin:4px 0}}
 
-/* v3.33: landscape touch HUD. The previous 800px-only boss rule did not
+/* v3.34: landscape touch HUD. The previous 800px-only boss rule did not
    cover high-DPI landscape phones with wide CSS viewports. */
 @media (pointer:coarse), (hover:none) {
  #hud #bossHUD:not(.hidden) {
@@ -343,7 +343,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
 @media(max-width:640px){.onlineBox{padding:12px}.onlineTop{font-size:12px}
 .onlineJoin{flex-wrap:wrap}.onlineJoin button{width:100%}}
 
-/* v3.33 — mobile HUD anchored to the eleven numbered reference positions. */
+/* v3.34 — mobile HUD anchored to the eleven numbered reference positions. */
 @media (pointer:coarse) and (orientation:landscape),
        (hover:none) and (orientation:landscape){
  body.playing #mobileControls{display:block}
@@ -1513,7 +1513,7 @@ function denseMapExpansion(){
  denseStreetClutter();
 }
 
-// v3.33 — four additional enterable service modules along the open flanks.
+// v3.34 — four additional enterable service modules along the open flanks.
 // Walls are segmented at real door apertures and each module has its own
 // interior path, with two access points for AI movement.
 function serviceAnnex(x,z,id){
@@ -3633,6 +3633,35 @@ function drawWeaponFlash(ctx,W,H){
 }
 
 
+
+// Lightweight classic-renderer globe: three latitude bands and meridians.
+// The local player sees the separate shield HUD aura rather than opaque cubes.
+function addShieldPowerBoxes(out){
+ for(const soldier of bots){
+  if(!soldierVisible(soldier)||!shieldPowerActive(soldier))continue;
+  const x=soldier.x,z=soldier.z;
+  const y=floorSurfaceAt(x,z)+(soldier.airHeight||0)+1.34;
+  const color=soldier.team===1?29:25;
+  for(const level of [-.92,0,.92]){
+   const radius=Math.sqrt(Math.max(0,1.83*1.83-level*level));
+   for(let i=0;i<16;i++){
+    const a=2*Math.PI*i/16+nowSec*.30;
+    box(out,x+Math.cos(a)*radius,y+level,z+Math.sin(a)*radius,
+      .16,.14,.16,i%4===0?15:color);
+   }
+  }
+  for(let vertical=0;vertical<8;vertical++){
+   const theta=2*Math.PI*vertical/8;
+   const height=1.83*Math.cos(theta);
+   for(const side of [0,Math.PI/2,Math.PI,Math.PI*1.5]){
+    const radius=1.83*Math.sin(theta);
+    box(out,x+Math.cos(side+nowSec*.12)*radius,y+height,
+      z+Math.sin(side+nowSec*.12)*radius,.14,.13,.14,color);
+   }
+  }
+ }
+}
+
 function addEnergyBoxes(out){
  for(const e of energyShots){
   box(out,e.x,e.y,e.z,.54,.54,.54,25);
@@ -3657,6 +3686,7 @@ const DPR=Math.min(devicePixelRatio||1,1.6),W=Math.floor(innerWidth*DPR),H=Math.
 gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.frontFace(gl.CW);gl.cullFace(gl.BACK);gl.uniform3f(loc.camera,cx,cy,cz);gl.uniform1f(loc.yaw,yaw);gl.uniform1f(loc.pitch,pitch);gl.uniform1f(loc.aspect,W/H);gl.uniform1f(loc.fov,scopeFov()*Math.PI/180);gl.uniform1f(loc.weapon,0);gl.uniform1f(loc.time,nowSec);
 drawBuffer(staticBuffer,null,staticCount,false);
 const actors=[];for(const b of bots)if(soldierVisible(b))botShape(actors,b);
+ addShieldPowerBoxes(actors);
  if(mode==='zombie'){
   for(const m of aliveMonsters())monsterFallbackGeometry(actors,m);
   ammoDropFallbackGeometry(actors);addLightningBoxes(actors);
@@ -3745,6 +3775,7 @@ function softwareScene(dt){
  }
  // Combine world and moving geometry in one depth-sorted pass so bots are occluded by walls.
  const actors=[];for(const b of bots)if(soldierVisible(b))botShape(actors,b);
+ addShieldPowerBoxes(actors);
  if(mode==='zombie'){
   for(const m of aliveMonsters())monsterFallbackGeometry(actors,m);
   ammoDropFallbackGeometry(actors);addLightningBoxes(actors);
@@ -4285,7 +4316,7 @@ window.addEventListener('blur',()=>{keys={};cancelEnergyCharge();player.shoot=fa
  if(running&&!paused&&!ended&&!onlineStarted)
   openModal('pause','MATCH PAUSED','The game was paused when you switched away.');
 });document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement!==canvas){cancelEnergyCharge();player.shoot=false;} });
-// v3.33: independent mobile joystick and camera pointers. Pointer movement
+// v3.34: independent mobile joystick and camera pointers. Pointer movement
 // is listened for on WINDOW because a swipe frequently leaves its original
 // button; this prevents a lost touch from locking the player to "forward".
 function normalizedStick(clientX,clientY,rect){
@@ -4554,6 +4585,7 @@ window.StrikeZoneRenderBridge={
  geometry:()=>STATIC,
  materials:()=>palette,
  actorGeometry:()=>{const data=[];for(const b of bots)if(soldierVisible(b))botShape(data,b);
+ addShieldPowerBoxes(data);
  if(mode==='zombie'){
   for(const m of aliveMonsters())monsterFallbackGeometry(data,m);
   ammoDropFallbackGeometry(data);addLightningBoxes(data);
@@ -4570,6 +4602,12 @@ window.StrikeZoneRenderBridge={
   id:m.id,x:m.x,z:m.z,yaw:m.yaw||0,hp:m.hp,maxHP:m.maxHP,
   boss:!!m.boss,agile:!!m.agile,phase:m.phase||0
  })):[],
+ powerData:()=>[
+   ...(shieldPowerActive(player)?[{x:player.x,z:player.z,team:onlineRole==='guest'?onlineTeam:0,
+     self:true,airHeight:0}]:[]),
+   ...bots.filter(b=>soldierVisible(b)&&shieldPowerActive(b))
+     .map(b=>({x:b.x,z:b.z,team:b.team,self:false,airHeight:b.airHeight||0}))
+ ],
  botData:()=>bots.filter(soldierVisible).map(b=>({
  x:b.x,z:b.z,team:b.team,yaw:b.yaw,phase:b.phase,walk:b.walk,
  airHeight:b.alive?(b.airHeight||0):0,weapon:b.weapon,shieldHP:b.shieldHP||0,shieldMax:shieldMaxHP(),lastFiredAt:b.lastFiredAt??-99,
@@ -4635,5 +4673,5 @@ if(!document.getElementById('rendererState').textContent.includes('renderer'))do
 })();
 
 </script>
-<script type="module" src="./ultra-renderer.js?v=3.29"></script>
+<script type="module" src="./ultra-renderer.js?v=3.34"></script>
 </body></html>
