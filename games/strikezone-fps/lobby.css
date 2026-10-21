@@ -1,0 +1,274 @@
+/* STRIKEZONE v3.42 — responsive cinematic tactical lobby */
+#mainMenu.szLobby{--gold:#ffd039;--line:#6f83904d;--ink:#0c131a;
+ position:fixed!important;inset:0!important;display:block!important;
+ height:100dvh!important;max-height:100dvh!important;min-height:0!important;
+ padding:0!important;overflow-y:auto!important;overflow-x:hidden!important;
+ background:radial-gradient(ellipse at 48% 36%,#28363a 0%,#121d25 40%,#081016 95%)!important;
+ scrollbar-width:thin;scrollbar-color:#536d76 #111b24;color:#e8f0f4;
+ font-family:Arial,Helvetica,sans-serif;isolation:isolate}
+#mainMenu.szLobby::before{content:"";position:fixed;inset:0;pointer-events:none;
+ background:radial-gradient(ellipse at 49% 24%,rgba(111,155,171,.22),transparent 40%),
+ repeating-linear-gradient(90deg,transparent 0 17%,#b7d8e604 17.15% 17.35%,transparent 17.5% 34%),
+ linear-gradient(180deg,#05080e66,#111f2566 60%,#05090dd9)!important;opacity:1}
+#mainMenu.szLobby::after{display:none!important}
+#mainMenu.szLobby .menuContent,#mainMenu.szLobby .menuFooter{display:none!important}
+#mainMenu.szLobby .menuHeader{
+ position:relative!important;top:auto!important;left:auto!important;right:auto!important;
+ order:unset!important;display:flex!important;flex-direction:row!important;
+ height:78px!important;min-height:78px!important;width:100%!important;
+ margin:0!important;padding:0 clamp(16px,2.35vw,44px)!important;
+ background:linear-gradient(180deg,#070c12ef,#10171dda)!important;
+ border-bottom:1px solid #d0e2e637!important;z-index:8!important;
+ align-items:center!important;justify-content:space-between!important;gap:15px}
+#mainMenu.szLobby .menuHeader .brand{
+ position:absolute;left:50%;transform:translateX(-50%);font-weight:950;
+ font-size:clamp(19px,2vw,31px);letter-spacing:2px;white-space:nowrap}
+#mainMenu.szLobby .menuHeader .brand small{letter-spacing:5px;text-align:center;margin-top:4px;font-size:8px}
+#mainMenu.szLobby .menuHeader .brandIcon{border-color:#72838d;color:#e4edf1;background:#17222a;transform:skew(-8deg)}
+#mainMenu.szLobby .headerRight{display:none!important}
+#mainMenu.szLobby .szProfile{position:relative;display:flex;align-items:center;gap:12px;
+ background:none;color:#fff;border:0;padding:4px;min-width:164px;max-width:240px;text-align:left}
+#mainMenu.szLobby .szProfileFace{display:grid;place-items:center;flex-shrink:0;
+ height:48px;width:48px;border-radius:50%;font-size:28px;color:#ffcf39;
+ background:radial-gradient(circle,#3a4750,#0c141c 70%);border:2px solid #d7ae38}
+#mainMenu.szLobby .szProfile b{display:block;font-size:clamp(11px,1.13vw,15px);max-width:174px;
+ overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#mainMenu.szLobby .szProfile small{display:block;color:#dfb53b;font-size:9px;
+ font-weight:750;margin-top:5px;letter-spacing:1.15px}
+#mainMenu.szLobby .szTopStatus{display:flex;align-items:center;gap:10px;margin-left:auto}
+#mainMenu.szLobby .szTopStatus>span{font:800 12px Arial;color:#f7d86e;padding:9px 10px;
+ background:#0c1920;border:1px solid #53646a55;white-space:nowrap}
+#mainMenu.szLobby .szTopStatus button{border:1px solid #60727b88;background:#1b2932;
+ color:#e8f3f5;min-height:38px;padding:7px 11px;font:800 11px Arial;letter-spacing:.5px}
+#mainMenu.szLobby button:focus-visible{outline:2px solid #ffd34e!important;outline-offset:3px}
+#mainMenu.szLobby button:hover{filter:brightness(1.15)}
+#mainMenu.szLobby .szLobbyBody{display:grid;grid-template-columns:minmax(175px,22%) minmax(250px,35%) minmax(180px,20%) minmax(210px,23%);
+ min-height:min(62vh,620px);max-width:1920px;margin:0 auto;position:relative;z-index:3;
+ padding:14px clamp(12px,2.35vw,40px) 6px;gap:14px;align-items:stretch}
+#mainMenu.szLobby .szLobbyNews{display:flex;flex-direction:column;gap:12px;min-width:0}
+#mainMenu.szLobby .szNewsFeature,#mainMenu.szLobby .szNewsTile{
+ position:relative;flex:1;overflow:hidden;min-height:112px;padding:16px 18px;
+ border:1px solid #7793a34e;background:linear-gradient(130deg,#182934dd,#0e1924dd)}
+#mainMenu.szLobby .szNewsFeature{
+ background:linear-gradient(105deg,#112431f7 15%,#193749bc 55%,#293b3b65),
+ radial-gradient(circle at 90% 20%,#ba492d75,transparent 60%);border-left:3px solid #ebaa27}
+#mainMenu.szLobby .szNewsTile.squad{background:linear-gradient(105deg,#182a31e8,#0b1723),radial-gradient(circle,#2a5371aa,transparent)}
+#mainMenu.szLobby .szLabel{display:block;color:#dfbb52;letter-spacing:1.5px;font:800 10px Arial;margin-bottom:10px}
+#mainMenu.szLobby .szLobbyNews h3{font-size:clamp(15px,1.45vw,22px);margin:0 0 12px;line-height:1.05;letter-spacing:.4px;color:#fff}
+#mainMenu.szLobby .szNewsFeature h3 em{font-style:normal;color:var(--gold)}
+#mainMenu.szLobby .szLobbyNews p{font-size:11px;color:#c1d1d8;line-height:1.55;max-width:250px;margin:0 0 13px}
+#mainMenu.szLobby .szDetailLink{font:800 10px Arial;color:#ffdc79;background:none;border:0;
+ padding:5px 0;text-align:left;letter-spacing:.7px}
+#mainMenu.szLobby .szLobbyStage{position:relative;min-width:0;min-height:400px;overflow:hidden;
+ background:radial-gradient(ellipse at 50% 55%,#384953a6,#0c161cbb 66%),
+ repeating-linear-gradient(90deg,#b4ddec06 0 2px,transparent 2px 83px);
+ border:1px solid #62768366;box-shadow:inset 0 0 110px #0b121aaa}
+#mainMenu.szLobby .szLobbyStage::before{content:"";position:absolute;pointer-events:none;inset:0;
+ background:linear-gradient(92deg,#8faeb30b 0%,transparent 28% 65%,#bd58371b 100%),
+ linear-gradient(180deg,#1c35405c,transparent 25% 78%,#050b11ad)}
+#mainMenu.szLobby .szHangarLights{position:absolute;inset:0;
+ background:radial-gradient(ellipse 14px 105px at 23% 1%,#95dcff5a,transparent),
+ radial-gradient(ellipse 12px 105px at 75% 1%,#ffe1ac3d,transparent),
+ radial-gradient(ellipse at 50% 10%,#558da247,transparent 48%)}
+#mainMenu.szLobby .szPreviewFloor{position:absolute;bottom:0;width:100%;height:27%;
+ background:linear-gradient(180deg,transparent,#1e2931af 55%,#080d11dc),
+ repeating-linear-gradient(93deg,transparent 0 42px,#9db6ba17 43px 44px,transparent 46px 90px);
+ transform:perspective(500px) rotateX(38deg);transform-origin:center bottom}
+#mainMenu.szLobby .szPreviewTop{position:absolute;top:16px;left:18px;right:18px;z-index:2;
+ display:flex;justify-content:space-between;align-items:start;gap:7px}
+#mainMenu.szLobby .szTeamBadge{background:#0b3047c9;border:1px solid #529bce;color:#cceeff;
+ padding:6px 8px;font:800 10px Arial;white-space:nowrap}
+#mainMenu.szLobby .szTeamBadge i{display:inline-block;height:7px;width:7px;background:#69cdfc;border-radius:50%;margin-right:5px}
+#mainMenu.szLobby #szOperatorCanvas{position:absolute;inset:0;width:100%;height:100%;
+ display:block;z-index:1;touch-action:pan-y;cursor:grab}
+#mainMenu.szLobby #szOperatorCanvas:active{cursor:grabbing}
+#mainMenu.szLobby .szPreviewFallback{position:absolute;inset:60px 0 45px;z-index:0;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+ color:#b5d1dd;font:800 10px Arial;letter-spacing:1px;text-align:center}
+#mainMenu.szLobby .szFallbackHelmet{font-size:140px;color:#405968;text-shadow:0 6px 40px #000}
+#mainMenu.szLobby .szStageCaption{position:absolute;bottom:16px;left:18px;right:18px;
+ display:flex;flex-direction:column;gap:4px;z-index:3;pointer-events:none;
+ text-shadow:0 2px 9px #000}
+#mainMenu.szLobby .szStageCaption>span:first-child{font:900 clamp(23px,2vw,34px) Arial;
+ letter-spacing:2px}
+#mainMenu.szLobby .szStageCaption>span:nth-child(2){font:800 11px Arial;color:#a9d6e6;letter-spacing:1px}
+#mainMenu.szLobby .szStageCaption small{font:8px Arial;color:#8ea0aa;letter-spacing:1.4px;margin-top:3px}
+#mainMenu.szLobby .szLobbyGear{min-width:0;background:linear-gradient(170deg,#14232ded,#0c151dea);
+ border:1px solid #6c849350;padding:19px 15px;display:flex;flex-direction:column}
+#mainMenu.szLobby .szLobbyGear h2{font:900 clamp(21px,1.9vw,32px) Arial;
+ letter-spacing:1px;color:#fff;margin:0 0 7px}
+#mainMenu.szLobby .szLobbyGear>p{font-size:11px;line-height:1.5;color:#abbec9;margin:0 0 20px;min-height:34px}
+#mainMenu.szLobby .szStatRow{display:grid;grid-template-columns:74px 1fr;align-items:center;gap:9px;margin:8px 0}
+#mainMenu.szLobby .szStatRow label{font:800 9px Arial;color:#b5c6d1}
+#mainMenu.szLobby .szStatRow>div{height:8px;background:#384854}
+#mainMenu.szLobby .szStatRow i{display:block;height:100%;max-width:100%;background:linear-gradient(90deg,#3c9fd7,#94dcff)}
+#mainMenu.szLobby .szSelectedWeapon{border:1px solid #516d805c;background:#121d26;margin:18px 0 9px;
+ padding:12px;display:grid;gap:5px}
+#mainMenu.szLobby .szSelectedWeapon .szLabel{margin:0 0 3px}
+#mainMenu.szLobby .szSelectedWeapon b{font:900 15px Arial;color:#f6f9fa}
+#mainMenu.szLobby .szSelectedWeapon small{font:10px Arial;color:#b8c7cf}
+#mainMenu.szLobby .armoryChooser{position:static!important;display:flex!important;flex-direction:column!important;
+ gap:5px!important;width:100%!important;padding:0!important;margin:0!important;background:none!important;border:0!important;
+ box-shadow:none!important;min-width:0!important}
+#mainMenu.szLobby .armoryChooser label{color:#b7ceda;letter-spacing:.7px;font:800 10px Arial}
+#mainMenu.szLobby #loadoutSelect{width:100%;min-height:40px;background:#233745;color:#f5faff;
+ border:1px solid #607f91;padding:8px 7px;font:800 11px Arial}
+#mainMenu.szLobby #loadoutInfo{font-size:9px;line-height:1.5;color:#a1b6c0}
+#mainMenu.szLobby .szPowerLabel{margin-top:auto;padding:11px 0 0;border-top:1px solid #52647275;
+ color:#7ed9ef;font:800 11px Arial}
+#mainMenu.szLobby .szPowerLabel small{display:block;color:#a6b4bd;margin-top:5px;font:9px Arial}
+#mainMenu.szLobby .szLobbyPlay{display:flex;flex-direction:column;gap:12px;min-width:0}
+#mainMenu.szLobby .szMapCard{position:relative;min-height:31%;background:linear-gradient(150deg,#345067,#101a23 82%),
+ repeating-linear-gradient(80deg,transparent 0 12px,#aebfd411 12px 14px);
+ border:1px solid #6e90a05e;padding:15px;overflow:hidden;display:flex;flex-direction:column;justify-content:end}
+#mainMenu.szLobby .szMapCard h3{font:900 clamp(16px,1.4vw,21px)/1.12 Arial;margin:0;color:#fff}
+#mainMenu.szLobby .szMapCard p{font:800 9px Arial;color:#bbd0d8;letter-spacing:1px}
+#mainMenu.szLobby #szPlayActions{display:flex;flex-direction:column;gap:12px}
+#mainMenu.szLobby #szPlayActions button{position:relative!important;inset:auto!important;top:auto!important;
+ bottom:auto!important;left:auto!important;right:auto!important;transform:none!important;
+ width:100%!important;min-width:0!important;max-width:none!important;height:64px!important;
+ min-height:64px!important;margin:0!important;padding:10px 12px!important;border-radius:2px!important;
+ font:900 clamp(13px,1.35vw,20px) Arial!important;letter-spacing:.6px!important;line-height:1.25;
+ text-align:center!important;box-shadow:inset 0 2px #ffe49d7c,0 6px 16px #0007!important;
+ background:linear-gradient(180deg,#ffe664,#f5b919 60%,#cc8611)!important;color:#111719!important;
+ border:1px solid #ffe390!important;text-shadow:none!important;touch-action:manipulation}
+#mainMenu.szLobby #szPlayActions #onlineBtn{background:linear-gradient(180deg,#235579,#0d2a41)!important;
+ color:#f5fcff!important;border:1px solid #75b3d3!important;box-shadow:inset 0 1px #5c9cb4,0 6px 16px #0007!important}
+#mainMenu.szLobby .szPlayNote{font:800 9px/1.6 Arial;color:#91a5b0;text-align:center;letter-spacing:.7px;margin-top:auto}
+#mainMenu.szLobby .szRosterStrip{max-width:1920px;margin:0 auto;padding:12px clamp(12px,2.35vw,40px) 4px;position:relative;z-index:3}
+#mainMenu.szLobby .szRosterStrip>header{display:flex;justify-content:space-between;gap:10px;
+ align-items:center;font:900 12px Arial;color:#8fd7f5;letter-spacing:1.3px;margin-bottom:9px}
+#mainMenu.szLobby .szRosterStrip>header small{font:800 9px Arial;color:#a1b4bc}
+#mainMenu.szLobby .szRosterItems{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+#mainMenu.szLobby .szRosterCard{position:relative;background:linear-gradient(150deg,#253540,#0a121a);
+ border:1px solid #617c8b88;color:#f0f5f8;min-height:106px;padding:10px 7px 9px;
+ display:flex;align-items:center;justify-content:end;flex-direction:column;gap:4px}
+#mainMenu.szLobby .szRosterCard::before{content:"";position:absolute;inset:0 0 auto;height:3px;
+ background:#53758a}
+#mainMenu.szLobby .szRosterCard.selected{border:2px solid #e4b834;
+ background:linear-gradient(155deg,#4d4630,#17232b 70%)}
+#mainMenu.szLobby .szRosterCard.selected::before{background:#f8c936}
+#mainMenu.szLobby .szRosterGlyph{font:38px/1 Arial;color:#9cb7c5;margin-bottom:3px;
+ text-shadow:0 4px 15px #000}
+#mainMenu.szLobby .szRosterCard strong{font:900 12px Arial;letter-spacing:.5px}
+#mainMenu.szLobby .szRosterCard small{font:800 9px Arial;color:#a1c0d2;letter-spacing:.3px}
+#mainMenu.szLobby .szLobbyTabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+ max-width:1920px;margin:12px auto 16px;padding:0 clamp(12px,2.35vw,40px);gap:7px;position:relative;z-index:4}
+#mainMenu.szLobby .szLobbyTabs button{display:flex;align-items:center;justify-content:center;gap:9px;
+ min-height:54px;padding:9px 8px;border:1px solid #637988;background:linear-gradient(#27333d,#121c25);
+ color:#e8f1f4;font:900 13px Arial;letter-spacing:.7px}
+#mainMenu.szLobby .szLobbyTabs button:first-child{background:linear-gradient(#ffe76c,#dba525);
+ color:#16212a;border-color:#ffdc61}
+#mainMenu.szLobby .szLobbyDrawer[hidden]{display:none!important}
+#mainMenu.szLobby .szLobbyDrawer{position:fixed;z-index:45;inset:0;background:#02080cbd;
+ padding:max(22px,5vh) 18px;display:flex;align-items:center;justify-content:center;overflow-y:auto}
+#mainMenu.szLobby .szDrawerCard{width:min(660px,100%);max-height:90dvh;overflow-y:auto;
+ background:linear-gradient(145deg,#192b36,#0a151f);
+ border:1px solid #8da8b478;box-shadow:0 22px 90px #000d;color:#ebf5f9;padding:21px}
+#mainMenu.szLobby .szDrawerCard>header{display:flex;align-items:center;justify-content:space-between;
+ border-bottom:1px solid #829baa55;padding:0 0 12px;margin:0 0 18px}
+#mainMenu.szLobby .szDrawerCard h2{font:900 22px Arial;letter-spacing:1.3px;margin:0}
+#mainMenu.szLobby #szDrawerClose{font:900 21px Arial;padding:5px 12px;
+ color:#f3faff;border:1px solid #708b9b;background:#223947}
+#mainMenu.szLobby #szDrawerContent>p,#mainMenu.szLobby #szDrawerContent p{font:12px/1.6 Arial;color:#c3d2d9}
+#mainMenu.szLobby .szSettingsWrap{display:flex;flex-direction:column;gap:11px}
+#mainMenu.szLobby .szSettingsWrap .trainingOptions{position:relative!important;
+ top:auto!important;bottom:auto!important;left:auto!important;right:auto!important;
+ order:unset!important;display:block!important;width:100%!important;
+ min-width:0!important;height:auto!important;max-height:none!important;
+ overflow:visible!important;margin:0!important;padding:15px!important}
+#mainMenu.szLobby .szSettingsWrap .trainingOptions p{display:block!important}
+#mainMenu.szLobby .szSettingsWrap button:not(.diffBtn):not(.lookModeBtn){width:100%}
+#mainMenu.szLobby .szMatchDrawer .modeSelect{display:block!important;position:static!important;
+ margin:15px 0!important;width:100%!important}
+#mainMenu.szLobby .szMatchDrawer .modeCards{display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+#mainMenu.szLobby .szMatchDrawer .modeCards .modeCard{width:100%!important;min-height:85px!important;
+ padding:11px!important;display:block!important;text-align:left}
+#mainMenu.szLobby .szDrawerAction{background:linear-gradient(#ffe56a,#e7ac26);
+ color:#15212c;border:1px solid #ffe490;padding:15px 18px;font:900 14px Arial;width:100%;margin-top:16px}
+#mainMenu.szLobby .szEquipChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#mainMenu.szLobby .szEquipChoices button{padding:15px 10px;border:1px solid #6d96a8;
+ color:#e5f2fa;background:#1b3749;text-align:left;font:800 12px Arial}
+#mainMenu.szLobby .szTrainingSummary{background:#183143;border:1px solid #53778a;
+ padding:14px;color:#c2edff;font:800 13px/1.5 Arial}
+@media(max-width:1279px){
+ #mainMenu.szLobby .szLobbyBody{grid-template-columns: minmax(150px,21%) minmax(270px,39%) minmax(185px,20%) minmax(180px,20%);
+ gap:9px;padding:12px 14px}
+ #mainMenu.szLobby .szLobbyNews h3{font-size:17px}
+ #mainMenu.szLobby .szNewsFeature,#mainMenu.szLobby .szNewsTile{padding:12px}
+ #mainMenu.szLobby .szLobbyGear{padding:13px 10px}
+ #mainMenu.szLobby #szPlayActions button{height:55px!important;min-height:55px!important;font-size:13px!important}
+}
+@media(max-width:1000px){
+ #mainMenu.szLobby .menuHeader .brand{font-size:20px}
+ #mainMenu.szLobby .szLobbyBody{grid-template-columns:1.55fr 1fr;grid-template-areas:"stage gear" "stage play" "news news";
+  gap:11px;min-height:0}
+ #mainMenu.szLobby .szLobbyNews{grid-area:news;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+ #mainMenu.szLobby .szLobbyStage{grid-area:stage;min-height:510px}
+ #mainMenu.szLobby .szLobbyGear{grid-area:gear}
+ #mainMenu.szLobby .szLobbyPlay{grid-area:play}
+ #mainMenu.szLobby .szMapCard{min-height:105px}
+ #mainMenu.szLobby #szPlayActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ #mainMenu.szLobby #szPlayActions #onlineBtn{grid-column:1/-1}
+ #mainMenu.szLobby .szRosterItems{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #mainMenu.szLobby .szLobbyTabs button{font-size:11px}
+}
+@media(max-width:700px){
+ #mainMenu.szLobby .menuHeader{height:64px!important;min-height:64px!important;
+ padding:0 10px!important;gap:7px}
+ #mainMenu.szLobby .menuHeader .brand{left:48%;font-size:17px}
+ #mainMenu.szLobby .menuHeader .brandIcon{display:none}
+ #mainMenu.szLobby .menuHeader .brand small{font-size:6px;letter-spacing:2px}
+ #mainMenu.szLobby .szProfile{min-width:0;max-width:33%;gap:5px}
+ #mainMenu.szLobby .szProfileFace{width:31px;height:31px;font-size:18px}
+ #mainMenu.szLobby .szProfile b{font-size:10px;max-width:94px}
+ #mainMenu.szLobby .szProfile small{font-size:7px}
+ #mainMenu.szLobby .szTopStatus{gap:4px}
+ #mainMenu.szLobby .szTopStatus>span{display:none}
+ #mainMenu.szLobby .szTopStatus button{font-size:15px;padding:5px;min-height:33px}
+ #mainMenu.szLobby #szTopFriends{font-size:0}
+ #mainMenu.szLobby #szTopFriends::first-letter{font-size:17px}
+ #mainMenu.szLobby .szLobbyBody{grid-template-columns:1fr 1fr;grid-template-areas:"stage stage" "gear play" "news news";
+  padding:9px 10px;gap:9px}
+ #mainMenu.szLobby .szLobbyStage{min-height:440px}
+ #mainMenu.szLobby .szLobbyGear{padding:11px}
+ #mainMenu.szLobby .szLobbyGear h2{font-size:19px}
+ #mainMenu.szLobby .szLobbyGear>p{font-size:10px;margin-bottom:7px;min-height:0}
+ #mainMenu.szLobby .szStatRow{grid-template-columns:52px 1fr;gap:4px;margin:5px 0}
+ #mainMenu.szLobby .szStatRow label{font-size:8px}
+ #mainMenu.szLobby .szSelectedWeapon{margin:11px 0 7px;padding:7px}
+ #mainMenu.szLobby .szSelectedWeapon b{font-size:11px}
+ #mainMenu.szLobby .szPowerLabel{font-size:9px}
+ #mainMenu.szLobby .szPowerLabel small{font-size:8px}
+ #mainMenu.szLobby #szPlayActions{display:flex;flex-direction:column;gap:7px}
+ #mainMenu.szLobby #szPlayActions button{min-height:53px!important;height:53px!important;
+ font-size:11px!important;padding:7px 5px!important}
+ #mainMenu.szLobby .szMapCard{min-height:105px;padding:10px}
+ #mainMenu.szLobby .szMapCard h3{font-size:13px}
+ #mainMenu.szLobby .szPlayNote{font-size:8px}
+ #mainMenu.szLobby .szLobbyNews{grid-template-columns:1fr}
+ #mainMenu.szLobby .szNewsFeature,#mainMenu.szLobby .szNewsTile{min-height:108px}
+ #mainMenu.szLobby .szRosterItems{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ #mainMenu.szLobby .szRosterStrip>header{font-size:10px}
+ #mainMenu.szLobby .szRosterStrip>header small{display:none}
+ #mainMenu.szLobby .szRosterCard{min-height:93px}
+ #mainMenu.szLobby .szRosterCard strong{font-size:10px}
+ #mainMenu.szLobby .szRosterCard small{font-size:8px}
+ #mainMenu.szLobby .szLobbyTabs{display:flex;gap:5px;overflow-x:auto;margin-bottom:30px}
+ #mainMenu.szLobby .szLobbyTabs button{min-width:125px;min-height:51px;white-space:nowrap;font-size:10px}
+ #mainMenu.szLobby .szDrawerCard{padding:12px}
+ #mainMenu.szLobby .szMatchDrawer .modeCards{grid-template-columns:1fr!important}
+}
+@media(max-width:390px){
+ #mainMenu.szLobby .szLobbyBody{grid-template-columns:1fr;grid-template-areas:"stage" "gear" "play" "news"}
+ #mainMenu.szLobby .szLobbyStage{min-height:380px}
+ #mainMenu.szLobby #szPlayActions{display:grid;grid-template-columns:1fr 1fr}
+ #mainMenu.szLobby #szPlayActions #onlineBtn{grid-column:1/-1}
+}
+@media(max-height:760px) and (min-width:1001px){
+ #mainMenu.szLobby .szLobbyBody{min-height:510px}
+ #mainMenu.szLobby .szLobbyStage{min-height:490px}
+ #mainMenu.szLobby .szRosterCard{min-height:85px}
+ #mainMenu.szLobby .szLobbyTabs{margin-bottom:14px}
+}
