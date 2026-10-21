@@ -1696,7 +1696,7 @@ loadoutSelect.addEventListener('change',()=>{startingWeapon=Number(loadoutSelect
  refreshLoadout();
 });
 refreshLoadout();
-function resetGame(){energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=mode==='zombie'?0:360;blue=0;red=0;ended=false;touchMove={x:0,y:0};
+function resetGame(){energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=mode==='zombie'?0:360;blue=0;red=0;ended=false;touchMove={x:0,y:0};resetMinimapDiscovery();
  createBots();spawnPlayer();resetMonsterEncounter();updateHud();updateScores();}
 // Navmesh over both bases and the enlarged maze. 2-unit cells + full BFS,
 // with enough search depth to reach from one end of this 164-unit map to the other.
@@ -3362,27 +3362,93 @@ B(.18,-.26,.12,.28,.21,.40,13);B(.24,-.34,-.05,.28,.22,.3,14);B(-.23,-.36,.55,.2
 if(player.weapon===6&&player.energyChargeStart>=0){const q=clamp((nowSec-player.energyChargeStart)/2,0,1);B(0,.03,1.77,.14+q*.30,.14+q*.30,.17+q*.23,25);}
 if(player.flash>0&&player.weapon!==8){B(0,.045,muzzle,.37,.37,.22,18);B(0,.045,muzzle+.20,.14,.14,.28,15);}
 }
-function drawMinimap(){const can=$('minimap'),ctx=can.getContext('2d'),W=can.width,H=can.height,s=Math.min((W-10)/112,(H-10)/168);
-ctx.clearRect(0,0,W,H);ctx.fillStyle='#0d202c';ctx.fillRect(0,0,W,H);
-ctx.save();ctx.translate(W/2,H/2);ctx.scale(s,s);
-ctx.fillStyle='#817f76';ctx.fillRect(-54,-60,108,120);
-ctx.fillStyle='#80929b';ctx.fillRect(-17,-82,34,22);
-ctx.fillStyle='#ae8d78';ctx.fillRect(-17,60,34,22);
-ctx.fillStyle='#4b4655';
-for(const c of colliders){let w=c.X-c.x,d=c.Z-c.z;if(w>22&&d>22)continue;ctx.fillRect(c.x,c.z,w,d);}
-ctx.fillStyle='#cb8dda';ctx.fillRect(-10,-9,20,18);
-for(const b of bots){if(!b.alive||onlineRole==='guest'&&b.id===onlineSlot)continue;ctx.fillStyle=b.team===0&&(mode==='tdm'||mode==='zombie')?'#60c2ff':'#f65750';ctx.beginPath();ctx.arc(b.x,b.z,.7,0,Math.PI*2);ctx.fill();}
-if(mode==='zombie'){
- for(const zombie of zombies)if(zombie.alive){
-  ctx.fillStyle=zombie.agile?'#ffbd5e':'#84bb72';
-  ctx.beginPath();ctx.arc(zombie.x,zombie.z,zombie.agile?.85:.56,0,Math.PI*2);ctx.fill();
- }
- if(boss?.alive){ctx.fillStyle='#fe72c9';ctx.beginPath();ctx.arc(boss.x,boss.z,2.4,0,Math.PI*2);ctx.fill();}
- for(const pack of ammoDrops){
-  ctx.fillStyle='#72eeff';ctx.fillRect(pack.x-.65,pack.z-.65,1.3,1.3);
+// Player-centered local minimap with per-player exploration. A world tile is
+// remembered once the player comes near it; distant unexplored regions stay dark.
+const MINIMAP_CELL=3.5,MINIMAP_X0=-56,MINIMAP_Z0=-84;
+const MINIMAP_COLS=32,MINIMAP_ROWS=48,MINIMAP_SPAN=47;
+let minimapExplored=new Uint8Array(MINIMAP_COLS*MINIMAP_ROWS);
+function resetMinimapDiscovery(){minimapExplored.fill(0);}
+function minimapCellAt(x,z){
+ const col=Math.floor((x-MINIMAP_X0)/MINIMAP_CELL);
+ const row=Math.floor((z-MINIMAP_Z0)/MINIMAP_CELL);
+ return col>=0&&row>=0&&col<MINIMAP_COLS&&row<MINIMAP_ROWS?
+  row*MINIMAP_COLS+col:-1;
+}
+function minimapIsDiscovered(x,z){
+ const i=minimapCellAt(x,z);return i>=0&&minimapExplored[i]===1;
+}
+function revealMinimap(x,z,radius=12){
+ const minC=Math.max(0,Math.floor((x-radius-MINIMAP_X0)/MINIMAP_CELL));
+ const maxC=Math.min(MINIMAP_COLS-1,Math.ceil((x+radius-MINIMAP_X0)/MINIMAP_CELL));
+ const minR=Math.max(0,Math.floor((z-radius-MINIMAP_Z0)/MINIMAP_CELL));
+ const maxR=Math.min(MINIMAP_ROWS-1,Math.ceil((z+radius-MINIMAP_Z0)/MINIMAP_CELL));
+ for(let row=minR;row<=maxR;row++)for(let col=minC;col<=maxC;col++){
+  const cx=MINIMAP_X0+(col+.5)*MINIMAP_CELL;
+  const cz=MINIMAP_Z0+(row+.5)*MINIMAP_CELL;
+  if(Math.hypot(cx-x,cz-z)<=radius)minimapExplored[row*MINIMAP_COLS+col]=1;
  }
 }
-ctx.translate(player.x,player.z);ctx.rotate(-player.yaw);ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(0,1.6);ctx.lineTo(-1.1,-1.25);ctx.lineTo(1.1,-1.25);ctx.closePath();ctx.fill();ctx.restore();}
+function drawMinimap(){
+ const can=$('minimap'),ctx=can.getContext('2d');if(!ctx)return;
+ const W=can.width,H=can.height,scale=Math.min(W,H)/MINIMAP_SPAN;
+ const minX=player.x-MINIMAP_SPAN/2,maxX=player.x+MINIMAP_SPAN/2;
+ const minZ=player.z-MINIMAP_SPAN/2,maxZ=player.z+MINIMAP_SPAN/2;
+ revealMinimap(player.x,player.z);
+ ctx.clearRect(0,0,W,H);ctx.fillStyle='#071621';ctx.fillRect(0,0,W,H);
+ ctx.save();ctx.beginPath();ctx.rect(0,0,W,H);ctx.clip();
+ // Camera follows the player's live world position; no full-map zoom-out.
+ ctx.translate(W/2,H/2);ctx.scale(scale,scale);
+ ctx.translate(-player.x,-player.z);
+ ctx.fillStyle='#817f76';ctx.fillRect(-54,-60,108,120);
+ ctx.fillStyle='#80929b';ctx.fillRect(-17,-82,34,22);
+ ctx.fillStyle='#ae8d78';ctx.fillRect(-17,60,34,22);
+ ctx.fillStyle='#4b4655';
+ for(const c of colliders){
+  if(c.X<minX||c.x>maxX||c.Z<minZ||c.z>maxZ)continue;
+  const w=c.X-c.x,d=c.Z-c.z;if(w>22&&d>22)continue;
+  ctx.fillRect(c.x,c.z,w,d);
+ }
+ ctx.fillStyle='#cb8dda';ctx.fillRect(-10,-9,20,18);
+ // Conceal undiscovered map cells until the operative approaches.
+ const left=Math.max(0,Math.floor((minX-MINIMAP_X0)/MINIMAP_CELL));
+ const right=Math.min(MINIMAP_COLS-1,Math.ceil((maxX-MINIMAP_X0)/MINIMAP_CELL));
+ const top=Math.max(0,Math.floor((minZ-MINIMAP_Z0)/MINIMAP_CELL));
+ const bottom=Math.min(MINIMAP_ROWS-1,Math.ceil((maxZ-MINIMAP_Z0)/MINIMAP_CELL));
+ for(let row=top;row<=bottom;row++)for(let col=left;col<=right;col++){
+  if(minimapExplored[row*MINIMAP_COLS+col])continue;
+  ctx.fillStyle='#071522';
+  ctx.fillRect(MINIMAP_X0+col*MINIMAP_CELL-.02,
+   MINIMAP_Z0+row*MINIMAP_CELL-.02,MINIMAP_CELL+.05,MINIMAP_CELL+.05);
+ }
+ // Threat markers show only when within explored nearby locations.
+ for(const b of bots){
+  if(!b.alive||onlineRole==='guest'&&b.id===onlineSlot)continue;
+  if(!minimapIsDiscovered(b.x,b.z))continue;
+  ctx.fillStyle=b.team===0&&(mode==='tdm'||mode==='zombie')?'#60c2ff':'#f65750';
+  ctx.beginPath();ctx.arc(b.x,b.z,.95,0,Math.PI*2);ctx.fill();
+ }
+ if(mode==='zombie'){
+  for(const z of zombies){
+   if(!z.alive||!minimapIsDiscovered(z.x,z.z))continue;
+   ctx.fillStyle=z.agile?'#ffbd5e':'#84bb72';ctx.beginPath();
+   ctx.arc(z.x,z.z,z.agile?1.0:.8,0,Math.PI*2);ctx.fill();
+  }
+  if(boss?.alive&&minimapIsDiscovered(boss.x,boss.z)){
+   ctx.fillStyle='#fe72c9';ctx.beginPath();ctx.arc(boss.x,boss.z,2.6,0,Math.PI*2);ctx.fill();
+  }
+  for(const pack of ammoDrops){
+   if(!minimapIsDiscovered(pack.x,pack.z))continue;
+   ctx.fillStyle='#72eeff';ctx.fillRect(pack.x-.7,pack.z-.7,1.4,1.4);
+  }
+ }
+ ctx.translate(player.x,player.z);ctx.rotate(-player.yaw);
+ ctx.fillStyle='#f3ffff';ctx.strokeStyle='#122430';ctx.lineWidth=.32;
+ ctx.beginPath();ctx.moveTo(0,1.85);ctx.lineTo(-1.55,-1.25);
+ ctx.lineTo(1.55,-1.25);ctx.closePath();ctx.fill();ctx.stroke();
+ ctx.restore();
+ // Local scan indicator: a small compass tick reinforces the moving map.
+ ctx.fillStyle='#82dfeb';ctx.fillRect(W/2-1,2,2,4);
+}
 
 function drawAtmosphereFX(ctx,W,H){
  const t=nowSec||0;
