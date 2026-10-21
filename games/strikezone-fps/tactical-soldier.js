@@ -115,7 +115,8 @@ export async function loadTacticalSoldiers(THREE,scene){
    const scale=TARGET_HEIGHT/size.y;
    const mid=posedBox.getCenter(new THREE.Vector3());
    normalizedBody.scale.setScalar(scale);
-   normalizedBody.position.set(-mid.x*scale,-posedBox.min.y*scale,-mid.z*scale);
+   // The +X/+Z offsets compensate for the following 180° rotation.
+   normalizedBody.position.set(mid.x*scale,-posedBox.min.y*scale,mid.z*scale);
    normalizedBody.rotation.y=Math.PI;
    normalizedBody.updateWorldMatrix(true,true);
    const check=new THREE.Box3().setFromObject(normalizedBody,true);
