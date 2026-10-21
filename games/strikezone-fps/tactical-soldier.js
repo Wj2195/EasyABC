@@ -22,12 +22,11 @@ export async function loadTacticalSoldiers(THREE,scene){
  }
  if(!asset?.scene)throw new Error('Rigged soldier failed to load: '+(lastError?.message||'asset missing'));
  const clips=Object.fromEntries(asset.animations.map(a=>[a.name.toLowerCase(),a]));
- const bounds=new THREE.Box3().setFromObject(asset.scene);
- const height=bounds.max.y-bounds.min.y;
- if(!(height>.1&&Number.isFinite(height)))throw new Error('Invalid human body height');
- const norm=1.83/height;
- const center=bounds.getCenter(new THREE.Vector3());
- const moved=new THREE.Vector3(-center.x*norm,-bounds.min.y*norm,-center.z*norm);
+ // Bounds from the static imported scene are NOT reliable for Mixamo skinning.
+ // We fit each animated rig after its first Idle pose instead.
+ const TARGET_HEIGHT=1.83;
+ const initialBounds=new THREE.Box3().setFromObject(asset.scene,true);
+ if(initialBounds.isEmpty())throw new Error('Imported soldier has no visible geometry');
  const TEAM=[0x68c7f9,0xfa7882];
  const materialSteel=new THREE.MeshStandardMaterial({color:0x252d32,roughness:.54,metalness:.64});
  const materialGrip=new THREE.MeshStandardMaterial({color:0x111a20,roughness:.83});
@@ -95,16 +94,36 @@ export async function loadTacticalSoldiers(THREE,scene){
   // Preserve the imported GLB scene's native transform. Overwriting rig.scale
   // is why boots became enormous while world-sized weapon props floated.
   const normalizedBody=new THREE.Group();
-  normalizedBody.scale.setScalar(norm);
-  normalizedBody.position.copy(moved);
-  normalizedBody.rotation.y=Math.PI; // Soldier faces -Z, our game uses +Z
   normalizedBody.add(rig);
   figure.add(normalizedBody);
-  normalizedBody.updateMatrixWorld(true);
-  const visibleBody=new THREE.Box3().setFromObject(normalizedBody);
-  const visibleHeight=visibleBody.getSize(new THREE.Vector3()).y;
-  if(!Number.isFinite(visibleHeight)||visibleHeight<1.1||visibleHeight>2.6)
-   throw new Error('Invalid normalized soldier height: '+visibleHeight);
+  let calibrated=false;
+  function calibrateAnimatedBody(){
+   if(calibrated)return;
+   // Measure actual skinned vertices AFTER AnimationMixer applies the idle pose.
+   // Computing the bounding box at load time caused only enormous boots to appear.
+   normalizedBody.position.set(0,0,0);
+   normalizedBody.rotation.set(0,0,0);
+   normalizedBody.scale.set(1,1,1);
+   container.position.set(0,0,0);
+   container.rotation.set(0,0,0);
+   figure.rotation.set(0,0,0);
+   rig.updateWorldMatrix(true,true);
+   const posedBox=new THREE.Box3().setFromObject(rig,true);
+   const size=posedBox.getSize(new THREE.Vector3());
+   if(!Number.isFinite(size.y)||size.y<=.10)
+     throw new Error('Animated soldier has invalid bounds');
+   const scale=TARGET_HEIGHT/size.y;
+   const mid=posedBox.getCenter(new THREE.Vector3());
+   normalizedBody.scale.setScalar(scale);
+   normalizedBody.position.set(-mid.x*scale,-posedBox.min.y*scale,-mid.z*scale);
+   normalizedBody.rotation.y=Math.PI;
+   normalizedBody.updateWorldMatrix(true,true);
+   const check=new THREE.Box3().setFromObject(normalizedBody,true);
+   const actualHeight=check.getSize(new THREE.Vector3()).y;
+   if(!Number.isFinite(actualHeight)||Math.abs(actualHeight-TARGET_HEIGHT)>.16)
+     throw new Error('Animated soldier normalization failed: '+actualHeight);
+   calibrated=true;
+  }
   const bodyColors=[];
   rig.traverse(object=>{
    if(!object.isMesh)return;
@@ -121,7 +140,7 @@ export async function loadTacticalSoldiers(THREE,scene){
   const patches=[];
   for(const side of [-1,1]){
    const patch=cube(figure,new THREE.MeshStandardMaterial({color:TEAM[0],roughness:.70}),side*.27,1.50,.08,.09,.13,.20);
-   patch.rotation.z=side*.12;patches.push(patch);
+   patch.rotation.z=side*.12;patch.visible=!preview;patches.push(patch);
   }
   const weaponHost=new THREE.Group();figure.add(weaponHost);
   // Do not show uncalibrated block weapons in the close-up operator preview:
@@ -165,8 +184,9 @@ export async function loadTacticalSoldiers(THREE,scene){
     changePose(walking?(move>.23?'run':'walk'):'idle');
     // Only advance animation clocks when visible, cap to avoid giant jumps.
     mixer.update(Math.min(.07,Math.max(.001,delta)));
+    calibrateAnimatedBody();
     if(preview){
-     container.position.set(0,.06,0);
+     container.position.set(0,0,0);
      container.rotation.y=rotation;
      figure.rotation.set(0,Math.sin(previewTime*.68)*.012,0);
      muzzle.visible=false;
