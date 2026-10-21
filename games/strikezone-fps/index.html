@@ -2339,7 +2339,8 @@ function aiListen(bot){
  for(const sound of aiSounds){
   if(sound.id<=(bot.heardID||0)||nowSec-sound.time>3.5||
      !sound.actor?.alive||sound.actor===bot)continue;
-  if((mode==='tdm'||mode==='zombie')&&sound.actor.team===bot.team)continue;
+  if((mode==='tdm'||mode==='zombie')&&
+     (sound.actor===player?0:sound.actor.team)===bot.team)continue;
   const dist=hypot(sound.x-bot.x,sound.z-bot.z);
   if(dist>sound.radius||dist>sound.radius*.65&&!clearPath(bot.x,bot.z,sound.x,sound.z))continue;
   const rank=sound.radius-dist+(sound.kind==='boom'?10:0);
