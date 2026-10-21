@@ -2023,7 +2023,7 @@ loadoutSelect.addEventListener('change',()=>{startingWeapon=Number(loadoutSelect
  refreshLoadout();
 });
 refreshLoadout();
-function resetGame(){activeMobileFire.clear();player.shieldPowerUntil=0;player.shieldPowerReadyAt=0;energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=mode==='zombie'?0:360;blue=0;red=0;ended=false;touchMove={x:0,y:0};resetMinimapDiscovery();
+function resetGame(){aiSounds.length=0;aiRadio.clear();aiNoiseID=0;activeMobileFire.clear();player.shieldPowerUntil=0;player.shieldPowerReadyAt=0;energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=mode==='zombie'?0:360;blue=0;red=0;ended=false;touchMove={x:0,y:0};resetMinimapDiscovery();
  createBots();spawnPlayer();resetMonsterEncounter();updateHud();updateScores();}
 // Navmesh over both bases and the enlarged maze. 2-unit cells + full BFS,
 // with enough search depth to reach from one end of this 164-unit map to the other.
@@ -2318,6 +2318,86 @@ function shieldBashPlayer(){
   if((dx*Math.sin(player.yaw)+dz*Math.cos(player.yaw))/d<.55)continue;
   damageMonster(creature,w.damage,player);announce('SHIELD BASH',.65);break;
  }
+}
+// v3.41: host-only sound perception, visual detection and squad tactics.
+const aiSounds=[],aiRadio=new Map();let aiNoiseID=0;
+function aiNoise(actor,radius=55,kind='gun',x=actor?.x,z=actor?.z){
+ if(!running||ended||!actor||!Number.isFinite(x)||!Number.isFinite(z))return;
+ if(nowSec-(actor._lastAiNoise??-99)<(kind==='steps'?.65:.17))return;
+ actor._lastAiNoise=nowSec;
+ aiSounds.push({id:++aiNoiseID,actor,x,z,radius,time:nowSec,kind});
+ if(aiSounds.length>24)aiSounds.shift();
+}
+function aiListen(bot){
+ if(nowSec<(bot.nextHear||0))return;
+ bot.nextHear=nowSec+.16+(bot.id%4)*.019;
+ let cue=null,score=-Infinity;
+ for(const sound of aiSounds){
+  if(sound.id<=(bot.heardID||0)||nowSec-sound.time>3.5||
+     !sound.actor?.alive||sound.actor===bot)continue;
+  if((mode==='tdm'||mode==='zombie')&&sound.actor.team===bot.team)continue;
+  const dist=hypot(sound.x-bot.x,sound.z-bot.z);
+  if(dist>sound.radius||dist>sound.radius*.65&&!clearPath(bot.x,bot.z,sound.x,sound.z))continue;
+  const rank=sound.radius-dist+(sound.kind==='boom'?10:0);
+  if(rank>score){score=rank;cue=sound;}
+ }
+ if(!cue)return;
+ bot.heardID=cue.id;bot.heardX=cue.x;bot.heardZ=cue.z;
+ bot.alertUntil=nowSec+(cue.kind==='steps'?3:5.5);
+ bot.targetRefresh=0;bot.pathRefresh=0;
+}
+function aiSpot(bot){
+ if(nowSec<(bot.nextSight||0))return null;
+ bot.nextSight=nowSec+.11+(bot.id%4)*.025;
+ let best=null,score=Infinity;
+ const targets=[...bots];
+ if(player.alive)targets.push(player);
+ for(const t of targets){
+  if(t===bot||!t.alive||((mode==='tdm'||mode==='zombie')&&
+      t.team===bot.team))continue;
+  const dx=t.x-bot.x,dz=t.z-bot.z,dist=Math.hypot(dx,dz);
+  if(dist>=39||dist<.01)continue;
+  if((dx*Math.sin(bot.yaw)+dz*Math.cos(bot.yaw))/dist<(dist<7?-.65:-.3))continue;
+  if(!clearPath(bot.x,bot.z,t.x,t.z))continue;
+  const rank=dist-(t===bot.lastAttacker?10:0)-(t===bot.target?6:0);
+  if(rank<score){score=rank;best=t;}
+ }
+ return best;
+}
+function aiBroadcast(bot,target){
+ if(!target?.alive||(mode!=='tdm'&&mode!=='zombie'))return;
+ const old=aiRadio.get(bot.team);
+ if(old?.target===target&&nowSec-old.time<.4)return;
+ aiRadio.set(bot.team,{target,x:target.x,z:target.z,time:nowSec});
+}
+function aiSearchPoint(bot){
+ const report=aiRadio.get(bot.team);
+ if(report?.target?.alive&&report.target.team!==bot.team&&
+    nowSec-report.time<4.4&&hypot(report.x-bot.x,report.z-bot.z)<75)
+   return {x:report.x,z:report.z};
+ if((bot.alertUntil||0)>nowSec&&Number.isFinite(bot.heardX))
+   return {x:bot.heardX,z:bot.heardZ};
+ return null;
+}
+function aiFlank(bot,target){
+ if(!target?.alive||hypot(target.x-bot.x,target.z-bot.z)>25)return null;
+ if(nowSec<(bot.nextFlank||0)&&bot.flankTarget===target)return bot.flankPoint||null;
+ bot.nextFlank=nowSec+2.7;bot.flankTarget=target;bot.flankPoint=null;
+ if(!bots.some(a=>a!==bot&&a.alive&&a.team===bot.team&&a.target===target))return null;
+ const side=bot.id%2?-1:1,theta=target.yaw||0;
+ const x=target.x+Math.cos(theta)*side*5-Math.sin(theta)*3;
+ const z=target.z-Math.sin(theta)*side*5-Math.cos(theta)*3;
+ if(!collidesCircle(x,z,.47)&&(clearPath(bot.x,bot.z,x,z)||
+    navigation(bot.x,bot.z,x,z).length))bot.flankPoint={x,z};
+ return bot.flankPoint;
+}
+function aiDefensivePower(bot,target,dist,visible){
+ if(!bot.alive||shieldPowerActive(bot)||shieldPowerRemaining(bot)>0)return;
+ const fire=target?.alive&&nowSec-Math.max(target.lastShot??-99,
+   target.lastFiredAt??-99)<.8;
+ const threatened=visible&&dist<24;
+ if(threatened&&((fire&&bot.hp<85)||(bot.hp<75&&
+    nowSec-(bot.lastDamageAt??-99)<2)))activateShieldPower(bot);
 }
 // Tactical AI: threat evaluation, pursuit, line-of-sight, flanking, cover and wall recovery.
 function pickTarget(bot){
