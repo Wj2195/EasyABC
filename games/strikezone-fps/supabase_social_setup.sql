@@ -1,10 +1,13 @@
 -- STRIKEZONE FPS v3.36 — registered players, friendships and game invitations
 -- Run once in the Supabase SQL Editor for the existing EasyABC project.
 -- Uses the existing Supabase Auth password hashing/session system.
--- IMPORTANT: In Supabase Authentication > Providers > Email, disable
--- "Confirm email" for USERNAME-ONLY synthetic-email registrations, or
--- registration cannot complete. Password recovery requires a later real
--- recovery-email feature; never use synthetic addresses to send email.
+-- IMPORTANT: Username-only synthetic-email registration needs email
+-- confirmation disabled for the Auth project. THIS SETTING AFFECTS OTHER
+-- APPS USING THE SAME SUPABASE PROJECT. On the shared EasyABC project,
+-- do NOT disable confirmation without assessing that project-wide impact.
+-- Prefer a separate STRIKEZONE Supabase Auth project for username-only
+-- accounts, or a future real-email signup / verified-email recovery flow.
+-- Password recovery is not possible for these synthetic addresses.
 --
 -- Registered STRIKEZONE users log in with USERNAME + PASSWORD.
 -- Synthetic Auth email: sz_<username>@accounts.strikezone.invalid
@@ -86,7 +89,7 @@ create policy "sz_invites_visible_to_members"
 
 -- After 30 Oct 2026, explicit grants are required for newly created public tables.
 revoke all on public.sz_profiles,public.sz_friend_requests,
- public.sz_friendships,public.sz_room_invites from anon,authenticated;
+ public.sz_friendships,public.sz_room_invites from PUBLIC,anon,authenticated;
 grant select on public.sz_profiles,public.sz_friend_requests,
  public.sz_friendships,public.sz_room_invites to authenticated;
 grant all on public.sz_profiles,public.sz_friend_requests,
