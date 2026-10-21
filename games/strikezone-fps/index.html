@@ -3182,6 +3182,8 @@ function updateBots(dt){
     b.retreatGoal=null;b.retreatReplan=0;b.retreatCooldown=nowSec+2;
     b.patrolGoal=null;b.patrolUntil=0;b.patrolRecent=[];b.patrolRegion=-1;
     b.lastSeenAt=-99;b.missionThreatUntil=0;
+    b.heardID=0;b.heardX=undefined;b.heardZ=undefined;b.alertUntil=0;
+    b.nextSight=0;b.nextHear=0;b.flankTarget=null;b.flankPoint=null;
    }
    continue;
   }
@@ -3192,10 +3194,15 @@ function updateBots(dt){
   if(b.aimReadyAt===undefined)b.aimReadyAt=nowSec+.4;
   if(b.lastSeenAt===undefined)b.lastSeenAt=-99;
   if(b.stuckFor===undefined)b.stuckFor=0;
+  aiListen(b);
   b.shootCD-=dt;b.targetRefresh-=dt;b.pathRefresh-=dt;
   const previous=b.target;
   if(b.targetRefresh<=0||!b.target||!b.target.alive){
-   b.target=pickTarget(b);b.targetRefresh=mode==='zombie'?rand(.24,.44):rand(.45,.9);
+   b.target=pickTarget(b);b.targetRefresh=mode==='zombie'?rand(.24,.44):rand(.34,.56);
+  }
+  if(mode!=='zombie'||!boss?.alive){
+   const immediate=aiSpot(b);
+   if(immediate)b.target=immediate;
   }
   if(previous!==b.target){
    resetBotBurst(b);
@@ -3203,15 +3210,21 @@ function updateBots(dt){
    // Never throw away the Overlord navigation route when a nearby zombie
    // passes across a soldier's sights.
    if(mode!=='zombie'||!boss?.alive){b.path=[];b.pathRefresh=0;}
-   b.aimReadyAt=nowSec+(mode==='zombie'&&b.target?.monster?reaction*.43:reaction)+rand(.06,.14);
+   b.aimReadyAt=nowSec+(mode==='zombie'&&b.target?.monster?.09:
+    skill==='rookie'?.20:skill==='veteran'?.045:.09);
+   if(nowSec-b.lastFiredAt>.55)b.shootCD=Math.min(b.shootCD,.12);
+   b.nextFlank=0;
   }
   const tar=b.target;
   const dist=tar?hypot(tar.x-b.x,tar.z-b.z):Infinity;
   const visible=!!tar&&dist<33&&clearPath(b.x,b.z,tar.x,tar.z);
   maybeBotShieldPower(b,tar,dist,visible);
+  aiDefensivePower(b,tar,dist,visible);
   if(visible){
-   if(nowSec-b.lastSeenAt>2)b.aimReadyAt=Math.max(b.aimReadyAt,nowSec+reaction*.6);
+   if(nowSec-b.lastSeenAt>2)b.aimReadyAt=Math.min(b.aimReadyAt,
+    nowSec+(skill==='rookie'?.17:skill==='veteran'?.03:.07));
    b.lastSeenAt=nowSec;b.lastSeenX=tar.x;b.lastSeenZ=tar.z;
+   aiBroadcast(b,tar);
   }
   const danger=b.lastAttacker?.alive?b.lastAttacker:tar;
   botRecoveryDecision(b,danger,visible,dt);
@@ -3220,7 +3233,8 @@ function updateBots(dt){
   // bot down the same middle lane. Until contact, fan out around the map.
   const bossMission=mode==='zombie'&&!!boss?.alive;
   const seeking=!!tar&&(bossMission||visible||dist<21||nowSec-b.lastSeenAt<4);
-  if(!withdrawing&&!seeking){
+  const investigate=aiSearchPoint(b),searching=!seeking&&!!investigate;
+  if(!withdrawing&&!seeking&&!searching){
    b.aiMode='patrol';
    if(!b.patrolGoal||nowSec>b.patrolUntil||
        hypot(b.patrolGoal.x-b.x,b.patrolGoal.z-b.z)<2.3){
@@ -3228,7 +3242,7 @@ function updateBots(dt){
     b.patrolUntil=nowSec+(b.patrolGoal?rand(10,20):1);
     b.path=[];b.pathRefresh=0;
    }
-  }else if(!withdrawing)b.aiMode='engage';
+  }else if(!withdrawing)b.aiMode=searching?'investigate':'engage';
   if(!withdrawing&&seeking)botChooseWeapon(b,dist,visible);
   const w=weapons[b.weapon];
   if(nowSec>b.tacticUntil){
@@ -3245,6 +3259,7 @@ function updateBots(dt){
   const pursue=goRecovery||
     (bossMission?boss:
      (b.aiMode==='patrol'?b.patrolGoal:
+      b.aiMode==='investigate'?investigate:
       (tar&&(visible?tar:(nowSec-b.lastSeenAt<4?
        {x:b.lastSeenX,z:b.lastSeenZ}:tar)))))||{x:b.x,z:b.z};
   if(b.pathRefresh<=0){
@@ -3269,6 +3284,10 @@ function updateBots(dt){
    const tx=tar.x+Math.cos(tar.yaw)*side*3-Math.sin(tar.yaw)*.6;
    const tz=tar.z-Math.sin(tar.yaw)*side*3-Math.cos(tar.yaw)*.6;
    if(!collidesCircle(tx,tz,.45))flankPoint={x:tx,z:tz};
+  }
+  if(b.aiMode==='engage'&&visible&&tar?.alive&&b.weapon!==7){
+   const flank=aiFlank(b,tar);
+   if(flank&&hypot(flank.x-b.x,flank.z-b.z)>1.8)flankPoint=flank;
   }
   const bossAtAttackRange=bossMission&&tar===boss&&visible&&
       hypot(boss.x-b.x,boss.z-b.z)<Math.max(7,b.preferredRange+3);
@@ -3316,7 +3335,7 @@ function updateBots(dt){
     danger:(visible&&tar?tar:go);
   const yaw=Math.atan2(face.x-b.x,face.z-b.z);
   const rotation=(yaw-b.yaw+Math.PI*3)%(Math.PI*2)-Math.PI;
-  const angularSpeed=w.shield?2.35:4;
+  const angularSpeed=w.shield?5.2:skill==='veteran'?11.5:skill==='rookie'?7.5:9.5;
   b.yaw+=clamp(rotation,-dt*angularSpeed,dt*angularSpeed);
   if(b.aiMode==='engage'&&tar)botAttack(b,tar,dist,visible,accuracy,cooldown,rotation);
   else{resetBotBurst(b);b.chargeStart=-1;}
