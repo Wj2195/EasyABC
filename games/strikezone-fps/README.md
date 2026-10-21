@@ -1,6 +1,6 @@
-# STRIKEZONE FPS — Solo + Online Multiplayer v3.33
+# STRIKEZONE FPS — Solo + Online Multiplayer v3.34
 
-**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.33
+**Play:** https://wj2195.github.io/EasyABC/games/strikezone-fps/?v=3.34
 
 Original browser-based 3D FPS with offline AI operations and private-room online Team Deathmatch.
 
@@ -503,3 +503,15 @@ Applied the mobile-landscape reference layout (the user's numbered screenshot):
 The new positions activate for touch/coarse-pointer **landscape mobile view**, without changing desktop controls. Existing mobile full-screen and landscape requests remain available.
 
 **Checks:** Embedded script syntax validation; test that local minimap explores new cells (38 initial, 74 after moving in a synthetic scenario), preserves visited tiles and resets between rounds; test that both FIRE buttons can be held simultaneously and independently released; CSS checks for all 11 layout targets. Device-specific landscape visual testing is still recommended.
+
+
+## v3.34 — SHIELD POWER (separate defensive ability)
+
+- **New operative ability:** Shield Power is not in the weapon inventory and never participates in weapon swap. Press **Q** on desktop, or tap the cyan **◈ SHIELD** button on mobile. A conspicuous spherical barrier surrounds the operative for exactly **3 seconds**, blocking all incoming damage from shots, melee attacks, headshots, zombies, the Overlord's shockwaves/lightning and energy explosions, regardless of impact direction.
+- **Recharge:** 60 seconds from each activation. Cooldown does not reset upon dying and respawning; starting a fresh match restores it. The UI shows READY, the live active duration, or remaining cooldown. A subtle border glow reinforces first-person activation.
+- **Bot intelligence:** AI soldiers gain the same ability, and activate it in response to recent major damage/low health, imminent nearby threats, dense zombie swarms or an Overlord lightning warning. Bots respect the same 3-second duration and 60-second cooldown. The protection is evaluated centrally in both player and bot damage functions.
+- **Visible barrier to other players:** the enhanced 3D engine pools up to 12 translucent full-body spherical shields with bright rotating rings and a mesh glow. Friendly shields appear cyan and opponents' shields are pink; the classic rendering fallback has glowing ring/arc geometry.
+- **Blast effects:** protected soldiers also ignore energy shockwave knockback, boss melee sweep knockback, Overlord lightning pushback and shield bash knockback.
+- **Private online rooms:** host-authoritative activation for joining players, replicated duration/cooldown in snapshots, and visible barriers around host, guests, and AI combatants. PvP and existing guns still follow prior rules.
+
+**Automated checks:** HTML game JS and enhanced 3D renderer both passed syntax validation; unit tests verified 3-second immunity, damage resuming after expiry, 60-second cooldown, reactive bot activation, and 14 integration checks for UI, rendering, multiplayer replication, and collision/damage handling. Live two-device multiplayer and mobile graphical testing are still recommended.
