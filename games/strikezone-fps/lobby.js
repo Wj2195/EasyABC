@@ -15,6 +15,14 @@ for(const id of ['deploy','onlineBtn','howTo','menuFullscreen','menuSound']){
  buttons[id]=$(id);if(!buttons[id])return;
 }
 menu.classList.add('szLobby');
+// Keep the legacy training control OUT of the lobby stacking context.
+// The same live controls are moved into the popup on demand.
+const trainingHome=document.createElement('div');
+trainingHome.id='szTrainingControlStorage';
+trainingHome.hidden=true;
+trainingHome.style.display='none';
+menu.append(trainingHome);
+trainingHome.append(training);
 header.insertAdjacentHTML('afterbegin',
  '<button id="szProfile" class="szProfile" type="button" aria-label="Open player account">'+
  '<span class="szProfileFace">◈</span><span><b id="szLobbyName">GUEST OPERATIVE</b>'+
@@ -100,6 +108,12 @@ const custom=document.createElement('button');
 custom.id='szCustomMatch';custom.type='button';custom.className='szGoldBtn';
 custom.innerHTML='♟ <span>CUSTOM MATCH</span>';
 buttons.deploy.after(custom);
+const fieldTraining=document.createElement('button');
+fieldTraining.type='button';
+fieldTraining.id='szFieldTraining';
+fieldTraining.className='szFieldTrainingBtn';
+fieldTraining.textContent='⚙ FIELD TRAINING / SETTINGS';
+$('szPlayActions').append(fieldTraining);
 const drawer=$('szLobbyDrawer'),drawerContent=$('szDrawerContent'),title=$('szDrawerTitle');
 const gearMeta=[
  {role:'VANGUARD',type:'ASSAULT OPERATOR',description:'Versatile armored fighter for mid-range engagements.',weapon:0},
@@ -149,7 +163,16 @@ function updateSelection(){
 }
 $('loadoutSelect').addEventListener('change',updateSelection);
 function closeDrawer(){
- drawer.hidden=true;drawerContent.replaceChildren();menu.classList.remove('drawerOpen');
+ drawer.hidden=true;
+ // Put old controls back into a permanently hidden home when popup closes.
+ // They stay in the DOM and retain their event listeners and saved values.
+ if(training.parentElement!==trainingHome)trainingHome.append(training);
+ for(const id of ['howTo','menuFullscreen','menuSound']){
+  if(buttons[id].parentElement!==controls)controls.append(buttons[id]);
+ }
+ if(modes.parentElement!==content)content.insertBefore(modes,armory);
+ drawerContent.replaceChildren();
+ menu.classList.remove('drawerOpen');
 }
 function openDrawer(label,nodes){
  closeDrawer();title.textContent=label;
@@ -160,7 +183,7 @@ function makeParagraph(t){const p=document.createElement('p');p.textContent=t;re
 function openSettings(){
  const wrap=document.createElement('div');wrap.className='szSettingsWrap';
  wrap.append(training,buttons.howTo,buttons.menuFullscreen,buttons.menuSound);
- openDrawer('GAME SETTINGS',[wrap]);
+ openDrawer('FIELD TRAINING / SETTINGS',[wrap]);
 }
 function openMatch(){
  const wrap=document.createElement('div');wrap.className='szMatchDrawer';
@@ -205,6 +228,7 @@ function openTab(tab){
  }
 }
 $('szTopSettings').addEventListener('click',openSettings);
+fieldTraining.addEventListener('click',openSettings);
 $('szTopFriends').addEventListener('click',()=>openTab('friends'));
 $('szProfile').addEventListener('click',()=>window.SZSocial?.openAccount?.('login'));
 custom.addEventListener('click',openMatch);
