@@ -825,6 +825,7 @@ async function startModernRenderer(THREE){
         },
         paint(stamp,active){
         if(!active||stamp-paintedAt<35)return;
+        const step=Math.min(.065,Math.max(.001,(stamp-paintedAt)*.001));
         paintedAt=stamp;
         const box=lobbyCanvas.getBoundingClientRect();
         const width=Math.round(box.width),height=Math.round(box.height);
@@ -835,7 +836,7 @@ async function startModernRenderer(THREE){
         }
         if(!dragging)angle=.34+Math.sin(stamp*.00025)*.075;
         if(importedPreview){
-          importedPreview.sync({weapon:selected,team:selectedTeam},Math.min(.06,(stamp-paintedAt+35)*.001),stamp*.001,angle);
+          importedPreview.sync({weapon:selected,team:selectedTeam},step,stamp*.001,angle);
         }else previewRig.update(selected,selectedTeam,stamp*.001,angle);
         previewRenderer.render(previewScene,previewCam);
       }};
@@ -860,12 +861,8 @@ async function startModernRenderer(THREE){
     })
     .catch(error=>{
       console.warn('STRIKEZONE: rigged character asset failed; keeping procedural fallback.',error);
-      const warn=document.getElementById('szPreviewFallback');
-      if(warn&&lobbyPreview){
-        warn.style.display='flex';
-        const text=warn.querySelector('span:last-child');
-        if(text)text.textContent='DETAILED MODEL UNAVAILABLE · RELOAD WHEN ONLINE';
-      }
+      // Keep the working procedural fallback visible rather than masking it
+      // with a giant warning panel. The game remains playable offline.
     });
 
   // v3.26 — Procedural boss and two classes of zombies, rendered with the
