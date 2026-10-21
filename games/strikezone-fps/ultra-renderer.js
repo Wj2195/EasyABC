@@ -794,6 +794,7 @@ async function startModernRenderer(THREE){
       previewRenderer.toneMappingExposure=1.45;
       let selected=Number(document.getElementById('loadoutSelect')?.value||0),selectedTeam=0;
       let angle=.32,dragging=false,lastDrag=0,paintedAt=0,w=0,h=0;
+      let importedPreview=null;
       const fallback=document.getElementById('szPreviewFallback');
       fallback?.setAttribute('aria-hidden','true');
       fallback?.style.setProperty('display','none');
@@ -812,7 +813,17 @@ async function startModernRenderer(THREE){
       window.addEventListener('strike-zone-lobby-team',event=>{
         selectedTeam=event.detail?.team===1?1:0;
       });
-      lobbyPreview={paint(stamp,active){
+      lobbyPreview={
+        installModel(unit){
+          if(!unit?.root)return;
+          importedPreview=unit;
+          previewRig.root.visible=false;
+          previewScene.add(unit.root);
+          unit.root.visible=true;
+          const fallback=document.getElementById('szPreviewFallback');
+          if(fallback)fallback.style.display='none';
+        },
+        paint(stamp,active){
         if(!active||stamp-paintedAt<35)return;
         paintedAt=stamp;
         const box=lobbyCanvas.getBoundingClientRect();
@@ -823,7 +834,9 @@ async function startModernRenderer(THREE){
           previewCam.aspect=w/h;previewCam.updateProjectionMatrix();
         }
         if(!dragging)angle=.34+Math.sin(stamp*.00025)*.075;
-        previewRig.update(selected,selectedTeam,stamp*.001,angle);
+        if(importedPreview){
+          importedPreview.sync({weapon:selected,team:selectedTeam},Math.min(.06,(stamp-paintedAt+35)*.001),stamp*.001,angle);
+        }else previewRig.update(selected,selectedTeam,stamp*.001,angle);
         previewRenderer.render(previewScene,previewCam);
       }};
     }
@@ -833,6 +846,27 @@ async function startModernRenderer(THREE){
     const fb=document.getElementById('szPreviewFallback');
     if(fb){fb.style.display='flex';fb.querySelector('span:last-child').textContent='ENABLE WEBGL2 FOR HUMAN OPERATOR PREVIEW';}
   }
+
+  // v3.43: A rigged armored human replaces the toy-like procedural body
+  // in the menu AND matches. Asset/model failures leave the old FPS playable.
+  // Keep loading async: don't freeze gameplay or wait before showing the lobby.
+  let detailedHumans=null;
+  import('./tactical-soldier.js?v=3.43')
+    .then(module=>module.loadTacticalSoldiers(THREE,scene))
+    .then(system=>{
+      detailedHumans=system;
+      lobbyPreview?.installModel(system.createPreview());
+      console.info('STRIKEZONE v3.43: rigged tactical characters loaded');
+    })
+    .catch(error=>{
+      console.warn('STRIKEZONE: rigged character asset failed; keeping procedural fallback.',error);
+      const warn=document.getElementById('szPreviewFallback');
+      if(warn&&lobbyPreview){
+        warn.style.display='flex';
+        const text=warn.querySelector('span:last-child');
+        if(text)text.textContent='DETAILED MODEL UNAVAILABLE · RELOAD WHEN ONLINE';
+      }
+    });
 
   // v3.26 — Procedural boss and two classes of zombies, rendered with the
   // same perspective and world lighting as the tactical soldiers.
@@ -1190,7 +1224,10 @@ async function startModernRenderer(THREE){
           g.rotation.set((bot.fallSide||1)*1.43*fall,bot.yaw,0);
           teamPatches[i].material=bot.team===0?armorBlue:armorRed;
         }}}
-      if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position,s.nowSec);
+      if(detailedHumans){
+        humanoidSystem?.update([],camera.position,s.nowSec);
+        detailedHumans.update(bridge.botData(),dt,s.nowSec,floorSurfaceAt);
+      }else if(humanoidSystem)humanoidSystem.update(bridge.botData(),camera.position,s.nowSec);
       updateMonsterVisuals();updateAmmoVisuals(s.nowSec);
       updatePowerBubbles(s.nowSec);
       updateLightningVisuals(s.nowSec,bridge.monsterAttack?.());renderEnergyFX();
