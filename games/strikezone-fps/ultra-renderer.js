@@ -435,9 +435,9 @@ async function startModernRenderer(THREE){
     const cylinderG=new THREE.CylinderGeometry(1,1,1,10);
     const boxG=new THREE.BoxGeometry(1,1,1);
     const skin=new THREE.MeshStandardMaterial({color:0xcaa585,roughness:.88});
-    const helmet=new THREE.MeshStandardMaterial({color:0x595d55,roughness:.84});
+    const helmet=new THREE.MeshStandardMaterial({color:0x555b51,roughness:.84});
     const gear=new THREE.MeshStandardMaterial({color:0x343c39,roughness:.82,metalness:.08});
-    const plates=new THREE.MeshStandardMaterial({color:0x7c8278,roughness:.85});
+    const plates=new THREE.MeshStandardMaterial({color:0x8a8170,roughness:.85});
     const dark=new THREE.MeshStandardMaterial({color:0x1a2429,roughness:.62,metalness:.28});
     const glass=new THREE.MeshStandardMaterial({color:0x233c45,roughness:.18,metalness:.34});
     const boots=new THREE.MeshStandardMaterial({color:0x1b201e,roughness:.94});
@@ -460,8 +460,8 @@ async function startModernRenderer(THREE){
     }
     // Distinct, bright team-color combat shirts; neutral camouflage stays on trousers.
     const uniforms=[
-      new THREE.MeshStandardMaterial({color:0xffffff,map:camo(['#3186bd','#206998','#5bacdc','#246d9c','#5aa6d2'],305),roughness:.94}),
-      new THREE.MeshStandardMaterial({color:0xffffff,map:camo(['#c2443c','#9b342f','#e47666','#a53e34','#d86759'],607),roughness:.94})
+      new THREE.MeshStandardMaterial({color:0xffffff,map:camo(['#455766','#374b5b','#506778','#304457','#52616b'],305),roughness:.94}),
+      new THREE.MeshStandardMaterial({color:0xffffff,map:camo(['#574b4c','#4b3b41','#614c4d','#483c40','#704b51'],607),roughness:.94})
     ];
     const trousers=new THREE.MeshStandardMaterial({color:0xffffff,map:camo(['#81887b','#536158','#9a9888','#505c54','#777969'],919),roughness:.98});
     const sphere=(parent,p,sz,mat)=>{
@@ -490,7 +490,16 @@ async function startModernRenderer(THREE){
       garment(torso,[0,1.03,0],[.211,.177,.144],true);
       sphere(torso,[0,.94,0],[.238,.139,.150],gear);
       sphere(torso,[0,1.552,0],[.073,.095,.077],skin);
+      // Taller anatomical face, defined cheekbones, jaw, brow, nose and lips.
       sphere(torso,[0,1.724,.016],[.144,.173,.134],skin);
+      sphere(torso,[0,1.645,.084],[.100,.077,.080],skin);
+      for(const side of [-1,1]){
+        sphere(torso,[side*.093,1.695,.107],[.049,.049,.047],skin);
+        sphere(torso,[side*.077,1.774,.124],[.055,.016,.015],helmet);
+      }
+      sphere(torso,[0,1.695,.162],[.032,.062,.042],skin);
+      sphere(torso,[0,1.654,.168],[.038,.017,.027],skin);
+      cube(torso,[0,1.635,.155],[.082,.011,.013],gear);
       sphere(torso,[0,1.649,.139],[.104,.066,.024],helmet);
       for(const side of [-1,1]){
         sphere(torso,[side*.064,1.743,.145],[.056,.037,.023],glass);
@@ -498,7 +507,8 @@ async function startModernRenderer(THREE){
       }
       cube(torso,[0,1.741,.156],[.133,.017,.029],gear);
       // Fabric cap, hard ear cups, brim, short microphone.
-      sphere(torso,[0,1.853,-.008],[.163,.105,.162],helmet);
+      sphere(torso,[0,1.853,-.008],[.171,.106,.168],helmet);
+      sphere(torso,[0,1.810,-.103],[.159,.065,.080],gear);
       cube(torso,[0,1.809,.171],[.315,.018,.170],helmet);
       for(const side of [-1,1])cube(torso,[side*.177,1.738,.01],[.057,.139,.091],dark);
       link(torso,[.176,1.729,.01],[.129,1.614,.124],.011,steel);
@@ -520,6 +530,11 @@ async function startModernRenderer(THREE){
       cube(torso,[.295,1.230,.028],[.082,.169,.121],gear);
       cube(torso,[0,.968,.149],[.434,.075,.075],gear);
       cube(torso,[0,.968,.194],[.113,.070,.038],plates);
+      // Team identification is a patch on neutral armor, not a full-color uniform.
+      for(const side of [-1,1]){
+        cube(torso,[side*.316,1.431,.045],[.012,.075,.126],allied);
+        cube(torso,[side*.313,1.350,.047],[.013,.024,.118],gear);
+      }
       const patch=cube(torso,[.246,1.386,.211],[.079,.040,.024],enemy);
       // Jointed legs have moving hips and knees, shaped cloth and knee protection.
       const legs=[];
@@ -692,6 +707,35 @@ async function startModernRenderer(THREE){
           u.root.position.y=Math.max(-.03,Math.min(1.55,requiredLift))+(b.airHeight||0);
         }
       },
+      createPreview(){
+        const u=build();
+        scene.remove(u.root);
+        u.root.visible=true;u.shadow.visible=false;
+        for(const detail of u.smallDetails)detail.visible=true;
+        return {
+          root:u.root,
+          update(weapon,team,time,rotation){
+            const shirt=team===0?uniforms[0]:uniforms[1];
+            for(const mesh of u.shirtPieces)mesh.material=shirt;
+            u.patch.material=team===0?allied:enemy;
+            u.pistol.visible=weapon===4;
+            u.energyCannon.visible=weapon===6;
+            u.saber.visible=weapon===8;
+            u.shield.visible=weapon===7;
+            u.gun.visible=![4,6,7,8].includes(weapon);
+            u.gunFlash.visible=false;
+            const sc=weapon===1?[.92,.95,.73]:weapon===2?[1,1,1.28]:
+               weapon===3?[1.16,1.12,.9]:weapon===5?[1,1,1.55]:[1,1,1];
+            u.gun.scale.set(...sc);
+            u.root.rotation.y=rotation;
+            u.root.position.set(0,.14+Math.sin(time*1.6)*.006,0);
+            u.torso.rotation.set(.022+Math.sin(time*1.65)*.009,0,Math.sin(time*.9)*.01);
+            for(const leg of u.legs){leg.hip.rotation.x=0;leg.knee.rotation.x=.02;}
+            for(const arm of u.arms){arm.shoulder.rotation.x=.04;arm.elbow.rotation.x=0;}
+            if(weapon===8)u.saber.rotation.y=Math.sin(time*3)*.11;
+          }
+        };
+      },
       get count(){return currentCount;}
     };
   }
@@ -699,6 +743,69 @@ async function startModernRenderer(THREE){
   try{humanoidSystem=createOperatorSystem();}
   catch(err){console.warn('STRIKEZONE: humanoid model failed, using existing soldier graphics.',err);humanoidSystem=null;}
 
+
+// Reuse the SAME procedural tactical operator meshes in the hangar preview
+  // and gameplay. The separate transparent preview canvas renders only on the menu.
+  let lobbyPreview=null;
+  try{
+    const lobbyCanvas=document.getElementById('szOperatorCanvas');
+    if(lobbyCanvas&&humanoidSystem){
+      const previewScene=new THREE.Scene();
+      const previewRig=humanoidSystem.createPreview();
+      previewScene.add(previewRig.root);
+      previewScene.add(new THREE.HemisphereLight(0xd6eeff,0x463e32,2.15));
+      const keyLight=new THREE.DirectionalLight(0xffe6c0,3.15);
+      keyLight.position.set(-2.8,4.5,5);previewScene.add(keyLight);
+      const rimLight=new THREE.DirectionalLight(0x70caff,2.75);
+      rimLight.position.set(3,3,-2.5);previewScene.add(rimLight);
+      const previewCam=new THREE.PerspectiveCamera(35,1,.1,20);
+      previewCam.position.set(0,1.18,4.45);
+      previewCam.lookAt(0,1.03,0);
+      const previewRenderer=new THREE.WebGLRenderer({
+        canvas:lobbyCanvas,alpha:true,antialias:true,powerPreference:'low-power'});
+      previewRenderer.setPixelRatio(Math.min(1.4,window.devicePixelRatio||1));
+      previewRenderer.setClearColor(0x000000,0);
+      previewRenderer.outputColorSpace=THREE.SRGBColorSpace;
+      previewRenderer.toneMapping=THREE.ACESFilmicToneMapping;
+      previewRenderer.toneMappingExposure=1.45;
+      let selected=Number(document.getElementById('loadoutSelect')?.value||0);
+      let angle=.32,dragging=false,lastDrag=0,paintedAt=0,w=0,h=0;
+      const fallback=document.getElementById('szPreviewFallback');
+      fallback?.setAttribute('aria-hidden','true');
+      fallback?.style.setProperty('display','none');
+      lobbyCanvas.addEventListener('pointerdown',event=>{
+        dragging=true;lastDrag=event.clientX;
+        lobbyCanvas.setPointerCapture?.(event.pointerId);
+      });
+      lobbyCanvas.addEventListener('pointermove',event=>{
+        if(!dragging)return;angle+= (event.clientX-lastDrag)*.008;lastDrag=event.clientX;
+      });
+      for(const ev of ['pointerup','pointercancel','lostpointercapture'])
+        lobbyCanvas.addEventListener(ev,()=>dragging=false);
+      window.addEventListener('strike-zone-lobby-loadout',event=>{
+        if(Number.isInteger(event.detail?.weapon))selected=event.detail.weapon;
+      });
+      lobbyPreview={paint(stamp,active){
+        if(!active||stamp-paintedAt<35)return;
+        paintedAt=stamp;
+        const box=lobbyCanvas.getBoundingClientRect();
+        const width=Math.round(box.width),height=Math.round(box.height);
+        if(width<32||height<32)return;
+        if(w!==width||h!==height){
+          w=width;h=height;previewRenderer.setSize(w,h,false);
+          previewCam.aspect=w/h;previewCam.updateProjectionMatrix();
+        }
+        if(!dragging)angle=.34+Math.sin(stamp*.00025)*.075;
+        previewRig.update(selected,0,stamp*.001,angle);
+        previewRenderer.render(previewScene,previewCam);
+      }};
+    }
+  }catch(error){
+    console.warn('STRIKEZONE: operator preview unavailable; existing FPS renderer unaffected.',error);
+    lobbyPreview=null;
+    const fb=document.getElementById('szPreviewFallback');
+    if(fb){fb.style.display='flex';fb.querySelector('span:last-child').textContent='ENABLE WEBGL2 FOR HUMAN OPERATOR PREVIEW';}
+  }
 
   // v3.26 — Procedural boss and two classes of zombies, rendered with the
   // same perspective and world lighting as the tactical soldiers.
@@ -1077,6 +1184,7 @@ async function startModernRenderer(THREE){
       gunGroup.visible=playerVisible&&!realisticWeapons&&!scoped;
       if(realisticWeapons)realisticWeapons.update(s);
       renderer.autoClear=false;renderer.clear(true,true,true);renderer.render(scene,camera);
+      lobbyPreview?.paint(stamp,!s.running&&!document.getElementById('mainMenu')?.classList.contains('hidden'));
       if(playerVisible&&!scoped){renderer.clearDepth();renderer.render(gunScene,gunCam);}
       if(!started){window.__strike3DActive=true;started=true;updateStatus(`ENHANCED 3D · ${quality.toUpperCase()} · SHADOWS / PBR ON`);}
       requestAnimationFrame(loop);
