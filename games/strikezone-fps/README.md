@@ -614,3 +614,16 @@ GitHub client and SQL setup are committed, but **database migration execution an
 - Main URL remains https://wj2195.github.io/EasyABC/games/strikezone-fps/ . The v3.42 HTML uses cache-busted lobby and GPU-renderer assets. No Supabase migration.
 - **Visual fidelity:** This is an original browser-optimized procedural tactical human, not a photorealistic externally sculpted model. The earlier generated screenshot was a concept illustration, not a pre-existing 3D asset.
 - **Verification:** GitHub commits succeeded, files reread, embedded/game/lobby/async-module syntax checks passed. Physical multi-device gameplay and live Chrome/phone WebGL rendering still require a manual test.
+
+
+## v3.43 — Armored rigged soldiers and closed-by-default Field Training popup (2026-10-21)
+
+- Replaced the rounded procedural-human models in the WebGL2 lobby **and game arena** with the 3D armored, skinned soldier featured in the official three.js sample `Soldier.glb` (Vanguard character from Mixamo by T. Choonyung). It is fetched over HTTPS at runtime from the official three.js example URL, with a pinned-version jsDelivr/GitHub mirror, and is used as an **embedded in-game character**, not resold as a standalone model. Respect applicable three.js/Mixamo asset terms.
+- Rigged model is normalized to game-scale (~1.83 game units) and gets Idle/Walk/Run animation, a simple death fall, muted team identification patches, nine compatible weapon props including shield, saber and energy cannon. Blue/Red teams and loadout changes use the same model class in lobby and matches.
+- Existing gameplay mechanics, hitboxes, positions, player login, friends, invitations, AI and weapon behavior stay authoritative in the original game. Only 3D visual meshes are replaced.
+- The original training/settings element is moved into hidden DOM storage at initial lobby load. A compact **FIELD TRAINING / SETTINGS** button (plus top-right gear) opens a popup. Difficulty, shield durability, graphics quality, horizontal look and career statistics remain the same working controls. Clicking outside the popup / X closes it; it no longer overlaps Quick Battle, Custom Match or Online Room.
+- Fixed drawer lifecycle: controls are restored to hidden storage on close, no `insertBefore` against a moved element, and settings can open repeatedly without losing handlers or changing selected modes.
+- The old procedural model remains a fallback if WebGL2 or third-party sample loading is unavailable. The live model/animations require network access to fetch the 3D sample and three.js; no Supabase changes.
+- **Testing limitation:** syntax/static wiring and source checks are available; actual load success and visuals require testing in a browser with WebGL2 and access to the model CDN. The photorealistic concept was illustrative, not the actual exported 3D mesh.
+
+Permanent link: https://wj2195.github.io/EasyABC/games/strikezone-fps/
