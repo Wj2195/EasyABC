@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.32 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
+  <meta name="theme-color" content="#0b1019"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><title>STRIKEZONE FPS — Tactical Arena · Solo AI Edition v3.33 — Dense Urban Maze District — AEGIS Shield and Adaptive Bots — NOVA PULSE Energy Cannon — Clear DMR and Sniper Optics — Detailed Tactical Weapons — Weapons & Headshots — Tactical AI — Tactical Operators — Humanoid Characters — Mobile Combat HUD — Clean Combat HUD — Mobile Fullscreen & Audio — Graphics Overhaul — Engine Upgrade</title>
   <style>
 @import url('');
 :root{--white:#eff4f8;--muted:#91a0ad;--red:#f2564d;--blue:#62c1f5;--dark:#0d131b;--panel:#121b26;--border:rgba(212,235,255,.16)}
@@ -288,7 +288,7 @@ color:#aff8ff;box-shadow:0 0 12px #3bb9d926;font:900 10px Arial;letter-spacing:1
 @media(max-width:800px){#bossHUD{top:75px;width:calc(100vw - 165px);left:auto;right:8px;transform:none;padding:5px}
 .bossHeading,.bossFoot{font-size:7px}.bossMeter{height:7px;margin:4px 0}}
 
-/* v3.32: landscape touch HUD. The previous 800px-only boss rule did not
+/* v3.33: landscape touch HUD. The previous 800px-only boss rule did not
    cover high-DPI landscape phones with wide CSS viewports. */
 @media (pointer:coarse), (hover:none) {
  #hud #bossHUD:not(.hidden) {
@@ -1459,7 +1459,7 @@ function denseMapExpansion(){
  denseStreetClutter();
 }
 
-// v3.32 — four additional enterable service modules along the open flanks.
+// v3.33 — four additional enterable service modules along the open flanks.
 // Walls are segmented at real door apertures and each module has its own
 // interior path, with two access points for AI movement.
 function serviceAnnex(x,z,id){
@@ -1696,7 +1696,7 @@ loadoutSelect.addEventListener('change',()=>{startingWeapon=Number(loadoutSelect
  refreshLoadout();
 });
 refreshLoadout();
-function resetGame(){energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=mode==='zombie'?0:360;blue=0;red=0;ended=false;touchMove={x:0,y:0};resetMinimapDiscovery();
+function resetGame(){activeMobileFire.clear();energyShots.length=0;energyWaves.length=0;player.energyChargeStart=-1;player.shockVX=player.shockVZ=0;player.kills=0;player.deaths=0;player.weapon=mode==='gun'?0:startingWeapon;player.ammo=weapons.map(w=>w.mag);player.reserves=weapons.map(w=>w.reserve);player.lastShot=0;matchRemaining=mode==='zombie'?0:360;blue=0;red=0;ended=false;touchMove={x:0,y:0};resetMinimapDiscovery();
  createBots();spawnPlayer();resetMonsterEncounter();updateHud();updateScores();}
 // Navmesh over both bases and the enlarged maze. 2-unit cells + full BFS,
 // with enough search depth to reach from one end of this 164-unit map to the other.
@@ -4093,6 +4093,7 @@ function startGame(){
  if(!isMobileGameDevice())canvas.requestPointerLock?.();
  announce(mode==='zombie'?'OVERLORD DETECTED · DEFEAT THE BOSS!':'MATCH START — GOOD LUCK',2.1);last=performance.now()/1000;}
 function goMenu(){
+ activeMobileFire.clear();
  if(onlineRole)onlineStop();
  cancelEnergyCharge();energyShots.length=0;energyWaves.length=0;
  boss=null;zombies=[];ammoDrops=[];bossLightningBolts.length=0;updateBossHUD();hud.classList.remove('sniper-scoped');$('sniperScope').classList.add('hidden');document.body.classList.remove('playing');running=false;paused=false;ended=false;player.shoot=false;keys={};hud.classList.add('hidden');$('mainMenu').classList.remove('hidden');$('modal').classList.add('hidden');document.exitPointerLock?.();}
@@ -4139,7 +4140,7 @@ window.addEventListener('blur',()=>{keys={};cancelEnergyCharge();player.shoot=fa
  if(running&&!paused&&!ended&&!onlineStarted)
   openModal('pause','MATCH PAUSED','The game was paused when you switched away.');
 });document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement!==canvas){cancelEnergyCharge();player.shoot=false;} });
-// v3.32: independent mobile joystick and camera pointers. Pointer movement
+// v3.33: independent mobile joystick and camera pointers. Pointer movement
 // is listened for on WINDOW because a swipe frequently leaves its original
 // button; this prevents a lost touch from locking the player to "forward".
 function normalizedStick(clientX,clientY,rect){
@@ -4209,7 +4210,22 @@ function mobileButton(id,onDown,onUp){const b=$(id);let activePointer=null;
  const release=e=>{if(activePointer!==e.pointerId)return;e.preventDefault?.();activePointer=null;onUp?.();};
  b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('lostpointercapture',release);
 }
-mobileButton('mobileFire',()=>{ensureAudio();player.shoot=true;shoot();},()=>{releaseEnergyCharge();player.shoot=false;});mobileButton('mobileAds',()=>player.ads=!player.ads);mobileButton('mobileJump',()=>{keys.Space=true;},()=>keys.Space=false);
+// Both physical FIRE controls can be held at once; releasing either one
+// must not cancel the other finger's attack or an energy-weapon charge.
+const activeMobileFire=new Set();
+function mobileFireDown(which){
+ if(!running||paused||ended||!player.alive)return;
+ activeMobileFire.add(which);
+ ensureAudio();player.shoot=true;shoot();
+}
+function mobileFireUp(which){
+ activeMobileFire.delete(which);
+ if(!activeMobileFire.size){releaseEnergyCharge();player.shoot=false;}
+}
+mobileButton('mobileFire',()=>mobileFireDown('right'),()=>mobileFireUp('right'));
+mobileButton('mobileFireSmall',()=>mobileFireDown('left'),()=>mobileFireUp('left'));
+mobileButton('mobileAds',()=>player.ads=!player.ads);
+mobileButton('mobileJump',()=>{keys.Space=true;},()=>keys.Space=false);
 mobileButton('mobileCrouch',()=>{
  if(!running||paused||ended||!player.alive)return;
  mobileCrouched=!mobileCrouched;
@@ -4294,6 +4310,12 @@ document.addEventListener('webkitfullscreenchange',refreshFullscreenButtons);
 refreshFullscreenButtons();refreshSoundButtons();
 window.addEventListener('orientationchange',()=>{stopStick();resetTouchLook();});
 window.addEventListener('blur',()=>{stopStick();resetTouchLook();});
+window.__SZMobileLayoutTest={
+ fogReveal:revealMinimap,fogDiscovered:minimapIsDiscovered,
+ resetFog:resetMinimapDiscovery,fogCount:()=>minimapExplored.reduce((v,c)=>v+c,0),
+ localSpan:MINIMAP_SPAN,
+ fireActive:()=>[...activeMobileFire],fireDown:mobileFireDown,fireUp:mobileFireUp
+};
 window.__SZMobileControlsTest={
  isFullscreen:isGameFullscreen,fullscreen:toggleGameFullscreen,
  autoLandscape:requestMobileLandscape,isTouchDevice:isMobileGameDevice,
