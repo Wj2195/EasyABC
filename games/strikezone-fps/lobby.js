@@ -185,7 +185,7 @@ function openTab(tab){
  }else if(tab==='missions'){
   const panel=document.createElement('div');
   panel.append(makeParagraph('FIELD TRAINING RECORD — progress is saved locally on this device.'));
-  const copy=$('szTrainingSummary');if(copy)panel.append(copy.cloneNode(true));
+  const copy=$('szTrainingSummary');if(copy){const stat=copy.cloneNode(true);stat.hidden=false;panel.append(stat);}
   else panel.append(makeParagraph('Win matches and eliminate bots to earn training XP.'));
   openDrawer('MISSIONS / TRAINING',[panel]);
  }else if(tab==='rankings'){
