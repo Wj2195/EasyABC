@@ -600,3 +600,17 @@ GitHub client and SQL setup are committed, but **database migration execution an
 - Sound/vision/weapon decisions run **only on the host** in online matches; guests receive the host's existing authoritative position/damage snapshots. No Supabase database changes or fees.
 - **Validation:** embedded game JavaScript parsed; nine targeted hearing/vision checks passed (enemy gunfire, teammate immunity, walls, stale audio, field of view) and seven weapon-selection scenarios passed (SMG, shotgun, DMR, sniper, lightsaber, shield and NOVA).
 - **Remaining verification:** two real devices should test actual AI aggression, frame rates, networking and all equipped weapons. These unit tests do not substitute for a WebGL2/in-browser gameplay test.
+
+
+## v3.42 — Cinematic operator lobby, shared 3D preview and six human tactical roles (2026-10-21)
+
+- Replaced the older large-text menu with a dark tactical-hangar dashboard inspired by the approved mockup: central soldier preview, profile, training/news cards, equipment/weapon details, Quick Battle/Custom Match/Online Room buttons, six operator portraits and footer navigation.
+- All original gameplay/online controls are **reparented rather than recreated**, retaining their handlers. Quick Battle starts the selected offline mode; Custom Match opens the actual four-mode picker; Online Room keeps existing peer-to-peer host/join and friend invitations.
+- Added a live WebGL operator preview using **the exact same procedural soldier geometry** used in gameplay, with a character preview camera, breathing animation, drag-to-rotate and selected weapon/gear. It does not use the earlier concept screenshot as a flat image or require uploading/licensing external soldier assets.
+- Tactical human model enhanced with stronger facial geometry and muted fabric/armor. Six appearance variants follow the nine-weapon mapping: Vanguard (AR/shotgun/pistol), Raptor (SMG), Ranger (DMR/sniper), Aegis (shield), Nova (energy), Blade (melee).
+- Blue/Red team markings apply to the gameplay character and the live lobby preview; when a guest selects RED team in the online room, the preview event syncs that color.
+- Bottom tabs open actual Equipment / Mission-record / Friends-Supabase / Local-Stats / News interfaces. XP/kills are local player data; no fictitious game currencies, battle-pass purchases or global ranking service are claimed.
+- Responsive rules keep the lobby vertically scrollable on phones, preserving its actions rather than clipping the menu. The FPS canvas remains fullscreen during matches.
+- Main URL remains https://wj2195.github.io/EasyABC/games/strikezone-fps/ . The v3.42 HTML uses cache-busted lobby and GPU-renderer assets. No Supabase migration.
+- **Visual fidelity:** This is an original browser-optimized procedural tactical human, not a photorealistic externally sculpted model. The earlier generated screenshot was a concept illustration, not a pre-existing 3D asset.
+- **Verification:** GitHub commits succeeded, files reread, embedded/game/lobby/async-module syntax checks passed. Physical multi-device gameplay and live Chrome/phone WebGL rendering still require a manual test.
