@@ -1,7 +1,7 @@
 {
   "app": "TradeLens Online",
   "version": "1.4.1",
-  "updated_at": "2026-10-21T11:50:30Z",
+  "updated_at": "2026-10-21T12:16:51Z",
   "model": "Experimental 9-feature technical analog (no macro/news overlay)",
   "provider": "Unofficial Yahoo Finance",
   "settings": {
@@ -42,16 +42,16 @@
       "GBP/USD",
       "USD/JPY",
       "GBP/JPY",
-      "EUR/AUD",
-      "EUR/CAD",
-      "EUR/NZD",
-      "GBP/CHF",
-      "GBP/AUD",
-      "GBP/CAD",
-      "GBP/NZD"
+      "AUD/JPY",
+      "AUD/CHF",
+      "AUD/CAD",
+      "AUD/NZD",
+      "NZD/JPY",
+      "NZD/CHF",
+      "NZD/CAD"
     ],
     "errors": [],
-    "alerts_sent": 1,
+    "alerts_sent": 0,
     "telegram_configured": true
   },
   "history": [
@@ -285,28 +285,14 @@
       "pair": "EUR/USD",
       "ready": true,
       "status": "Updated",
-      "checked_at": "2026-10-21T11:50:30Z",
+      "checked_at": "2026-10-21T12:16:51Z",
       "timeframes": {
         "15m": {
           "status": "Updated",
-          "candle_epoch": 1792582200,
-          "candle_time": "2026-10-21T11:30:00Z",
-          "price": 1.123721718788147,
+          "candle_epoch": 1792584000,
+          "candle_time": "2026-10-21T12:00:00Z",
+          "price": 1.1238480806350708,
           "candles": [
-            {
-              "t": 1792529100,
-              "o": 1.123974323272705,
-              "h": 1.123974323272705,
-              "l": 1.1238480806350708,
-              "c": 1.123974323272705
-            },
-            {
-              "t": 1792530000,
-              "o": 1.1242270469665527,
-              "h": 1.1243535280227661,
-              "l": 1.1235954761505127,
-              "c": 1.1242270469665527
-            },
             {
               "t": 1792530900,
               "o": 1.1242270469665527,
@@ -712,68 +698,75 @@
               "h": 1.123721718788147,
               "l": 1.1234692335128784,
               "c": 1.123721718788147
+            },
+            {
+              "t": 1792583100,
+              "o": 1.1234692335128784,
+              "h": 1.123721718788147,
+              "l": 1.1232168674468994,
+              "c": 1.1232168674468994
+            },
+            {
+              "t": 1792584000,
+              "o": 1.1233429908752441,
+              "h": 1.1238480806350708,
+              "l": 1.1233429908752441,
+              "c": 1.1238480806350708
             }
           ],
           "forecasts": {
             "1": {
-              "up": 28.132,
-              "down": 35.113,
-              "sideways": 36.755,
+              "up": 26.418,
+              "down": 31.675,
+              "sideways": 41.906,
               "bias": "SELL",
-              "signal": 35.113,
-              "gap": 6.981,
+              "signal": 31.675,
+              "gap": 5.257,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.123722
+              "price": 1.123848
             },
             "3": {
-              "up": 33.55,
-              "down": 26.621,
-              "sideways": 39.829,
-              "bias": "BUY",
-              "signal": 33.55,
-              "gap": 6.928,
-              "direction_leads": false,
-              "top_outcome": "SIDEWAYS",
-              "price": 1.123722
+              "up": 31.794,
+              "down": 35.115,
+              "sideways": 33.091,
+              "bias": "SELL",
+              "signal": 35.115,
+              "gap": 3.322,
+              "direction_leads": true,
+              "top_outcome": "SELL",
+              "price": 1.123848
             },
             "6": {
-              "up": 38.895,
-              "down": 24.676,
-              "sideways": 36.429,
-              "bias": "BUY",
-              "signal": 38.895,
-              "gap": 14.219,
-              "direction_leads": true,
-              "top_outcome": "BUY",
-              "price": 1.123722
-            },
-            "12": {
-              "up": 32.764,
-              "down": 27.122,
-              "sideways": 40.114,
-              "bias": "BUY",
-              "signal": 32.764,
-              "gap": 5.642,
+              "up": 28.384,
+              "down": 32.749,
+              "sideways": 38.868,
+              "bias": "SELL",
+              "signal": 32.749,
+              "gap": 4.365,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.123722
+              "price": 1.123848
+            },
+            "12": {
+              "up": 27.312,
+              "down": 30.133,
+              "sideways": 42.556,
+              "bias": "SELL",
+              "signal": 30.133,
+              "gap": 2.821,
+              "direction_leads": false,
+              "top_outcome": "SIDEWAYS",
+              "price": 1.123848
             }
           }
         },
         "1h": {
           "status": "Updated",
-          "candle_epoch": 1792576800,
-          "candle_time": "2026-10-21T10:00:00Z",
-          "price": 1.123721718788147,
+          "candle_epoch": 1792580400,
+          "candle_time": "2026-10-21T11:00:00Z",
+          "price": 1.1232168674468994,
           "candles": [
-            {
-              "t": 1792364400,
-              "o": 1.1215791702270508,
-              "h": 1.12296462059021,
-              "l": 1.1214534044265747,
-              "c": 1.12296462059021
-            },
             {
               "t": 1792368000,
               "o": 1.1232168674468994,
@@ -1186,52 +1179,59 @@
               "h": 1.123721718788147,
               "l": 1.121956706047058,
               "c": 1.123721718788147
+            },
+            {
+              "t": 1792580400,
+              "o": 1.1234692335128784,
+              "h": 1.123721718788147,
+              "l": 1.1230907440185547,
+              "c": 1.1232168674468994
             }
           ],
           "forecasts": {
             "1": {
-              "up": 20.716,
-              "down": 24.525,
-              "sideways": 54.759,
+              "up": 19.003,
+              "down": 26.249,
+              "sideways": 54.749,
               "bias": "SELL",
-              "signal": 24.525,
-              "gap": 3.808,
+              "signal": 26.249,
+              "gap": 7.246,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.123722
+              "price": 1.123217
             },
             "3": {
-              "up": 18.776,
-              "down": 32.98,
-              "sideways": 48.244,
+              "up": 18.839,
+              "down": 26.273,
+              "sideways": 54.888,
               "bias": "SELL",
-              "signal": 32.98,
-              "gap": 14.204,
+              "signal": 26.273,
+              "gap": 7.434,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.123722
+              "price": 1.123217
             },
             "6": {
-              "up": 19.58,
-              "down": 28.237,
-              "sideways": 52.183,
-              "bias": "SELL",
-              "signal": 28.237,
-              "gap": 8.658,
+              "up": 26.311,
+              "down": 22.603,
+              "sideways": 51.087,
+              "bias": "BUY",
+              "signal": 26.311,
+              "gap": 3.708,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.123722
+              "price": 1.123217
             },
             "12": {
-              "up": 12.447,
-              "down": 25.059,
-              "sideways": 62.494,
+              "up": 23.732,
+              "down": 28.26,
+              "sideways": 48.009,
               "bias": "SELL",
-              "signal": 25.059,
-              "gap": 12.613,
+              "signal": 28.26,
+              "gap": 4.528,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.123722
+              "price": 1.123217
             }
           }
         },
@@ -1718,10 +1718,13 @@
           "reason": "Timeframes disagree"
         },
         "3": {
-          "bias": "MIXED",
-          "aligned": false,
-          "eligible": false,
-          "reason": "Timeframes disagree"
+          "bias": "SELL",
+          "aligned": true,
+          "eligible": true,
+          "strong": false,
+          "reason": "All 3 timeframes agree; low strength / sideways risk",
+          "minimum_signal": 24.09,
+          "minimum_gap": 1.879
         },
         "6": {
           "bias": "MIXED",
@@ -1730,10 +1733,13 @@
           "reason": "Timeframes disagree"
         },
         "12": {
-          "bias": "MIXED",
-          "aligned": false,
-          "eligible": false,
-          "reason": "Timeframes disagree"
+          "bias": "SELL",
+          "aligned": true,
+          "eligible": true,
+          "strong": false,
+          "reason": "All 3 timeframes agree; low strength / sideways risk",
+          "minimum_signal": 28.26,
+          "minimum_gap": 2.606
         }
       },
       "full_alignment": {
@@ -1747,28 +1753,14 @@
       "pair": "GBP/USD",
       "ready": true,
       "status": "Updated",
-      "checked_at": "2026-10-21T11:50:30Z",
+      "checked_at": "2026-10-21T12:16:51Z",
       "timeframes": {
         "15m": {
           "status": "Updated",
-          "candle_epoch": 1792582200,
-          "candle_time": "2026-10-21T11:30:00Z",
-          "price": 1.339943766593933,
+          "candle_epoch": 1792584000,
+          "candle_time": "2026-10-21T12:00:00Z",
+          "price": 1.3402490615844727,
           "candles": [
-            {
-              "t": 1792529100,
-              "o": 1.3379536867141724,
-              "h": 1.3380969762802124,
-              "l": 1.3378105163574219,
-              "c": 1.3380789756774902
-            },
-            {
-              "t": 1792530000,
-              "o": 1.3376494646072388,
-              "h": 1.338114857673645,
-              "l": 1.3375779390335083,
-              "c": 1.3376315832138062
-            },
             {
               "t": 1792530900,
               "o": 1.3379000425338745,
@@ -2174,68 +2166,75 @@
               "h": 1.3399616479873657,
               "l": 1.3394052982330322,
               "c": 1.339943766593933
+            },
+            {
+              "t": 1792583100,
+              "o": 1.339943766593933,
+              "h": 1.3400874137878418,
+              "l": 1.3395847082138062,
+              "c": 1.339638590812683
+            },
+            {
+              "t": 1792584000,
+              "o": 1.3397103548049927,
+              "h": 1.3403388261795044,
+              "l": 1.3397103548049927,
+              "c": 1.3402490615844727
             }
           ],
           "forecasts": {
             "1": {
-              "up": 31.856,
-              "down": 22.695,
-              "sideways": 45.45,
+              "up": 30.131,
+              "down": 22.705,
+              "sideways": 47.164,
               "bias": "BUY",
-              "signal": 31.856,
-              "gap": 9.161,
+              "signal": 30.131,
+              "gap": 7.426,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.339944
+              "price": 1.340249
             },
             "3": {
-              "up": 20.073,
-              "down": 26.052,
-              "sideways": 53.875,
+              "up": 28.44,
+              "down": 34.799,
+              "sideways": 36.761,
               "bias": "SELL",
-              "signal": 26.052,
-              "gap": 5.979,
+              "signal": 34.799,
+              "gap": 6.359,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.339944
+              "price": 1.340249
             },
             "6": {
-              "up": 33.26,
-              "down": 28.091,
-              "sideways": 38.648,
+              "up": 31.479,
+              "down": 24.018,
+              "sideways": 44.502,
               "bias": "BUY",
-              "signal": 33.26,
-              "gap": 5.169,
+              "signal": 31.479,
+              "gap": 7.461,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.339944
+              "price": 1.340249
             },
             "12": {
-              "up": 24.87,
-              "down": 25.605,
-              "sideways": 49.526,
-              "bias": "SELL",
-              "signal": 25.605,
-              "gap": 0.735,
+              "up": 27.501,
+              "down": 25.036,
+              "sideways": 47.463,
+              "bias": "BUY",
+              "signal": 27.501,
+              "gap": 2.466,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.339944
+              "price": 1.340249
             }
           }
         },
         "1h": {
           "status": "Updated",
-          "candle_epoch": 1792576800,
-          "candle_time": "2026-10-21T10:00:00Z",
-          "price": 1.339441180229187,
+          "candle_epoch": 1792580400,
+          "candle_time": "2026-10-21T11:00:00Z",
+          "price": 1.339638590812683,
           "candles": [
-            {
-              "t": 1792364400,
-              "o": 1.3323917388916016,
-              "h": 1.3336178064346313,
-              "l": 1.3323739767074585,
-              "c": 1.3336178064346313
-            },
             {
               "t": 1792368000,
               "o": 1.3338847160339355,
@@ -2648,52 +2647,59 @@
               "h": 1.3398540019989014,
               "l": 1.3390285968780518,
               "c": 1.339441180229187
+            },
+            {
+              "t": 1792580400,
+              "o": 1.3392797708511353,
+              "h": 1.3400874137878418,
+              "l": 1.3389389514923096,
+              "c": 1.339638590812683
             }
           ],
           "forecasts": {
             "1": {
-              "up": 29.379,
-              "down": 39.862,
+              "up": 31.103,
+              "down": 38.138,
               "sideways": 30.759,
               "bias": "SELL",
-              "signal": 39.862,
-              "gap": 10.483,
+              "signal": 38.138,
+              "gap": 7.034,
               "direction_leads": true,
               "top_outcome": "SELL",
-              "price": 1.339441
+              "price": 1.339639
             },
             "3": {
-              "up": 25.83,
-              "down": 18.902,
-              "sideways": 55.267,
-              "bias": "BUY",
-              "signal": 25.83,
-              "gap": 6.928,
+              "up": 22.445,
+              "down": 22.604,
+              "sideways": 54.951,
+              "bias": "SELL",
+              "signal": 22.604,
+              "gap": 0.158,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.339441
+              "price": 1.339639
             },
             "6": {
-              "up": 26.018,
-              "down": 18.384,
-              "sideways": 55.598,
-              "bias": "BUY",
-              "signal": 26.018,
-              "gap": 7.635,
+              "up": 26.237,
+              "down": 33.041,
+              "sideways": 40.721,
+              "bias": "SELL",
+              "signal": 33.041,
+              "gap": 6.804,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.339441
+              "price": 1.339639
             },
             "12": {
-              "up": 26.553,
-              "down": 32.575,
-              "sideways": 40.872,
+              "up": 24.49,
+              "down": 26.553,
+              "sideways": 48.957,
               "bias": "SELL",
-              "signal": 32.575,
-              "gap": 6.022,
+              "signal": 26.553,
+              "gap": 2.063,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.339441
+              "price": 1.339639
             }
           }
         },
@@ -3186,13 +3192,10 @@
           "reason": "Timeframes disagree"
         },
         "6": {
-          "bias": "BUY",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 26.018,
-          "minimum_gap": 5.169
+          "bias": "MIXED",
+          "aligned": false,
+          "eligible": false,
+          "reason": "Timeframes disagree"
         },
         "12": {
           "bias": "MIXED",
@@ -6142,28 +6145,14 @@
       "pair": "USD/JPY",
       "ready": true,
       "status": "Updated",
-      "checked_at": "2026-10-21T11:50:30Z",
+      "checked_at": "2026-10-21T12:16:51Z",
       "timeframes": {
         "15m": {
           "status": "Updated",
-          "candle_epoch": 1792582200,
-          "candle_time": "2026-10-21T11:30:00Z",
-          "price": 157.9290008544922,
+          "candle_epoch": 1792584000,
+          "candle_time": "2026-10-21T12:00:00Z",
+          "price": 157.85000610351562,
           "candles": [
-            {
-              "t": 1792529100,
-              "o": 158.1739959716797,
-              "h": 158.19700622558594,
-              "l": 158.13699340820312,
-              "c": 158.13699340820312
-            },
-            {
-              "t": 1792530000,
-              "o": 158.13499450683594,
-              "h": 158.16099548339844,
-              "l": 158.10000610351562,
-              "c": 158.13400268554688
-            },
             {
               "t": 1792530900,
               "o": 158.13999938964844,
@@ -6569,68 +6558,75 @@
               "h": 157.95399475097656,
               "l": 157.88699340820312,
               "c": 157.9290008544922
+            },
+            {
+              "t": 1792583100,
+              "o": 157.9290008544922,
+              "h": 157.9669952392578,
+              "l": 157.86599731445312,
+              "c": 157.8769989013672
+            },
+            {
+              "t": 1792584000,
+              "o": 157.88499450683594,
+              "h": 157.9010009765625,
+              "l": 157.83200073242188,
+              "c": 157.85000610351562
             }
           ],
           "forecasts": {
             "1": {
-              "up": 41.438,
-              "down": 30.997,
-              "sideways": 27.565,
+              "up": 48.334,
+              "down": 25.825,
+              "sideways": 25.841,
               "bias": "BUY",
-              "signal": 41.438,
-              "gap": 10.44,
+              "signal": 48.334,
+              "gap": 22.509,
               "direction_leads": true,
               "top_outcome": "BUY",
-              "price": 157.929001
+              "price": 157.850006
             },
             "3": {
-              "up": 32.569,
-              "down": 19.124,
-              "sideways": 48.307,
+              "up": 34.103,
+              "down": 24.106,
+              "sideways": 41.791,
               "bias": "BUY",
-              "signal": 32.569,
-              "gap": 13.445,
+              "signal": 34.103,
+              "gap": 9.997,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 157.929001
+              "price": 157.850006
             },
             "6": {
-              "up": 38.018,
-              "down": 18.749,
-              "sideways": 43.233,
+              "up": 36.018,
+              "down": 20.603,
+              "sideways": 43.379,
               "bias": "BUY",
-              "signal": 38.018,
-              "gap": 19.269,
+              "signal": 36.018,
+              "gap": 15.416,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 157.929001
+              "price": 157.850006
             },
             "12": {
-              "up": 34.258,
-              "down": 21.1,
-              "sideways": 44.642,
+              "up": 34.068,
+              "down": 21.859,
+              "sideways": 44.073,
               "bias": "BUY",
-              "signal": 34.258,
-              "gap": 13.158,
+              "signal": 34.068,
+              "gap": 12.21,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 157.929001
+              "price": 157.850006
             }
           }
         },
         "1h": {
           "status": "Updated",
-          "candle_epoch": 1792576800,
-          "candle_time": "2026-10-21T10:00:00Z",
-          "price": 158.031005859375,
+          "candle_epoch": 1792580400,
+          "candle_time": "2026-10-21T11:00:00Z",
+          "price": 157.8769989013672,
           "candles": [
-            {
-              "t": 1792364400,
-              "o": 157.90699768066406,
-              "h": 157.9080047607422,
-              "l": 157.78799438476562,
-              "c": 157.79100036621094
-            },
             {
               "t": 1792368000,
               "o": 157.79299926757812,
@@ -7043,52 +7039,59 @@
               "h": 158.1649932861328,
               "l": 158.0030059814453,
               "c": 158.031005859375
+            },
+            {
+              "t": 1792580400,
+              "o": 158.0240020751953,
+              "h": 158.05999755859375,
+              "l": 157.86599731445312,
+              "c": 157.8769989013672
             }
           ],
           "forecasts": {
             "1": {
-              "up": 37.936,
-              "down": 11.576,
-              "sideways": 50.487,
+              "up": 36.212,
+              "down": 16.759,
+              "sideways": 47.028,
               "bias": "BUY",
-              "signal": 37.936,
-              "gap": 26.36,
+              "signal": 36.212,
+              "gap": 19.453,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 158.031006
+              "price": 157.876999
             },
             "3": {
-              "up": 39.94,
-              "down": 17.273,
-              "sideways": 42.787,
+              "up": 41.791,
+              "down": 15.296,
+              "sideways": 42.914,
               "bias": "BUY",
-              "signal": 39.94,
-              "gap": 22.667,
+              "signal": 41.791,
+              "gap": 26.495,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 158.031006
+              "price": 157.876999
             },
             "6": {
-              "up": 40.237,
-              "down": 19.799,
-              "sideways": 39.963,
+              "up": 38.749,
+              "down": 23.58,
+              "sideways": 37.671,
               "bias": "BUY",
-              "signal": 40.237,
-              "gap": 20.438,
+              "signal": 38.749,
+              "gap": 15.169,
               "direction_leads": true,
               "top_outcome": "BUY",
-              "price": 158.031006
+              "price": 157.876999
             },
             "12": {
-              "up": 26.932,
-              "down": 18.848,
-              "sideways": 54.22,
+              "up": 41.038,
+              "down": 23.732,
+              "sideways": 35.23,
               "bias": "BUY",
-              "signal": 26.932,
-              "gap": 8.084,
-              "direction_leads": false,
-              "top_outcome": "SIDEWAYS",
-              "price": 158.031006
+              "signal": 41.038,
+              "gap": 17.307,
+              "direction_leads": true,
+              "top_outcome": "BUY",
+              "price": 157.876999
             }
           }
         },
@@ -7575,7 +7578,7 @@
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
           "minimum_signal": 34.784,
-          "minimum_gap": 10.44
+          "minimum_gap": 12.765
         },
         "3": {
           "bias": "BUY",
@@ -7583,8 +7586,8 @@
           "eligible": true,
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 32.569,
-          "minimum_gap": 13.445
+          "minimum_signal": 34.103,
+          "minimum_gap": 9.997
         },
         "6": {
           "bias": "BUY",
@@ -7593,7 +7596,7 @@
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
           "minimum_signal": 30.423,
-          "minimum_gap": 16.459
+          "minimum_gap": 15.169
         },
         "12": {
           "bias": "BUY",
@@ -7601,7 +7604,7 @@
           "eligible": true,
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 26.932,
+          "minimum_signal": 30.909,
           "minimum_gap": 8.052
         }
       },
@@ -19342,28 +19345,14 @@
       "pair": "GBP/JPY",
       "ready": true,
       "status": "Updated",
-      "checked_at": "2026-10-21T11:50:30Z",
+      "checked_at": "2026-10-21T12:16:51Z",
       "timeframes": {
         "15m": {
           "status": "Updated",
-          "candle_epoch": 1792582200,
-          "candle_time": "2026-10-21T11:30:00Z",
-          "price": 211.60800170898438,
+          "candle_epoch": 1792584000,
+          "candle_time": "2026-10-21T12:00:00Z",
+          "price": 211.5449981689453,
           "candles": [
-            {
-              "t": 1792529100,
-              "o": 211.63600158691406,
-              "h": 211.64999389648438,
-              "l": 211.54800415039062,
-              "c": 211.59300231933594
-            },
-            {
-              "t": 1792530000,
-              "o": 211.57400512695312,
-              "h": 211.62399291992188,
-              "l": 211.23300170898438,
-              "c": 211.35400390625
-            },
             {
               "t": 1792530900,
               "o": 211.36000061035156,
@@ -19769,68 +19758,75 @@
               "h": 211.61700439453125,
               "l": 211.47999572753906,
               "c": 211.60800170898438
+            },
+            {
+              "t": 1792583100,
+              "o": 211.61099243164062,
+              "h": 211.6580047607422,
+              "l": 211.4720001220703,
+              "c": 211.49200439453125
+            },
+            {
+              "t": 1792584000,
+              "o": 211.49099731445312,
+              "h": 211.58200073242188,
+              "l": 211.47999572753906,
+              "c": 211.5449981689453
             }
           ],
           "forecasts": {
             "1": {
-              "up": 29.506,
-              "down": 17.003,
-              "sideways": 53.491,
+              "up": 38.138,
+              "down": 20.451,
+              "sideways": 41.411,
               "bias": "BUY",
-              "signal": 29.506,
-              "gap": 12.503,
+              "signal": 38.138,
+              "gap": 17.686,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 211.608002
+              "price": 211.544998
             },
             "3": {
-              "up": 34.641,
-              "down": 18.649,
-              "sideways": 46.71,
+              "up": 33.455,
+              "down": 22.414,
+              "sideways": 44.132,
               "bias": "BUY",
-              "signal": 34.641,
-              "gap": 15.992,
+              "signal": 33.455,
+              "gap": 11.041,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 211.608002
+              "price": 211.544998
             },
             "6": {
-              "up": 32.603,
-              "down": 17.434,
-              "sideways": 49.963,
+              "up": 24.311,
+              "down": 23.58,
+              "sideways": 52.11,
               "bias": "BUY",
-              "signal": 32.603,
-              "gap": 15.169,
+              "signal": 24.311,
+              "gap": 0.731,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 211.608002
+              "price": 211.544998
             },
             "12": {
               "up": 26.932,
-              "down": 12.067,
-              "sideways": 61.0,
+              "down": 22.594,
+              "sideways": 50.474,
               "bias": "BUY",
               "signal": 26.932,
-              "gap": 14.865,
+              "gap": 4.339,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 211.608002
+              "price": 211.544998
             }
           }
         },
         "1h": {
           "status": "Updated",
-          "candle_epoch": 1792576800,
-          "candle_time": "2026-10-21T10:00:00Z",
-          "price": 211.66600036621094,
+          "candle_epoch": 1792580400,
+          "candle_time": "2026-10-21T11:00:00Z",
+          "price": 211.49200439453125,
           "candles": [
-            {
-              "t": 1792364400,
-              "o": 210.3730010986328,
-              "h": 210.45799255371094,
-              "l": 210.30999755859375,
-              "c": 210.4290008544922
-            },
             {
               "t": 1792368000,
               "o": 210.427001953125,
@@ -20243,52 +20239,59 @@
               "h": 211.9029998779297,
               "l": 211.63900756835938,
               "c": 211.66600036621094
+            },
+            {
+              "t": 1792580400,
+              "o": 211.66900634765625,
+              "h": 211.6750030517578,
+              "l": 211.4720001220703,
+              "c": 211.49200439453125
             }
           ],
           "forecasts": {
             "1": {
-              "up": 29.369,
-              "down": 22.356,
-              "sideways": 48.276,
+              "up": 31.093,
+              "down": 13.745,
+              "sideways": 55.162,
               "bias": "BUY",
-              "signal": 29.369,
-              "gap": 7.013,
+              "signal": 31.093,
+              "gap": 17.347,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 211.666
+              "price": 211.492004
             },
             "3": {
-              "up": 22.351,
-              "down": 13.129,
-              "sideways": 64.521,
+              "up": 31.351,
+              "down": 17.083,
+              "sideways": 51.566,
               "bias": "BUY",
-              "signal": 22.351,
-              "gap": 9.222,
+              "signal": 31.351,
+              "gap": 14.268,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 211.666
+              "price": 211.492004
             },
             "6": {
-              "up": 26.018,
-              "down": 18.018,
-              "sideways": 55.963,
+              "up": 25.945,
+              "down": 19.872,
+              "sideways": 54.183,
               "bias": "BUY",
-              "signal": 26.018,
-              "gap": 8.0,
+              "signal": 25.945,
+              "gap": 6.073,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 211.666
+              "price": 211.492004
             },
             "12": {
-              "up": 24.68,
-              "down": 21.29,
-              "sideways": 54.03,
+              "up": 29.753,
+              "down": 14.889,
+              "sideways": 55.358,
               "bias": "BUY",
-              "signal": 24.68,
-              "gap": 3.39,
+              "signal": 29.753,
+              "gap": 14.865,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 211.666
+              "price": 211.492004
             }
           }
         },
@@ -20774,8 +20777,8 @@
           "eligible": true,
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 29.369,
-          "minimum_gap": 7.013
+          "minimum_signal": 31.093,
+          "minimum_gap": 9.122
         },
         "3": {
           "bias": "BUY",
@@ -20783,8 +20786,8 @@
           "eligible": true,
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 22.351,
-          "minimum_gap": 9.222
+          "minimum_signal": 29.882,
+          "minimum_gap": 11.041
         },
         "6": {
           "bias": "BUY",
@@ -20792,8 +20795,8 @@
           "eligible": true,
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 26.018,
-          "minimum_gap": 8.0
+          "minimum_signal": 24.311,
+          "minimum_gap": 0.731
         },
         "12": {
           "bias": "BUY",
@@ -20801,8 +20804,8 @@
           "eligible": true,
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 24.68,
-          "minimum_gap": 3.39
+          "minimum_signal": 26.932,
+          "minimum_gap": 4.339
         }
       },
       "full_alignment": {
@@ -26685,77 +26688,14 @@
       "pair": "AUD/JPY",
       "ready": true,
       "status": "Updated",
-      "checked_at": "2026-10-21T10:06:26Z",
+      "checked_at": "2026-10-21T12:16:51Z",
       "timeframes": {
         "15m": {
           "status": "Updated",
-          "candle_epoch": 1792575900,
-          "candle_time": "2026-10-21T09:45:00Z",
-          "price": 111.11699676513672,
+          "candle_epoch": 1792584000,
+          "candle_time": "2026-10-21T12:00:00Z",
+          "price": 111.04299926757812,
           "candles": [
-            {
-              "t": 1792522800,
-              "o": 110.77100372314453,
-              "h": 110.78500366210938,
-              "l": 110.73999786376953,
-              "c": 110.74400329589844
-            },
-            {
-              "t": 1792523700,
-              "o": 110.74500274658203,
-              "h": 110.75800323486328,
-              "l": 110.71399688720703,
-              "c": 110.73699951171875
-            },
-            {
-              "t": 1792524600,
-              "o": 110.74099731445312,
-              "h": 110.76599884033203,
-              "l": 110.73200225830078,
-              "c": 110.75800323486328
-            },
-            {
-              "t": 1792525500,
-              "o": 110.75900268554688,
-              "h": 110.80400085449219,
-              "l": 110.75399780273438,
-              "c": 110.79100036621094
-            },
-            {
-              "t": 1792526400,
-              "o": 110.7959976196289,
-              "h": 110.80400085449219,
-              "l": 110.75900268554688,
-              "c": 110.76200103759766
-            },
-            {
-              "t": 1792527300,
-              "o": 110.76200103759766,
-              "h": 110.77799987792969,
-              "l": 110.74700164794922,
-              "c": 110.76200103759766
-            },
-            {
-              "t": 1792528200,
-              "o": 110.75499725341797,
-              "h": 110.78700256347656,
-              "l": 110.75499725341797,
-              "c": 110.77300262451172
-            },
-            {
-              "t": 1792529100,
-              "o": 110.77300262451172,
-              "h": 110.78900146484375,
-              "l": 110.72699737548828,
-              "c": 110.75
-            },
-            {
-              "t": 1792530000,
-              "o": 110.74800109863281,
-              "h": 110.78800201416016,
-              "l": 110.56900024414062,
-              "c": 110.6050033569336
-            },
             {
               "t": 1792530900,
               "o": 110.65699768066406,
@@ -27112,75 +27052,124 @@
               "h": 111.1240005493164,
               "l": 111.08200073242188,
               "c": 111.11699676513672
+            },
+            {
+              "t": 1792576800,
+              "o": 111.11699676513672,
+              "h": 111.1240005493164,
+              "l": 111.05699920654297,
+              "c": 111.05999755859375
+            },
+            {
+              "t": 1792577700,
+              "o": 111.05899810791016,
+              "h": 111.09600067138672,
+              "l": 111.04399871826172,
+              "c": 111.0739974975586
+            },
+            {
+              "t": 1792578600,
+              "o": 111.07499694824219,
+              "h": 111.13300323486328,
+              "l": 111.0459976196289,
+              "c": 111.1259994506836
+            },
+            {
+              "t": 1792579500,
+              "o": 111.1259994506836,
+              "h": 111.1989974975586,
+              "l": 111.11299896240234,
+              "c": 111.16999816894531
+            },
+            {
+              "t": 1792580400,
+              "o": 111.16999816894531,
+              "h": 111.19000244140625,
+              "l": 111.08300018310547,
+              "c": 111.08899688720703
+            },
+            {
+              "t": 1792581300,
+              "o": 111.08999633789062,
+              "h": 111.11599731445312,
+              "l": 111.05799865722656,
+              "c": 111.07599639892578
+            },
+            {
+              "t": 1792582200,
+              "o": 111.0719985961914,
+              "h": 111.09100341796875,
+              "l": 111.03800201416016,
+              "c": 111.04900360107422
+            },
+            {
+              "t": 1792583100,
+              "o": 111.0469970703125,
+              "h": 111.08200073242188,
+              "l": 111.0,
+              "c": 111.00700378417969
+            },
+            {
+              "t": 1792584000,
+              "o": 111.00700378417969,
+              "h": 111.0510025024414,
+              "l": 110.99400329589844,
+              "c": 111.04299926757812
             }
           ],
           "forecasts": {
             "1": {
-              "up": 24.366,
-              "down": 30.754,
-              "sideways": 44.881,
-              "bias": "SELL",
-              "signal": 30.754,
-              "gap": 6.388,
+              "up": 31.23,
+              "down": 22.165,
+              "sideways": 46.605,
+              "bias": "BUY",
+              "signal": 31.23,
+              "gap": 9.066,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 111.116997
+              "price": 111.042999
             },
             "3": {
-              "up": 21.006,
-              "down": 34.261,
-              "sideways": 44.733,
-              "bias": "SELL",
-              "signal": 34.261,
-              "gap": 13.255,
+              "up": 29.595,
+              "down": 13.635,
+              "sideways": 56.77,
+              "bias": "BUY",
+              "signal": 29.595,
+              "gap": 15.96,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 111.116997
+              "price": 111.042999
             },
             "6": {
-              "up": 26.895,
-              "down": 30.164,
-              "sideways": 42.941,
-              "bias": "SELL",
-              "signal": 30.164,
-              "gap": 3.269,
+              "up": 36.53,
+              "down": 19.945,
+              "sideways": 43.525,
+              "bias": "BUY",
+              "signal": 36.53,
+              "gap": 16.584,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 111.116997
+              "price": 111.042999
             },
             "12": {
-              "up": 30.133,
-              "down": 19.962,
-              "sideways": 49.905,
+              "up": 33.144,
+              "down": 25.794,
+              "sideways": 41.062,
               "bias": "BUY",
-              "signal": 30.133,
-              "gap": 10.171,
+              "signal": 33.144,
+              "gap": 7.349,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 111.116997
+              "price": 111.042999
             }
           }
         },
         "1h": {
           "status": "Updated",
-          "candle_epoch": 1792573200,
-          "candle_time": "2026-10-21T09:00:00Z",
-          "price": 111.11699676513672,
+          "candle_epoch": 1792580400,
+          "candle_time": "2026-10-21T11:00:00Z",
+          "price": 111.00700378417969,
           "candles": [
-            {
-              "t": 1792184400,
-              "o": 109.7509994506836,
-              "h": 109.7509994506836,
-              "l": 109.7509994506836,
-              "c": 109.7509994506836
-            },
-            {
-              "t": 1792364400,
-              "o": 109.93699645996094,
-              "h": 110.0270004272461,
-              "l": 109.90399932861328,
-              "c": 110.00700378417969
-            },
             {
               "t": 1792368000,
               "o": 110.00700378417969,
@@ -27586,52 +27575,66 @@
               "h": 111.1500015258789,
               "l": 111.0459976196289,
               "c": 111.11699676513672
+            },
+            {
+              "t": 1792576800,
+              "o": 111.11699676513672,
+              "h": 111.1989974975586,
+              "l": 111.04399871826172,
+              "c": 111.16999816894531
+            },
+            {
+              "t": 1792580400,
+              "o": 111.16999816894531,
+              "h": 111.19000244140625,
+              "l": 111.0,
+              "c": 111.00700378417969
             }
           ],
           "forecasts": {
             "1": {
-              "up": 29.358,
-              "down": 18.801,
-              "sideways": 51.841,
+              "up": 29.369,
+              "down": 23.963,
+              "sideways": 46.668,
               "bias": "BUY",
-              "signal": 29.358,
-              "gap": 10.557,
+              "signal": 29.369,
+              "gap": 5.405,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 111.116997
+              "price": 111.007004
             },
             "3": {
-              "up": 29.563,
-              "down": 16.988,
-              "sideways": 53.448,
+              "up": 34.736,
+              "down": 20.468,
+              "sideways": 44.796,
               "bias": "BUY",
-              "signal": 29.563,
-              "gap": 12.575,
+              "signal": 34.736,
+              "gap": 14.268,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 111.116997
+              "price": 111.007004
             },
             "6": {
-              "up": 28.822,
-              "down": 16.018,
-              "sideways": 55.16,
+              "up": 32.822,
+              "down": 19.799,
+              "sideways": 47.379,
               "bias": "BUY",
-              "signal": 28.822,
-              "gap": 12.804,
+              "signal": 32.822,
+              "gap": 13.023,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 111.116997
+              "price": 111.007004
             },
             "12": {
-              "up": 29.753,
-              "down": 21.1,
-              "sideways": 49.147,
+              "up": 34.448,
+              "down": 15.268,
+              "sideways": 50.284,
               "bias": "BUY",
-              "signal": 29.753,
-              "gap": 8.653,
+              "signal": 34.448,
+              "gap": 19.18,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 111.116997
+              "price": 111.007004
             }
           }
         },
@@ -28118,16 +28121,22 @@
           "reason": "Timeframes disagree"
         },
         "3": {
-          "bias": "MIXED",
-          "aligned": false,
-          "eligible": false,
-          "reason": "Timeframes disagree"
+          "bias": "BUY",
+          "aligned": true,
+          "eligible": true,
+          "strong": false,
+          "reason": "All 3 timeframes agree; low strength / sideways risk",
+          "minimum_signal": 22.804,
+          "minimum_gap": 0.6
         },
         "6": {
-          "bias": "MIXED",
-          "aligned": false,
-          "eligible": false,
-          "reason": "Timeframes disagree"
+          "bias": "BUY",
+          "aligned": true,
+          "eligible": true,
+          "strong": false,
+          "reason": "All 3 timeframes agree; low strength / sideways risk",
+          "minimum_signal": 23.942,
+          "minimum_gap": 3.497
         },
         "12": {
           "bias": "BUY",
@@ -28136,7 +28145,7 @@
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
           "minimum_signal": 27.273,
-          "minimum_gap": 8.653
+          "minimum_gap": 7.349
         }
       },
       "full_alignment": {
@@ -28150,77 +28159,14 @@
       "pair": "AUD/CHF",
       "ready": true,
       "status": "Updated",
-      "checked_at": "2026-10-21T10:06:26Z",
+      "checked_at": "2026-10-21T12:16:51Z",
       "timeframes": {
         "15m": {
           "status": "Updated",
-          "candle_epoch": 1792575900,
-          "candle_time": "2026-10-21T09:45:00Z",
-          "price": 0.5800700187683105,
+          "candle_epoch": 1792584000,
+          "candle_time": "2026-10-21T12:00:00Z",
+          "price": 0.5793600082397461,
           "candles": [
-            {
-              "t": 1792522800,
-              "o": 0.577489972114563,
-              "h": 0.577530026435852,
-              "l": 0.5766800045967102,
-              "c": 0.5773699879646301
-            },
-            {
-              "t": 1792523700,
-              "o": 0.5773699879646301,
-              "h": 0.5774000287055969,
-              "l": 0.5764899849891663,
-              "c": 0.5772600173950195
-            },
-            {
-              "t": 1792524600,
-              "o": 0.5772600173950195,
-              "h": 0.577430009841919,
-              "l": 0.5765900015830994,
-              "c": 0.5772799849510193
-            },
-            {
-              "t": 1792525500,
-              "o": 0.5772799849510193,
-              "h": 0.5774000287055969,
-              "l": 0.5765799880027771,
-              "c": 0.5773500204086304
-            },
-            {
-              "t": 1792526400,
-              "o": 0.5773400068283081,
-              "h": 0.577430009841919,
-              "l": 0.5766100287437439,
-              "c": 0.5773400068283081
-            },
-            {
-              "t": 1792527300,
-              "o": 0.5773500204086304,
-              "h": 0.5774199962615967,
-              "l": 0.5766299962997437,
-              "c": 0.5773199796676636
-            },
-            {
-              "t": 1792528200,
-              "o": 0.5773199796676636,
-              "h": 0.5776000022888184,
-              "l": 0.5766699910163879,
-              "c": 0.5774999856948853
-            },
-            {
-              "t": 1792529100,
-              "o": 0.5775200128555298,
-              "h": 0.5776399970054626,
-              "l": 0.5768200159072876,
-              "c": 0.5771999955177307
-            },
-            {
-              "t": 1792530000,
-              "o": 0.5772200226783752,
-              "h": 0.5789700150489807,
-              "l": 0.575439989566803,
-              "c": 0.5762799978256226
-            },
             {
               "t": 1792530900,
               "o": 0.5762699842453003,
@@ -28577,75 +28523,124 @@
               "h": 0.5800999999046326,
               "l": 0.5791000127792358,
               "c": 0.5800700187683105
+            },
+            {
+              "t": 1792576800,
+              "o": 0.5800700187683105,
+              "h": 0.5802199840545654,
+              "l": 0.5790799856185913,
+              "c": 0.579800009727478
+            },
+            {
+              "t": 1792577700,
+              "o": 0.5798199772834778,
+              "h": 0.5799000263214111,
+              "l": 0.5789600014686584,
+              "c": 0.5796099901199341
+            },
+            {
+              "t": 1792578600,
+              "o": 0.5796099901199341,
+              "h": 0.5799999833106995,
+              "l": 0.5789099931716919,
+              "c": 0.5799300074577332
+            },
+            {
+              "t": 1792579500,
+              "o": 0.5799300074577332,
+              "h": 0.5803999900817871,
+              "l": 0.5793200135231018,
+              "c": 0.5801200270652771
+            },
+            {
+              "t": 1792580400,
+              "o": 0.5801200270652771,
+              "h": 0.58024001121521,
+              "l": 0.5792999863624573,
+              "c": 0.5799800157546997
+            },
+            {
+              "t": 1792581300,
+              "o": 0.5799499750137329,
+              "h": 0.5800999999046326,
+              "l": 0.5791800022125244,
+              "c": 0.5798799991607666
+            },
+            {
+              "t": 1792582200,
+              "o": 0.5798900127410889,
+              "h": 0.5799599885940552,
+              "l": 0.578760027885437,
+              "c": 0.5795300006866455
+            },
+            {
+              "t": 1792583100,
+              "o": 0.5795300006866455,
+              "h": 0.579800009727478,
+              "l": 0.5788099765777588,
+              "c": 0.5797299742698669
+            },
+            {
+              "t": 1792584000,
+              "o": 0.5797299742698669,
+              "h": 0.5797299742698669,
+              "l": 0.5786299705505371,
+              "c": 0.5793600082397461
             }
           ],
           "forecasts": {
             "1": {
-              "up": 6.285,
-              "down": 8.009,
-              "sideways": 85.706,
+              "up": 7.998,
+              "down": 9.722,
+              "sideways": 82.279,
               "bias": "SELL",
-              "signal": 8.009,
+              "signal": 9.722,
               "gap": 1.724,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.58007
+              "price": 0.57936
             },
             "3": {
               "up": 6.438,
-              "down": 9.791,
-              "sideways": 83.771,
-              "bias": "SELL",
-              "signal": 9.791,
-              "gap": 3.353,
+              "down": 4.619,
+              "sideways": 88.943,
+              "bias": "BUY",
+              "signal": 6.438,
+              "gap": 1.819,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.58007
+              "price": 0.57936
             },
             "6": {
-              "up": 11.607,
-              "down": 7.023,
-              "sideways": 81.37,
+              "up": 9.096,
+              "down": 5.023,
+              "sideways": 85.881,
               "bias": "BUY",
-              "signal": 11.607,
-              "gap": 4.584,
+              "signal": 9.096,
+              "gap": 4.073,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.58007
+              "price": 0.57936
             },
             "12": {
-              "up": 4.149,
-              "down": 0.569,
-              "sideways": 95.282,
-              "bias": "BUY",
-              "signal": 4.149,
-              "gap": 3.58,
+              "up": 6.97,
+              "down": 12.233,
+              "sideways": 80.797,
+              "bias": "SELL",
+              "signal": 12.233,
+              "gap": 5.263,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.58007
+              "price": 0.57936
             }
           }
         },
         "1h": {
           "status": "Updated",
-          "candle_epoch": 1792573200,
-          "candle_time": "2026-10-21T09:00:00Z",
-          "price": 0.5800700187683105,
+          "candle_epoch": 1792580400,
+          "candle_time": "2026-10-21T11:00:00Z",
+          "price": 0.5797299742698669,
           "candles": [
-            {
-              "t": 1792184400,
-              "o": 0.5720999836921692,
-              "h": 0.5720999836921692,
-              "l": 0.5715799927711487,
-              "c": 0.5720999836921692
-            },
-            {
-              "t": 1792364400,
-              "o": 0.5740200281143188,
-              "h": 0.574400007724762,
-              "l": 0.5733100175857544,
-              "c": 0.5742300152778625
-            },
             {
               "t": 1792368000,
               "o": 0.5742300152778625,
@@ -29051,52 +29046,66 @@
               "h": 0.5801500082015991,
               "l": 0.5785599946975708,
               "c": 0.5800700187683105
+            },
+            {
+              "t": 1792576800,
+              "o": 0.5800700187683105,
+              "h": 0.5803999900817871,
+              "l": 0.5789099931716919,
+              "c": 0.5801200270652771
+            },
+            {
+              "t": 1792580400,
+              "o": 0.5801200270652771,
+              "h": 0.58024001121521,
+              "l": 0.578760027885437,
+              "c": 0.5797299742698669
             }
           ],
           "forecasts": {
             "1": {
-              "up": 7.026,
-              "down": 8.528,
-              "sideways": 84.446,
+              "up": 7.037,
+              "down": 10.252,
+              "sideways": 82.711,
               "bias": "SELL",
-              "signal": 8.528,
-              "gap": 1.502,
+              "signal": 10.252,
+              "gap": 3.215,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.58007
+              "price": 0.57973
             },
             "3": {
-              "up": 7.229,
-              "down": 8.668,
-              "sideways": 84.103,
+              "up": 7.102,
+              "down": 10.234,
+              "sideways": 82.664,
               "bias": "SELL",
-              "signal": 8.668,
-              "gap": 1.439,
+              "signal": 10.234,
+              "gap": 3.132,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.58007
+              "price": 0.57973
             },
             "6": {
-              "up": 6.63,
-              "down": 7.753,
-              "sideways": 85.616,
-              "bias": "SELL",
-              "signal": 7.753,
-              "gap": 1.123,
+              "up": 10.484,
+              "down": 8.119,
+              "sideways": 81.397,
+              "bias": "BUY",
+              "signal": 10.484,
+              "gap": 2.365,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.58007
+              "price": 0.57973
             },
             "12": {
-              "up": 5.287,
-              "down": 5.097,
-              "sideways": 89.616,
+              "up": 7.16,
+              "down": 1.897,
+              "sideways": 90.944,
               "bias": "BUY",
-              "signal": 5.287,
-              "gap": 0.19,
+              "signal": 7.16,
+              "gap": 5.263,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.58007
+              "price": 0.57973
             }
           }
         },
@@ -29589,19 +29598,19 @@
           "reason": "Timeframes disagree"
         },
         "6": {
-          "bias": "MIXED",
-          "aligned": false,
-          "eligible": false,
-          "reason": "Timeframes disagree"
-        },
-        "12": {
           "bias": "BUY",
           "aligned": true,
           "eligible": true,
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 4.149,
-          "minimum_gap": 0.19
+          "minimum_signal": 9.096,
+          "minimum_gap": 2.365
+        },
+        "12": {
+          "bias": "MIXED",
+          "aligned": false,
+          "eligible": false,
+          "reason": "Timeframes disagree"
         }
       },
       "full_alignment": {
@@ -29615,77 +29624,14 @@
       "pair": "AUD/CAD",
       "ready": true,
       "status": "Updated",
-      "checked_at": "2026-10-21T10:06:26Z",
+      "checked_at": "2026-10-21T12:16:51Z",
       "timeframes": {
         "15m": {
           "status": "Updated",
-          "candle_epoch": 1792575900,
-          "candle_time": "2026-10-21T09:45:00Z",
-          "price": 0.987309992313385,
+          "candle_epoch": 1792584000,
+          "candle_time": "2026-10-21T12:00:00Z",
+          "price": 0.9879000186920166,
           "candles": [
-            {
-              "t": 1792522800,
-              "o": 0.984220027923584,
-              "h": 0.9846199750900269,
-              "l": 0.9832800030708313,
-              "c": 0.9841300249099731
-            },
-            {
-              "t": 1792523700,
-              "o": 0.9841300249099731,
-              "h": 0.9841899871826172,
-              "l": 0.9831600189208984,
-              "c": 0.9841499924659729
-            },
-            {
-              "t": 1792524600,
-              "o": 0.9841700196266174,
-              "h": 0.9843599796295166,
-              "l": 0.9832500219345093,
-              "c": 0.98430997133255
-            },
-            {
-              "t": 1792525500,
-              "o": 0.98430997133255,
-              "h": 0.9843800067901611,
-              "l": 0.9832299947738647,
-              "c": 0.9840999841690063
-            },
-            {
-              "t": 1792526400,
-              "o": 0.9841099977493286,
-              "h": 0.984220027923584,
-              "l": 0.9830499887466431,
-              "c": 0.9841399788856506
-            },
-            {
-              "t": 1792527300,
-              "o": 0.9841499924659729,
-              "h": 0.9843599796295166,
-              "l": 0.983269989490509,
-              "c": 0.984279990196228
-            },
-            {
-              "t": 1792528200,
-              "o": 0.9842900037765503,
-              "h": 0.9844899773597717,
-              "l": 0.9833599925041199,
-              "c": 0.9844099879264832
-            },
-            {
-              "t": 1792529100,
-              "o": 0.9843900203704834,
-              "h": 0.9846299886703491,
-              "l": 0.9835699796676636,
-              "c": 0.984499990940094
-            },
-            {
-              "t": 1792530000,
-              "o": 0.9832599759101868,
-              "h": 0.9869499802589417,
-              "l": 0.9827899932861328,
-              "c": 0.9838100075721741
-            },
             {
               "t": 1792530900,
               "o": 0.9837999939918518,
@@ -30042,75 +29988,124 @@
               "h": 0.9875699877738953,
               "l": 0.986299991607666,
               "c": 0.987309992313385
+            },
+            {
+              "t": 1792576800,
+              "o": 0.987309992313385,
+              "h": 0.9874100089073181,
+              "l": 0.9860299825668335,
+              "c": 0.9868500232696533
+            },
+            {
+              "t": 1792577700,
+              "o": 0.9868599772453308,
+              "h": 0.987060010433197,
+              "l": 0.9858099818229675,
+              "c": 0.9869599938392639
+            },
+            {
+              "t": 1792578600,
+              "o": 0.9869300127029419,
+              "h": 0.9874799847602844,
+              "l": 0.9860100150108337,
+              "c": 0.9874299764633179
+            },
+            {
+              "t": 1792579500,
+              "o": 0.9874200224876404,
+              "h": 0.9878000020980835,
+              "l": 0.9863399863243103,
+              "c": 0.9875900149345398
+            },
+            {
+              "t": 1792580400,
+              "o": 0.9876000285148621,
+              "h": 0.9877499938011169,
+              "l": 0.9865300059318542,
+              "c": 0.987309992313385
+            },
+            {
+              "t": 1792581300,
+              "o": 0.987309992313385,
+              "h": 0.9879400134086609,
+              "l": 0.9863100051879883,
+              "c": 0.9879000186920166
+            },
+            {
+              "t": 1792582200,
+              "o": 0.9878699779510498,
+              "h": 0.9880300164222717,
+              "l": 0.9864199757575989,
+              "c": 0.9874100089073181
+            },
+            {
+              "t": 1792583100,
+              "o": 0.9873999953269958,
+              "h": 0.9878799915313721,
+              "l": 0.9864599704742432,
+              "c": 0.9878399968147278
+            },
+            {
+              "t": 1792584000,
+              "o": 0.98785001039505,
+              "h": 0.9879999756813049,
+              "l": 0.9867100119590759,
+              "c": 0.9879000186920166
             }
           ],
           "forecasts": {
             "1": {
-              "up": 6.062,
-              "down": 2.731,
-              "sideways": 91.207,
+              "up": 11.235,
+              "down": 2.741,
+              "sideways": 86.024,
               "bias": "BUY",
-              "signal": 6.062,
-              "gap": 3.332,
+              "signal": 11.235,
+              "gap": 8.494,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.98731
+              "price": 0.9879
             },
             "3": {
-              "up": 7.972,
+              "up": 7.941,
               "down": 9.886,
-              "sideways": 82.142,
+              "sideways": 82.173,
               "bias": "SELL",
               "signal": 9.886,
-              "gap": 1.914,
+              "gap": 1.946,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.98731
+              "price": 0.9879
             },
             "6": {
-              "up": 9.315,
-              "down": 5.242,
-              "sideways": 85.443,
-              "bias": "BUY",
-              "signal": 9.315,
-              "gap": 4.073,
+              "up": 5.753,
+              "down": 9.461,
+              "sideways": 84.785,
+              "bias": "SELL",
+              "signal": 9.461,
+              "gap": 3.708,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.98731
+              "price": 0.9879
             },
             "12": {
-              "up": 12.044,
-              "down": 1.707,
-              "sideways": 86.249,
+              "up": 9.602,
+              "down": 7.16,
+              "sideways": 83.239,
               "bias": "BUY",
-              "signal": 12.044,
-              "gap": 10.337,
+              "signal": 9.602,
+              "gap": 2.442,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.98731
+              "price": 0.9879
             }
           }
         },
         "1h": {
           "status": "Updated",
-          "candle_epoch": 1792573200,
-          "candle_time": "2026-10-21T09:00:00Z",
-          "price": 0.987309992313385,
+          "candle_epoch": 1792580400,
+          "candle_time": "2026-10-21T11:00:00Z",
+          "price": 0.9878399968147278,
           "candles": [
-            {
-              "t": 1792184400,
-              "o": 0.9812700152397156,
-              "h": 0.9812700152397156,
-              "l": 0.9812700152397156,
-              "c": 0.9812700152397156
-            },
-            {
-              "t": 1792364400,
-              "o": 0.9836199879646301,
-              "h": 0.98444002866745,
-              "l": 0.9826899766921997,
-              "c": 0.9842399954795837
-            },
             {
               "t": 1792368000,
               "o": 0.9842000007629395,
@@ -30516,6 +30511,20 @@
               "h": 0.987779974937439,
               "l": 0.9862099885940552,
               "c": 0.987309992313385
+            },
+            {
+              "t": 1792576800,
+              "o": 0.987309992313385,
+              "h": 0.9878000020980835,
+              "l": 0.9858099818229675,
+              "c": 0.9875900149345398
+            },
+            {
+              "t": 1792580400,
+              "o": 0.9876000285148621,
+              "h": 0.9880300164222717,
+              "l": 0.9863100051879883,
+              "c": 0.9878399968147278
             }
           ],
           "forecasts": {
@@ -30528,40 +30537,40 @@
               "gap": 5.31,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.98731
+              "price": 0.98784
             },
             "3": {
-              "up": 14.03,
-              "down": 7.197,
-              "sideways": 78.773,
-              "bias": "BUY",
-              "signal": 14.03,
-              "gap": 6.833,
+              "up": 15.976,
+              "down": 17.574,
+              "sideways": 66.45,
+              "bias": "SELL",
+              "signal": 17.574,
+              "gap": 1.598,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.98731
+              "price": 0.98784
             },
             "6": {
-              "up": 14.703,
-              "down": 14.265,
-              "sideways": 71.032,
+              "up": 16.411,
+              "down": 12.484,
+              "sideways": 71.105,
               "bias": "BUY",
-              "signal": 14.703,
-              "gap": 0.438,
+              "signal": 16.411,
+              "gap": 3.927,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.98731
+              "price": 0.98784
             },
             "12": {
-              "up": 16.951,
-              "down": 16.382,
-              "sideways": 66.667,
-              "bias": "BUY",
-              "signal": 16.951,
-              "gap": 0.569,
+              "up": 10.55,
+              "down": 18.634,
+              "sideways": 70.816,
+              "bias": "SELL",
+              "signal": 18.634,
+              "gap": 8.084,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.98731
+              "price": 0.98784
             }
           }
         },
@@ -31047,7 +31056,7 @@
           "eligible": true,
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 6.062,
+          "minimum_signal": 11.235,
           "minimum_gap": 0.169
         },
         "3": {
@@ -31063,13 +31072,10 @@
           "reason": "Timeframes disagree"
         },
         "12": {
-          "bias": "BUY",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 12.044,
-          "minimum_gap": 0.569
+          "bias": "MIXED",
+          "aligned": false,
+          "eligible": false,
+          "reason": "Timeframes disagree"
         }
       },
       "full_alignment": {
@@ -31083,63 +31089,14 @@
       "pair": "AUD/NZD",
       "ready": true,
       "status": "Updated",
-      "checked_at": "2026-10-21T10:36:35Z",
+      "checked_at": "2026-10-21T12:16:51Z",
       "timeframes": {
         "15m": {
           "status": "Updated",
-          "candle_epoch": 1792577700,
-          "candle_time": "2026-10-21T10:15:00Z",
-          "price": 1.2349400520324707,
+          "candle_epoch": 1792584000,
+          "candle_time": "2026-10-21T12:00:00Z",
+          "price": 1.2355899810791016,
           "candles": [
-            {
-              "t": 1792524600,
-              "o": 1.2319300174713135,
-              "h": 1.2320899963378906,
-              "l": 1.2314800024032593,
-              "c": 1.2320799827575684
-            },
-            {
-              "t": 1792525500,
-              "o": 1.232069969177246,
-              "h": 1.2323100566864014,
-              "l": 1.231600046157837,
-              "c": 1.2321200370788574
-            },
-            {
-              "t": 1792526400,
-              "o": 1.2321300506591797,
-              "h": 1.2322499752044678,
-              "l": 1.2316999435424805,
-              "c": 1.2321900129318237
-            },
-            {
-              "t": 1792527300,
-              "o": 1.232200026512146,
-              "h": 1.232300043106079,
-              "l": 1.2317700386047363,
-              "c": 1.2322399616241455
-            },
-            {
-              "t": 1792528200,
-              "o": 1.2322100400924683,
-              "h": 1.2323600053787231,
-              "l": 1.2317099571228027,
-              "c": 1.232100009918213
-            },
-            {
-              "t": 1792529100,
-              "o": 1.232100009918213,
-              "h": 1.2322100400924683,
-              "l": 1.231029987335205,
-              "c": 1.2316499948501587
-            },
-            {
-              "t": 1792530000,
-              "o": 1.2306100130081177,
-              "h": 1.232319951057434,
-              "l": 1.2291300296783447,
-              "c": 1.2305500507354736
-            },
             {
               "t": 1792530900,
               "o": 1.2305500507354736,
@@ -31510,75 +31467,110 @@
               "h": 1.2354300022125244,
               "l": 1.2346099615097046,
               "c": 1.2349400520324707
+            },
+            {
+              "t": 1792578600,
+              "o": 1.2349300384521484,
+              "h": 1.235319972038269,
+              "l": 1.234529972076416,
+              "c": 1.235200047492981
+            },
+            {
+              "t": 1792579500,
+              "o": 1.2351700067520142,
+              "h": 1.2358200550079346,
+              "l": 1.2347899675369263,
+              "c": 1.2355300188064575
+            },
+            {
+              "t": 1792580400,
+              "o": 1.235550045967102,
+              "h": 1.235949993133545,
+              "l": 1.2352299690246582,
+              "c": 1.2358100414276123
+            },
+            {
+              "t": 1792581300,
+              "o": 1.2358100414276123,
+              "h": 1.2360899448394775,
+              "l": 1.235159993171692,
+              "c": 1.2358399629592896
+            },
+            {
+              "t": 1792582200,
+              "o": 1.2358100414276123,
+              "h": 1.2359800338745117,
+              "l": 1.2350499629974365,
+              "c": 1.2354999780654907
+            },
+            {
+              "t": 1792583100,
+              "o": 1.2354999780654907,
+              "h": 1.2356899976730347,
+              "l": 1.2350200414657593,
+              "c": 1.2356799840927124
+            },
+            {
+              "t": 1792584000,
+              "o": 1.2356899976730347,
+              "h": 1.2357699871063232,
+              "l": 1.2351700067520142,
+              "c": 1.2355899810791016
             }
           ],
           "forecasts": {
             "1": {
               "up": 15.954,
-              "down": 10.941,
-              "sideways": 73.105,
+              "down": 7.514,
+              "sideways": 76.532,
               "bias": "BUY",
               "signal": 15.954,
-              "gap": 5.014,
+              "gap": 8.441,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.23494
+              "price": 1.23559
             },
             "3": {
-              "up": 16.071,
-              "down": 16.197,
-              "sideways": 67.732,
-              "bias": "SELL",
-              "signal": 16.197,
-              "gap": 0.127,
+              "up": 14.125,
+              "down": 10.709,
+              "sideways": 75.166,
+              "bias": "BUY",
+              "signal": 14.125,
+              "gap": 3.417,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.23494
+              "price": 1.23559
             },
             "6": {
-              "up": 12.63,
-              "down": 18.703,
-              "sideways": 68.667,
+              "up": 15.288,
+              "down": 18.63,
+              "sideways": 66.082,
               "bias": "SELL",
-              "signal": 18.703,
-              "gap": 6.073,
+              "signal": 18.63,
+              "gap": 3.342,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.23494
+              "price": 1.23559
             },
             "12": {
-              "up": 14.509,
-              "down": 9.981,
-              "sideways": 75.51,
-              "bias": "BUY",
-              "signal": 14.509,
-              "gap": 4.528,
+              "up": 6.046,
+              "down": 22.025,
+              "sideways": 71.93,
+              "bias": "SELL",
+              "signal": 22.025,
+              "gap": 15.979,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.23494
+              "price": 1.23559
             }
           }
         },
         "1h": {
           "status": "Updated",
-          "candle_epoch": 1792573200,
-          "candle_time": "2026-10-21T09:00:00Z",
-          "price": 1.2352900505065918,
+          "candle_epoch": 1792580400,
+          "candle_time": "2026-10-21T11:00:00Z",
+          "price": 1.2356799840927124,
           "candles": [
-            {
-              "t": 1792184400,
-              "o": 1.228410005569458,
-              "h": 1.228410005569458,
-              "l": 1.228410005569458,
-              "c": 1.228410005569458
-            },
-            {
-              "t": 1792364400,
-              "o": 1.2319600582122803,
-              "h": 1.2329200506210327,
-              "l": 1.2316800355911255,
-              "c": 1.231909990310669
-            },
             {
               "t": 1792368000,
               "o": 1.2318999767303467,
@@ -31984,52 +31976,66 @@
               "h": 1.235859990119934,
               "l": 1.2347899675369263,
               "c": 1.2352900505065918
+            },
+            {
+              "t": 1792576800,
+              "o": 1.2352900505065918,
+              "h": 1.2358200550079346,
+              "l": 1.234529972076416,
+              "c": 1.2355300188064575
+            },
+            {
+              "t": 1792580400,
+              "o": 1.235550045967102,
+              "h": 1.2360899448394775,
+              "l": 1.2350200414657593,
+              "c": 1.2356799840927124
             }
           ],
           "forecasts": {
             "1": {
-              "up": 11.64,
-              "down": 28.542,
-              "sideways": 59.818,
+              "up": 13.364,
+              "down": 21.646,
+              "sideways": 64.99,
               "bias": "SELL",
-              "signal": 28.542,
-              "gap": 16.902,
+              "signal": 21.646,
+              "gap": 8.282,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.23529
+              "price": 1.23568
             },
             "3": {
-              "up": 16.767,
-              "down": 23.157,
-              "sideways": 60.076,
+              "up": 16.672,
+              "down": 25.166,
+              "sideways": 58.162,
               "bias": "SELL",
-              "signal": 23.157,
-              "gap": 6.39,
+              "signal": 25.166,
+              "gap": 8.494,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.23529
+              "price": 1.23568
             },
             "6": {
-              "up": 17.068,
-              "down": 16.411,
-              "sideways": 66.521,
+              "up": 23.434,
+              "down": 12.849,
+              "sideways": 63.717,
               "bias": "BUY",
-              "signal": 17.068,
-              "gap": 0.658,
+              "signal": 23.434,
+              "gap": 10.584,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.23529
+              "price": 1.23568
             },
             "12": {
-              "up": 34.448,
-              "down": 11.498,
-              "sideways": 54.054,
+              "up": 26.743,
+              "down": 11.119,
+              "sideways": 62.138,
               "bias": "BUY",
-              "signal": 34.448,
-              "gap": 22.949,
+              "signal": 26.743,
+              "gap": 15.624,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 1.23529
+              "price": 1.23568
             }
           }
         },
@@ -32516,13 +32522,10 @@
           "reason": "Timeframes disagree"
         },
         "3": {
-          "bias": "SELL",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 16.197,
-          "minimum_gap": 0.127
+          "bias": "MIXED",
+          "aligned": false,
+          "eligible": false,
+          "reason": "Timeframes disagree"
         },
         "6": {
           "bias": "MIXED",
@@ -32531,13 +32534,10 @@
           "reason": "Timeframes disagree"
         },
         "12": {
-          "bias": "BUY",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 14.509,
-          "minimum_gap": 4.528
+          "bias": "MIXED",
+          "aligned": false,
+          "eligible": false,
+          "reason": "Timeframes disagree"
         }
       },
       "full_alignment": {
@@ -32551,63 +32551,14 @@
       "pair": "NZD/JPY",
       "ready": true,
       "status": "Updated",
-      "checked_at": "2026-10-21T10:36:35Z",
+      "checked_at": "2026-10-21T12:16:51Z",
       "timeframes": {
         "15m": {
           "status": "Updated",
-          "candle_epoch": 1792577700,
-          "candle_time": "2026-10-21T10:15:00Z",
-          "price": 89.93399810791016,
+          "candle_epoch": 1792584000,
+          "candle_time": "2026-10-21T12:00:00Z",
+          "price": 89.85800170898438,
           "candles": [
-            {
-              "t": 1792524600,
-              "o": 89.87300109863281,
-              "h": 89.89800262451172,
-              "l": 89.86399841308594,
-              "c": 89.87899780273438
-            },
-            {
-              "t": 1792525500,
-              "o": 89.87899780273438,
-              "h": 89.90499877929688,
-              "l": 89.87799835205078,
-              "c": 89.9020004272461
-            },
-            {
-              "t": 1792526400,
-              "o": 89.9020004272461,
-              "h": 89.90499877929688,
-              "l": 89.86900329589844,
-              "c": 89.87300109863281
-            },
-            {
-              "t": 1792527300,
-              "o": 89.87000274658203,
-              "h": 89.88800048828125,
-              "l": 89.85800170898438,
-              "c": 89.86599731445312
-            },
-            {
-              "t": 1792528200,
-              "o": 89.86599731445312,
-              "h": 89.89800262451172,
-              "l": 89.86399841308594,
-              "c": 89.88200378417969
-            },
-            {
-              "t": 1792529100,
-              "o": 89.88200378417969,
-              "h": 89.91600036621094,
-              "l": 89.85600280761719,
-              "c": 89.87799835205078
-            },
-            {
-              "t": 1792530000,
-              "o": 89.86699676513672,
-              "h": 89.91699981689453,
-              "l": 89.17900085449219,
-              "c": 89.66999816894531
-            },
             {
               "t": 1792530900,
               "o": 89.81300354003906,
@@ -32978,75 +32929,110 @@
               "h": 89.94999694824219,
               "l": 89.88400268554688,
               "c": 89.93399810791016
+            },
+            {
+              "t": 1792578600,
+              "o": 89.93399810791016,
+              "h": 89.96800231933594,
+              "l": 89.91400146484375,
+              "c": 89.9540023803711
+            },
+            {
+              "t": 1792579500,
+              "o": 89.9540023803711,
+              "h": 89.98500061035156,
+              "l": 89.9489974975586,
+              "c": 89.96700286865234
+            },
+            {
+              "t": 1792580400,
+              "o": 89.96499633789062,
+              "h": 89.9739990234375,
+              "l": 89.87699890136719,
+              "c": 89.87999725341797
+            },
+            {
+              "t": 1792581300,
+              "o": 89.87999725341797,
+              "h": 89.90899658203125,
+              "l": 89.86299896240234,
+              "c": 89.86699676513672
+            },
+            {
+              "t": 1792582200,
+              "o": 89.86699676513672,
+              "h": 89.89199829101562,
+              "l": 89.85700225830078,
+              "c": 89.87100219726562
+            },
+            {
+              "t": 1792583100,
+              "o": 89.8740005493164,
+              "h": 89.90399932861328,
+              "l": 89.81900024414062,
+              "c": 89.82499694824219
+            },
+            {
+              "t": 1792584000,
+              "o": 89.82599639892578,
+              "h": 89.86900329589844,
+              "l": 89.81400299072266,
+              "c": 89.85800170898438
             }
           ],
           "forecasts": {
             "1": {
-              "up": 27.443,
-              "down": 15.311,
-              "sideways": 57.246,
-              "bias": "BUY",
-              "signal": 27.443,
-              "gap": 12.133,
+              "up": 17.088,
+              "down": 18.78,
+              "sideways": 64.132,
+              "bias": "SELL",
+              "signal": 18.78,
+              "gap": 1.692,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 89.933998
+              "price": 89.858002
             },
             "3": {
-              "up": 22.445,
-              "down": 23.98,
-              "sideways": 53.575,
-              "bias": "SELL",
-              "signal": 23.98,
-              "gap": 1.534,
+              "up": 29.563,
+              "down": 20.5,
+              "sideways": 49.937,
+              "bias": "BUY",
+              "signal": 29.563,
+              "gap": 9.064,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 89.933998
+              "price": 89.858002
             },
             "6": {
-              "up": 26.164,
-              "down": 17.361,
-              "sideways": 56.475,
-              "bias": "BUY",
-              "signal": 26.164,
-              "gap": 8.804,
+              "up": 24.384,
+              "down": 28.018,
+              "sideways": 47.598,
+              "bias": "SELL",
+              "signal": 28.018,
+              "gap": 3.635,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 89.933998
+              "price": 89.858002
             },
             "12": {
-              "up": 23.352,
-              "down": 19.203,
-              "sideways": 57.444,
-              "bias": "BUY",
-              "signal": 23.352,
-              "gap": 4.149,
+              "up": 22.238,
+              "down": 25.984,
+              "sideways": 51.778,
+              "bias": "SELL",
+              "signal": 25.984,
+              "gap": 3.746,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 89.933998
+              "price": 89.858002
             }
           }
         },
         "1h": {
           "status": "Updated",
-          "candle_epoch": 1792573200,
-          "candle_time": "2026-10-21T09:00:00Z",
-          "price": 89.94100189208984,
+          "candle_epoch": 1792580400,
+          "candle_time": "2026-10-21T11:00:00Z",
+          "price": 89.82499694824219,
           "candles": [
-            {
-              "t": 1792184400,
-              "o": 89.30699920654297,
-              "h": 89.30699920654297,
-              "l": 89.30699920654297,
-              "c": 89.30699920654297
-            },
-            {
-              "t": 1792364400,
-              "o": 89.21800231933594,
-              "h": 89.29299926757812,
-              "l": 89.16699981689453,
-              "c": 89.28500366210938
-            },
             {
               "t": 1792368000,
               "o": 89.28500366210938,
@@ -33452,52 +33438,66 @@
               "h": 89.94499969482422,
               "l": 89.86399841308594,
               "c": 89.94100189208984
+            },
+            {
+              "t": 1792576800,
+              "o": 89.94100189208984,
+              "h": 89.98500061035156,
+              "l": 89.88400268554688,
+              "c": 89.96700286865234
+            },
+            {
+              "t": 1792580400,
+              "o": 89.96499633789062,
+              "h": 89.9739990234375,
+              "l": 89.81900024414062,
+              "c": 89.82499694824219
             }
           ],
           "forecasts": {
             "1": {
-              "up": 27.528,
-              "down": 17.109,
-              "sideways": 55.363,
+              "up": 29.252,
+              "down": 25.73,
+              "sideways": 45.018,
               "bias": "BUY",
-              "signal": 27.528,
-              "gap": 10.419,
+              "signal": 29.252,
+              "gap": 3.522,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 89.941002
+              "price": 89.824997
             },
             "3": {
-              "up": 25.767,
-              "down": 18.871,
-              "sideways": 55.362,
-              "bias": "BUY",
-              "signal": 25.767,
-              "gap": 6.897,
+              "up": 19.124,
+              "down": 25.799,
+              "sideways": 55.078,
+              "bias": "SELL",
+              "signal": 25.799,
+              "gap": 6.675,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 89.941002
+              "price": 89.824997
             },
             "6": {
-              "up": 30.311,
-              "down": 26.164,
-              "sideways": 43.525,
-              "bias": "BUY",
-              "signal": 30.311,
-              "gap": 4.146,
+              "up": 19.945,
+              "down": 36.822,
+              "sideways": 43.233,
+              "bias": "SELL",
+              "signal": 36.822,
+              "gap": 16.877,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 89.941002
+              "price": 89.824997
             },
             "12": {
-              "up": 29.184,
-              "down": 23.921,
-              "sideways": 46.894,
+              "up": 28.805,
+              "down": 27.122,
+              "sideways": 44.073,
               "bias": "BUY",
-              "signal": 29.184,
-              "gap": 5.263,
+              "signal": 28.805,
+              "gap": 1.683,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 89.941002
+              "price": 89.824997
             }
           }
         },
@@ -33990,19 +33990,19 @@
           "reason": "Timeframes disagree"
         },
         "6": {
-          "bias": "MIXED",
-          "aligned": false,
-          "eligible": false,
-          "reason": "Timeframes disagree"
-        },
-        "12": {
-          "bias": "BUY",
+          "bias": "SELL",
           "aligned": true,
           "eligible": true,
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 23.352,
-          "minimum_gap": 4.149
+          "minimum_signal": 25.483,
+          "minimum_gap": 3.375
+        },
+        "12": {
+          "bias": "MIXED",
+          "aligned": false,
+          "eligible": false,
+          "reason": "Timeframes disagree"
         }
       },
       "full_alignment": {
@@ -34016,63 +34016,14 @@
       "pair": "NZD/CHF",
       "ready": true,
       "status": "Updated",
-      "checked_at": "2026-10-21T10:36:35Z",
+      "checked_at": "2026-10-21T12:16:51Z",
       "timeframes": {
         "15m": {
           "status": "Updated",
-          "candle_epoch": 1792577700,
-          "candle_time": "2026-10-21T10:15:00Z",
-          "price": 0.4692699909210205,
+          "candle_epoch": 1792584000,
+          "candle_time": "2026-10-21T12:00:00Z",
+          "price": 0.46880000829696655,
           "candles": [
-            {
-              "t": 1792524600,
-              "o": 0.4684300124645233,
-              "h": 0.46862998604774475,
-              "l": 0.4683400094509125,
-              "c": 0.4684000015258789
-            },
-            {
-              "t": 1792525500,
-              "o": 0.4684000015258789,
-              "h": 0.4684999883174896,
-              "l": 0.4683000147342682,
-              "c": 0.4684700071811676
-            },
-            {
-              "t": 1792526400,
-              "o": 0.46841999888420105,
-              "h": 0.4684999883174896,
-              "l": 0.4683000147342682,
-              "c": 0.46845000982284546
-            },
-            {
-              "t": 1792527300,
-              "o": 0.4684399962425232,
-              "h": 0.4685100018978119,
-              "l": 0.4682700037956238,
-              "c": 0.4684099853038788
-            },
-            {
-              "t": 1792528200,
-              "o": 0.4684099853038788,
-              "h": 0.4686200022697449,
-              "l": 0.46830999851226807,
-              "c": 0.4685400128364563
-            },
-            {
-              "t": 1792529100,
-              "o": 0.4685400128364563,
-              "h": 0.46880000829696655,
-              "l": 0.4683299958705902,
-              "c": 0.46838000416755676
-            },
-            {
-              "t": 1792530000,
-              "o": 0.4684000015258789,
-              "h": 0.4686200022697449,
-              "l": 0.46456000208854675,
-              "c": 0.4671100080013275
-            },
             {
               "t": 1792530900,
               "o": 0.4671100080013275,
@@ -34443,75 +34394,110 @@
               "h": 0.46950000524520874,
               "l": 0.4690999984741211,
               "c": 0.4692699909210205
+            },
+            {
+              "t": 1792578600,
+              "o": 0.4692800045013428,
+              "h": 0.46952998638153076,
+              "l": 0.4690999984741211,
+              "c": 0.46946001052856445
+            },
+            {
+              "t": 1792579500,
+              "o": 0.4694499969482422,
+              "h": 0.469650000333786,
+              "l": 0.46928998827934265,
+              "c": 0.4694400131702423
+            },
+            {
+              "t": 1792580400,
+              "o": 0.46942999958992004,
+              "h": 0.46955999732017517,
+              "l": 0.4690699875354767,
+              "c": 0.4691999852657318
+            },
+            {
+              "t": 1792581300,
+              "o": 0.4692400097846985,
+              "h": 0.4694499969482422,
+              "l": 0.4689899981021881,
+              "c": 0.46915000677108765
+            },
+            {
+              "t": 1792582200,
+              "o": 0.46915000677108765,
+              "h": 0.4692299962043762,
+              "l": 0.46876001358032227,
+              "c": 0.4689899981021881
+            },
+            {
+              "t": 1792583100,
+              "o": 0.4690200090408325,
+              "h": 0.4692299962043762,
+              "l": 0.4688299894332886,
+              "c": 0.46911001205444336
+            },
+            {
+              "t": 1792584000,
+              "o": 0.4690900146961212,
+              "h": 0.46911999583244324,
+              "l": 0.46858999133110046,
+              "c": 0.46880000829696655
             }
           ],
           "forecasts": {
             "1": {
-              "up": 17.583,
-              "down": 22.851,
-              "sideways": 59.566,
+              "up": 17.594,
+              "down": 17.689,
+              "sideways": 64.717,
               "bias": "SELL",
-              "signal": 22.851,
-              "gap": 5.268,
+              "signal": 17.689,
+              "gap": 0.095,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.46927
+              "price": 0.4688
             },
             "3": {
-              "up": 16.008,
-              "down": 8.953,
-              "sideways": 75.04,
-              "bias": "BUY",
-              "signal": 16.008,
-              "gap": 7.055,
+              "up": 19.266,
+              "down": 26.637,
+              "sideways": 54.097,
+              "bias": "SELL",
+              "signal": 26.637,
+              "gap": 7.371,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.46927
+              "price": 0.4688
             },
             "6": {
-              "up": 20.776,
-              "down": 14.046,
-              "sideways": 65.178,
+              "up": 20.557,
+              "down": 16.192,
+              "sideways": 63.251,
               "bias": "BUY",
-              "signal": 20.776,
-              "gap": 6.731,
+              "signal": 20.557,
+              "gap": 4.365,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.46927
+              "price": 0.4688
             },
             "12": {
-              "up": 16.382,
-              "down": 4.528,
-              "sideways": 79.09,
-              "bias": "BUY",
-              "signal": 16.382,
-              "gap": 11.854,
+              "up": 8.108,
+              "down": 12.992,
+              "sideways": 78.9,
+              "bias": "SELL",
+              "signal": 12.992,
+              "gap": 4.884,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.46927
+              "price": 0.4688
             }
           }
         },
         "1h": {
           "status": "Updated",
-          "candle_epoch": 1792573200,
-          "candle_time": "2026-10-21T09:00:00Z",
-          "price": 0.4695200026035309,
+          "candle_epoch": 1792580400,
+          "candle_time": "2026-10-21T11:00:00Z",
+          "price": 0.46911001205444336,
           "candles": [
-            {
-              "t": 1792184400,
-              "o": 0.46549999713897705,
-              "h": 0.46549999713897705,
-              "l": 0.46546998620033264,
-              "c": 0.46546998620033264
-            },
-            {
-              "t": 1792364400,
-              "o": 0.4656899869441986,
-              "h": 0.4661000072956085,
-              "l": 0.4655500054359436,
-              "c": 0.46608999371528625
-            },
             {
               "t": 1792368000,
               "o": 0.4659999907016754,
@@ -34917,52 +34903,66 @@
               "h": 0.46955999732017517,
               "l": 0.4685499966144562,
               "c": 0.4695200026035309
+            },
+            {
+              "t": 1792576800,
+              "o": 0.469539999961853,
+              "h": 0.469650000333786,
+              "l": 0.4690999984741211,
+              "c": 0.4694400131702423
+            },
+            {
+              "t": 1792580400,
+              "o": 0.46942999958992004,
+              "h": 0.46955999732017517,
+              "l": 0.46876001358032227,
+              "c": 0.46911001205444336
             }
           ],
           "forecasts": {
             "1": {
-              "up": 11.036,
-              "down": 23.211,
-              "sideways": 65.753,
+              "up": 12.771,
+              "down": 19.752,
+              "sideways": 67.477,
               "bias": "SELL",
-              "signal": 23.211,
-              "gap": 12.175,
+              "signal": 19.752,
+              "gap": 6.981,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.46952
+              "price": 0.46911
             },
             "3": {
-              "up": 14.473,
-              "down": 26.606,
-              "sideways": 58.921,
+              "up": 9.269,
+              "down": 19.677,
+              "sideways": 71.053,
               "bias": "SELL",
-              "signal": 26.606,
-              "gap": 12.132,
+              "signal": 19.677,
+              "gap": 10.408,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.46952
+              "price": 0.46911
             },
             "6": {
-              "up": 16.776,
-              "down": 22.995,
-              "sideways": 60.228,
+              "up": 6.703,
+              "down": 27.068,
+              "sideways": 66.228,
               "bias": "SELL",
-              "signal": 22.995,
-              "gap": 6.219,
+              "signal": 27.068,
+              "gap": 20.365,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.46952
+              "price": 0.46911
             },
             "12": {
-              "up": 17.141,
-              "down": 11.498,
-              "sideways": 71.361,
-              "bias": "BUY",
-              "signal": 17.141,
-              "gap": 5.642,
+              "up": 9.436,
+              "down": 22.594,
+              "sideways": 67.971,
+              "bias": "SELL",
+              "signal": 22.594,
+              "gap": 13.158,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.46952
+              "price": 0.46911
             }
           }
         },
@@ -35448,14 +35448,17 @@
           "eligible": true,
           "strong": false,
           "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 22.851,
-          "minimum_gap": 3.357
+          "minimum_signal": 17.689,
+          "minimum_gap": 0.095
         },
         "3": {
-          "bias": "MIXED",
-          "aligned": false,
-          "eligible": false,
-          "reason": "Timeframes disagree"
+          "bias": "SELL",
+          "aligned": true,
+          "eligible": true,
+          "strong": false,
+          "reason": "All 3 timeframes agree; low strength / sideways risk",
+          "minimum_signal": 19.677,
+          "minimum_gap": 7.371
         },
         "6": {
           "bias": "MIXED",
@@ -35464,10 +35467,13 @@
           "reason": "Timeframes disagree"
         },
         "12": {
-          "bias": "MIXED",
-          "aligned": false,
-          "eligible": false,
-          "reason": "Timeframes disagree"
+          "bias": "SELL",
+          "aligned": true,
+          "eligible": true,
+          "strong": false,
+          "reason": "All 3 timeframes agree; low strength / sideways risk",
+          "minimum_signal": 12.992,
+          "minimum_gap": 4.884
         }
       },
       "full_alignment": {
@@ -35481,63 +35487,14 @@
       "pair": "NZD/CAD",
       "ready": true,
       "status": "Updated",
-      "checked_at": "2026-10-21T10:36:35Z",
+      "checked_at": "2026-10-21T12:16:51Z",
       "timeframes": {
         "15m": {
           "status": "Updated",
-          "candle_epoch": 1792577700,
-          "candle_time": "2026-10-21T10:15:00Z",
-          "price": 0.7990700006484985,
+          "candle_epoch": 1792584000,
+          "candle_time": "2026-10-21T12:00:00Z",
+          "price": 0.7994300127029419,
           "candles": [
-            {
-              "t": 1792524600,
-              "o": 0.7987200021743774,
-              "h": 0.7988899946212769,
-              "l": 0.7986400127410889,
-              "c": 0.7987800240516663
-            },
-            {
-              "t": 1792525500,
-              "o": 0.7987599968910217,
-              "h": 0.7988600134849548,
-              "l": 0.7984499931335449,
-              "c": 0.7985799908638
-            },
-            {
-              "t": 1792526400,
-              "o": 0.7985299825668335,
-              "h": 0.7986599802970886,
-              "l": 0.7983300089836121,
-              "c": 0.7985100150108337
-            },
-            {
-              "t": 1792527300,
-              "o": 0.7985100150108337,
-              "h": 0.7986900210380554,
-              "l": 0.7984700202941895,
-              "c": 0.7986599802970886
-            },
-            {
-              "t": 1792528200,
-              "o": 0.7986599802970886,
-              "h": 0.798829972743988,
-              "l": 0.798520028591156,
-              "c": 0.7987200021743774
-            },
-            {
-              "t": 1792529100,
-              "o": 0.7986999750137329,
-              "h": 0.7990700006484985,
-              "l": 0.7985900044441223,
-              "c": 0.7986599802970886
-            },
-            {
-              "t": 1792530000,
-              "o": 0.7986299991607666,
-              "h": 0.7991200089454651,
-              "l": 0.7982000112533569,
-              "c": 0.7985600233078003
-            },
             {
               "t": 1792530900,
               "o": 0.7983099818229675,
@@ -35908,75 +35865,110 @@
               "h": 0.7991700172424316,
               "l": 0.7985299825668335,
               "c": 0.7990700006484985
+            },
+            {
+              "t": 1792578600,
+              "o": 0.7990700006484985,
+              "h": 0.7993699908256531,
+              "l": 0.7988499999046326,
+              "c": 0.7993199825286865
+            },
+            {
+              "t": 1792579500,
+              "o": 0.7993199825286865,
+              "h": 0.7993599772453308,
+              "l": 0.79899001121521,
+              "c": 0.7991999983787537
+            },
+            {
+              "t": 1792580400,
+              "o": 0.7991999983787537,
+              "h": 0.7992900013923645,
+              "l": 0.7987200021743774,
+              "c": 0.798799991607666
+            },
+            {
+              "t": 1792581300,
+              "o": 0.7987499833106995,
+              "h": 0.7995200157165527,
+              "l": 0.798520028591156,
+              "c": 0.7992500066757202
+            },
+            {
+              "t": 1792582200,
+              "o": 0.79926997423172,
+              "h": 0.7993699908256531,
+              "l": 0.7989199757575989,
+              "c": 0.7990800142288208
+            },
+            {
+              "t": 1792583100,
+              "o": 0.7990900278091431,
+              "h": 0.7994999885559082,
+              "l": 0.7989799976348877,
+              "c": 0.7993299961090088
+            },
+            {
+              "t": 1792584000,
+              "o": 0.7993199825286865,
+              "h": 0.7994599938392639,
+              "l": 0.7990900278091431,
+              "c": 0.7994300127029419
             }
           ],
           "forecasts": {
             "1": {
-              "up": 13.025,
-              "down": 18.335,
-              "sideways": 68.64,
-              "bias": "SELL",
-              "signal": 18.335,
-              "gap": 5.31,
+              "up": 25.136,
+              "down": 11.439,
+              "sideways": 63.425,
+              "bias": "BUY",
+              "signal": 25.136,
+              "gap": 13.698,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.79907
+              "price": 0.79943
             },
             "3": {
-              "up": 14.821,
-              "down": 30.339,
-              "sideways": 54.84,
-              "bias": "SELL",
-              "signal": 30.339,
-              "gap": 15.517,
+              "up": 20.057,
+              "down": 9.617,
+              "sideways": 70.326,
+              "bias": "BUY",
+              "signal": 20.057,
+              "gap": 10.44,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.79907
+              "price": 0.79943
             },
             "6": {
-              "up": 17.215,
-              "down": 21.361,
-              "sideways": 61.425,
-              "bias": "SELL",
-              "signal": 21.361,
-              "gap": 4.146,
+              "up": 21.434,
+              "down": 15.507,
+              "sideways": 63.059,
+              "bias": "BUY",
+              "signal": 21.434,
+              "gap": 5.927,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.79907
+              "price": 0.79943
             },
             "12": {
-              "up": 17.141,
-              "down": 25.415,
-              "sideways": 57.444,
-              "bias": "SELL",
-              "signal": 25.415,
-              "gap": 8.274,
+              "up": 28.046,
+              "down": 14.889,
+              "sideways": 57.065,
+              "bias": "BUY",
+              "signal": 28.046,
+              "gap": 13.158,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.79907
+              "price": 0.79943
             }
           }
         },
         "1h": {
           "status": "Updated",
-          "candle_epoch": 1792573200,
-          "candle_time": "2026-10-21T09:00:00Z",
-          "price": 0.7991399765014648,
+          "candle_epoch": 1792580400,
+          "candle_time": "2026-10-21T11:00:00Z",
+          "price": 0.7993299961090088,
           "candles": [
-            {
-              "t": 1792184400,
-              "o": 0.7990599870681763,
-              "h": 0.7990599870681763,
-              "l": 0.7990599870681763,
-              "c": 0.7990599870681763
-            },
-            {
-              "t": 1792364400,
-              "o": 0.7982000112533569,
-              "h": 0.7988600134849548,
-              "l": 0.797950029373169,
-              "c": 0.7987499833106995
-            },
             {
               "t": 1792368000,
               "o": 0.7987599968910217,
@@ -36382,52 +36374,66 @@
               "h": 0.7993299961090088,
               "l": 0.7986699938774109,
               "c": 0.7991399765014648
+            },
+            {
+              "t": 1792576800,
+              "o": 0.7991399765014648,
+              "h": 0.7993699908256531,
+              "l": 0.7985299825668335,
+              "c": 0.7991999983787537
+            },
+            {
+              "t": 1792580400,
+              "o": 0.7991999983787537,
+              "h": 0.7995200157165527,
+              "l": 0.798520028591156,
+              "c": 0.7993299961090088
             }
           ],
           "forecasts": {
             "1": {
               "up": 16.516,
-              "down": 32.319,
-              "sideways": 51.165,
+              "down": 28.871,
+              "sideways": 54.614,
               "bias": "SELL",
-              "signal": 32.319,
-              "gap": 15.803,
+              "signal": 28.871,
+              "gap": 12.355,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.79914
+              "price": 0.79933
             },
             "3": {
-              "up": 16.514,
-              "down": 18.428,
-              "sideways": 65.059,
+              "up": 15.043,
+              "down": 32.474,
+              "sideways": 52.483,
               "bias": "SELL",
-              "signal": 18.428,
-              "gap": 1.914,
+              "signal": 32.474,
+              "gap": 17.431,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.79914
+              "price": 0.79933
             },
             "6": {
-              "up": 19.507,
-              "down": 21.872,
-              "sideways": 58.621,
+              "up": 12.995,
+              "down": 27.799,
+              "sideways": 59.205,
               "bias": "SELL",
-              "signal": 21.872,
-              "gap": 2.365,
+              "signal": 27.799,
+              "gap": 14.804,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.79914
+              "price": 0.79933
             },
             "12": {
-              "up": 15.078,
-              "down": 29.184,
-              "sideways": 55.737,
+              "up": 14.13,
+              "down": 31.816,
+              "sideways": 54.054,
               "bias": "SELL",
-              "signal": 29.184,
-              "gap": 14.106,
+              "signal": 31.816,
+              "gap": 17.686,
               "direction_leads": false,
               "top_outcome": "SIDEWAYS",
-              "price": 0.79914
+              "price": 0.79933
             }
           }
         },
@@ -36908,22 +36914,16 @@
       },
       "alignments": {
         "1": {
-          "bias": "SELL",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 18.335,
-          "minimum_gap": 5.31
+          "bias": "MIXED",
+          "aligned": false,
+          "eligible": false,
+          "reason": "Timeframes disagree"
         },
         "3": {
-          "bias": "SELL",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 18.428,
-          "minimum_gap": 1.914
+          "bias": "MIXED",
+          "aligned": false,
+          "eligible": false,
+          "reason": "Timeframes disagree"
         },
         "6": {
           "bias": "MIXED",
@@ -36932,13 +36932,10 @@
           "reason": "Timeframes disagree"
         },
         "12": {
-          "bias": "SELL",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 25.415,
-          "minimum_gap": 1.798
+          "bias": "MIXED",
+          "aligned": false,
+          "eligible": false,
+          "reason": "Timeframes disagree"
         }
       },
       "full_alignment": {
