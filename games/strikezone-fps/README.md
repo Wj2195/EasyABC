@@ -627,3 +627,13 @@ GitHub client and SQL setup are committed, but **database migration execution an
 - **Testing limitation:** syntax/static wiring and source checks are available; actual load success and visuals require testing in a browser with WebGL2 and access to the model CDN. The photorealistic concept was illustrative, not the actual exported 3D mesh.
 
 Permanent link: https://wj2195.github.io/EasyABC/games/strikezone-fps/
+
+
+## v3.44 — Fix giant soldier legs / detached weapon in 3D lobby (2026-10-22)
+
+- **Root cause:** The v3.43 rig loader overwrote the imported `Soldier.glb` scene scale with the target-world scale, losing the native FBX/Mixamo import scale. This produced a hugely oversized boot/leg in the preview and normal-sized procedural weapon cubes floating elsewhere.
+- **Fix:** Put the unchanged skeleton/GLB scene inside a normalized parent group, applying the world-height multiplier only to that parent. Preserve the imported skeleton and mesh transforms and rotate the body to match STRIKEZONE's forward direction.
+- Validate the normalized body bounds before showing it (expected height 1.1–2.6 world units). An invalid imported mesh aborts safely into the existing working procedural graphics instead of covering the lobby with giant geometry.
+- Hide uncalibrated block weapons in the close-up menu preview until proper skeletal grip alignment is available. All nine loadout selections and weapon controls continue to work; gameplay retains weapon meshes.
+- Bumped the tactical asset and enhanced renderer import versions to **3.44** so browsers do not reuse the buggy module from cache.
+- **Verification:** All modified HTML, lobby, renderer, and soldier module JavaScript passed syntax parsing; integration and cache-version checks passed. Visual verification in a live Chrome/WebGL2 browser still required.
