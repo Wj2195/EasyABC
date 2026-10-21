@@ -108,7 +108,9 @@ async function restore(){
  try{
   const account=await authenticatedIdentity();
   setIdentity(account||makeGuest());
-  if(account)await refresh();
+  if(account){
+   closeAccount();await refresh();
+  }
  }catch(e){console.warn('STRIKEZONE account restore:',e);setIdentity(makeGuest());}
  finally{sessionReady=true;}
 }
@@ -197,7 +199,7 @@ async function refresh(){
  pending=nextRequests.map(x=>({...x,name:usernames.get(x.sender_id)||'PLAYER'}));
  invites=nextInvites.map(x=>({...x,name:usernames.get(x.sender_id)||'PLAYER'}));
  const newlyArrived=invites.filter(x=>!knownInvites.has(x.id));
- if(newlyArrived.length&&knownInvites.size)
+ if(newlyArrived.length)
   notify('New match invite! Open Friends to accept.');
  for(const x of invites)knownInvites.add(x.id);
  showAccountState();renderLists();
