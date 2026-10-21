@@ -2016,6 +2016,7 @@ function shieldBashPlayer(){
   const dx=b.x-player.x,dz=b.z-player.z,dist=Math.hypot(dx,dz);
   if(dist>1.95||dist<.01||(dx*Math.sin(player.yaw)+dz*Math.cos(player.yaw))/dist<.65)continue;
   damageBot(b,w.damage,player,'chest');
+  if(shieldPowerActive(b))break;
   b.energyVX=(b.energyVX||0)+dx/dist*5.0;b.energyVZ=(b.energyVZ||0)+dz/dist*5.0;
   b.airVY=Math.max(b.airVY||0,2.3);announce('SHIELD BASH',.65);break;
  }
@@ -2315,6 +2316,7 @@ function lightningStrike(from,target,damage,chain){
  });
  if(bossLightningBolts.length>22)bossLightningBolts.shift();
  monsterDamageSoldier(target,damage,boss);
+ if(shieldPowerActive(target))return; // Barrier also stops electric knockback.
  const dx=target.x-from.x,dz=target.z-from.z,len=Math.max(.1,hypot(dx,dz));
  if(target===player){player.shockVX+=dx/len*2.3;player.shockVZ+=dz/len*2.3;}
  else{target.energyVX=(target.energyVX||0)+dx/len*2.3;
@@ -2392,6 +2394,7 @@ function updateMonsters(dt){
      const d=hypot(target.x-m.x,target.z-m.z);
      if(d>m.attackRadius||!clearPath(m.x,m.z,target.x,target.z))continue;
      monsterDamageSoldier(target,22,m);
+     if(shieldPowerActive(target))continue; // No boss knockback through power.
      const force=Math.max(1,d),k=3.0;
      if(target===player){player.shockVX+=(target.x-m.x)/force*k;player.shockVZ+=(target.z-m.z)/force*k;}
      else{target.energyVX=(target.energyVX||0)+(target.x-m.x)/force*k;
@@ -2703,6 +2706,7 @@ function botAttack(b,tar,dist,visible,accuracy,cooldown,rotation){
   else if(tar.monster)damageMonster(tar,dmg,b);
   else damageBot(tar,dmg,b,'chest');
   const dx=(tar.x-b.x)/(dist||1),dz=(tar.z-b.z)/(dist||1);
+  if(shieldPowerActive(tar))return;
   if(tar===player){player.shockVX+=dx*4;player.shockVZ+=dz*4;player.yVel=Math.max(player.yVel,2.2);}
   else if(!tar.monster){tar.energyVX=(tar.energyVX||0)+dx*4;tar.energyVZ=(tar.energyVZ||0)+dz*4;
    tar.airVY=Math.max(tar.airVY||0,2.2);}
@@ -3009,8 +3013,10 @@ function blastEnergy(x,y,z,owner=player){
    const bodyY=floorSurfaceAt(bot.x,bot.z)+(bot.airHeight||0)+1;
    if(dist>radius||Math.abs(bodyY-y)>radius*.9)continue;
    const p=boost(bot,dist);
-   bot.energyVX=(bot.energyVX||0)+p.vx;bot.energyVZ=(bot.energyVZ||0)+p.vz;
-   bot.airVY=Math.max(bot.airVY||0,p.vy);
+   if(!shieldPowerActive(bot)){
+    bot.energyVX=(bot.energyVX||0)+p.vx;bot.energyVZ=(bot.energyVZ||0)+p.vz;
+    bot.airVY=Math.max(bot.airVY||0,p.vy);
+   }
    // Blue teammates are thrown by the wave, but do not receive friendly fire damage.
    if(bot!==owner&&((mode!=='tdm'&&mode!=='zombie')||
   (owner===player?bot.team!==0:bot.team!==owner?.team))){
@@ -3030,8 +3036,10 @@ function blastEnergy(x,y,z,owner=player){
    const dist=Math.hypot(player.x-x,player.z-z);
    if(dist<=radius&&Math.abs(player.y+1-y)<radius*.9){
      const p=boost(player,dist);
-     player.shockVX+=p.vx;player.shockVZ+=p.vz;
-     player.yVel=Math.max(player.yVel,p.vy);
+     if(!shieldPowerActive(player)){
+      player.shockVX+=p.vx;player.shockVZ+=p.vz;
+      player.yVel=Math.max(player.yVel,p.vy);
+     }
      if(owner!==player&&((mode!=='tdm'&&mode!=='zombie')||owner.team!==0))
        damagePlayer(Math.round(w.blastDamage*(.3+.7*p.power)),owner,'chest',{x,z});
      pushed++;
@@ -3955,6 +3963,7 @@ function onlineHostReceive(member,msg){
   if(b.weapon===7&&b.shieldHP<=0)b.weapon=0;
   b.airHeight=clamp(Number(msg.airHeight)||0,0,3);
  }else if(msg.t==='fire')onlineHostFire(member,b,msg);
+ else if(msg.t==='shieldPower'&&b.alive)activateShieldPower(b);
  else if(msg.t==='reload'&&b.alive){
   const id=clamp(Math.floor(b.weapon)||0,0,weapons.length-1),w=weapons[id];
   if(!w.melee&&!w.shield&&b.ammo[id]<w.mag&&b.reserves[id]>0)
@@ -4027,9 +4036,13 @@ function onlineBroadcast(){
  const state={t:'snapshot',v:ONLINE_PROTOCOL,time:matchRemaining,
   blue,red,ended,player:{x:player.x,z:player.z,yaw:player.yaw,hp:player.hp,
    weapon:player.weapon,shieldHP:player.shieldHP,alive:player.alive,
+   powerLeft:Math.max(0,player.shieldPowerUntil-nowSec),
+   powerCooldown:shieldPowerRemaining(player),
    lastFiredAt:player.lastShot},
   bots:bots.map(b=>({id:b.id,name:b.name,team:b.team,x:b.x,z:b.z,yaw:b.yaw,
    hp:b.hp,alive:b.alive,weapon:b.weapon,shieldHP:b.shieldHP,
+   powerLeft:Math.max(0,(b.shieldPowerUntil||0)-nowSec),
+   powerCooldown:shieldPowerRemaining(b),
    walk:b.walk,phase:b.phase,airHeight:b.airHeight||0,downAt:b.diedAt,
    lastFiredAt:b.lastFiredAt,remoteHuman:!!b.remoteHuman,until:b.until})),
   effects:energyShots.slice(0,12).map(p=>({x:p.x,y:p.y,z:p.z,
@@ -4055,12 +4068,16 @@ function onlineGuestSnapshot(msg){
    if(b.networkSeen!==true){b.x=data.x;b.z=data.z;b.networkSeen=true;}
    b.yaw=data.yaw;b.hp=data.hp;b.alive=data.alive;b.team=data.team;
    b.shieldHP=data.shieldHP;b.weapon=data.weapon;
+   b.shieldPowerUntil=nowSec+Math.max(0,data.powerLeft||0);
+   b.shieldPowerReadyAt=nowSec+Math.max(0,data.powerCooldown||0);
    b.walk=data.walk;b.phase=data.phase;b.airHeight=data.airHeight;
    b.diedAt=data.downAt;b.lastFiredAt=data.lastFiredAt;
    b.name=data.name;b.remoteHuman=data.remoteHuman;
   }else{
    const wasAlive=player.alive;
    player.hp=data.hp;player.shieldHP=data.shieldHP;
+   player.shieldPowerUntil=nowSec+Math.max(0,data.powerLeft||0);
+   player.shieldPowerReadyAt=nowSec+Math.max(0,data.powerCooldown||0);
    if(player.weapon===7&&player.shieldHP<=0)player.weapon=0;
    if(msg.supply&&Array.isArray(msg.supply.ammo)&&
       Array.isArray(msg.supply.reserves)&&data.alive){
@@ -4100,6 +4117,8 @@ function onlineGuestSnapshot(msg){
   onlineHostAvatar.yaw=p.yaw;onlineHostAvatar.hp=p.hp;
   onlineHostAvatar.alive=p.alive;onlineHostAvatar.shieldHP=p.shieldHP;
   onlineHostAvatar.weapon=p.weapon;onlineHostAvatar.lastFiredAt=p.lastFiredAt;
+  onlineHostAvatar.shieldPowerUntil=nowSec+Math.max(0,p.powerLeft||0);
+  onlineHostAvatar.shieldPowerReadyAt=nowSec+Math.max(0,p.powerCooldown||0);
   onlineHostAvatar.team=0;
  }
  if(Array.isArray(msg.effects)){
@@ -4141,6 +4160,7 @@ function onlineTick(dt){
   for(const member of onlineMembers.values()){
    const b=bots.find(x=>x.id===member.slot);
    if(!b?.remoteHuman||b.alive||nowSec<b.until)continue;
+   b.shieldPowerUntil=0; // Respawn clears active barrier, not cooldown.
    const p=findOpenSpawn(b.team);b.x=p.x;b.z=p.z;b.hp=100;b.alive=true;
    b.shieldHP=shieldMaxHP();b.ammo=weapons.map(w=>w.mag);
    b.reserves=weapons.map(w=>w.reserve);b.reloadUntil=0;b.weapon=0;
