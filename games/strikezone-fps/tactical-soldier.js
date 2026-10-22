@@ -115,15 +115,19 @@ export async function loadTacticalSoldiers(THREE,scene){
    // Soldier.glb comes from a Mixamo export with a very small native unit
    // scale. Values below 0.1 are valid and were incorrectly rejected on
    // desktop AND phones even though the skinned character loaded correctly.
-   let posedBox=new THREE.Box3().setFromObject(rig,true);
+   // IMPORTANT: bound the assembled PARENT Group, not the skinned rig
+   // itself. On Soldier.glb Three.js returns ~0.005 for Box3(rig, precise),
+   // but Box3(normalizedBody, precise) has the actual scene-world dimensions.
+   // Using the former yielded a 366x multiplier and a giant 670-unit avatar.
+   let posedBox=new THREE.Box3().setFromObject(normalizedBody,true);
    let size=posedBox.getSize(new THREE.Vector3());
    if(posedBox.isEmpty()||!Number.isFinite(size.y)||size.y<1e-6){
-     posedBox=new THREE.Box3().setFromObject(rig,false);
+     posedBox=new THREE.Box3().setFromObject(normalizedBody,false);
      size=posedBox.getSize(new THREE.Vector3());
    }
    if(posedBox.isEmpty()||!Number.isFinite(size.y)||size.y<1e-6)
-     throw new Error('Animated rig has no valid geometry: '+size.y);
-   console.info('STRIKEZONE soldier native height',size.y,'normalizing to',TARGET_HEIGHT);
+     throw new Error('Animated rig has no valid assembled geometry: '+size.y);
+   console.info('STRIKEZONE assembled soldier height',size.y,'normalizing to',TARGET_HEIGHT);
    const scale=TARGET_HEIGHT/size.y;
    const mid=posedBox.getCenter(new THREE.Vector3());
    normalizedBody.scale.setScalar(scale);
