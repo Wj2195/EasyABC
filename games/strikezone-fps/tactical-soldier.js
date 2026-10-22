@@ -112,10 +112,18 @@ export async function loadTacticalSoldiers(THREE,scene){
    container.rotation.set(0,0,0);
    figure.rotation.set(0,0,0);
    rig.updateWorldMatrix(true,true);
-   const posedBox=new THREE.Box3().setFromObject(rig,true);
-   const size=posedBox.getSize(new THREE.Vector3());
-   if(!Number.isFinite(size.y)||size.y<=.10)
-     throw new Error('Animated soldier has invalid bounds');
+   // Soldier.glb comes from a Mixamo export with a very small native unit
+   // scale. Values below 0.1 are valid and were incorrectly rejected on
+   // desktop AND phones even though the skinned character loaded correctly.
+   let posedBox=new THREE.Box3().setFromObject(rig,true);
+   let size=posedBox.getSize(new THREE.Vector3());
+   if(posedBox.isEmpty()||!Number.isFinite(size.y)||size.y<1e-6){
+     posedBox=new THREE.Box3().setFromObject(rig,false);
+     size=posedBox.getSize(new THREE.Vector3());
+   }
+   if(posedBox.isEmpty()||!Number.isFinite(size.y)||size.y<1e-6)
+     throw new Error('Animated rig has no valid geometry: '+size.y);
+   console.info('STRIKEZONE soldier native height',size.y,'normalizing to',TARGET_HEIGHT);
    const scale=TARGET_HEIGHT/size.y;
    const mid=posedBox.getCenter(new THREE.Vector3());
    normalizedBody.scale.setScalar(scale);
