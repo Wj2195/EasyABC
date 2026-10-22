@@ -647,3 +647,14 @@ Permanent link: https://wj2195.github.io/EasyABC/games/strikezone-fps/
 - The rig loader validates its animated bounds before accepting the new model. A malformed model or bad camera fit falls back to the original working procedural model rather than breaking the match renderer.
 - Version-bumped lobby CSS, GPU renderer and rigged soldier modules to 3.45 to bypass cached earlier buggy assets; no new game URL or Supabase migration required.
 - Verification: GitHub files reread, syntax and 16 source-level integration checks passed. The new actual visual and multiplayer behavior still require a real-browser test.
+
+
+## v3.46 — Locally bundled rigged human soldier (2026-10-22)
+
+- The animated soldier is now a **real binary 3D model committed to this repository** at `games/strikezone-fps/assets/soldier.glb` (2,160,468 bytes, glTF v2). It is not a flat image, generated concept, or runtime asset drawn from a third-party domain.
+- An auditable one-time GitHub Actions workflow at `.github/workflows/strikezone-soldier-asset.yml` imported and validated the original three.js example model. GitHub Actions completed the binary import successfully; GitHub Pages also completed deployment.
+- Model source: `https://github.com/mrdoob/three.js/blob/r160/examples/models/gltf/Soldier.glb`. Includes embedded textures, Mixamo-style skinning and Idle/Walk/Run animation. Credit: three.js example Soldier, originally by T. Choonyung / Mixamo, under the source project's applicable terms. This repository uses the asset only as an embedded game character; it is not a standalone asset pack.
+- The game module resolves `./assets/soldier.glb` relative to `tactical-soldier.js`, rather than trying remote hosts and silently showing the old procedural character on mobile. The preview now shows a load state until the skinned character is initialized, or a visible error when loading fails; the old procedural model is retained **only as a gameplay compatibility fallback**.
+- Same rigged model is used by the lobby preview and the WebGL2 gameplay actor renderer, with blue/red team identifiers and selected-role loadout labels. First-person weapon rendering and multiplayer mechanics are unchanged.
+- Asset bundle requires no additional subscription, Supabase migration, or change to the permanent game URL.
+- **Verification:** GitHub Actions binary import validated the GLB header, size and length; Pages deployment completed; code integration/source checks passed. Actual appearance and performance on specific mobile devices remain to be verified visually. Three.js runtime JavaScript still loads from its existing CDN; the soldier asset does not.
