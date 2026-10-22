@@ -1,4 +1,4 @@
-name: STRIKEZONE Browser Preview Diagnosis v3.48
+name: STRIKEZONE Browser Preview Diagnosis v3.49
 on:
   push:
     branches: [main]
@@ -37,7 +37,7 @@ jobs:
               page.on('requestfailed',req=>errs.push('REQUEST FAILED '+req.url()+' '+req.failure()?.errorText));
               page.on('response',r=>{if(r.status()>=400)errs.push('HTTP '+r.status()+' '+r.url())});
               try{
-                await page.goto('https://wj2195.github.io/EasyABC/games/strikezone-fps/?diagnostic=3.48',{waitUntil:'domcontentloaded',timeout:30000});
+                await page.goto('https://wj2195.github.io/EasyABC/games/strikezone-fps/?diagnostic=3.49',{waitUntil:'domcontentloaded',timeout:30000});
                 await page.waitForTimeout(14000);
                 const info=await page.evaluate(()=>({
                   previewText:document.querySelector('#szPreviewFallback')?.innerText,
