@@ -91,6 +91,23 @@ export async function loadTacticalSoldiers(THREE,scene){
   }
   return gun;
  }
+ // Use ORIGINAL geometry bounds with a single matrixWorld transform. Three's
+ // Box3.setFromObject(..., true) traverses SkinnedMesh vertices with skinning
+ // already applied, then applies the parent transform again: for this model
+ // the resulting height changes QUADRATICALLY with scale (0.005 -> 670m).
+ // Plain geometry boxes are stable, linear, and adequate for camera framing.
+ function geometryWorldBounds(group){
+  group.updateWorldMatrix(true,true);
+  const b=new THREE.Box3().makeEmpty();
+  group.traverse(mesh=>{
+   if(!mesh.isMesh||!mesh.geometry?.attributes?.position)return;
+   if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();
+   const local=mesh.geometry.boundingBox;
+   if(!local||local.isEmpty())return;
+   b.union(local.clone().applyMatrix4(mesh.matrixWorld));
+  });
+  return b;
+ }
  function makeUnit(preview=false){
   const container=new THREE.Group();
   const figure=new THREE.Group();container.add(figure);
@@ -115,19 +132,11 @@ export async function loadTacticalSoldiers(THREE,scene){
    // Soldier.glb comes from a Mixamo export with a very small native unit
    // scale. Values below 0.1 are valid and were incorrectly rejected on
    // desktop AND phones even though the skinned character loaded correctly.
-   // IMPORTANT: bound the assembled PARENT Group, not the skinned rig
-   // itself. On Soldier.glb Three.js returns ~0.005 for Box3(rig, precise),
-   // but Box3(normalizedBody, precise) has the actual scene-world dimensions.
-   // Using the former yielded a 366x multiplier and a giant 670-unit avatar.
-   let posedBox=new THREE.Box3().setFromObject(normalizedBody,true);
-   let size=posedBox.getSize(new THREE.Vector3());
-   if(posedBox.isEmpty()||!Number.isFinite(size.y)||size.y<1e-6){
-     posedBox=new THREE.Box3().setFromObject(normalizedBody,false);
-     size=posedBox.getSize(new THREE.Vector3());
-   }
+   const posedBox=geometryWorldBounds(normalizedBody);
+   const size=posedBox.getSize(new THREE.Vector3());
    if(posedBox.isEmpty()||!Number.isFinite(size.y)||size.y<1e-6)
-     throw new Error('Animated rig has no valid assembled geometry: '+size.y);
-   console.info('STRIKEZONE assembled soldier height',size.y,'normalizing to',TARGET_HEIGHT);
+     throw new Error('Rig geometry has no valid bounds: '+size.y);
+   console.info('STRIKEZONE geometry-world soldier height',size.y,'normalizing to',TARGET_HEIGHT);
    const scale=TARGET_HEIGHT/size.y;
    const mid=posedBox.getCenter(new THREE.Vector3());
    normalizedBody.scale.setScalar(scale);
@@ -135,7 +144,7 @@ export async function loadTacticalSoldiers(THREE,scene){
    normalizedBody.position.set(mid.x*scale,-posedBox.min.y*scale,mid.z*scale);
    normalizedBody.rotation.y=Math.PI;
    normalizedBody.updateWorldMatrix(true,true);
-   const check=new THREE.Box3().setFromObject(normalizedBody,true);
+   const check=geometryWorldBounds(normalizedBody);
    const actualHeight=check.getSize(new THREE.Vector3()).y;
    if(!Number.isFinite(actualHeight)||Math.abs(actualHeight-TARGET_HEIGHT)>.16)
      throw new Error('Animated soldier normalization failed: '+actualHeight);
@@ -185,7 +194,7 @@ export async function loadTacticalSoldiers(THREE,scene){
    bodyBounds(){
     if(!calibrated)return null;
     normalizedBody.updateWorldMatrix(true,true);
-    return new THREE.Box3().setFromObject(normalizedBody,true);
+    return geometryWorldBounds(normalizedBody);
    },
    sync(actor,delta,previewTime,rotation){
     container.visible=!!actor;
