@@ -1,4 +1,4 @@
-name: STRIKEZONE Browser Preview Diagnosis
+name: STRIKEZONE Browser Preview Diagnosis v3.47
 on:
   push:
     branches: [main]
@@ -29,7 +29,7 @@ jobs:
           const {chromium}=require('/tmp/node_modules/playwright');
           (async()=>{
             const browser=await chromium.launch({headless:true,args:['--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
-            for (const width of [1280,400]) {
+            for (const width of [400,1280]) {
               const page=await browser.newPage({viewport:{width,height:900},deviceScaleFactor:1});
               const errs=[];
               page.on('console',m=>{if(m.type()==='error'||m.type()==='warning'||m.text().includes('STRIKEZONE'))errs.push('CONSOLE '+m.type()+': '+m.text())});
@@ -37,8 +37,8 @@ jobs:
               page.on('requestfailed',req=>errs.push('REQUEST FAILED '+req.url()+' '+req.failure()?.errorText));
               page.on('response',r=>{if(r.status()>=400)errs.push('HTTP '+r.status()+' '+r.url())});
               try{
-                await page.goto('https://wj2195.github.io/EasyABC/games/strikezone-fps/?diagnostic=3.46',{waitUntil:'domcontentloaded',timeout:30000});
-                await page.waitForTimeout(20000);
+                await page.goto('https://wj2195.github.io/EasyABC/games/strikezone-fps/?diagnostic=3.47',{waitUntil:'domcontentloaded',timeout:30000});
+                await page.waitForTimeout(14000);
                 const info=await page.evaluate(()=>({
                   previewText:document.querySelector('#szPreviewFallback')?.innerText,
                   previewVisibility:document.querySelector('#szPreviewFallback')?.style.display,
@@ -49,7 +49,7 @@ jobs:
                 }));
                 console.log('=== WIDTH',width,'RESULT',JSON.stringify(info));
                 for(const err of errs)console.log('=== WIDTH',width,err.slice(0,1300));
-                await page.screenshot({path:'/tmp/strikezone-preview-'+width+'.png',fullPage:false});
+                // Skip screenshots: software WebGL canvas may hang readPixels in CI
               }catch(e){console.log('=== WIDTH',width,'TEST FAIL',e.stack)}
               await page.close();
             }
