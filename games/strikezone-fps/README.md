@@ -658,3 +658,13 @@ Permanent link: https://wj2195.github.io/EasyABC/games/strikezone-fps/
 - Same rigged model is used by the lobby preview and the WebGL2 gameplay actor renderer, with blue/red team identifiers and selected-role loadout labels. First-person weapon rendering and multiplayer mechanics are unchanged.
 - Asset bundle requires no additional subscription, Supabase migration, or change to the permanent game URL.
 - **Verification:** GitHub Actions binary import validated the GLB header, size and length; Pages deployment completed; code integration/source checks passed. Actual appearance and performance on specific mobile devices remain to be verified visually. Three.js runtime JavaScript still loads from its existing CDN; the soldier asset does not.
+
+
+## v3.49 — Proven fix for local 3D soldier loading (2026-10-22)
+
+- v3.46–v3.48 correctly bundled the glTF asset but used THREE.Box3 skinned/precise bounds to normalize the soldier. That produced the incorrect world size (0.0049959), multiplied the character by 366× and then measured a giant height of ~670 world units, causing the "3D SOLDIER UNAVAILABLE" error despite working WebGL2.
+- v3.49 introduces geometry-world bounds: traverse actual mesh geometry, get each geometry's static bounding box, apply its `matrixWorld` exactly **once**, and combine. Geometry height before normalization = ~1.8322; target height = 1.83. This avoids double application of skinning and world scales in Three.js's precise bounding path.
+- The same stable bounds are used by the lobby camera and during validation. Existing controls, Field Training modal, login, friend invitations, online room and match logic are preserved. The local 2.16MB GLB is unchanged.
+- **Actual browser smoke test completed successfully** in hosted Chrome/Chromium with WebGL2 at 400px and 1280px viewport widths. Both emitted `STRIKEZONE ... LOCAL skinned human asset validated and loaded`, and `#szPreviewFallback.style.display` was `none`; no model bounds errors appeared.
+- The earlier legacy software renderer still logs a shader uniform precision warning in SwiftShader, but the enhanced Three.js WebGL2 renderer continues successfully. Native Android device visual performance still requires user testing.
+- Use the permanent game URL, or add `?v=3.49` to refresh cached assets.
