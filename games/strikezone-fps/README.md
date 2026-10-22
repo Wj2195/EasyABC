@@ -668,3 +668,15 @@ Permanent link: https://wj2195.github.io/EasyABC/games/strikezone-fps/
 - **Actual browser smoke test completed successfully** in hosted Chrome/Chromium with WebGL2 at 400px and 1280px viewport widths. Both emitted `STRIKEZONE ... LOCAL skinned human asset validated and loaded`, and `#szPreviewFallback.style.display` was `none`; no model bounds errors appeared.
 - The earlier legacy software renderer still logs a shader uniform precision warning in SwiftShader, but the enhanced Three.js WebGL2 renderer continues successfully. Native Android device visual performance still requires user testing.
 - Use the permanent game URL, or add `?v=3.49` to refresh cached assets.
+
+
+## v3.50 — Team Deathmatch friendly-fire fix (2026-10-22)
+
+- Fixed friendly Blue AI targeting its human Blue teammate. v3.41 visual contact scanner used `t.team===bot.team`, but the local player entity has no `team` field; it was therefore mistaken for an enemy and attacked by friendly bots.
+- Centralized team identity with `combatTeam(actor)` and `isFriendlyCombat(attacker,target)`. The local player is Blue offline/hosting, or the selected team for an online guest. AI bots and connected humans retain their assigned Blue/Red team.
+- The AI sight scanner, sound perception, flank tactics, radio contacts, attack gate, and stale-target invalidation now use the shared team-identity function.
+- Direct damage to players **and bots** is rejected if the attacker and defender share a team in Team Deathmatch or Zombie & Monster. This prevents friendly guns, sniper/headshots, melee, shield bashes, and NOVA explosions from harming team members even if an earlier targeting path is wrong.
+- NOVA blast friendly knockback was also disabled to avoid allies throwing each other around with energy waves. Existing self-knockback behavior is unchanged.
+- Corrected `damageBot` cosmetic wrapper to pass body/head hit zone and impact source into its original implementation, restoring proper shield/headshot behavior.
+- Free For All/Gun Race deliberately continue to allow combat between all human and AI opponents, independent of nominal color assignments.
+- Validation: 21 targeting/team test cases and 9 damage-function test cases all passed, plus embedded JavaScript syntax. The change does not require a new Supabase migration or URL. A real two-device multiplayer match still requires confirmation on actual user devices.
