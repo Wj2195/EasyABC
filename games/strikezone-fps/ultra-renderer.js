@@ -816,8 +816,15 @@ async function startModernRenderer(THREE){
         previewFramed=true;
       }
       const fallback=document.getElementById('szPreviewFallback');
-      fallback?.setAttribute('aria-hidden','true');
-      fallback?.style.setProperty('display','none');
+      // Do not show the old toy-like procedural model while the bundled
+      // real skinned asset loads. Be explicit about progress/failure.
+      previewRig.root.visible=false;
+      if(fallback){
+        fallback.setAttribute('aria-hidden','false');
+        fallback.style.display='flex';
+        const txt=fallback.querySelector('span:last-child');
+        if(txt)txt.textContent='LOADING 3D HUMAN OPERATOR...';
+      }
       lobbyCanvas.addEventListener('pointerdown',event=>{
         dragging=true;lastDrag=event.clientX;
         lobbyCanvas.setPointerCapture?.(event.pointerId);
@@ -864,10 +871,14 @@ async function startModernRenderer(THREE){
           }catch(error){
             console.warn('STRIKEZONE: live preview fit failed; falling back safely.',error);
             importedPreview.root?.parent?.remove(importedPreview.root);
-            importedPreview=null;previewRig.root.visible=true;previewFramed=false;
-            previewRig.update(selected,selectedTeam,stamp*.001,angle);
+            importedPreview=null;previewRig.root.visible=false;previewFramed=false;
+            if(fallback){
+              fallback.style.display='flex';
+              const txt=fallback.querySelector('span:last-child');
+              if(txt)txt.textContent='3D SOLDIER COULD NOT RENDER · TRY HIGH GRAPHICS';
+            }
           }
-        }else previewRig.update(selected,selectedTeam,stamp*.001,angle);
+        }
         previewRenderer.render(previewScene,previewCam);
       }};
     }
@@ -882,7 +893,7 @@ async function startModernRenderer(THREE){
   // in the menu AND matches. Asset/model failures leave the old FPS playable.
   // Keep loading async: don't freeze gameplay or wait before showing the lobby.
   let detailedHumans=null;
-  import('./tactical-soldier.js?v=3.45')
+  import('./tactical-soldier.js?v=3.46')
     .then(module=>module.loadTacticalSoldiers(THREE,scene))
     .then(system=>{
       // Validate the animated mesh and its bounds BEFORE activating it in
@@ -894,12 +905,19 @@ async function startModernRenderer(THREE){
         throw new Error('Rigged model failed validation after animation');
       lobbyPreview?.installModel(preview);
       detailedHumans=system;
-      console.info('STRIKEZONE v3.45: animated human mesh validated and loaded');
+      console.info('STRIKEZONE v3.46: LOCAL skinned human asset validated and loaded');
     })
     .catch(error=>{
-      console.warn('STRIKEZONE: rigged character asset failed; keeping procedural fallback.',error);
-      // Keep the working procedural fallback visible rather than masking it
-      // with a giant warning panel. The game remains playable offline.
+      console.warn('STRIKEZONE: local 3D soldier failed; game remains playable.',error);
+      const info=document.getElementById('szPreviewFallback');
+      if(info){
+        info.style.display='flex';
+        info.setAttribute('aria-hidden','false');
+        const txt=info.querySelector('span:last-child');
+        if(txt)txt.textContent='3D SOLDIER UNAVAILABLE · CHECK BROWSER GRAPHICS';
+      }
+      // Preserve classic graphics only in matches for compatibility. Never
+      // silently present the old blocky preview as the finished soldier.
     });
 
   // v3.26 — Procedural boss and two classes of zombies, rendered with the
