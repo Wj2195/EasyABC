@@ -6,21 +6,25 @@
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkeleton } from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/utils/SkeletonUtils.js';
 
-const MODEL_URLS=[
- 'https://threejs.org/examples/models/gltf/Soldier.glb',
- 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/models/gltf/Soldier.glb',
- 'https://raw.githubusercontent.com/mrdoob/three.js/r160/examples/models/gltf/Soldier.glb'
-];
+// v3.46: the complete 2.1MB skinned GLB is bundled on our OWN GitHub Pages.
+// No public-CDN 3D model dependency remains; animation, skin, and textures
+// are all inside assets/soldier.glb.
+const MODEL_URLS=['./assets/soldier.glb'];
 const LIMIT=10;
 function poseClass(id){return id===1?'raptor':id===2||id===5?'ranger':id===7?'aegis':id===6?'nova':id===8?'blade':'vanguard';}
 export async function loadTacticalSoldiers(THREE,scene){
  const loader=new GLTFLoader();
+ // Prefer the stable local path anchored to this module rather than whichever
+ // URL the visitor used (including ?utm_source and cache-busting).
+ const modelAddress=new URL('./assets/soldier.glb',import.meta.url).href;
  let asset=null,lastError=null;
- for(const url of MODEL_URLS){
+ for(const url of [modelAddress]){
   try{asset=await loader.loadAsync(url);if(asset?.scene)break;}
   catch(error){lastError=error;console.warn('STRIKEZONE soldier mirror unavailable:',url,error);}
  }
  if(!asset?.scene)throw new Error('Rigged soldier failed to load: '+(lastError?.message||'asset missing'));
+ // Avoid half-loaded/corrupt cached content being displayed as a giant boot.
+ if(!asset.animations?.length)throw new Error('Bundled soldier is missing animations');
  const clips=Object.fromEntries(asset.animations.map(a=>[a.name.toLowerCase(),a]));
  // Bounds from the static imported scene are NOT reliable for Mixamo skinning.
  // We fit each animated rig after its first Idle pose instead.
