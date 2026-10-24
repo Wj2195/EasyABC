@@ -1,7 +1,7 @@
 {
   "app": "TradeLens Online",
   "version": "1.4.1",
-  "updated_at": "2026-10-24T01:26:43Z",
+  "updated_at": "2026-10-24T02:07:33Z",
   "model": "Experimental 9-feature technical analog (no macro/news overlay)",
   "provider": "Unofficial Yahoo Finance",
   "settings": {
@@ -42,13 +42,13 @@
       "GBP/USD",
       "USD/JPY",
       "GBP/JPY",
-      "GBP/CAD",
-      "GBP/NZD",
-      "AUD/JPY",
-      "AUD/CHF",
-      "AUD/CAD",
-      "AUD/NZD",
-      "NZD/JPY"
+      "NZD/CHF",
+      "NZD/CAD",
+      "CAD/JPY",
+      "CAD/CHF",
+      "CHF/JPY",
+      "AUD/USD",
+      "NZD/USD"
     ],
     "errors": [],
     "alerts_sent": 0,
@@ -309,7 +309,7 @@
       "pair": "EUR/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-10-24T01:26:43Z",
+      "checked_at": "2026-10-24T02:07:33Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -1771,7 +1771,7 @@
       "pair": "GBP/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-10-24T01:26:43Z",
+      "checked_at": "2026-10-24T02:07:33Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -3233,7 +3233,7 @@
       "pair": "AUD/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-10-23T23:56:40Z",
+      "checked_at": "2026-10-24T02:07:33Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -3710,7 +3710,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1792789200,
           "candle_time": "2026-10-23T21:00:00Z",
           "price": 0.7037792801856995,
@@ -4695,7 +4695,7 @@
       "pair": "NZD/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-10-23T23:56:40Z",
+      "checked_at": "2026-10-24T02:07:33Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -5172,7 +5172,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1792789200,
           "candle_time": "2026-10-23T21:00:00Z",
           "price": 0.5701254606246948,
@@ -6157,7 +6157,7 @@
       "pair": "USD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-10-24T01:26:43Z",
+      "checked_at": "2026-10-24T02:07:33Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -19315,7 +19315,7 @@
       "pair": "GBP/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-10-24T01:26:43Z",
+      "checked_at": "2026-10-24T02:07:33Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -33933,12 +33933,12 @@
     },
     "NZD/CHF": {
       "pair": "NZD/CHF",
-      "ready": true,
-      "status": "Updated",
-      "checked_at": "2026-10-23T23:26:25Z",
+      "ready": false,
+      "status": "Incomplete / old",
+      "checked_at": "2026-10-24T02:07:33Z",
       "timeframes": {
         "15m": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1792790100,
           "candle_time": "2026-10-23T21:15:00Z",
           "price": 0.4699600040912628,
@@ -34412,7 +34412,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1792789200,
           "candle_time": "2026-10-23T21:00:00Z",
           "price": 0.4699600040912628,
@@ -35362,54 +35362,45 @@
       },
       "alignments": {
         "1": {
-          "bias": "SELL",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 17.774,
-          "minimum_gap": 8.504
-        },
-        "3": {
-          "bias": "SELL",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 19.741,
-          "minimum_gap": 1.819
-        },
-        "6": {
-          "bias": "SELL",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 16.411,
-          "minimum_gap": 2.365
-        },
-        "12": {
-          "bias": "MIXED",
+          "bias": "WAIT",
           "aligned": false,
           "eligible": false,
-          "reason": "Timeframes disagree"
+          "reason": "15m: Old / closed"
+        },
+        "3": {
+          "bias": "WAIT",
+          "aligned": false,
+          "eligible": false,
+          "reason": "15m: Old / closed"
+        },
+        "6": {
+          "bias": "WAIT",
+          "aligned": false,
+          "eligible": false,
+          "reason": "15m: Old / closed"
+        },
+        "12": {
+          "bias": "WAIT",
+          "aligned": false,
+          "eligible": false,
+          "reason": "15m: Old / closed"
         }
       },
       "full_alignment": {
-        "bias": "MIXED",
+        "bias": "WAIT",
         "aligned": false,
         "eligible": false,
-        "reason": "The 12 forecast directions disagree"
+        "reason": "15m: missing, stale or unavailable"
       }
     },
     "NZD/CAD": {
       "pair": "NZD/CAD",
-      "ready": true,
-      "status": "Updated",
-      "checked_at": "2026-10-23T23:26:25Z",
+      "ready": false,
+      "status": "Incomplete / old",
+      "checked_at": "2026-10-24T02:07:33Z",
       "timeframes": {
         "15m": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1792790100,
           "candle_time": "2026-10-23T21:15:00Z",
           "price": 0.7979400157928467,
@@ -35883,7 +35874,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1792789200,
           "candle_time": "2026-10-23T21:00:00Z",
           "price": 0.7979400157928467,
@@ -36833,45 +36824,45 @@
       },
       "alignments": {
         "1": {
-          "bias": "MIXED",
+          "bias": "WAIT",
           "aligned": false,
           "eligible": false,
-          "reason": "Timeframes disagree"
+          "reason": "15m: Old / closed"
         },
         "3": {
-          "bias": "MIXED",
+          "bias": "WAIT",
           "aligned": false,
           "eligible": false,
-          "reason": "Timeframes disagree"
+          "reason": "15m: Old / closed"
         },
         "6": {
-          "bias": "MIXED",
+          "bias": "WAIT",
           "aligned": false,
           "eligible": false,
-          "reason": "Timeframes disagree"
+          "reason": "15m: Old / closed"
         },
         "12": {
-          "bias": "MIXED",
+          "bias": "WAIT",
           "aligned": false,
           "eligible": false,
-          "reason": "Timeframes disagree"
+          "reason": "15m: Old / closed"
         }
       },
       "full_alignment": {
-        "bias": "MIXED",
+        "bias": "WAIT",
         "aligned": false,
         "eligible": false,
-        "reason": "The 12 forecast directions disagree"
+        "reason": "15m: missing, stale or unavailable"
       }
     },
     "CAD/JPY": {
       "pair": "CAD/JPY",
-      "ready": true,
-      "status": "Updated",
-      "checked_at": "2026-10-23T23:26:25Z",
+      "ready": false,
+      "status": "Incomplete / old",
+      "checked_at": "2026-10-24T02:07:33Z",
       "timeframes": {
         "15m": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1792790100,
           "candle_time": "2026-10-23T21:15:00Z",
           "price": 111.98400115966797,
@@ -37345,7 +37336,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1792789200,
           "candle_time": "2026-10-23T21:00:00Z",
           "price": 111.98400115966797,
@@ -38295,54 +38286,45 @@
       },
       "alignments": {
         "1": {
-          "bias": "MIXED",
+          "bias": "WAIT",
           "aligned": false,
           "eligible": false,
-          "reason": "Timeframes disagree"
+          "reason": "15m: Old / closed"
         },
         "3": {
-          "bias": "BUY",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 26.36,
-          "minimum_gap": 0.38
+          "bias": "WAIT",
+          "aligned": false,
+          "eligible": false,
+          "reason": "15m: Old / closed"
         },
         "6": {
-          "bias": "BUY",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 19.653,
-          "minimum_gap": 2.219
+          "bias": "WAIT",
+          "aligned": false,
+          "eligible": false,
+          "reason": "15m: Old / closed"
         },
         "12": {
-          "bias": "BUY",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 29.184,
-          "minimum_gap": 6.401
+          "bias": "WAIT",
+          "aligned": false,
+          "eligible": false,
+          "reason": "15m: Old / closed"
         }
       },
       "full_alignment": {
-        "bias": "MIXED",
+        "bias": "WAIT",
         "aligned": false,
         "eligible": false,
-        "reason": "The 12 forecast directions disagree"
+        "reason": "15m: missing, stale or unavailable"
       }
     },
     "CAD/CHF": {
       "pair": "CAD/CHF",
-      "ready": true,
-      "status": "Updated",
-      "checked_at": "2026-10-23T23:56:40Z",
+      "ready": false,
+      "status": "Incomplete / old",
+      "checked_at": "2026-10-24T02:07:33Z",
       "timeframes": {
         "15m": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1792791900,
           "candle_time": "2026-10-23T21:45:00Z",
           "price": 0.5889999866485596,
@@ -38816,7 +38798,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1792789200,
           "candle_time": "2026-10-23T21:00:00Z",
           "price": 0.5889999866485596,
@@ -39766,45 +39748,42 @@
       },
       "alignments": {
         "1": {
-          "bias": "MIXED",
+          "bias": "WAIT",
           "aligned": false,
           "eligible": false,
-          "reason": "Timeframes disagree"
+          "reason": "15m: Old / closed"
         },
         "3": {
-          "bias": "MIXED",
+          "bias": "WAIT",
           "aligned": false,
           "eligible": false,
-          "reason": "Timeframes disagree"
+          "reason": "15m: Old / closed"
         },
         "6": {
-          "bias": "MIXED",
+          "bias": "WAIT",
           "aligned": false,
           "eligible": false,
-          "reason": "Timeframes disagree"
+          "reason": "15m: Old / closed"
         },
         "12": {
-          "bias": "SELL",
-          "aligned": true,
-          "eligible": true,
-          "strong": false,
-          "reason": "All 3 timeframes agree; low strength / sideways risk",
-          "minimum_signal": 3.58,
-          "minimum_gap": 0.19
+          "bias": "WAIT",
+          "aligned": false,
+          "eligible": false,
+          "reason": "15m: Old / closed"
         }
       },
       "full_alignment": {
-        "bias": "MIXED",
+        "bias": "WAIT",
         "aligned": false,
         "eligible": false,
-        "reason": "The 12 forecast directions disagree"
+        "reason": "15m: missing, stale or unavailable"
       }
     },
     "CHF/JPY": {
       "pair": "CHF/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-10-23T23:56:40Z",
+      "checked_at": "2026-10-24T02:07:33Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -40281,7 +40260,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1792789200,
           "candle_time": "2026-10-23T21:00:00Z",
           "price": 190.13400268554688,
