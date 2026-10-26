@@ -1,4 +1,4 @@
-# WARD 13 — The Awakening (early playable prototype)
+# WARD 13 — The Awakening (v0.2 playable prototype)
 
 A standalone first-person 3D psychological hospital horror prototype, hosted in a separate folder of the EasyABC GitHub Pages repository.
 
@@ -6,7 +6,9 @@ A standalone first-person 3D psychological hospital horror prototype, hosted in 
 - First-person keyboard/mouse and landscape mobile controls
 - Explore Saint Mercy Hospital's ground floor and basement
 - Collect a security access card and fuse; restore emergency power; escape via the ambulance bay
-- Nurse and Patient AI, ambient hauntings, hiding, breath control, movable props, flashlights, flares and capture
+- Scarier 3D Nurse and Patient models plus temporary ghost apparitions that materialize, watch the player and vanish
+- Varied psychological hauntings (Weeping Mother silhouette, ghost nurse and faceless patient), distinct from physical hunters
+- Nurse and Patient AI, hiding, breath control, movable props, flashlights, flares and capture
 - Six-slot equipment inventory, keys stored separately, local autosave/manual save
 - Story / Survival / Nightmare difficulty, adjustable while safe
 
