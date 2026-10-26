@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#080b0e"><title>WARD 13 — The Awakening</title>
+<link rel="stylesheet" href="./style.css?v=3">
+</head>
+<body>
+<div id="game"></div>
+<div id="vignette"></div><div id="noise"></div><div id="hurt"></div>
+<div id="crosshair">+</div><div id="buildTag" style="position:absolute;left:50%;bottom:9px;transform:translateX(-50%);z-index:8;pointer-events:none;color:#b1a9a3bb;font-size:10px;letter-spacing:2px;">WARD 13 · v0.3 PHANTOMS</div>
+<div id="hud" class="hidden">
+  <div class="hudtop"><div id="healthUi"><span>✚</span><div class="meter"><div id="hpFill"></div></div></div><div id="batteryUi">◈ <span id="batteryText">100%</span></div></div>
+  <div id="staminaRow" class="hidden"><small>STAMINA</small><div class="meter"><div id="staminaFill"></div></div></div>
+  <div id="objectiveBar"><small>OBJECTIVE</small><strong id="objectiveText">Wake up</strong></div>
+  <div id="hint"></div><div id="storyToast"></div>
+  <div id="tools"><span id="itemSlots">FLARE ×1</span><span id="locationLabel">GROUND FLOOR</span></div>
+</div>
+<div id="mobile" class="hidden"><div id="stick"><div id="nub"></div></div><div id="touchLook"></div><div id="mobileButtons">
+<button data-act="interact">USE</button><button data-act="run">RUN</button><button data-act="crouch">CROUCH</button><button data-act="flashlight">LIGHT</button><button data-act="throw">THROW</button><button data-act="hide">HIDE</button><button data-act="map">MAP</button><button data-act="inventory">BAG</button><button data-act="pause">Ⅱ</button>
+</div></div>
+<div id="menu" class="overlay"><div class="menuInner">
+<div class="eyebrow">SAINT MERCY HOSPITAL • 12:13 A.M.</div><h1>WARD <em>13</em></h1><p class="tagline">SHE HAS BEEN WAITING FOR YOU.</p>
+<div class="line"></div><p class="kicker">THE AWAKENING · V0.3 · HORROR VISUAL UPDATE</p>
+<p class="desc">Wake as Patient 013. Search the abandoned hospital. Restore emergency power and escape before The Nurse finds you.</p>
+<div class="options"><label>IDENTITY<select id="sex"><option value="female">Female Patient 013</option><option value="male">Male Patient 013</option></select></label>
+<label>DIFFICULTY<select id="difficulty"><option value="Story">Story</option><option value="Survival" selected>Survival</option><option value="Nightmare">Nightmare</option></select></label></div>
+<div class="actions"><button id="newGame" class="primary">NEW GAME</button><button id="continue" disabled>CONTINUE</button><button id="howTo">HOW TO PLAY</button></div>
+<p class="fineprint">Desktop: WASD · Mouse · E interact · F flashlight · Shift run · Ctrl crouch · G throw · H hide · M map · I inventory · Esc pause</p>
+<p class="fineprint">Mobile: turn sideways (landscape), use left joystick and swipe to look. Headphones recommended.</p>
+</div></div>
+<div id="panel" class="overlay hidden"><div class="panelInner"><button class="x" id="panelClose">✕</button><h2 id="panelTitle"></h2><div id="panelContent"></div></div></div>
+<div id="subtitle"></div><div id="flash"></div>
+<div id="loader" class="overlay hidden"><div class="menuInner"><h2>LOADING SAINT MERCY</h2><p id="loadText">Preparing the hospital...</p></div></div>
+<script type="module" src="./game.js?v=3"></script>
+<script>if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{}));</script>
+</body></html>
