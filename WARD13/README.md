@@ -1,4 +1,4 @@
-# WARD 13 — The Awakening (v0.2 playable prototype)
+# WARD 13 — The Awakening (v0.3 playable prototype)
 
 A standalone first-person 3D psychological hospital horror prototype, hosted in a separate folder of the EasyABC GitHub Pages repository.
 
@@ -21,3 +21,10 @@ The 3D rendering engine is loaded from jsDelivr on initial launch. After first l
 - E interact; F flashlight; G throw bottle; H hide or exit hiding
 - M map; I inventory; P pause; Esc pointer unlock/pause
 - Mobile: joystick on left, look by dragging right-hand screen; right-side action buttons
+
+## Version 0.3 — horror character and caching corrections
+- Replaced the original geometric mannequin hunter with a ragged, long-limbed procedural figure featuring a more disturbing face and eyes.
+- Added spectral apparitions that briefly materialize and vanish during exploration. The Nurse and Patient remain physical roaming enemies.
+- Reduced ghost-event intervals and added an early paranormal sighting after gameplay begins.
+- Added a visible version label, a clean launch page (`play.html?v=3`), and network-first service worker cache strategy to avoid outdated character models.
+- This is still prototype character art, not a finished photorealistic character rig or animation system.
