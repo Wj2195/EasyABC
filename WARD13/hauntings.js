@@ -57,10 +57,9 @@ export function createHauntings(THREE,scene,getContext,playCue){
     const mode=Math.random();
     const offsets=mode<.57?[0,.22,-.28,.42]:mode<.85?[.9,-.85,1.05,-1.1]:[2.5,-2.5,Math.PI];
     let pos=null;
-    for(const angle of offsets)for(const d of [3.5,5,6.8,2.6]){
+    outer: for(const angle of offsets)for(const d of [3.5,5,6.8,2.6]){
       const a=yaw+angle,x=state.x-Math.sin(a)*d,z=state.z-Math.cos(a)*d;
-      if(!collides(x,z,.2)&&canSeeThrough(state.x,state.z,x,z,collides)){pos={x,z};break}
-      if(pos)break
+      if(!collides(x,z,.2)&&canSeeThrough(state.x,state.z,x,z,collides)){pos={x,z};break outer}
     }
     if(!pos)return false;
     const kind=(encounters++%5===4)?2:Math.floor(Math.random()*2.8);
