@@ -1,9 +1,12 @@
 {
   "watchlist": ["EUR/USD", "GBP/USD", "USD/JPY", "GBP/JPY"],
-  "batch_size": 7,
+  "batch_size": 28,
   "min_signal": 35,
   "min_gap": 7,
-  "alert_rule": "all_12_agree",
+  "alert_rule": "at_least_10_of_12",
+  "news_alert_lead_minutes": 60,
+  "enable_news_alerts": true,
   "request_delay_seconds": 0.5,
   "enable_telegram": true
 }
+

@@ -13,18 +13,22 @@
 <body>
 <header><div class="row"><div><h1>TRADE<span class="buy">LENS</span> / SIGNAL DESK</h1><div class="sub small">Forex · 28 pairs · 15m / 1h / 1D · 1 / 3 / 6 / 12-bar forecasts</div></div><div class="tools"><span class="badge" id="status">Loading snapshot…</span><button type="button" id="refresh">Refresh data</button><a href="https://wj2195.github.io/EasyABC/">EasyABC ↗</a></div></div></header>
 <main>
-<div class="stats"><div class="card"><small>Aligned BUY · selected horizon</small><b class="buy" id="buyCount">—</b></div><div class="card"><small>Aligned SELL · selected horizon</small><b class="sell" id="sellCount">—</b></div><div class="card"><small>Alert-qualified 12/12</small><b id="strongCount">—</b></div><div class="card"><small>Last scanner run (MYT)</small><b id="updated" style="font-size:15px">Pending</b></div></div>
+<div class="stats"><div class="card"><small>Aligned BUY · selected horizon</small><b class="buy" id="buyCount">—</b></div><div class="card"><small>Aligned SELL · selected horizon</small><b class="sell" id="sellCount">—</b></div><div class="card"><small>Alert-qualified ≥10/12</small><b id="strongCount">—</b></div><div class="card"><small>Last scanner run (MYT)</small><b id="updated" style="font-size:15px">Pending</b></div></div>
 <div class="layout"><section class="panel"><div class="row"><h2>Forex summary · multi-timeframe</h2><span class="note" id="coverage">—</span></div>
 <div class="tools" style="margin-bottom:12px"><label>Forecast horizon<select id="horizon"><option value="1">1 bar</option><option value="3" selected>3 bars</option><option value="6">6 bars</option><option value="12">12 bars</option></select></label><label>Show<select id="filterState"><option value="all">All pairs</option><option value="aligned">Aligned BUY / SELL</option><option value="strong">Alert-qualified only</option></select></label><label>Pair search<input id="search" placeholder="e.g. GBP/USD" autocomplete="off"></label></div>
-<div class="scroll"><table><thead><tr><th>Pair</th><th>15m</th><th>1h</th><th>1D</th><th>3/3 selected</th><th>12/12 alert</th></tr></thead><tbody id="pairs"></tbody></table></div>
-<p class="note" id="scanInfo">BUY/SELL shown for your selected horizon is for review. Telegram sends only when all 12 forecasts agree on one direction.</p></section>
+<div class="scroll"><table><thead><tr><th>Pair</th><th>15m</th><th>1h</th><th>1D</th><th>3/3 selected</th><th>Agreement / alert</th><th>High-impact news</th></tr></thead><tbody id="pairs"></tbody></table></div>
+<p class="note" id="scanInfo">BUY/SELL shown for your selected horizon is for review. Telegram requires 10/12, 11/12 or 12/12 agreement, with all 12 forecasts available and fresh.</p></section>
 <div class="stack"><section class="panel"><div class="row"><h2 id="pairName">EUR/USD · pair detail</h2><span id="pairBadge" class="badge">Pending</span></div><div class="banner"><div><strong id="consensusTitle">15m + 1h + 1D alignment</strong><div class="note" id="consensusReason">Waiting for data.</div></div><span class="badge" id="signalGate">NO ALERT</span></div>
-<h3>Full forecast matrix · 12 forecasts</h3><div class="scroll matrix"><table><thead><tr><th>TF</th><th>Bars</th><th>Bias</th><th>Signal</th><th>Up</th><th>Down</th><th>Side</th><th>Gap pp</th><th>Candle MYT</th></tr></thead><tbody id="matrix"></tbody></table></div>
-<div class="subheading" id="matrixFoot">Selected horizon highlights 3/3 alignment only. Telegram requires matching BUY or SELL across all 12 forecasts.</div>
+<div id="pairNews" class="note warn" style="margin-top:12px"></div><h3>Full forecast matrix · 12 forecasts</h3><div class="scroll matrix"><table><thead><tr><th>TF</th><th>Bars</th><th>Bias</th><th>Signal</th><th>Up</th><th>Down</th><th>Side</th><th>Gap pp</th><th>Candle MYT</th></tr></thead><tbody id="matrix"></tbody></table></div>
+<div class="subheading" id="matrixFoot">Selected horizon highlights 3/3 alignment only. Telegram requires 10/12, 11/12 or 12/12 matching BUY or SELL forecasts.</div>
+<h3>Historical checks · <span id="validationHorizon">3</span>-bar forecasts</h3>
+<div class="scroll"><table><thead><tr><th>TF</th><th>Direction hits</th><th>Tests</th><th>Momentum baseline</th><th>Large-move hits</th></tr></thead><tbody id="validation"></tbody></table></div>
+<p class="note">Walk-forward checks use only earlier known outcomes to make each forecast. Up to 40 non-overlapping tests per timeframe/horizon: a small sample, before trading costs. These are individual forecast checks, not measured success rates for 10/12, 11/12 or 12/12 alerts. Model scores are not calibrated probabilities.</p>
 <div class="row"><h3 style="margin-bottom:0">Completed candle chart</h3><div class="chartbuttons" id="chartButtons"><button data-tf="15m" aria-pressed="true">15m</button><button data-tf="1h" aria-pressed="false">1h</button><button data-tf="1d" aria-pressed="false">1D</button></div></div>
 <svg id="chart" class="chart" viewBox="0 0 700 230" preserveAspectRatio="none" role="img" aria-label="Recent completed price candles"></svg><div class="note" id="chartNote"></div></section>
-<section class="panel"><h2>Notification rules</h2><p class="note" id="rules"></p><div class="row"><h3>Telegram delivery history</h3><span class="badge" id="telegramStatus">Not connected</span></div><ul id="history"><li class="muted">No alerts delivered yet.</li></ul><p class="note">Alerts require 12/12 agreement: 15m, 1h and 1D must all show the same BUY or SELL on every 1-, 3-, 6- and 12-bar forecast. One short Telegram summary per scan; repeated unchanged 12/12 signals are suppressed. These are WATCH signals, not trade execution.</p></section></div></div>
-<footer class="note">Experimental technical-only historical analog forecasts. Signal percentages are not winning probabilities. Yahoo Finance prices are unofficial and may be delayed. Verify broker prices, spread, news, and position risk before trading. GitHub's scheduled scans are best-effort, not real-time streaming.</footer>
+<section class="panel"><div class="row"><h2>High-impact news · next 24 hours</h2><span class="badge" id="newsStatus">Awaiting calendar</span></div><p class="note" id="newsInfo"></p><div id="newsEvents"></div><p class="note">Warnings cover scheduled high-impact events for either currency in all 28 supported pairs, regardless of forecast agreement. Impact is expected; direction is unknown. The weekly feed does not cover surprise breaking news, and event times can change. <a href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">Forex Factory calendar ↗</a></p><h3>News delivery history</h3><ul id="newsHistory" class="note"></ul></section>
+<section class="panel"><h2>Notification rules</h2><p class="note" id="rules"></p><div class="row"><h3>Telegram delivery history</h3><span class="badge" id="telegramStatus">Not connected</span></div><ul id="history"><li class="muted">No alerts delivered yet.</li></ul><p class="note">Alerts require at least 10/12 agreement, with all 12 forecasts present and fresh. An unchanged signal can repeat on the next scan after 15 minutes since its last successful delivery. Below 10/12, stale or unavailable data stops reminders until a fresh scan qualifies again. A confirmed opposite direction can alert immediately. These are WATCH signals, not trade execution.</p></section></div></div>
+<footer class="note">Experimental historical analog forecasts with separate scheduled-news warnings. Signal percentages are not winning probabilities. Yahoo Finance prices are unofficial and may be delayed. Verify broker prices, spread, news, and position risk before trading. GitHub's scheduled scans are best-effort, not real-time streaming.</footer>
 </main>
 <script>
 'use strict';
@@ -36,18 +40,21 @@ const myt=s=>s?new Date(s).toLocaleString('en-MY',{timeZone:'Asia/Kuala_Lumpur',
 const badge=b=>'<span class="badge '+(b==='BUY'?'buy':b==='SELL'?'sell':'')+'">'+safe(b||'—')+'</span>';
 function row(pair){return snapshot.rows?.[pair]||{}}
 function forecast(pair,tf,h){return row(pair).timeframes?.[tf]?.forecasts?.[String(h)]}
-function currentTF(pair,tf,h){const t=row(pair).timeframes?.[tf],f=forecast(pair,tf,h);return t?.status==='Updated'&&f?badge(f.bias):'<span class="muted" title="'+safe(t?.status||'Pending')+'">—</span>'}
-function consensus(pair,h){return row(pair).alignments?.[String(h)]||{bias:'WAIT',aligned:false,eligible:false,reason:'Waiting for updated multi-timeframe scan'}}
-function fullConsensus(pair){return row(pair).full_alignment||{bias:'WAIT',aligned:false,eligible:false,reason:'Waiting for the new 12/12 scanner snapshot'}}
+function freshTF(t,tf){const age=Date.now()/1000-Number(t?.candle_epoch)-({'15m':900,'1h':3600,'1d':86400}[tf]);return t?.status==='Updated'&&age>=-60&&age<=({'15m':1800,'1h':7200,'1d':345600}[tf])}
+function currentTF(pair,tf,h){const t=row(pair).timeframes?.[tf],f=forecast(pair,tf,h);return freshTF(t,tf)&&f?badge(f.bias):'<span class="muted" title="'+safe(t?.status||'Pending')+'">—</span>'}
+function consensus(pair,h){if(!TF.every(tf=>freshTF(row(pair).timeframes?.[tf],tf)))return {bias:'WAIT',eligible:false,aligned:false,reason:'Candles are stale or unavailable'};return row(pair).alignments?.[String(h)]||{bias:'WAIT',aligned:false,eligible:false,reason:'Waiting for updated multi-timeframe scan'}}
+function fullConsensus(pair){if(!TF.every(tf=>freshTF(row(pair).timeframes?.[tf],tf)))return {bias:'WAIT',eligible:false,aligned:false,reason:'Candles are stale or unavailable'};if(snapshot.settings?.alert_rule!=='at_least_10_of_12')return {bias:'WAIT',aligned:false,eligible:false,reason:'Awaiting updated scanner data'};return row(pair).full_alignment||{bias:'WAIT',aligned:false,eligible:false,reason:'Waiting for the updated scanner snapshot'}}
+function liveNews(){const n=snapshot.news||{};return n.usable&&Date.now()-Date.parse(n.checked_at)<3*3600000?(n.events||[]).filter(e=>e.epoch*1000>=Date.now()):[]}
 function renderPairs(){
 const f=E('search').value.trim().toUpperCase(),which=E('filterState').value;
 const visible=PAIRS.filter(p=>p.includes(f)&&((which==='all')||(which==='aligned'&&consensus(p,horizon).aligned)||(which==='strong'&&fullConsensus(p).eligible)));
 E('pairs').innerHTML=visible.map(p=>{
 const c=consensus(p,horizon),full=fullConsensus(p);
 const chosen=c.aligned?badge(c.bias)+(c.strong?' <span class="buy mini">★</span>':''):'<span class="muted">'+safe(c.bias||'WAIT')+'</span>';
-const fullTag=full.eligible?badge(full.bias)+' <span class="buy mini">12/12</span>':'<span class="muted">—</span>';
-return '<tr data-pair="'+p+'" class="'+(p===selected?'selected':'')+'"><td><b>'+p+'</b></td>'+TF.map(tf=>'<td>'+currentTF(p,tf,horizon)+'</td>').join('')+'<td>'+chosen+'</td><td>'+fullTag+'</td></tr>'
-}).join('')||'<tr><td colspan="6" class="muted">No pairs match the filter.</td></tr>';
+const fullTag=(full.eligible?badge(full.bias):'<span class="muted">'+safe(full.bias)+'</span>')+(full.agreement?' <span class="mini">'+full.agreement+'/12</span>':'');
+const news=liveNews().filter(e=>e.pairs.includes(p)),newsTag=news.length?'<span class="warn mini" title="'+safe(news[0].title)+'">'+safe(myt(news[0].at))+' MYT</span>':'<span class="muted">—</span>';
+return '<tr data-pair="'+p+'" class="'+(p===selected?'selected':'')+'"><td><b>'+p+'</b></td>'+TF.map(tf=>'<td>'+currentTF(p,tf,horizon)+'</td>').join('')+'<td>'+chosen+'</td><td>'+fullTag+'</td><td>'+newsTag+'</td></tr>'
+}).join('')||'<tr><td colspan="7" class="muted">No pairs match the filter.</td></tr>';
 E('pairs').querySelectorAll('tr[data-pair]').forEach(tr=>tr.addEventListener('click',()=>{selected=tr.dataset.pair;renderPairs();renderDetail()}));
 const all=PAIRS.map(p=>consensus(p,horizon));
 E('buyCount').textContent=all.filter(c=>c.aligned&&c.bias==='BUY').length;
@@ -55,7 +62,7 @@ E('sellCount').textContent=all.filter(c=>c.aligned&&c.bias==='SELL').length;
 E('strongCount').textContent=PAIRS.filter(p=>fullConsensus(p).eligible).length;
 }
 function renderMatrix(){const r=row(selected);E('matrix').innerHTML=TF.flatMap(tf=>H.map(h=>{const t=r.timeframes?.[tf]||{},f=t.forecasts?.[String(h)]||{};const b=f.bias||'—';return '<tr class="'+(h===horizon?'selected-h':'')+'"><td>'+tf.toUpperCase()+'</td><td>'+h+'</td><td class="'+(b==='BUY'?'buy':b==='SELL'?'sell':'muted')+'">'+safe(b)+'</td><td>'+num(f.signal)+'%</td><td class="buy">'+num(f.up)+'</td><td class="sell">'+num(f.down)+'</td><td>'+num(f.sideways)+'</td><td>'+num(f.gap)+'</td><td class="mini">'+(t.candle_time?myt(t.candle_time):safe(t.status||'Pending'))+'</td></tr>'})).join('');
-E('matrixFoot').textContent='Highlighted rows = '+horizon+'-bar horizon. All times Malaysia (MYT, UTC+8). Only complete 12/12 matching BUY or SELL bias is alert-qualified when candles are fresh.';}
+E('matrixFoot').textContent='Highlighted rows = '+horizon+'-bar horizon. All times Malaysia (MYT, UTC+8). 10/12, 11/12 or 12/12 matching BUY/SELL forecasts qualify when all candles are fresh.';}
 function chart(){const t=row(selected).timeframes?.[chartTF]||{},c=t.candles||[],svg=E('chart');E('chartNote').textContent=chartTF.toUpperCase()+' · '+(t.candle_time?('Last completed candle '+myt(t.candle_time)+' MYT · '+t.status):(t.status||'Awaiting data'));
 if(c.length<2){svg.innerHTML='<text x="50%" y="50%" text-anchor="middle" fill="#a1b2c9">No completed candles yet</text>';return;}
 const low=Math.min(...c.map(x=>x.l)),high=Math.max(...c.map(x=>x.h)),delta=high-low||1,w=672/c.length,y=v=>215-194*(v-low)/delta;
@@ -65,11 +72,15 @@ const c=consensus(selected,horizon),full=fullConsensus(selected);
 E('pairName').textContent=selected+' / all timeframes';
 E('pairBadge').textContent=full.eligible?full.bias:(c.aligned?c.bias:'WAIT');
 E('pairBadge').className='badge '+(full.eligible?(full.bias==='BUY'?'buy':'sell'):'');
-E('consensusTitle').textContent=full.eligible?('12/12 aligned '+full.bias+' · ALL forecasts'):
-(c.aligned?('3/3 '+c.bias+' at '+horizon+' bars · NOT 12/12'):'15m + 1h + 1D · '+horizon+' bars');
-E('consensusReason').textContent=full.reason||'Waiting for 12/12 results';
-E('signalGate').textContent=full.eligible?'12/12 ALERT-QUALIFIED':'NO 12/12 ALERT';
+E('consensusTitle').textContent=full.eligible?(full.agreement+'/12 aligned '+full.bias):
+(c.aligned?('3/3 '+c.bias+' at '+horizon+' bars · below alert threshold'):'15m + 1h + 1D · '+horizon+' bars');
+E('consensusReason').textContent=full.reason||'Waiting for consensus results';
+E('signalGate').textContent=full.eligible?full.agreement+'/12 ALERT-QUALIFIED':'NO CONSENSUS ALERT';
 E('signalGate').className='badge '+(full.eligible?'buy':'');
+const events=liveNews().filter(e=>e.pairs.includes(selected));
+E('pairNews').textContent=events.length?'HIGH-IMPACT NEWS: '+events.map(e=>e.currency+' · '+e.title+' · '+myt(e.at)+' MYT').join(' | '):(!(snapshot.news?.usable&&Date.now()-Date.parse(snapshot.news.checked_at)<3*3600000)?'News calendar unavailable — risk unknown.':'No scheduled high-impact event listed for this pair in the next 24 hours.');
+E('validationHorizon').textContent=horizon;
+E('validation').innerHTML=TF.map(tf=>{const v=row(selected).timeframes?.[tf]?.validation?.[String(horizon)];return '<tr><td>'+tf.toUpperCase()+'</td><td>'+num(v?.direction_hit_rate)+'%</td><td>'+safe(v?.samples??'—')+'</td><td>'+num(v?.momentum_baseline_hit_rate)+'%</td><td>'+num(v?.significant_move_hit_rate)+'%</td></tr>'}).join('');
 renderMatrix();chart();
 }
 function renderSettings(){
@@ -77,13 +88,20 @@ const s=snapshot.settings||{},st=snapshot.status||{};
 E('updated').textContent=myt(snapshot.updated_at);
 E('status').textContent=snapshot.updated_at?'Snapshot loaded':'Awaiting scanner';
 E('coverage').textContent=(st.pairs_checked_this_run||0)+' pairs checked last run';
-E('scanInfo').textContent='Last scan: '+(st.pairs_checked_this_run||0)+' pairs checked, '+(st.errors?.length||0)+' feed/analysis errors. 3/3 columns are informative; only the 12/12 column can trigger an alert. Watchlist scans each cycle and other pairs rotate.';
-E('rules').textContent='Strict 12/12 rule: all three timeframes (15m, 1h, 1D) must agree on BUY or SELL across ALL four horizons (1, 3, 6, 12 bars), with fresh completed candles. No partial agreement qualifies. Signal strength is informational only. One short Telegram message groups newly qualified pairs.';
+E('scanInfo').textContent='Last scan: '+(st.pairs_checked_this_run||0)+' pairs checked, '+(st.errors?.length||0)+' feed/analysis errors. 3/3 columns are informative; only fresh 10/12, 11/12 or 12/12 agreement can trigger a signal alert. All 28 pairs are checked each scheduled scan.';
+E('rules').textContent='At least 10/12 rule: 10, 11 or 12 matching forecasts across 15m, 1h, 1D and 1, 3, 6, 12 bars. All 12 must be present on fresh completed candles. 9/12 or lower does not qualify. Unchanged qualifying signals can repeat after 15 minutes; each delivery starts a new 15-minute interval. Strength remains informational. Scheduled news warnings are independent and do not change the technical direction.';
 E('telegramStatus').textContent=st.telegram_configured?'Telegram configured':'Telegram not configured';
 const h=snapshot.history||[];
-E('history').innerHTML=h.length?h.slice(-12).reverse().map(x=>'<li>'+safe(x.pair)+' · <b class="'+(x.bias==='BUY'?'buy':'sell')+'">'+safe(x.bias)+'</b> · '+(x.rule==='12/12'?'12/12 confirmed':'Older 3/3 rule')+' · '+myt(x.at)+' MYT</li>').join(''):'<li class="muted">No delivered alerts yet.</li>';
+E('history').innerHTML=h.length?h.slice(-12).reverse().map(x=>'<li>'+safe(x.pair)+' · <b class="'+(x.bias==='BUY'?'buy':'sell')+'">'+safe(x.bias)+'</b> · '+(['at_least_10_of_12','above_10_of_12'].includes(x.rule)?safe(x.agreement)+'/12 confirmed':x.rule==='12/12'?'12/12 confirmed':'Older 3/3 rule')+' · '+myt(x.at)+' MYT</li>').join(''):'<li class="muted">No delivered alerts yet.</li>';
 }
-function render(){renderSettings();renderPairs();renderDetail()}
+function renderNews(){
+const n=snapshot.news||{},events=liveNews(),fresh=n.usable&&Date.now()-Date.parse(n.checked_at)<3*3600000;
+E('newsStatus').textContent=fresh?(n.status||'Updated'):'Unavailable / stale';
+E('newsInfo').textContent='Calendar checked: '+myt(n.checked_at)+' MYT. One warning per event during the '+(snapshot.settings?.news_alert_lead_minutes||60)+' minutes before its scheduled time. GitHub scheduling can delay or miss warnings.'+(n.skipped_events?' Some events had invalid or unconfirmed times.':'');
+E('newsEvents').innerHTML=!fresh?'<p class="warn">Calendar unavailable. Absence of alerts does not mean no news risk.</p>':events.length?events.map(e=>'<div style="border-top:1px solid #2b4057;padding:10px 0"><b class="warn">'+safe(e.currency)+' · '+safe(e.title)+'</b><div>'+safe(myt(e.at))+' MYT</div><div class="note">'+e.pairs.map(p=>safe(p.replace('/',''))).join(', ')+'</div></div>').join(''):'<p class="note">No high-impact events listed in the next 24 hours within the current weekly feed.</p>';
+E('newsHistory').innerHTML=(n.history||[]).slice(-6).reverse().map(e=>'<li>'+safe(e.currency)+' · '+safe(e.title)+' · '+myt(e.at)+' MYT · warning sent '+myt(e.sent_at)+'</li>').join('')||'<li>No news warnings delivered yet.</li>';
+}
+function render(){renderSettings();renderPairs();renderDetail();renderNews()}
 async function load(){try{const r=await fetch('./data/snapshot.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);snapshot=await r.json();render()}catch(err){E('status').textContent='Snapshot unavailable';E('scanInfo').textContent='Unable to fetch scanner data: '+err.message;}}
 E('refresh').addEventListener('click',load);E('horizon').addEventListener('change',ev=>{horizon=Number(ev.target.value);renderPairs();renderDetail()});E('filterState').addEventListener('change',renderPairs);E('search').addEventListener('input',renderPairs);E('chartButtons').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{chartTF=b.dataset.tf;E('chartButtons').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.tf===chartTF)));chart()}));load();setInterval(load,120000);
 </script>

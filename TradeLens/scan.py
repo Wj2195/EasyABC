@@ -1,12 +1,13 @@
 """TradeLens online multi-timeframe scanner. Technical-only, non-execution alerts.
 
 Every scanned pair evaluates 15m, 1h and 1d at 1/3/6/12 future-bar horizons.
-A Telegram alert requires ALL 12 forecasts (15m / 1h / 1d times
-1 / 3 / 6 / 12 bars) to share one BUY or SELL bias on fresh closed candles.
-One Telegram message per scan lists newly aligned pairs. Last delivered
-direction is remembered permanently per pair; only a new opposite confirmed
-12/12 direction qualifies, including across mixed or missing-data intervals.
+A Telegram alert requires at least 10 of 12 forecasts (10/12, 11/12 or 12/12)
+to share one BUY or SELL bias, with all 12 available on fresh closed candles.
+One Telegram message per scan lists qualifying pairs. An unchanged direction
+can repeat after 15 minutes since its last successful delivery, provided a new
+scan still qualifies. A newly confirmed opposite direction can alert immediately.
 Strength is reported on the dashboard but does not block alignment.
+Scheduled high-impact news warnings are sent independently of alignment.
 """
 import json
 import math
@@ -18,11 +19,16 @@ from pathlib import Path
 import numpy as np
 import requests
 
+from news import load_calendar, fetch_calendar, upcoming_events, pending_news, news_message
+from validation import walk_forward
+
 ROOT = Path(__file__).resolve().parent
 PAIRS = 'EUR/USD GBP/USD AUD/USD NZD/USD USD/JPY USD/CHF USD/CAD EUR/GBP EUR/JPY EUR/CHF EUR/AUD EUR/CAD EUR/NZD GBP/JPY GBP/CHF GBP/AUD GBP/CAD GBP/NZD AUD/JPY AUD/CHF AUD/CAD AUD/NZD NZD/JPY NZD/CHF NZD/CAD CAD/JPY CAD/CHF CHF/JPY'.split()
 TIMEFRAMES = ('15m', '1h', '1d')
 HORIZONS = (1, 3, 6, 12)
 SECS = {'15m': 900, '1h': 3600, '1d': 86400}
+MIN_AGREEMENT = 10
+REPEAT_SECONDS = 15 * 60
 
 
 def iso(epoch=None):
@@ -81,7 +87,7 @@ def fetch_bars(pair, tf, session, now):
 def is_fresh(start_epoch, tf, now):
     age = now - int(start_epoch) - SECS[tf]
     # A Friday daily close remains valid on Monday while 15m/1h must be fresh.
-    max_age = 4 * 86400 if tf == '1d' else max(7200, 2 * SECS[tf])
+    max_age = 4 * 86400 if tf == '1d' else 2 * SECS[tf]
     return -60 <= age <= max_age
 
 
@@ -129,33 +135,30 @@ def model_features(candles):
     return close, atr, features
 
 
-def forecast(model, horizon):
+def forecast(model, horizon, origin=None):
     close, atr, features = model
-    last = len(close) - 1
-    samples = []
-    counts = [0, 0, 0]
-    for i in range(last-horizon-1, 198, -horizon):
-        move = (close[i+horizon]-close[i])/atr[i]
-        boundary = .35*math.sqrt(horizon)
-        label = 2 if move > boundary else 0 if move < -boundary else 1
-        counts[label] += 1
-        samples.append((float(np.sum((features[last]-features[i])**2)), label))
-    if len(samples) < 45:
+    last = len(close) - 1 if origin is None else origin
+    indices = np.arange(last-horizon-1, 198, -horizon)
+    if len(indices) < 45:
         raise ValueError('Insufficient historical analogs')
-    k = min(50, max(20, math.isqrt(len(samples))*3))
-    near = sorted(samples)[:k]
-    probs = [8*(count+1)/(len(samples)+3) for count in counts]
-    for _, label in near:
-        probs[label] += 1
+    moves = (close[indices+horizon]-close[indices])/atr[indices]
+    boundary = .35*math.sqrt(horizon)
+    labels = np.where(moves > boundary, 2, np.where(moves < -boundary, 0, 1))
+    counts = np.bincount(labels, minlength=3)
+    distances = np.sum((features[last]-features[indices])**2, axis=1)
+    k = min(50, max(20, math.isqrt(len(indices))*3))
+    near = labels[np.lexsort((labels, distances))[:k]]
+    probs = 8*(counts+1)/(len(indices)+3) + np.bincount(near, minlength=3)
     down, side, up = [100*x/(k+8) for x in probs]
     bias = 'BUY' if up > down else 'SELL' if down > up else 'TIE'
     return {
         'up': round(up, 3), 'down': round(down, 3),
         'sideways': round(side, 3), 'bias': bias,
         'signal': round(max(up, down), 3), 'gap': round(abs(up-down), 3),
-        'direction_leads': max(up, down) > side and up != down,
+        'direction_leads': bool(max(up, down) > side and up != down),
         'top_outcome': 'BUY' if up > max(down, side) else 'SELL' if down > max(up, side) else 'SIDEWAYS',
-        'price': round(float(close[-1]), 6)
+        'price': round(float(close[last]), 6),
+        'historical_samples': len(indices), 'nearest_analogs': k
     }
 
 
@@ -183,7 +186,7 @@ def alignment(timeframes, horizon, min_signal, min_gap):
 
 
 def full_alignment(timeframes):
-    """Require every one of the 12 timeframe/horizon forecasts to agree."""
+    """Require at least 10/12 agreement; missing data never lowers denominator."""
     biases = []
     for tf in TIMEFRAMES:
         entry = timeframes.get(tf, {})
@@ -193,31 +196,59 @@ def full_alignment(timeframes):
         forecasts = entry.get('forecasts', {})
         for horizon in HORIZONS:
             f = forecasts.get(str(horizon))
-            if not isinstance(f, dict) or f.get('bias') not in ('BUY', 'SELL'):
+            if not isinstance(f, dict) or f.get('bias') not in ('BUY', 'SELL', 'TIE'):
                 return {'bias': 'WAIT', 'aligned': False, 'eligible': False,
-                        'reason': f'{tf} / {horizon}-bar: no valid BUY/SELL forecast'}
+                        'reason': f'{tf} / {horizon}-bar: no valid forecast'}
             biases.append(f['bias'])
-    if len(biases) != len(TIMEFRAMES) * len(HORIZONS) or len(set(biases)) != 1:
-        return {'bias': 'MIXED', 'aligned': False, 'eligible': False,
-                'reason': 'The 12 forecast directions disagree'}
-    return {'bias': biases[0], 'aligned': True, 'eligible': True,
-            'reason': 'All 12 forecast directions agree: ' + biases[0]}
+    counts = {b: biases.count(b) for b in ('BUY', 'SELL')}
+    direction = max(counts, key=counts.get)
+    agreement = counts[direction]
+    eligible = agreement >= MIN_AGREEMENT
+    supporting = [f for t in timeframes.values() for f in t.get('forecasts', {}).values()
+                  if f.get('bias') == direction]
+    leads = sum(bool(f.get('direction_leads')) for f in supporting)
+    return {'bias': direction if eligible else 'MIXED', 'aligned': eligible,
+            'eligible': eligible, 'agreement': agreement, 'total': 12,
+            'buy_count': counts['BUY'], 'sell_count': counts['SELL'],
+            'tie_count': biases.count('TIE'),
+            'minimum_agreement': MIN_AGREEMENT, 'direction_leads_count': leads,
+            'low_strength': leads < agreement,
+            'reason': f'{agreement}/12 agree {direction}; 10/12 required.' +
+                      (' Sideways exceeds directional score in some forecasts.' if leads < agreement else '')}
 
-def should_notify_12of12(last_delivered, pair, result):
-    """Prevent duplicate BUY/SELL alerts across temporary loss of alignment.
-
-    Only a successful delivery of an opposite confirmed 12/12 signal changes
-    the per-pair latch. MIXED, WAIT, stale and unavailable data do not clear it.
-    """
-    return (result.get('eligible') is True
-            and result.get('bias') in ('BUY', 'SELL')
-            and last_delivered.get(pair) != result['bias'])
+def should_notify(last_delivered, pair, result, now):
+    """Repeat a fresh qualifying direction only after its delivery cooldown."""
+    if (result.get('eligible') is not True or result.get('bias') not in ('BUY', 'SELL')
+            or result.get('agreement', 0) < MIN_AGREEMENT):
+        return False
+    previous = last_delivered.get(pair)
+    return (previous is None or previous['bias'] != result['bias']
+            or now - previous['sent_at'] >= REPEAT_SECONDS)
 
 
 def telegram_alert_summary(alerts):
     """One message, one concise line per qualifying pair."""
-    return '\n'.join(f'{pair.replace("/", "")} - {direction}'
-                     for pair, direction, _ in alerts)
+    return '\n'.join(f'{pair.replace("/", "")} - {direction} ({agreement}/12)'
+                     for pair, direction, agreement in alerts)
+
+
+def alert_memory(state):
+    """Migrate recorded delivery times; legacy direction latches cannot block repeats."""
+    memory = state.setdefault('last_signal_deliveries', {})
+    for event in state.get('history', []):
+        if event.get('rule') not in ('12/12', 'above_10_of_12', 'at_least_10_of_12') or event.get('bias') not in ('BUY', 'SELL'):
+            continue
+        try:
+            when = datetime.fromisoformat(event['at'].replace('Z', '+00:00'))
+            if when.tzinfo is None:
+                continue
+            epoch = when.timestamp()
+            pair = event['pair']
+        except (KeyError, TypeError, ValueError, OverflowError):
+            continue
+        if pair not in memory or epoch > memory[pair]['sent_at']:
+            memory[pair] = {'bias': event['bias'], 'sent_at': epoch}
+    return memory
 
 
 def send_telegram(session, token, chat, message):
@@ -232,8 +263,11 @@ def send_telegram(session, token, chat, message):
 
 
 def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=send_telegram,
-         now=None, sleep=time.sleep):
-    now = time.time() if now is None else now
+         now=None, sleep=time.sleep, news_fetch=fetch_calendar, clock=time.time):
+    if now is None:
+        now = clock()
+    else:
+        clock = lambda: now  # deterministic injected time for offline tests
     cfg = get_json(base/'config.json', {})
     watch = [p for p in cfg.get('watchlist', []) if p in PAIRS]
     state = get_json(base/'state/state.json', {'run_index': 0, 'last_alerts': {}, 'history': []})
@@ -263,25 +297,45 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
     errors = []
     sent = 0
     pending_alerts = []
-    # New 12/12 alert latch is independent of earlier, less strict 3/3 signals.
-    full_alerts = state.setdefault('last_alerts_12of12', {})
+    full_alerts = alert_memory(state)
+    news_sent = 0
     with session_factory() as session:
+        calendar = load_calendar(session, state, now, fetch=news_fetch)
+        events = upcoming_events(calendar, PAIRS, now)
+        news_ledger = state.setdefault('news_delivered', {})
+        news_history = state.setdefault('news_history', [])
+        lead = max(15, min(1440, int(cfg.get('news_alert_lead_minutes', 60))))
+        if not calendar['usable'] or calendar.get('error') or calendar.get('skipped_events'):
+            errors.append('News calendar: ' + calendar['status'])
+        if token and chat and cfg.get('enable_telegram', True) and cfg.get('enable_news_alerts', True):
+            for event in pending_news(events, news_ledger, now, lead):
+                if send(session, token, chat, news_message(event)):
+                    delivered_at = clock()
+                    news_ledger[event['id']] = delivered_at
+                    news_history.append({**event, 'sent_at': iso(delivered_at)})
+                    news_sent += 1
+                else:
+                    errors.append('Telegram news delivery failed')
+        state['news_delivered'] = {k: v for k, v in news_ledger.items() if now-v < 30*86400}
+        state['news_history'] = news_history[-100:]
         for position, pair in enumerate(targets):
             if position:
                 sleep(float(cfg.get('request_delay_seconds', .5)))
             timeframes = {}
             pair_errors = []
+            checked_at = clock()
             for tf in TIMEFRAMES:
                 try:
-                    candles = fetch(pair, tf, session, now)
+                    candles = fetch(pair, tf, session, checked_at)
                     model = model_features(candles)
                     fcs = {str(h): forecast(model, h) for h in HORIZONS}
+                    validation = {str(h): walk_forward(model, candles, h, forecast) for h in HORIZONS}
                     epoch = candles[-1]['t']
-                    fresh = is_fresh(epoch, tf, now)
+                    fresh = is_fresh(epoch, tf, checked_at)
                     timeframes[tf] = {'status': 'Updated' if fresh else 'Old / closed',
                         'candle_epoch': epoch, 'candle_time': iso(epoch),
                         'price': candles[-1]['c'],
-                        'candles': candles[-60:], 'forecasts': fcs}
+                        'candles': candles[-60:], 'forecasts': fcs, 'validation': validation}
                 except (requests.RequestException, ValueError, KeyError, TypeError, IndexError) as exc:
                     timeframes[tf] = {'status': 'Unavailable', 'error': str(exc)[:130]}
                     pair_errors.append(f'{pair} {tf}: {type(exc).__name__}: {str(exc)[:90]}')
@@ -289,43 +343,66 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
             fully_fresh = all(timeframes[tf]['status'] == 'Updated' for tf in TIMEFRAMES)
             twelve = full_alignment(timeframes)
             row = {'pair': pair, 'ready': fully_fresh, 'status': 'Updated' if fully_fresh else 'Incomplete / old',
-                   'checked_at': iso(now), 'timeframes': timeframes,
+                   'checked_at': iso(checked_at), 'timeframes': timeframes,
                    'alignments': alignments, 'full_alignment': twelve}
             rows[pair] = row
             errors.extend(pair_errors)
-            # Never re-arm an unchanged direction after MIXED/WAIT/unavailable.
-            # Only a successfully DELIVERED opposite 12/12 direction updates
-            # the persistent per-pair memory.
-            if should_notify_12of12(full_alerts, pair, twelve):
-                pending_alerts.append((pair, twelve['bias'], []))
-        # Group ALL newly qualifying pairs in one Telegram notification.
+        # Recheck freshness at send time. Never repeat from a cached prior scan.
+        decision_at = clock()
+        for pair in targets:
+            timeframes = rows[pair]['timeframes']
+            for tf, entry in timeframes.items():
+                if entry.get('status') == 'Updated' and not is_fresh(entry['candle_epoch'], tf, decision_at):
+                    entry['status'] = 'Old / closed'
+            result = full_alignment(timeframes)
+            if should_notify(full_alerts, pair, result, decision_at):
+                pending_alerts.append((pair, result['bias'], result['agreement']))
+        # One concise message for all due pairs, including unchanged reminders.
         if pending_alerts and token and chat and cfg.get('enable_telegram', True):
             message = telegram_alert_summary(pending_alerts)
             if send(session, token, chat, message):
                 sent = 1
-                for pair, direction, _ in pending_alerts:
-                    full_alerts[pair] = direction
+                delivered_at = clock()
+                for pair, direction, agreement in pending_alerts:
+                    full_alerts[pair] = {'bias': direction, 'sent_at': delivered_at}
                     history.append({
-                        'pair': pair, 'bias': direction, 'rule': '12/12',
-                        'horizons': list(HORIZONS), 'at': iso(now),
+                        'pair': pair, 'bias': direction, 'rule': 'at_least_10_of_12',
+                        'agreement': agreement, 'total': 12,
+                        'horizons': list(HORIZONS), 'at': iso(delivered_at),
                     })
             else:
                 errors.append('Telegram summary delivery failed')
+    # Re-evaluate cached rows against current time. Rotating pairs must never
+    # retain an old "eligible" flag after their candles have expired.
+    finished_at = clock()
+    for row in rows.values():
+        timeframes = row.get('timeframes', {})
+        for tf, entry in timeframes.items():
+            if entry.get('status') == 'Updated' and not is_fresh(entry.get('candle_epoch', 0), tf, finished_at):
+                entry['status'] = 'Old / closed'
+        row['full_alignment'] = full_alignment(timeframes)
+        row['alignments'] = {str(h): alignment(timeframes, h, min_signal, min_gap) for h in HORIZONS}
+        row['news_events'] = [e for e in events if row.get('pair') in e['pairs']]
+        row['ready'] = all(timeframes.get(tf, {}).get('status') == 'Updated' for tf in TIMEFRAMES)
+        row['status'] = 'Updated' if row['ready'] else 'Incomplete / old'
     state['run_index'] = run_index + 1
     state['history'] = history[-150:]
-    state['last_run'] = iso(now)
-    output = {'app': 'TradeLens Online', 'version': '1.4.1', 'updated_at': iso(now),
-        'model': 'Experimental 9-feature technical analog (no macro/news overlay)',
+    state['last_run'] = iso(finished_at)
+    output = {'app': 'TradeLens Online', 'version': '1.5.1', 'updated_at': iso(finished_at),
+        'model': '9-feature technical analog; walk-forward diagnostics; separate scheduled news warnings',
         'provider': 'Unofficial Yahoo Finance',
-        'settings': {**cfg, 'alert_rule': 'all_12_agree', 'alert_horizons': list(HORIZONS),
+        'settings': {**cfg, 'alert_rule': 'at_least_10_of_12', 'minimum_agreement': MIN_AGREEMENT,
+                     'repeat_alert_minutes': REPEAT_SECONDS // 60,
+                     'news_alert_lead_minutes': lead, 'alert_horizons': list(HORIZONS),
                      'timeframes': list(TIMEFRAMES), 'horizons': list(HORIZONS)},
         'status': {'pairs_checked_this_run': len(targets), 'checked_pairs': targets,
-                   'errors': errors[:45], 'alerts_sent': sent,
+                   'errors': errors[:45], 'alerts_sent': sent, 'news_alerts_sent': news_sent,
                    'telegram_configured': bool(token and chat)},
+        'news': {**calendar, 'events': events, 'history': state['news_history'][-20:]},
         'history': history[-50:], 'rows': rows}
     save(base/'state/state.json', state)
     save(base/'data/snapshot.json', output)
-    print(f'TradeLens: scanned {len(targets)} pairs, {len(errors)} errors, {sent} notifications')
+    print(f'TradeLens: scanned {len(targets)} pairs, {len(errors)} errors, {sent} signal messages, {news_sent} news messages')
     return output
 
 
