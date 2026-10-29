@@ -1,5 +1,5 @@
 {
-  "run_index": 424,
+  "run_index": 425,
   "last_alerts": {
     "pair:EUR/USD": "SELL",
     "pair:GBP/USD": "BUY",
@@ -11,28 +11,6 @@
     "pair:AUD/NZD": "BUY"
   },
   "history": [
-    {
-      "pair": "EUR/USD",
-      "bias": "SELL",
-      "horizon": 12,
-      "horizons": [
-        12
-      ],
-      "at": "2026-10-19T08:18:11Z",
-      "minimum_signal": 25.777,
-      "strong": false
-    },
-    {
-      "pair": "GBP/USD",
-      "bias": "BUY",
-      "horizon": 1,
-      "horizons": [
-        1
-      ],
-      "at": "2026-10-19T08:18:11Z",
-      "minimum_signal": 26.077,
-      "strong": false
-    },
     {
       "pair": "USD/JPY",
       "bias": "BUY",
@@ -2042,9 +2020,51 @@
         12
       ],
       "at": "2026-10-29T22:55:55Z"
+    },
+    {
+      "pair": "EUR/USD",
+      "bias": "SELL",
+      "rule": "at_least_10_of_12",
+      "agreement": 10,
+      "total": 12,
+      "horizons": [
+        1,
+        3,
+        6,
+        12
+      ],
+      "at": "2026-10-29T23:34:12Z"
+    },
+    {
+      "pair": "USD/JPY",
+      "bias": "BUY",
+      "rule": "at_least_10_of_12",
+      "agreement": 10,
+      "total": 12,
+      "horizons": [
+        1,
+        3,
+        6,
+        12
+      ],
+      "at": "2026-10-29T23:34:12Z"
+    },
+    {
+      "pair": "USD/CAD",
+      "bias": "SELL",
+      "rule": "at_least_10_of_12",
+      "agreement": 11,
+      "total": 12,
+      "horizons": [
+        1,
+        3,
+        6,
+        12
+      ],
+      "at": "2026-10-29T23:34:12Z"
     }
   ],
-  "last_run": "2026-10-29T22:55:55Z",
+  "last_run": "2026-10-29T23:34:12Z",
   "last_alerts_12of12": {
     "EUR/JPY": "BUY",
     "GBP/CAD": "BUY",
@@ -2087,11 +2107,11 @@
     },
     "USD/CAD": {
       "bias": "SELL",
-      "sent_at": 1793314555.2079966
+      "sent_at": 1793316852.6052694
     },
     "USD/JPY": {
       "bias": "BUY",
-      "sent_at": 1793312029.4438047
+      "sent_at": 1793316852.6052694
     },
     "AUD/NZD": {
       "bias": "BUY",
@@ -2135,7 +2155,7 @@
     },
     "EUR/USD": {
       "bias": "SELL",
-      "sent_at": 1793312029.4438047
+      "sent_at": 1793316852.6052694
     },
     "GBP/NZD": {
       "bias": "SELL",
