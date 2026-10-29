@@ -33,7 +33,8 @@ class DeliveryTests(unittest.TestCase):
         return json.loads((self.base/'state/state.json').read_text())
 
     def run_scan(self, success=True, direction='BUY', agreement=12, broken=False, stale=False,
-                 now=NOW, news=False, pairs=None, clock=None, after_send=None, credentials=True):
+                 now=NOW, news=False, pairs=None, clock=None, after_send=None, credentials=True,
+                 news_payload=None, news_fetch_hook=None):
         calls = 0
         def fetch(pair, tf, session, timestamp):
             if broken:
@@ -50,6 +51,12 @@ class DeliveryTests(unittest.TestCase):
             bias = direction if calls % 12 < agreement else ('SELL' if direction == 'BUY' else 'BUY')
             calls += 1
             return {'bias': bias, 'signal': 40., 'gap': 10., 'direction_leads': True}
+        def fetch_news(_):
+            if news_fetch_hook:
+                news_fetch_hook()
+            if news_payload is not None:
+                return news_payload
+            return feed() if news else feed('Low')
         with patch.dict(os.environ, {'TELEGRAM_BOT_TOKEN': 'test' if credentials else '',
                                      'TELEGRAM_CHAT_ID': 'test' if credentials else ''}), \
              patch.object(scan, 'PAIRS', pairs or ['EUR/USD']), \
@@ -58,7 +65,7 @@ class DeliveryTests(unittest.TestCase):
              patch.object(scan, 'walk_forward', return_value={'samples': 0}):
             return scan.scan(base=self.base, session_factory=DummySession, fetch=fetch, send=send,
                              now=None if clock else now, clock=clock or (lambda: now), sleep=lambda _: None,
-                             news_fetch=lambda _: feed() if news else [{**feed()[0], 'impact': 'Low'}])
+                             news_fetch=fetch_news)
 
     def test_persisted_timer_repeats_every_fifteen_minutes(self):
         for elapsed in (60, 899, 900, 901, 1799, 1800):
@@ -95,6 +102,27 @@ class DeliveryTests(unittest.TestCase):
         self.assertIn('NEWS - HIGH IMPACT EXPECTED', self.messages[0])
         self.run_scan(broken=True, now=NOW+60, news=True)
         self.assertEqual(len(self.messages), 1)
+
+    def test_medium_and_high_news_send_once_even_without_technical_data(self):
+        payload = feed() + [{**feed('Medium')[0], 'title': 'Medium Example Release'}] + feed('Low')
+        output = self.run_scan(broken=True, news_payload=payload)
+        self.assertEqual(output['status']['news_alerts_sent'], 2)
+        self.assertEqual(output['settings']['news_impact_levels'], ['Medium', 'High'])
+        self.assertEqual(output['status']['alerts_sent'], 0)
+        self.assertTrue(any(m.startswith('NEWS - MEDIUM') for m in self.messages))
+        self.assertTrue(any(m.startswith('NEWS - HIGH') for m in self.messages))
+        self.run_scan(broken=True, news_payload=payload, now=NOW+900)
+        self.assertEqual(len(self.messages), 2)
+
+    def test_event_that_releases_during_fetch_is_not_sent_late(self):
+        current = [NOW]
+        def delay():
+            current[0] = NOW+1801
+        output = self.run_scan(broken=True, news_payload=feed('Medium'),
+                               clock=lambda: current[0], news_fetch_hook=delay)
+        self.assertEqual(output['status']['news_alerts_sent'], 0)
+        self.assertEqual(self.messages, [])
+        self.assertEqual(self.state()['news_delivered'], {})
 
     def test_news_failure_retries_without_touching_trade_delivery_time(self):
         self.run_scan(success=False, news=True)

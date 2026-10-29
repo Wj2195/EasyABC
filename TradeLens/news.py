@@ -1,4 +1,4 @@
-"""Scheduled high-impact calendar warnings, independent of technical signals."""
+"""Scheduled medium/high-impact warnings before release, independent of technical signals."""
 import hashlib
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -9,6 +9,8 @@ FEED_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json'
 SOURCE_URL = 'https://www.forexfactory.com/calendar'
 REFRESH_SECONDS = 3600
 MAX_CACHE_AGE = 3 * 3600
+IMPACT_LEVELS = ('Medium', 'High')
+CACHE_SCHEMA_VERSION = 2
 MYT = ZoneInfo('Asia/Kuala_Lumpur')
 
 
@@ -36,14 +38,15 @@ def parse_calendar(payload, now):
         if not isinstance(item, dict):
             skipped += 1
             continue
-        high = str(item.get('impact', '')).lower() == 'high'
+        impact = str(item.get('impact', '')).strip().title()
+        relevant = impact in IMPACT_LEVELS
         try:
             dt = datetime.fromisoformat(str(item['date']).replace('Z', '+00:00'))
             if dt.tzinfo is None:
                 raise ValueError('Calendar time has no UTC offset')
             epoch = dt.timestamp()
             dates.append(epoch)
-            if not high:
+            if not relevant:
                 continue
             currency = str(item.get('country', '')).strip().upper()
             title = ' '.join(str(item.get('title', '')).split())[:200]
@@ -52,12 +55,12 @@ def parse_calendar(payload, now):
             identity = f'{currency}|{title.casefold()}|{int(epoch)}'
             event_id = hashlib.sha256(identity.encode()).hexdigest()[:24]
             events[event_id] = {'id': event_id, 'title': title, 'currency': currency,
-                'impact': 'High', 'epoch': epoch, 'at': utc_iso(epoch),
+                'impact': impact, 'epoch': epoch, 'at': utc_iso(epoch),
                 'time_myt': dt.astimezone(MYT).strftime('%d %b %Y, %I:%M %p MYT'),
                 'forecast': str(item.get('forecast', ''))[:60],
                 'previous': str(item.get('previous', ''))[:60]}
         except (KeyError, ValueError, TypeError, OverflowError):
-            if high:
+            if relevant:
                 skipped += 1
     start = week_start(now)
     if not dates or not any(start <= t < start + 8 * 86400 for t in dates):
@@ -67,6 +70,11 @@ def parse_calendar(payload, now):
 
 def load_calendar(session, state, now, fetch=fetch_calendar):
     cache = state.setdefault('news_calendar', {})
+    if cache.get('schema_version') != CACHE_SCHEMA_VERSION:
+        # Older caches contain High only. Refresh them immediately without
+        # touching the separate delivery ledger or resending previous events.
+        cache.clear()
+        cache['schema_version'] = CACHE_SCHEMA_VERSION
     same_week = cache.get('week_start') == week_start(now)
     if now - cache.get('last_attempt', 0) >= REFRESH_SECONDS or not same_week:
         cache['last_attempt'] = now
@@ -82,6 +90,7 @@ def load_calendar(session, state, now, fetch=fetch_calendar):
     status = ('Cached / feed retry pending' if cache.get('error') else
               'Partial calendar' if cache.get('skipped') else 'Updated') if usable else 'Unavailable / stale'
     return {'source': 'Forex Factory weekly calendar', 'source_url': SOURCE_URL,
+            'impact_levels': list(IMPACT_LEVELS),
             'status': status, 'usable': usable,
             'checked_at': utc_iso(cache['fetched_at']) if cache.get('fetched_at') else None,
             'error': cache.get('error'), 'skipped_events': cache.get('skipped', 0),
@@ -106,10 +115,11 @@ def upcoming_events(calendar, pairs, now, hours=24):
 
 def pending_news(events, delivered, now, lead_minutes=60):
     return [e for e in events if e['id'] not in delivered
-            and now <= e['epoch'] <= now + lead_minutes * 60]
+            and now < e['epoch'] <= now + lead_minutes * 60]
 
 
 def news_message(event):
     pairs = ', '.join(p.replace('/', '') for p in event['pairs'])
-    return (f'NEWS - HIGH IMPACT EXPECTED\n{event["currency"]} - {event["title"]}\n'
-            f'{event["time_myt"]}\nPairs: {pairs}')
+    return (f'NEWS - {event["impact"].upper()} IMPACT EXPECTED\n'
+            f'{event["currency"]} - {event["title"]}\n'
+            f'Release: {event["time_myt"]}\nPairs: {pairs}')

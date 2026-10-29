@@ -7,7 +7,7 @@ One Telegram message per scan lists qualifying pairs. An unchanged direction
 can repeat after 15 minutes since its last successful delivery, provided a new
 scan still qualifies. A newly confirmed opposite direction can alert immediately.
 Strength is reported on the dashboard but does not block alignment.
-Scheduled high-impact news warnings are sent independently of alignment.
+Scheduled medium/high-impact news warnings are sent before release, independently of alignment.
 """
 import json
 import math
@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import requests
 
-from news import load_calendar, fetch_calendar, upcoming_events, pending_news, news_message
+from news import load_calendar, fetch_calendar, upcoming_events, pending_news, news_message, IMPACT_LEVELS
 from validation import walk_forward
 
 ROOT = Path(__file__).resolve().parent
@@ -309,6 +309,8 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
             errors.append('News calendar: ' + calendar['status'])
         if token and chat and cfg.get('enable_telegram', True) and cfg.get('enable_news_alerts', True):
             for event in pending_news(events, news_ledger, now, lead):
+                if event['epoch'] <= clock():
+                    continue  # Fetching the feed or earlier deliveries may take time.
                 if send(session, token, chat, news_message(event)):
                     delivered_at = clock()
                     news_ledger[event['id']] = delivered_at
@@ -388,12 +390,13 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
     state['run_index'] = run_index + 1
     state['history'] = history[-150:]
     state['last_run'] = iso(finished_at)
-    output = {'app': 'TradeLens Online', 'version': '1.5.1', 'updated_at': iso(finished_at),
+    output = {'app': 'TradeLens Online', 'version': '1.5.2', 'updated_at': iso(finished_at),
         'model': '9-feature technical analog; walk-forward diagnostics; separate scheduled news warnings',
         'provider': 'Unofficial Yahoo Finance',
         'settings': {**cfg, 'alert_rule': 'at_least_10_of_12', 'minimum_agreement': MIN_AGREEMENT,
                      'repeat_alert_minutes': REPEAT_SECONDS // 60,
-                     'news_alert_lead_minutes': lead, 'alert_horizons': list(HORIZONS),
+                     'news_alert_lead_minutes': lead, 'news_impact_levels': list(IMPACT_LEVELS),
+                     'alert_horizons': list(HORIZONS),
                      'timeframes': list(TIMEFRAMES), 'horizons': list(HORIZONS)},
         'status': {'pairs_checked_this_run': len(targets), 'checked_pairs': targets,
                    'errors': errors[:45], 'alerts_sent': sent, 'news_alerts_sent': news_sent,

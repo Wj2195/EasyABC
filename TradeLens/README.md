@@ -1,4 +1,4 @@
-# TradeLens 1.5.1
+# TradeLens 1.5.2
 
 Telegram technical alerts require **at least 10 of 12** forecasts to agree:
 10/12, 11/12 or 12/12. Nine or fewer does not qualify. All twelve forecasts
@@ -28,15 +28,20 @@ exact clock time. Missed intervals never cause a burst of catch-up messages.
 The [Forex Factory calendar](https://www.forexfactory.com/calendar) links its
 [weekly JSON export](https://nfs.faireconomy.media/ff_calendar_thisweek.json).
 The scanner checks this feed at most hourly, validates offset-bearing times,
-converts display times to Asia/Kuala_Lumpur, and maps High impact events to
+converts display times to Asia/Kuala_Lumpur, and maps Medium and High impact events to
 every supported pair containing that currency (or all pairs for ALL).
 
 One warning per event is sent on the first successful scan in the 60 minutes
-before its scheduled time. This is independent of technical alignment and the
+before its scheduled time. Each warning is labelled MEDIUM or HIGH and shows
+the release time in Malaysia and affected pairs. Low-impact events are excluded.
+At or after release, the event is skipped, including when feed retrieval delays
+the scan. News alerts do not repeat every 15 minutes. Existing high-impact
+delivery records survive this upgrade; the calendar refreshes immediately to
+include medium-impact events. This is independent of technical alignment and the
 technical market-data scan. Rescheduled times form a new event identity.
 Failures retain a visibly labelled cache for at most three hours; an expired,
 invalid or previous-week feed means unknown news risk, not no risk. Invalid
-high-impact records are skipped and reported. Cancelled/removed events are
+medium/high-impact records are skipped and reported. Cancelled/removed events are
 removed on the next successful feed refresh. Feed times and impact labels are
 provider estimates; tentative times cannot reliably be identified in this feed.
 Warnings do not claim a BUY/SELL effect, actual release outcome, or guaranteed
