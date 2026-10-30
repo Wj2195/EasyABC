@@ -213,11 +213,10 @@ fetch('./maya_reference.b64?v=1').then(r=>{if(!r.ok)throw new Error('Photo not f
    const ctx=c.getContext('2d');ctx.drawImage(image,0,0,335,512);
    ctx.globalCompositeOperation='destination-in';
    ctx.save();ctx.beginPath();
-   const outline=[[88,511],[94,481],[90,464],[78,445],[75,426],[82,407],[90,384],[95,357],[96,327],[101,292],[108,260],[111,217],[113,180],[122,157],[141,143],[157,132],[151,108],[148,81],[150,55],[158,31],[173,11],[191,1],[208,11],[219,31],[225,57],[227,95],[228,122],[247,137],[268,151],[279,170],[286,201],[286,282],[289,312],[291,343],[283,365],[280,384],[284,412],[286,432],[282,460],[275,483],[263,501],[253,505],[250,494],[258,477],[265,452],[269,511],[190,511],[178,489],[165,511]];
-   outline.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fill();ctx.restore();
-   // Fade the lower cropped part into temporary trouser legs.
-   const gradient=ctx.createLinearGradient(0,408,0,512);gradient.addColorStop(0,'rgba(0,0,0,1)');gradient.addColorStop(.75,'rgba(0,0,0,.98)');gradient.addColorStop(1,'rgba(0,0,0,.50)');
-   ctx.fillStyle=gradient;ctx.fillRect(0,408,335,104);ctx.globalCompositeOperation='source-over';
+   const outline=[[208,0],[176,0],[164,10],[149,12],[136,24],[128,39],[126,81],[130,99],[140,112],[137,93],[150,115],[150,134],[142,141],[103,151],[90,168],[77,283],[65,331],[65,367],[59,402],[48,428],[51,453],[68,469],[65,501],[145,501],[158,473],[163,501],[240,501],[248,481],[251,497],[273,487],[283,466],[282,366],[289,359],[280,293],[279,182],[269,162],[247,151],[244,80],[232,79],[221,23]];
+   outline.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fillStyle='#ffffff';ctx.fill();ctx.restore();
+   // Reset compositing immediately: a second destination-in draw erased Maya's upper body in v0.2.
+   ctx.globalCompositeOperation='source-over';
    const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=8;
    const plane=new THREE.Mesh(new THREE.PlaneGeometry(1.02,1.52),new THREE.MeshBasicMaterial({map:texture,transparent:true,side:THREE.DoubleSide,depthWrite:false,alphaTest:.08}));
    plane.position.set(0,1.12,.045);plane.renderOrder=4;npcGroup.add(plane);mayaBillboard=plane;
@@ -227,7 +226,9 @@ fetch('./maya_reference.b64?v=1').then(r=>{if(!r.ok)throw new Error('Photo not f
  image.onerror=()=>{toast('Maya portrait could not be decoded')};
  image.src='data:image/jpeg;base64,'+b64.trim();
 }).catch(e=>{console.warn('Reference loading failed',e);toast('Maya portrait unavailable offline')});
-const interactables=[{name:'Maya',p:new THREE.Vector3(.87,1.3,-1.65),range:2.35,type:'npc'},{name:'Living room lamp',p:new THREE.Vector3(-5.9,1.4,-3.9),range:2.35,type:'lamp'},{name:'Living room television',p:new THREE.Vector3(5,1.5,-2.8),range:2.7,type:'tv'},{name:'Kitchen counter',p:new THREE.Vector3(3.55,1,2.4),range:2.5,type:'kitchen'}];
+// Keep the first-person camera outside Maya's photo plane so her face and torso never clip away.
+blocker(.87,-1.65,1.90,1.70);
+const interactables=[{name:'Maya',p:new THREE.Vector3(.87,1.3,-1.65),range:2.75,type:'npc'},{name:'Living room lamp',p:new THREE.Vector3(-5.9,1.4,-3.9),range:2.35,type:'lamp'},{name:'Living room television',p:new THREE.Vector3(5,1.5,-2.8),range:2.7,type:'tv'},{name:'Kitchen counter',p:new THREE.Vector3(3.55,1,2.4),range:2.5,type:'kitchen'}];
 const story={
  intro:{who:'MAYA · YOUR NEIGHBOR',line:"Oh, you're finally up! I'm Maya, from next door. What do you think of your new apartment?",choices:[['It looks beautiful. Is the city always this peaceful?','friendly'],['Honestly, I feel a little lost.','honest'],['I have to get going.','bye']]},
  friendly:{who:'MAYA',line:"Mornings are the best. Wait until you see Haven City after sunset. Maybe I could show you the café later?",choices:[['I would love that.','accept'],['Maybe another time.','later']]},
