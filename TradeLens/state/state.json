@@ -1,5 +1,5 @@
 {
-  "run_index": 427,
+  "run_index": 428,
   "last_alerts": {
     "pair:EUR/USD": "SELL",
     "pair:GBP/USD": "BUY",
@@ -11,52 +11,6 @@
     "pair:AUD/NZD": "BUY"
   },
   "history": [
-    {
-      "pair": "USD/JPY",
-      "bias": "BUY",
-      "horizon": 12,
-      "horizons": [
-        12
-      ],
-      "at": "2026-10-19T08:18:11Z",
-      "minimum_signal": 24.49,
-      "strong": false
-    },
-    {
-      "pair": "GBP/JPY",
-      "bias": "BUY",
-      "horizon": 3,
-      "horizons": [
-        3,
-        6
-      ],
-      "at": "2026-10-19T08:18:11Z",
-      "minimum_signal": 22.256,
-      "strong": false
-    },
-    {
-      "pair": "GBP/CAD",
-      "bias": "BUY",
-      "horizon": 6,
-      "horizons": [
-        6,
-        12
-      ],
-      "at": "2026-10-19T08:18:11Z",
-      "minimum_signal": 21.653,
-      "strong": false
-    },
-    {
-      "pair": "AUD/JPY",
-      "bias": "BUY",
-      "horizon": 6,
-      "horizons": [
-        6
-      ],
-      "at": "2026-10-19T08:18:11Z",
-      "minimum_signal": 24.676,
-      "strong": false
-    },
     {
       "pair": "AUD/CHF",
       "bias": "BUY",
@@ -2062,9 +2016,65 @@
         12
       ],
       "at": "2026-10-29T23:34:12Z"
+    },
+    {
+      "pair": "USD/JPY",
+      "bias": "BUY",
+      "rule": "at_least_10_of_12",
+      "agreement": 10,
+      "total": 12,
+      "horizons": [
+        1,
+        3,
+        6,
+        12
+      ],
+      "at": "2026-10-30T01:55:53Z"
+    },
+    {
+      "pair": "AUD/NZD",
+      "bias": "BUY",
+      "rule": "at_least_10_of_12",
+      "agreement": 12,
+      "total": 12,
+      "horizons": [
+        1,
+        3,
+        6,
+        12
+      ],
+      "at": "2026-10-30T01:55:53Z"
+    },
+    {
+      "pair": "NZD/JPY",
+      "bias": "BUY",
+      "rule": "at_least_10_of_12",
+      "agreement": 12,
+      "total": 12,
+      "horizons": [
+        1,
+        3,
+        6,
+        12
+      ],
+      "at": "2026-10-30T01:55:53Z"
+    },
+    {
+      "pair": "USD/CAD",
+      "bias": "SELL",
+      "rule": "at_least_10_of_12",
+      "agreement": 11,
+      "total": 12,
+      "horizons": [
+        1,
+        3,
+        6,
+        12
+      ],
+      "at": "2026-10-30T01:55:53Z"
     }
   ],
-  "last_run": "2026-10-30T00:56:05Z",
+  "last_run": "2026-10-30T01:55:53Z",
   "last_alerts_12of12": {
     "EUR/JPY": "BUY",
     "GBP/CAD": "BUY",
@@ -2107,19 +2117,19 @@
     },
     "USD/CAD": {
       "bias": "SELL",
-      "sent_at": 1793316852.6052694
+      "sent_at": 1793325353.587599
     },
     "USD/JPY": {
       "bias": "BUY",
-      "sent_at": 1793316852.6052694
+      "sent_at": 1793325353.587599
     },
     "AUD/NZD": {
       "bias": "BUY",
-      "sent_at": 1793314555.2079966
+      "sent_at": 1793325353.587599
     },
     "NZD/JPY": {
       "bias": "BUY",
-      "sent_at": 1792535348.0
+      "sent_at": 1793325353.587599
     },
     "GBP/JPY": {
       "bias": "BUY",
@@ -2184,7 +2194,7 @@
   },
   "news_calendar": {
     "schema_version": 2,
-    "last_attempt": 1793318766.0319574,
+    "last_attempt": 1793325320.0334089,
     "week_start": 1792900800.0,
     "events": [
       {
@@ -2551,7 +2561,7 @@
         "previous": "0.9%"
       }
     ],
-    "fetched_at": 1793318766.0319574,
+    "fetched_at": 1793325320.0334089,
     "skipped": 0,
     "error": null
   },
@@ -2563,7 +2573,10 @@
     "6b24b3d032bd3260b3648c47": 1793276535.5559719,
     "8f990ea6e4945f0a7306c242": 1793276535.9212635,
     "e77c82d172df7da8d50b1b75": 1793280337.3581922,
-    "3d6d7f39dd26641e7326dcf8": 1793314528.025928
+    "3d6d7f39dd26641e7326dcf8": 1793314528.025928,
+    "9fb9ad6ffe20433285543759": 1793325320.7850919,
+    "b25b3c3647645b7928d00cc2": 1793325321.089306,
+    "645ab77263f107a9f4d86182": 1793325321.3950315
   },
   "news_history": [
     {
@@ -2733,6 +2746,69 @@
         "CHF/JPY"
       ],
       "sent_at": "2026-10-29T22:55:28Z"
+    },
+    {
+      "id": "9fb9ad6ffe20433285543759",
+      "title": "BOJ Policy Rate",
+      "currency": "JPY",
+      "impact": "High",
+      "epoch": 1793327400.0,
+      "at": "2026-10-30T02:30:00Z",
+      "time_myt": "30 Oct 2026, 10:30 AM MYT",
+      "forecast": "<1.25%",
+      "previous": "<1.25%",
+      "pairs": [
+        "USD/JPY",
+        "EUR/JPY",
+        "GBP/JPY",
+        "AUD/JPY",
+        "NZD/JPY",
+        "CAD/JPY",
+        "CHF/JPY"
+      ],
+      "sent_at": "2026-10-30T01:55:20Z"
+    },
+    {
+      "id": "b25b3c3647645b7928d00cc2",
+      "title": "Monetary Policy Statement",
+      "currency": "JPY",
+      "impact": "High",
+      "epoch": 1793327400.0,
+      "at": "2026-10-30T02:30:00Z",
+      "time_myt": "30 Oct 2026, 10:30 AM MYT",
+      "forecast": "",
+      "previous": "",
+      "pairs": [
+        "USD/JPY",
+        "EUR/JPY",
+        "GBP/JPY",
+        "AUD/JPY",
+        "NZD/JPY",
+        "CAD/JPY",
+        "CHF/JPY"
+      ],
+      "sent_at": "2026-10-30T01:55:21Z"
+    },
+    {
+      "id": "645ab77263f107a9f4d86182",
+      "title": "BOJ Outlook Report",
+      "currency": "JPY",
+      "impact": "High",
+      "epoch": 1793327460.0,
+      "at": "2026-10-30T02:31:00Z",
+      "time_myt": "30 Oct 2026, 10:31 AM MYT",
+      "forecast": "",
+      "previous": "",
+      "pairs": [
+        "USD/JPY",
+        "EUR/JPY",
+        "GBP/JPY",
+        "AUD/JPY",
+        "NZD/JPY",
+        "CAD/JPY",
+        "CHF/JPY"
+      ],
+      "sent_at": "2026-10-30T01:55:21Z"
     }
   ]
 }
