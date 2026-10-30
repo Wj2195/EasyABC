@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#111918">
-<title>A NEW LIFE — First-Person Graphics Prototype</title>
+<title>A NEW LIFE — Maya Visual Novel v0.7</title>
 <meta name="description" content="A New Life: interactive 3D first-person life simulation and visual novel graphics prototype.">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
@@ -75,6 +75,17 @@
 #choices button:hover,#choices button:focus-visible{background:#ffe0ec!important;color:#381727!important}
 #novelDialogueShell{background:linear-gradient(110deg,#241c29f2,#15151de9);border-color:#efb9ce55}
 @media(max-width:780px){#novelCharacter{width:79%;left:-8%;top:10%}#mayaPortrait{height:min(67dvh,670px)!important}}
+
+/* Full-screen photographic visual novel portrait */
+#novelCharacter{left:2%;top:7%;width:46%;height:82%;bottom:auto;overflow:hidden;background:linear-gradient(150deg,#86918880,#0b1619);border-radius:14px;box-shadow:0 24px 70px #0008}
+#mayaPortrait{width:100%!important;height:100%!important;max-height:100%!important;object-fit:contain!important;object-position:bottom center!important;border-radius:14px!important;mask-image:none!important;-webkit-mask-image:none!important;filter:none!important;transition:opacity .14s ease}
+#novelChoices{right:3.5%;width:43%;top:22%;max-height:48vh}
+#novelDialogueShell{left:20%;right:3.5%;bottom:3%}
+#characterLabel{left:4%;z-index:5;text-shadow:0 2px 8px #000a}
+#novelHeader{z-index:12}
+@media(max-width:780px){#novelCharacter{left:-2%;top:7%;width:61%;height:66%}#novelChoices{left:51%;right:2%;width:auto;top:18%;max-height:43vh}#novelDialogueShell{left:3%;right:3%;bottom:2%}}
+@media(max-height:520px) and (orientation:landscape){#novelCharacter{left:1%;top:8%;width:43%;height:70%}#novelChoices{left:50%;right:3%;top:14%;width:auto;max-height:50%}}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.171.0/examples/jsm/"}}</script>
 </head>
@@ -101,6 +112,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { MAYA_SCENES } from './maya_story.js?v=7';
 const $=id=>document.getElementById(id);
 const isMobile=matchMedia('(pointer:coarse)').matches;
 let running=false,dialog=false,quality='ultra',grain=true,locked=false,npc=null,mixer=null,hoverThing=null,gameMinutes=8*60+42,last=performance.now(),yaw=0,pitch=-.015;
@@ -198,80 +210,82 @@ const sheer=new THREE.MeshStandardMaterial({color:'#e8e7de',transparent:true,opa
 for(const x of [-6.45,6.45]){const o=box(.7,2.55,.06,x,1.7,-5.75,sheer,false);for(let i=0;i<5;i++)box(.018,2.48,.065,x-.30+i*.14,1.7,-5.7,mat('#f4eee0'),false)}
 // Photos on furniture.
 cyl(.17,.17,.018,-1.0,.38,-4.5,mat('#efebdf'));cyl(.13,.13,.15,-1,.47,-4.5,mat('#b6aa94'));
-// MAYA v0.6 — anime visual-novel character sprite, replacing 3D mannequin.
-// Maya is a 2D camera-facing cutout in the 3D world. The world and interactions remain real-time 3D.
-const npcGroup=new THREE.Group();
-npcGroup.position.set(.87,0,-1.65);scene.add(npcGroup);
-const npcBase=cyl(.36,.36,.012,.87,.014,-1.65,new THREE.MeshStandardMaterial({color:'#67645d',transparent:true,opacity:.17}),32);
+// User-provided Maya 2D world sprite; cinematic portraits are loaded separately.
+const npcGroup=new THREE.Group();npcGroup.position.set(.87,0,-1.65);scene.add(npcGroup);
+const npcBase=cyl(.34,.34,.012,.87,.014,-1.65,new THREE.MeshStandardMaterial({color:'#67645d',transparent:true,opacity:.13}),32);
 npcBase.receiveShadow=true;
-let mayaAnimeSprite=null,animeReady=false,animeHover=0;
-const mayaAssetURL='./maya_anime.b64?v=1';
-fetch(mayaAssetURL).then(r=>{if(!r.ok)throw Error('Anime sprite HTTP '+r.status);return r.text()}).then(b64=>{
- const image=new Image();
- image.onload=()=>{
-  // Same artwork appears in the 3D exploration mode and full-screen visual novel stage.
-  $('mayaPortrait').src=image.src;$('mayaPortrait').style.display='block';
-  const texture=new THREE.Texture(image);
-  texture.colorSpace=THREE.SRGBColorSpace;
-  texture.magFilter=THREE.LinearFilter;texture.minFilter=THREE.LinearMipmapLinearFilter;texture.generateMipmaps=true;texture.anisotropy=8;texture.needsUpdate=true;
-  const material=new THREE.SpriteMaterial({map:texture,transparent:true,alphaTest:.05,depthWrite:false,color:0xffffff});
-  mayaAnimeSprite=new THREE.Sprite(material);
-  mayaAnimeSprite.center.set(.5,.05);
-  mayaAnimeSprite.scale.set(1.56,1.73,1);
-  mayaAnimeSprite.position.set(0,.12,0);
-  npcGroup.add(mayaAnimeSprite);
-  animeReady=true;$('loading').style.display='none';
-  toast('2D anime Maya loaded — press E to talk');
- };
- image.onerror=()=>{console.warn('Anime Maya artwork decoding failed');$('loading').style.display='none';toast('Maya artwork could not be decoded')};
- image.src='data:image/png;base64,'+b64.trim();
-}).catch(err=>{console.warn('Anime Maya failed to load',err);$('loading').style.display='none';toast('Anime Maya unavailable — refresh to retry')});
-function animateMaya(dt,now){
- if(!mayaAnimeSprite)return;
- const t=now*.001;
- const dist=Math.hypot(camera.position.x-npcGroup.position.x,camera.position.z-npcGroup.position.z);
- mayaAnimeSprite.position.y=.12+Math.sin(t*1.3)*.012;
- mayaAnimeSprite.material.opacity=.99;
- const breath=1+Math.sin(t*1.4)*.003;
- mayaAnimeSprite.scale.set(1.56*breath,1.73*breath,1);
-}
-// A 2D visual-novel sprite has no skeletal mesh; player interaction is still spatial.
-blocker(.87,-1.65,1.22,.98);
+let mayaWorldSprite=null;
+fetch('./assets/maya-sprite.b64?v=7').then(r=>{if(!r.ok)throw Error('sprite '+r.status);return r.text()}).then(b64=>{
+ const img=new Image();img.onload=()=>{
+  const tex=new THREE.Texture(img);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=8;tex.needsUpdate=true;
+  mayaWorldSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,alphaTest:.06}));
+  mayaWorldSprite.center.set(.5,0);mayaWorldSprite.position.set(0,.04,0);mayaWorldSprite.scale.set(.75,1.70,1);
+  npcGroup.add(mayaWorldSprite);$('loading').style.display='none';toast('Maya is ready — press E to talk');
+ };img.onerror=()=>{$('loading').style.display='none'};img.src='data:image/webp;base64,'+b64.trim();
+}).catch(err=>{$('loading').style.display='none';console.warn(err)});
+function animateMaya(dt,time){if(!mayaWorldSprite)return;const w=1+Math.sin(time*.0014)*.004;mayaWorldSprite.scale.set(.75*w,1.70*w,1);mayaWorldSprite.position.y=.04+Math.sin(time*.0015)*.01}
+blocker(.87,-1.65,1.14,1.02);
 const interactables=[{name:'Maya',p:new THREE.Vector3(.87,1.3,-1.65),range:2.75,type:'npc'},{name:'Living room lamp',p:new THREE.Vector3(-5.9,1.4,-3.9),range:2.35,type:'lamp'},{name:'Living room television',p:new THREE.Vector3(5,1.5,-2.8),range:2.7,type:'tv'},{name:'Kitchen counter',p:new THREE.Vector3(3.55,1,2.4),range:2.5,type:'kitchen'}];
-const story={
- intro:{who:'MAYA · YOUR NEIGHBOR',line:"Oh, you're finally up! I'm Maya, from next door. What do you think of your new apartment?",choices:[['It looks beautiful. Is the city always this peaceful?','friendly'],['Honestly, I feel a little lost.','honest'],['I have to get going.','bye']]},
- friendly:{who:'MAYA',line:"Mornings are the best. Wait until you see Haven City after sunset. Maybe I could show you the café later?",choices:[['I would love that.','accept'],['Maybe another time.','later']]},
- honest:{who:'MAYA',line:"I felt the same way when I moved here. You don't have to figure everything out on your first day. Want some coffee?",choices:[['That would be nice.','accept'],['Thank you. I need a little time.','later']]},
- accept:{who:'MAYA',line:"It's a plan! Come find me after you've explored a little. I'll be right here. This is just the beginning of your story.",choices:[['Continue exploring','end']]},
- later:{who:'MAYA',line:"No worries. Take your time getting settled, okay? My door's always open.",choices:[['Continue exploring','end']]},
- bye:{who:'MAYA',line:"Oh! Of course. See you around, then.",choices:[['Continue exploring','end']]}
-};
-let returnFocus=null;
-function showDialogue(id){
- if(id==='end'){closeDialog();return}
- const data=story[id];if(!data)return;
- if(!dialog){returnFocus=document.activeElement;keys.clear();touchMove.x=touchMove.y=0;resetJoy();dialog=true;document.body.classList.add('dialogOn');document.exitPointerLock?.();}
+// Seven downloadable packs contain all 42 user-provided Maya photographs.
+const mayaPacks=new Map(),mayaPhotoCache=new Map();
+let mayaPhotoRequest=0,mayaGalleryImage=null;
+let mayaFriendship=Number(localStorage.getItem('anewlife.maya.friendship')||20);
+const mayaVisited=new Set(JSON.parse(localStorage.getItem('anewlife.maya.visited')||'[]'));
+function markMayaSeen(id){
+ mayaVisited.add(id);try{localStorage.setItem('anewlife.maya.visited',JSON.stringify([...mayaVisited]))}catch(e){}
+}
+async function fetchMayaImage(id){
+ id=String(id).padStart(2,'0');
+ if(mayaPhotoCache.has(id))return mayaPhotoCache.get(id);
+ const pack=Math.ceil(Number(id)/6);
+ if(!mayaPacks.has(pack))mayaPacks.set(pack,fetch('./assets/maya-pack-'+pack+'.json?v=7').then(r=>{if(!r.ok)throw Error('Photo pack '+pack+' HTTP '+r.status);return r.json()}).catch(e=>{mayaPacks.delete(pack);throw e}));
+ const images=await mayaPacks.get(pack);
+ if(!images[id])throw Error('No Maya image '+id);
+ const url='data:image/jpeg;base64,'+images[id];mayaPhotoCache.set(id,url);return url;
+}
+function setMayaImage(id){
+ const token=++mayaPhotoRequest,img=$('mayaPortrait');img.style.display='block';img.style.opacity='.35';img.alt='Maya photograph '+id+' of 42';
+ fetchMayaImage(id).then(url=>{if(token!==mayaPhotoRequest||!dialog)return;img.src=url;img.style.opacity='1'})
+ .catch(err=>{console.warn(err);if(token===mayaPhotoRequest&&dialog){img.style.opacity='1';$('line').textContent+=' — Picture could not load. Please refresh.'}});
+}
+function mayaStage(){
+ if(dialog)return;
+ returnFocus=document.activeElement;keys.clear();touchMove.x=touchMove.y=0;resetJoy();
+ dialog=true;document.body.classList.add('dialogOn');document.exitPointerLock?.();
  $('dialogue').style.display='block';$('dialogue').setAttribute('aria-hidden','false');
- $('speaker').textContent=data.who;
- $('line').textContent=data.line;
+}
+function mayaProgress(chapter){
+ document.querySelector('#novelHeader .novelChapter').textContent=chapter+' · '+mayaVisited.size+'/42 DISCOVERED';
+ $('novelTip').textContent='Friendship '+mayaFriendship+'/100 · Press 1–9 to choose · Esc to explore';
+}
+function mayaChoice(label,next,i,affinity=0){
+ const btn=document.createElement('button');btn.type='button';
+ const index=document.createElement('span');index.className='choiceIndex';index.textContent=String(i+1);
+ btn.append(index,document.createTextNode(label));
+ btn.onclick=()=>{
+  if(affinity){mayaFriendship=Math.min(100,Math.max(0,mayaFriendship+affinity));try{localStorage.setItem('anewlife.maya.friendship',String(mayaFriendship))}catch(e){}}
+  showDialogue(next);
+ };
+ $('choices').appendChild(btn);
+}
+function showMayaGallery(value){
+ const n=Math.max(1,Math.min(42,Number(value)||1));
+ mayaGalleryImage=String(n).padStart(2,'0');mayaStage();setMayaImage(mayaGalleryImage);
+ $('speaker').textContent='MAYA · ALBUM';$('line').textContent='Image '+mayaGalleryImage+' of 42 — one of your uploaded character photographs.';
  $('choices').replaceChildren();
- for(const [i,[label,next]] of data.choices.entries()){
-   const btn=document.createElement('button');btn.type='button';
-   const index=document.createElement('span');index.className='choiceIndex';index.textContent=String(i+1);
-   btn.append(index,document.createTextNode(label));
-   btn.onclick=()=>showDialogue(next);
-   $('choices').appendChild(btn);
- }
+ [['← Previous image','gallery:'+String(n===1?42:n-1).padStart(2,'0')],['Next image →','gallery:'+String(n===42?1:n+1).padStart(2,'0')],['Back to Maya','04'],['Return to exploring','end']].forEach(([t,d],i)=>mayaChoice(t,d,i));
+ mayaProgress('PHOTO ALBUM · '+mayaGalleryImage+' / 42');
 }
 function closeDialog(){
  dialog=false;document.body.classList.remove('dialogOn');$('dialogue').style.display='none';$('dialogue').setAttribute('aria-hidden','true');
  keys.clear();touchMove.x=touchMove.y=0;resetJoy();
  if(returnFocus?.focus)returnFocus.focus({preventScroll:true});
+ mayaPhotoRequest++;mayaGalleryImage=null;
  if(running&&!isMobile)renderer.domElement.requestPointerLock?.();
 }
 $('closeDialogue').onclick=closeDialog;
 let lampOn=true,tvOn=true;
-function activate(){if(dialog||!running||!hoverThing)return;const type=hoverThing.type;if(type==='npc')showDialogue('intro');else if(type==='lamp'){lampOn=!lampOn;toast('Floor lamp '+(lampOn?'on':'off'))}else if(type==='tv'){tvOn=!tvOn;screen.visible=tvOn;toast('Television '+(tvOn?'on':'off'))}else if(type==='kitchen'){toast('Kitchen interactions are coming in the next build')}}
+function activate(){if(dialog||!running||!hoverThing)return;const type=hoverThing.type;if(type==='npc')showDialogue('04');else if(type==='lamp'){lampOn=!lampOn;toast('Floor lamp '+(lampOn?'on':'off'))}else if(type==='tv'){tvOn=!tvOn;screen.visible=tvOn;toast('Television '+(tvOn?'on':'off'))}else if(type==='kitchen'){toast('Kitchen interactions are coming in the next build')}}
 function toast(text){$('toast').textContent=text;$('toast').style.opacity='1';clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').style.opacity='0',3000)}
 function isFree(x,z){if(x<-6.58||x>6.58||z<-5.40||z>5.57)return false;for(const c of colliders)if(x>c.minX-.30&&x<c.maxX+.30&&z>c.minZ-.30&&z<c.maxZ+.30)return false;return true}
 function start(){running=true;$('menu').classList.add('hidden');if(!isMobile)renderer.domElement.requestPointerLock?.();toast('Explore the apartment · Find Maya and press E')}
@@ -285,6 +299,8 @@ renderer.domElement.addEventListener('click',()=>{if(running&&!dialog&&!isMobile
 document.addEventListener('keydown',e=>{
  if(dialog){
    if(e.code==='Escape'){e.preventDefault();closeDialog();return}
+   if(mayaGalleryImage&&e.code==='ArrowLeft'){e.preventDefault();showMayaGallery(Number(mayaGalleryImage)===1?42:Number(mayaGalleryImage)-1);return}
+   if(mayaGalleryImage&&e.code==='ArrowRight'){e.preventDefault();showMayaGallery(Number(mayaGalleryImage)===42?1:Number(mayaGalleryImage)+1);return}
    const index=/^(?:Digit|Numpad)([1-9])$/.exec(e.code);
    if(index){const choice=$('choices').children[Number(index[1])-1];if(choice){e.preventDefault();choice.click();return}}
    if(e.code==='Enter'&&$('choices').children.length===1){e.preventDefault();$('choices').firstElementChild?.click()}
