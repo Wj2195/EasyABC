@@ -9,6 +9,62 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root{--white:#f6f3ec;--muted:#b9bfbd;--mint:#d5f1de;--pane:rgba(12,22,23,.67)}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:Manrope,system-ui,sans-serif;background:#101c1e;color:var(--white);touch-action:none}button{font:inherit;color:inherit;cursor:pointer}#world{position:fixed;inset:0}canvas{display:block;width:100%;height:100%}#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 44%,transparent 41%,rgba(7,15,16,.29) 100%)}#film{position:fixed;inset:0;pointer-events:none;opacity:.13;background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0px,rgba(0,0,0,.025) 1px,transparent 2px,transparent 4px)}#topbar{position:fixed;top:0;left:0;right:0;padding:25px 32px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;text-shadow:0 2px 14px #0008}#brand{font-size:12px;letter-spacing:.32em;font-weight:800}#brand em{color:#b0e5c2;font-style:normal}#location{margin-top:9px;color:#f3faf5c9;font-size:11px;letter-spacing:.08em}#rightHud{text-align:right;font-size:12px;line-height:1.9}#rightHud b{display:block;font-size:17px;letter-spacing:.02em}#rightHud span{font-size:11px;color:#d3e3da}#crosshair{position:fixed;top:50%;left:50%;width:5px;height:5px;border:1px solid #fff9;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 5px #3338;pointer-events:none}#hint{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);min-width:170px;text-align:center;padding:11px 17px;background:rgba(14,29,28,.77);border:1px solid #ffffff29;border-radius:7px;font-size:13px;display:none;backdrop-filter:blur(15px)}#hint strong{border:1px solid #ffffff66;border-radius:4px;padding:3px 8px;margin-right:10px}#bottom{position:fixed;bottom:23px;left:28px;right:28px;display:flex;justify-content:space-between;align-items:end;pointer-events:none;gap:10px}#bottom .note{font-size:11px;letter-spacing:.04em;color:#dfefe1d4;text-shadow:0 2px 8px #000a}#bottom .controls{font-size:11px;letter-spacing:.02em;color:#fffc;text-align:right}#bottom kbd{background:#ffffff28;border:1px solid #ffffff30;padding:4px 6px;border-radius:4px;font-family:inherit}#menu{position:fixed;inset:0;display:flex;align-items:center;padding:7vw;background:linear-gradient(90deg,rgba(7,14,16,.88),rgba(7,14,16,.30) 75%),linear-gradient(0deg,#101717a8,transparent 40%);backdrop-filter:blur(2px)}#menu.hidden{display:none}#panel{max-width:600px}#eyebrow{display:inline-block;color:#b1e4c2;letter-spacing:.25em;font-weight:800;font-size:11px;margin-bottom:19px}h1{font-family:Manrope,system-ui,sans-serif;margin:0;font-size:clamp(52px,8vw,108px);font-weight:800;line-height:.94;letter-spacing:-.075em}h1 i{font-style:normal;color:#bfdcc8}#subtitle{font-size:clamp(14px,1.4vw,17px);color:#e3e8e1d9;max-width:440px;line-height:1.9;margin:30px 0 26px}#start{background:#daf2df;border:0;border-radius:5px;padding:17px 27px;color:#10231d;font-size:12px;font-weight:800;letter-spacing:.12em}#start:hover{background:white;transform:translateY(-1px)}.small{font-size:11px;color:#d7e5d3bd;line-height:1.7;margin-top:18px;max-width:450px}#dialogue{position:fixed;left:50%;bottom:7%;width:min(830px,92vw);transform:translateX(-50%);display:none;background:rgba(15,22,23,.92);border:1px solid #ffffff27;box-shadow:0 30px 90px #0009;border-radius:12px;padding:26px 30px 23px;backdrop-filter:blur(28px)}#mayaPortrait{position:absolute;left:20px;bottom:0;width:168px;height:218px;object-fit:cover;object-position:top;border-radius:8px 8px 0 0;mask-image:linear-gradient(to bottom,black 0%,black 80%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,black 0%,black 80%,transparent 100%)}#dialogue{padding-left:213px;min-height:256px}#dialogue .tag{font-size:10px;letter-spacing:.23em;font-weight:700;color:#a6eac2}#speaker{font-size:21px;letter-spacing:-.04em;font-weight:800;margin:9px 0}#line{font-size:15px;line-height:1.8;color:#ecf0eb;min-height:48px}#choices{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}#choices button{background:#ffffff10;border:1px solid #ffffff36;border-radius:6px;text-align:left;font-size:12px;padding:12px 14px;transition:.15s}#choices button:hover{background:#d1f1dd;color:#152b20}#closeDialogue{position:absolute;right:21px;top:18px;border:0;background:transparent;font-size:20px;opacity:.8}#toast{position:fixed;top:105px;left:50%;transform:translateX(-50%);background:#18352bdc;border:1px solid #c5edca43;padding:10px 18px;border-radius:5px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center}#settings{position:fixed;right:26px;top:108px;border:1px solid #fff4;background:#101d1db8;color:white;padding:9px 13px;border-radius:6px;font-size:11px}#settingsPanel{position:fixed;right:26px;top:148px;padding:15px;background:#152020eb;border:1px solid #ffffff25;border-radius:9px;display:none;min-width:210px}#settingsPanel button{display:block;width:100%;text-align:left;background:transparent;border:1px solid #ffffff23;border-radius:6px;margin:7px 0;padding:9px;font-size:12px}#settingsPanel button:hover{background:#ffffff1c}#loading{position:fixed;left:50%;bottom:35%;transform:translateX(-50%);font-size:11px;letter-spacing:.16em;color:#def7e4d1;pointer-events:none;display:none}#joystick{display:none;position:fixed;bottom:80px;left:28px;width:112px;height:112px;border-radius:50%;background:#ffffff14;border:1px solid #ffffff5c;touch-action:none}#joystickKnob{position:absolute;top:37px;left:37px;width:38px;height:38px;border-radius:50%;background:#daefdd9c}#mobileButtons{display:none;position:fixed;bottom:89px;right:28px;gap:9px}#mobileButtons button{border:1px solid #fff6;background:#192e2bb8;border-radius:50%;width:64px;height:64px;font-weight:800;font-size:12px}#error{position:fixed;inset:0;background:#15211e;color:#f3f5f2;z-index:20;padding:15vw 8vw;font-size:16px;display:none}#error h2{font-size:30px}#previewBadge{font-size:10px;letter-spacing:.2em;margin-top:26px;color:#bde6c7}.dialogOn #hint,.dialogOn #crosshair{display:none!important}@media(max-width:730px){#topbar{padding:17px}#bottom{left:18px;right:18px;bottom:16px}#bottom .controls{display:none}#menu{padding:29px;background:linear-gradient(90deg,#071112cf,#0711129c)}#subtitle{font-size:14px}#dialogue{bottom:22px;padding:18px 16px 18px 115px;min-height:200px}#mayaPortrait{left:7px;width:96px;height:174px}#line{font-size:13px}#settings{top:80px;right:15px}#settingsPanel{top:120px;right:15px}#hint{bottom:215px}#joystick,#mobileButtons{display:flex}#joystick{display:block}#rightHud b{font-size:14px}#bottom .note{max-width:200px;font-size:10px}}
+
+/* VERSION 0.3 — FULL-SCREEN REN'PY-STYLE CONVERSATION STAGE */
+#dialogue{position:fixed!important;inset:0!important;width:100vw!important;max-width:none!important;height:100vh;height:100dvh;min-height:0!important;padding:0!important;left:0!important;top:0!important;bottom:0!important;transform:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:hidden!important;z-index:100;background:linear-gradient(90deg,#171d1ce8 0%,#172420aa 55%,#10191be8 100%);backdrop-filter:none}
+#dialogue[aria-hidden="true"]{display:none!important}
+#novelBackground{position:absolute;inset:0;background:linear-gradient(90deg,rgba(12,20,19,.28),rgba(5,13,16,.84)),radial-gradient(ellipse at 26% 40%,rgba(193,177,143,.23),transparent 55%);backdrop-filter:blur(13px) brightness(.68);pointer-events:none}
+#dialogue:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 43%,transparent 25%,#06111075 100%),linear-gradient(0deg,#02090dbd,transparent 38%);z-index:0}
+#novelHeader{position:absolute;top:4.5vh;left:4vw;right:5vw;display:flex;justify-content:space-between;align-items:center;z-index:2;pointer-events:none;letter-spacing:.23em;font-size:11px;font-weight:800;color:#f0fff2cf}
+#novelHeader .novelChapter{font-size:10px;letter-spacing:.16em;color:#c2d7ccbd;font-weight:500}
+#novelCharacter{position:absolute;left:1%;top:8%;bottom:0;width:49%;display:flex;align-items:end;justify-content:center;overflow:visible;z-index:1;pointer-events:none}
+#novelCharacter:before{content:"";position:absolute;inset:11% 2% 3% 4%;background:radial-gradient(ellipse at 46% 55%,#adb0a181 0%,#4d605c33 55%,transparent 75%);filter:blur(26px)}
+#mayaPortrait{position:relative!important;left:auto!important;bottom:auto!important;max-width:100%;width:auto!important;height:min(88dvh,1050px)!important;max-height:100%;object-fit:contain!important;object-position:bottom center!important;border-radius:0!important;mask-image:linear-gradient(to right,transparent 0%,black 12%,black 86%,transparent 100%),linear-gradient(to bottom,black 0%,black 74%,transparent 99%)!important;mask-composite:intersect;-webkit-mask-image:linear-gradient(to right,transparent 0%,black 12%,black 86%,transparent 100%),linear-gradient(to bottom,black 0%,black 74%,transparent 99%)!important;-webkit-mask-composite:source-in;filter:drop-shadow(0 12px 40px #0009)}
+#characterLabel{position:absolute;left:8%;top:20%;color:#dbf2df6b;font-size:11px;letter-spacing:.35em;z-index:3;writing-mode:vertical-rl;transform:rotate(180deg)}
+#novelDialogueShell{position:absolute;z-index:5;left:24%;right:4.5%;bottom:3.7%;min-height:163px;background:linear-gradient(110deg,#10191aee,#0d141ae8);border:1px solid #eaf4de32;box-shadow:0 13px 50px #0007;border-radius:12px;padding:19px 30px 16px;backdrop-filter:blur(25px)}
+#dialogue .tag{font-size:10px;letter-spacing:.18em;color:#b4dbbe}
+#speaker{display:inline-block;font-size:21px!important;font-weight:800;letter-spacing:-.035em;margin:8px 0 6px!important;color:#f2fff3}
+#line{font-size:clamp(14px,1.2vw,18px)!important;color:#f4f4eefa;line-height:1.72;min-height:54px;max-width:90ch}
+#novelTip{margin-top:10px;color:#abc7b5a1;font-size:10px;letter-spacing:.08em}
+#novelChoices{position:absolute;right:6%;top:26%;width:min(430px,40vw);max-height:48vh;overflow-y:auto;z-index:8;display:flex;flex-direction:column;justify-content:center;pointer-events:auto}
+#novelChoices .choiceLabel{color:#dbf0dfab;font-size:11px;letter-spacing:.18em;margin-bottom:13px;font-weight:800}
+#choices{display:flex;flex-direction:column;gap:12px!important;margin:0!important;align-items:stretch}
+#choices button{width:100%;border:1px solid #e9fff54d;background:#15201fdc;color:#e7f1e9;box-shadow:0 7px 24px #0006;padding:15px 17px!important;border-radius:8px;text-align:left;font-size:clamp(12px,1vw,15px)!important;line-height:1.45;backdrop-filter:blur(14px);transition:background .17s,transform .17s,border-color .17s}
+#choices button:hover,#choices button:focus-visible{background:#d5eedf!important;color:#0f281e!important;border-color:#fff!important;transform:translateX(-5px);outline:none}
+#choices button .choiceIndex{display:inline-block;color:#a9d5b6;border:1px solid #aec6ae55;border-radius:4px;padding:2px 6px;margin-right:13px;font-size:10px}
+#choices button:hover .choiceIndex{color:#346c4b;border-color:#548e6e}
+#closeDialogue{position:absolute!important;z-index:11!important;right:3.5%!important;top:4%!important;width:38px;height:38px;border:1px solid #fff5!important;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#0d1719ad!important;font-size:24px!important;transition:background .15s}
+#closeDialogue:hover{background:#ffffff30!important}
+.dialogOn #topbar,.dialogOn #bottom,.dialogOn #settings,.dialogOn #settingsPanel,.dialogOn #toast,.dialogOn #joystick,.dialogOn #mobileButtons,.dialogOn #hint,.dialogOn #crosshair{opacity:0!important;pointer-events:none!important}
+@media(max-width:780px){
+#novelHeader{top:15px;left:15px;font-size:9px;right:56px}
+#novelHeader .novelChapter{font-size:9px;letter-spacing:.05em}
+#novelCharacter{left:-7%;top:6%;width:84%;height:74%;bottom:auto}
+#mayaPortrait{height:min(69dvh,650px)!important;max-width:100%}
+#characterLabel{left:12%;top:20%;font-size:9px}
+#novelChoices{right:2%;left:47%;top:20%;width:auto;max-height:36dvh}
+#novelChoices .choiceLabel{font-size:9px;margin-bottom:8px}
+#choices{gap:7px!important}
+#choices button{padding:10px!important;font-size:11px!important}
+#choices button .choiceIndex{margin-right:5px}
+#novelDialogueShell{left:3%;right:3%;bottom:2%;min-height:145px;padding:14px 17px 12px;border-radius:9px}
+#speaker{font-size:18px!important;margin:5px 0!important}
+#line{font-size:13px!important;min-height:40px;line-height:1.52}
+#novelTip{font-size:9px;margin-top:7px}
+#closeDialogue{top:12px!important;right:12px!important}
+}
+@media(max-height:520px) and (orientation:landscape){
+#novelCharacter{top:1%;height:100%;left:2%;width:42%}
+#mayaPortrait{height:100%!important}
+#novelChoices{top:14%;max-height:45%;right:4%;width:42%}
+#choices button{padding:9px!important}
+#novelDialogueShell{bottom:2%;min-height:110px;padding:10px 18px;left:27%}
+#speaker{font-size:15px!important;margin:4px 0!important}
+#line{min-height:24px;font-size:12px!important}
+#novelTip{display:none}
+}
+@media(prefers-reduced-motion:reduce){#choices button{transition:none}}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.171.0/examples/jsm/"}}</script>
 </head>
@@ -21,7 +77,14 @@
 <div id="bottom"><div class="note">PRE-ALPHA GRAPHICS DEMO<br>Real-time apartment · Photographic Maya preview</div><div class="controls"><kbd>W A S D</kbd> MOVE &nbsp; <kbd>MOUSE</kbd> LOOK &nbsp; <kbd>E</kbd> TALK / INTERACT &nbsp; <kbd>ESC</kbd> CURSOR</div></div>
 <div id="loading">LOADING CHARACTER & TEXTURES…</div>
 <div id="menu"><div id="panel"><div id="eyebrow">FIRST-PERSON LIFE SIMULATION · V0.1</div><h1>YOUR LIFE.<br><i>YOUR STORY.</i></h1><p id="subtitle">A quiet morning. A new apartment. A city full of lives to discover. Step inside the first playable graphics test for A New Life.</p><button id="start">ENTER APARTMENT &nbsp; →</button><div class="small">Explore with WASD + mouse. Approach Maya and press E to try the visual novel. This is an early playable graphics test — not yet a complete photorealistic game.</div><div id="previewBadge">REAL-TIME WORLD / MAYA PHOTO STAND-IN</div></div></div>
-<div id="dialogue"><img id="mayaPortrait" alt="Maya wearing an olive-green blouse and black trousers" style="display:none"><button id="closeDialogue" aria-label="Close dialogue">×</button><div class="tag">CHARACTER INTERACTION</div><div id="speaker">MAYA</div><div id="line"></div><div id="choices"></div></div>
+<div id="dialogue" role="dialog" aria-label="Visual novel conversation" aria-modal="true" aria-hidden="true">
+  <div id="novelBackground"></div>
+  <div id="novelHeader"><div>HAVEN CITY &nbsp; / &nbsp; A NEW LIFE</div><div class="novelChapter">CHARACTER STORY · FIRST ENCOUNTER</div></div>
+  <div id="novelCharacter"><div id="characterLabel">MAYA · NEIGHBOR</div><img id="mayaPortrait" alt="Maya in an olive-green blouse, black trousers, with black ponytail" style="display:none"></div>
+  <div id="novelChoices"><div class="choiceLabel">CHOOSE YOUR RESPONSE</div><div id="choices"></div></div>
+  <div id="novelDialogueShell"><div class="tag">CONVERSATION</div><div id="speaker">MAYA</div><div id="line" aria-live="polite"></div><div id="novelTip">1–3 Choose response &nbsp; · &nbsp; Esc Return to exploring</div></div>
+  <button id="closeDialogue" aria-label="End conversation" title="Return to gameplay">×</button>
+</div>
 <div id="joystick"><div id="joystickKnob"></div></div><div id="mobileButtons"><button id="mobileTalk">E<br>Talk</button><button id="mobileRun">Run</button></div>
 <div id="error"><h2>Unable to start 3D graphics</h2><p id="errorText">This preview requires a WebGL-capable browser and an internet connection to load the 3D engine.</p></div>
 <script type="module">
@@ -173,8 +236,29 @@ const story={
  later:{who:'MAYA',line:"No worries. Take your time getting settled, okay? My door's always open.",choices:[['Continue exploring','end']]},
  bye:{who:'MAYA',line:"Oh! Of course. See you around, then.",choices:[['Continue exploring','end']]}
 };
-function showDialogue(id){if(id==='end'){closeDialog();return}const data=story[id];if(!data)return;dialog=true;document.body.classList.add('dialogOn');document.exitPointerLock?.();$('dialogue').style.display='block';$('speaker').textContent=data.who;$('line').textContent=data.line;$('choices').replaceChildren();for(const [label,next] of data.choices){const btn=document.createElement('button');btn.textContent=label;btn.onclick=()=>showDialogue(next);$('choices').appendChild(btn)}}
-function closeDialog(){dialog=false;document.body.classList.remove('dialogOn');$('dialogue').style.display='none';if(running&&!isMobile)renderer.domElement.requestPointerLock?.()}
+let returnFocus=null;
+function showDialogue(id){
+ if(id==='end'){closeDialog();return}
+ const data=story[id];if(!data)return;
+ if(!dialog){returnFocus=document.activeElement;keys.clear();touchMove.x=touchMove.y=0;resetJoy();dialog=true;document.body.classList.add('dialogOn');document.exitPointerLock?.();}
+ $('dialogue').style.display='block';$('dialogue').setAttribute('aria-hidden','false');
+ $('speaker').textContent=data.who;
+ $('line').textContent=data.line;
+ $('choices').replaceChildren();
+ for(const [i,[label,next]] of data.choices.entries()){
+   const btn=document.createElement('button');btn.type='button';
+   const index=document.createElement('span');index.className='choiceIndex';index.textContent=String(i+1);
+   btn.append(index,document.createTextNode(label));
+   btn.onclick=()=>showDialogue(next);
+   $('choices').appendChild(btn);
+ }
+}
+function closeDialog(){
+ dialog=false;document.body.classList.remove('dialogOn');$('dialogue').style.display='none';$('dialogue').setAttribute('aria-hidden','true');
+ keys.clear();touchMove.x=touchMove.y=0;resetJoy();
+ if(returnFocus?.focus)returnFocus.focus({preventScroll:true});
+ if(running&&!isMobile)renderer.domElement.requestPointerLock?.();
+}
 $('closeDialogue').onclick=closeDialog;
 let lampOn=true,tvOn=true;
 function activate(){if(dialog||!running||!hoverThing)return;const type=hoverThing.type;if(type==='npc')showDialogue('intro');else if(type==='lamp'){lampOn=!lampOn;toast('Floor lamp '+(lampOn?'on':'off'))}else if(type==='tv'){tvOn=!tvOn;screen.visible=tvOn;toast('Television '+(tvOn?'on':'off'))}else if(type==='kitchen'){toast('Kitchen interactions are coming in the next build')}}
@@ -188,7 +272,17 @@ $('filter').onclick=()=>{grain=!grain;$('film').style.display=grain?'block':'non
 $('photo').onclick=()=>{try{renderer.render(scene,camera);const a=document.createElement('a');a.download='a-new-life-graphics.png';a.href=renderer.domElement.toDataURL('image/png');a.click();toast('Screenshot saved')}catch(e){toast('Screenshot unavailable in this browser')}};
 document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===renderer.domElement});
 renderer.domElement.addEventListener('click',()=>{if(running&&!dialog&&!isMobile&&!locked)renderer.domElement.requestPointerLock?.()});
-document.addEventListener('keydown',e=>{keys.add(e.code);if(e.code==='KeyE'&&!e.repeat)activate();if(e.code==='Escape'&&dialog)closeDialog();if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault()});
+document.addEventListener('keydown',e=>{
+ if(dialog){
+   if(e.code==='Escape'){e.preventDefault();closeDialog();return}
+   const index=/^(?:Digit|Numpad)([1-9])$/.exec(e.code);
+   if(index){const choice=$('choices').children[Number(index[1])-1];if(choice){e.preventDefault();choice.click();return}}
+   if(e.code==='Enter'&&$('choices').children.length===1){e.preventDefault();$('choices').firstElementChild?.click()}
+   return;
+ }
+ keys.add(e.code);if(e.code==='KeyE'&&!e.repeat)activate();
+ if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
+});
 document.addEventListener('keyup',e=>keys.delete(e.code));
 document.addEventListener('mousemove',e=>{if(locked&&running&&!dialog){yaw-=e.movementX*.0022;pitch=Math.max(-1.15,Math.min(1.1,pitch-e.movementY*.0019))}});
 const joy=$('joystick'),knob=$('joystickKnob');
