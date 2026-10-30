@@ -65,6 +65,16 @@
 }
 @media(prefers-reduced-motion:reduce){#choices button{transition:none}}
 
+
+/* Anime character mode: clean full-height sprite and rose accents */
+#novelCharacter{left:0%;width:49%;top:8%}
+#mayaPortrait{filter:drop-shadow(0 12px 36px #080c1499)!important}
+#characterLabel{color:#efb9c7a6}
+#dialogue .tag,#novelChoices .choiceLabel{color:#efb5c9}
+#speaker{color:#ffd6e3}
+#choices button:hover,#choices button:focus-visible{background:#ffe0ec!important;color:#381727!important}
+#novelDialogueShell{background:linear-gradient(110deg,#241c29f2,#15151de9);border-color:#efb9ce55}
+@media(max-width:780px){#novelCharacter{width:79%;left:-8%;top:10%}#mayaPortrait{height:min(67dvh,670px)!important}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.171.0/examples/jsm/"}}</script>
 </head>
@@ -74,9 +84,9 @@
 <button id="settings">⚙ GRAPHICS</button>
 <div id="settingsPanel"><div style="font-size:11px;letter-spacing:.15em;color:#acd5bc">RENDER SETTINGS</div><button data-quality="ultra">Ultra — high detail</button><button data-quality="medium">Balanced — smoother</button><button data-quality="low">Low — better performance</button><button id="filter">Camera grain: ON</button><button id="photo">Save screenshot</button></div>
 <div id="crosshair"></div><div id="hint"></div><div id="toast"></div>
-<div id="bottom"><div class="note">PRE-ALPHA GRAPHICS DEMO<br>Real-time apartment · Fully 3D Maya prototype</div><div class="controls"><kbd>W A S D</kbd> MOVE &nbsp; <kbd>MOUSE</kbd> LOOK &nbsp; <kbd>E</kbd> TALK / INTERACT &nbsp; <kbd>ESC</kbd> CURSOR</div></div>
+<div id="bottom"><div class="note">PRE-ALPHA GRAPHICS DEMO<br>Real-time 3D apartment · 2D anime Maya</div><div class="controls"><kbd>W A S D</kbd> MOVE &nbsp; <kbd>MOUSE</kbd> LOOK &nbsp; <kbd>E</kbd> TALK / INTERACT &nbsp; <kbd>ESC</kbd> CURSOR</div></div>
 <div id="loading">LOADING CHARACTER & TEXTURES…</div>
-<div id="menu"><div id="panel"><div id="eyebrow">FIRST-PERSON LIFE SIMULATION · V0.1</div><h1>YOUR LIFE.<br><i>YOUR STORY.</i></h1><p id="subtitle">A quiet morning. A new apartment. A city full of lives to discover. Step inside the first playable graphics test for A New Life.</p><button id="start">ENTER APARTMENT &nbsp; →</button><div class="small">Explore with WASD + mouse. Approach Maya and press E to try the visual novel. This is an early playable graphics test — not yet a complete photorealistic game.</div><div id="previewBadge">REAL-TIME WORLD / FULLY 3D NPC MODEL</div></div></div>
+<div id="menu"><div id="panel"><div id="eyebrow">FIRST-PERSON LIFE SIMULATION · V0.1</div><h1>YOUR LIFE.<br><i>YOUR STORY.</i></h1><p id="subtitle">A quiet morning. A new apartment. Meet Maya in anime visual-novel style. Step inside the first playable graphics test for A New Life.</p><button id="start">ENTER APARTMENT &nbsp; →</button><div class="small">Explore with WASD + mouse. Approach Maya and press E to try the visual novel. This preview combines 3D exploration with a 2D anime-style NPC and full-screen conversations.</div><div id="previewBadge">3D EXPLORATION / 2D ANIME CHARACTER</div></div></div>
 <div id="dialogue" role="dialog" aria-label="Visual novel conversation" aria-modal="true" aria-hidden="true">
   <div id="novelBackground"></div>
   <div id="novelHeader"><div>HAVEN CITY &nbsp; / &nbsp; A NEW LIFE</div><div class="novelChapter">CHARACTER STORY · FIRST ENCOUNTER</div></div>
@@ -188,160 +198,45 @@ const sheer=new THREE.MeshStandardMaterial({color:'#e8e7de',transparent:true,opa
 for(const x of [-6.45,6.45]){const o=box(.7,2.55,.06,x,1.7,-5.75,sheer,false);for(let i=0;i<5;i++)box(.018,2.48,.065,x-.30+i*.14,1.7,-5.7,mat('#f4eee0'),false)}
 // Photos on furniture.
 cyl(.17,.17,.018,-1.0,.38,-4.5,mat('#efebdf'));cyl(.13,.13,.15,-1,.47,-4.5,mat('#b6aa94'));
-// MAYA v0.4 — actual 3D geometry, no planes / photo cutouts in the world.
-// Local procedural prototype based on the supplied reference: ponytail, olive blouse, dark trousers.
+// MAYA v0.6 — anime visual-novel character sprite, replacing 3D mannequin.
+// Maya is a 2D camera-facing cutout in the 3D world. The world and interactions remain real-time 3D.
 const npcGroup=new THREE.Group();
-npcGroup.position.set(.87,0,-1.65);
-scene.add(npcGroup);
-const npcBase=cyl(.45,.45,.014,.87,.012,-1.65,new THREE.MeshStandardMaterial({color:'#5c6059',transparent:true,opacity:.18}),32);
+npcGroup.position.set(.87,0,-1.65);scene.add(npcGroup);
+const npcBase=cyl(.36,.36,.012,.87,.014,-1.65,new THREE.MeshStandardMaterial({color:'#67645d',transparent:true,opacity:.17}),32);
 npcBase.receiveShadow=true;
-const mayaRig={};
-const mayaSkin=new THREE.MeshStandardMaterial({color:'#caa48b',roughness:.82,metalness:0});
-const mayaSkinLit=new THREE.MeshStandardMaterial({color:'#d8b49c',roughness:.79});
-const mayaSkinShade=new THREE.MeshStandardMaterial({color:'#b78b75',roughness:.8});
-const mayaBlouse=new THREE.MeshStandardMaterial({color:'#737f69',roughness:.94,side:THREE.DoubleSide});
-const mayaBlouseDark=new THREE.MeshStandardMaterial({color:'#56644e',roughness:.95,side:THREE.DoubleSide});
-const mayaBlouseLight=new THREE.MeshStandardMaterial({color:'#89937d',roughness:.9});
-const mayaPants=new THREE.MeshStandardMaterial({color:'#212225',roughness:.91});
-const mayaSeam=new THREE.MeshStandardMaterial({color:'#35383a',roughness:.95});
-const mayaHair=new THREE.MeshStandardMaterial({color:'#171313',roughness:.72});
-const mayaHairHighlight=new THREE.MeshStandardMaterial({color:'#332821',roughness:.66});
-const mayaEyesWhite=new THREE.MeshStandardMaterial({color:'#e9dfd5',roughness:.44});
-const mayaIris=new THREE.MeshStandardMaterial({color:'#30221a',roughness:.38});
-const mayaLip=new THREE.MeshStandardMaterial({color:'#985f5c',roughness:.65});
-const mayaShoe=new THREE.MeshStandardMaterial({color:'#19191c',roughness:.49,metalness:.03});
-const mayaMetal=new THREE.MeshStandardMaterial({color:'#777069',metalness:.57,roughness:.5});
-const mayaAvatar=new THREE.Group();npcGroup.add(mayaAvatar);mayaRig.avatar=mayaAvatar;
-function mayaPart(parent,geometry,material,x=0,y=0,z=0){
- const o=new THREE.Mesh(geometry,material);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;
-}
-function mayaEllipsoid(parent,x,y,z,sx,sy,sz,material){
- const o=mayaPart(parent,new THREE.SphereGeometry(1,28,20),material,x,y,z);
- o.scale.set(sx,sy,sz);return o;
-}
-function mayaRod(parent,start,end,r1,r2,material){
- const a=new THREE.Vector3(...start),b=new THREE.Vector3(...end),v=b.clone().sub(a);
- const o=mayaPart(parent,new THREE.CylinderGeometry(r1,r2,v.length(),16,1),material);
- o.position.copy(a.add(b).multiplyScalar(.5));
- o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize());return o;
-}
-function mayaStrand(parent,points,r,material){
- const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));
- return mayaPart(parent,new THREE.TubeGeometry(curve,22,r,6,false),material);
-}
-// Lower body: anatomical hips, trousers with separate articulated leg groups.
-mayaEllipsoid(mayaAvatar,0,.88,-.009,.206,.152,.137,mayaPants);
-for(let side of [-1,1]){
- const leg=new THREE.Group();leg.position.set(side*.112,.857,0);mayaAvatar.add(leg);
- mayaRod(leg,[0,-.04,0],[side*.013,-.40,0],.108,.092,mayaPants);
- mayaEllipsoid(leg,side*.013,-.40,0,.090,.090,.093,mayaPants);
- mayaRod(leg,[side*.013,-.40,0],[side*.018,-.735,-.012],.091,.078,mayaPants);
- mayaPart(leg,new THREE.CylinderGeometry(.078,.067,.077,20),mayaPants,side*.018,-.767,-.014);
- const shoe=mayaPart(leg,new RoundedBoxGeometry(.167,.115,.293,4,.043),mayaShoe,side*.022,-.787,.067);
- shoe.rotation.y=side*.02;
- mayaPart(leg,new THREE.BoxGeometry(.13,.008,.014),mayaMetal,side*.022,-.738,.162);
- mayaRig[side<0?'leftLeg':'rightLeg']=leg;
-}
-// Blouse is a continuous lathed surface, not a 2D billboard.
-const blouseProfile=[
- [0,.938],[.156,.94],[.174,.978],[.146,1.031],[.152,1.082],
- [.175,1.137],[.195,1.205],[.208,1.269],[.207,1.323],
- [.187,1.377],[.119,1.417],[0,1.420]
-].map(([r,y])=>new THREE.Vector2(r,y));
-const torso=mayaPart(mayaAvatar,new THREE.LatheGeometry(blouseProfile,44),mayaBlouse);
-torso.scale.z=.76;torso.scale.x=1.06;mayaRig.torso=torso;
-// Chest fabric folds: subtle and non-sexual.
-for(const side of [-1,1]){
- const crease=mayaStrand(mayaAvatar,[[side*.14,1.23,.139],[side*.13,1.16,.14],[side*.10,1.07,.116]],.0026,mayaBlouseDark);
- crease.castShadow=false;
-}
-mayaEllipsoid(mayaAvatar,0,1.415,.004,.073,.093,.067,mayaSkin);
-const vNeck=mayaPart(mayaAvatar,new THREE.BufferGeometry(),mayaSkinLit);
-const vPts=new Float32Array([-.085,1.421,.100,.085,1.421,.100,0,1.300,.154]);
-vNeck.geometry.setAttribute('position',new THREE.BufferAttribute(vPts,3));
-vNeck.geometry.computeVertexNormals();vNeck.material=mayaSkinLit.clone();vNeck.material.side=THREE.DoubleSide;
-for(const side of [-1,1]){
- const collar=mayaPart(mayaAvatar,new THREE.BufferGeometry(),mayaBlouseLight);
- const coords=new Float32Array([side*.085,1.423,.112,side*.148,1.373,.115,0,1.292,.164]);
- collar.geometry.setAttribute('position',new THREE.BufferAttribute(coords,3));
- collar.geometry.computeVertexNormals();collar.material=mayaBlouseLight.clone();collar.material.side=THREE.DoubleSide;
-}
-mayaStrand(mayaAvatar,[[0,1.290,.160],[0,1.18,.157],[0,1.085,.126],[0,.978,.107]],.0026,mayaBlouseDark);
-for(const y of [1.249,1.14,1.034])mayaPart(mayaAvatar,new THREE.SphereGeometry(.006,9,7),mayaBlouseLight,0,y,.145);
-for(const side of [-1,1]){
- const arm=new THREE.Group();arm.position.set(side*.205,1.357,0);mayaAvatar.add(arm);
- mayaEllipsoid(arm,side*.022,-.074,0,.091,.136,.096,mayaBlouse);
- mayaRod(arm,[side*.025,-.09,0],[side*.053,-.289,.004],.080,.069,mayaBlouse);
- mayaRod(arm,[side*.052,-.298,.004],[side*.071,-.568,.031],.060,.046,mayaSkinLit);
- mayaEllipsoid(arm,side*.071,-.552,.033,.047,.064,.049,mayaSkin);
- mayaEllipsoid(arm,side*.075,-.625,.047,.048,.074,.024,mayaSkinLit);
- for(let finger=0;finger<4;finger++){
-   const xx=side*.075+(finger-1.5)*.020;
-   mayaRod(arm,[xx,-.657,.050],[xx,-.730+(finger===0?.012:0),.061],.0095,.008,mayaSkin);
- }
- mayaRig[side<0?'leftArm':'rightArm']=arm;
-}
-// Face, scalp and black high ponytail. All elements have actual 3D volume.
-const neck=mayaPart(mayaAvatar,new THREE.CylinderGeometry(.058,.066,.128,22),mayaSkin,0,1.465,0);
-const headGroup=new THREE.Group();headGroup.position.set(0,1.585,.006);mayaAvatar.add(headGroup);mayaRig.head=headGroup;
-const face=mayaEllipsoid(headGroup,0,.023,.014,.118,.151,.111,mayaSkinLit);
-mayaEllipsoid(headGroup,0,.099,-.026,.123,.086,.111,mayaHair);
-mayaEllipsoid(headGroup,0,.133,-.064,.118,.050,.087,mayaHair);
-for(const side of [-1,1]){
- mayaEllipsoid(headGroup,side*.118,.001,0,.019,.036,.018,mayaSkin);
- mayaEllipsoid(headGroup,side*.052,.047,.111,.032,.018,.011,mayaEyesWhite);
- mayaEllipsoid(headGroup,side*.050,.046,.122,.013,.014,.006,mayaIris);
- mayaEllipsoid(headGroup,side*.050,.052,.128,.005,.005,.003,mayaHair);
- mayaStrand(headGroup,[[side*.023,.086,.113],[side*.044,.095,.117],[side*.078,.085,.104]],.006,mayaHair);
- mayaStrand(headGroup,[[side*.027,.059,.122],[side*.05,.061,.13],[side*.078,.057,.112]],.0028,mayaHair);
- mayaStrand(headGroup,[[side*.08,.130,.060],[side*.101,.103,.080],[side*.101,.050,.070]],.013,mayaHair);
-}
-mayaEllipsoid(headGroup,0,-.010,.129,.017,.036,.021,mayaSkin);
-mayaEllipsoid(headGroup,0,-.037,.139,.026,.011,.019,mayaSkinShade);
-mayaStrand(headGroup,[[-.037,-.068,.112],[0,-.073,.131],[.037,-.068,.112]],.006,mayaLip);
-mayaStrand(headGroup,[[-.029,-.083,.113],[0,-.086,.125],[.029,-.083,.113]],.003,mayaLip);
-// Loose dark hair at sides and a ponytail at rear, swaying during idle animation.
-for(const side of [-1,1]){
- mayaStrand(headGroup,[[side*.084,.140,-.027],[side*.11,.063,-.043],[side*.107,-.045,-.018],[side*.083,-.088,-.023]],.018,mayaHair);
-}
-const ponyPivot=new THREE.Group();ponyPivot.position.set(.031,.151,-.097);headGroup.add(ponyPivot);
-mayaEllipsoid(ponyPivot,0,0,-.002,.058,.055,.050,mayaHair);
-mayaStrand(ponyPivot,[[0,-.01,-.013],[.024,-.080,-.100],[.045,-.170,-.143],[.062,-.283,-.124]],.045,mayaHair);
-mayaStrand(ponyPivot,[[.012,-.10,-.09],[.046,-.20,-.14],[.063,-.31,-.104]],.020,mayaHairHighlight);
-mayaRig.ponytail=ponyPivot;
-// Tailored outfit seam and shoes stay visible from all camera directions.
-const belt=mayaPart(mayaAvatar,new THREE.TorusGeometry(.168,.014,8,30),mayaSeam,0,.941,0);belt.rotation.x=Math.PI/2;belt.scale.y=.8;
-const buckle=mayaPart(mayaAvatar,new THREE.BoxGeometry(.038,.025,.009),mayaMetal,0,.939,.155);
-// Subtle local fill so Maya can be seen against bright windows.
-const mayaFill=new THREE.PointLight(0xffe8d7,3.0,4,2);mayaFill.position.set(.8,2.5,.8);scene.add(mayaFill);
-// Keep the original uploaded Maya reference ONLY for the full-screen Ren'Py portrait.
-fetch('./maya_reference.b64?v=1').then(r=>{if(!r.ok)throw Error('Reference unavailable');return r.text()}).then(b64=>{
+let mayaAnimeSprite=null,animeReady=false,animeHover=0;
+const mayaAssetURL='./maya_anime.b64?v=1';
+fetch(mayaAssetURL).then(r=>{if(!r.ok)throw Error('Anime sprite HTTP '+r.status);return r.text()}).then(b64=>{
  const image=new Image();
- image.onload=()=>{$('mayaPortrait').src=image.src;$('mayaPortrait').style.display='block'};
- image.src='data:image/jpeg;base64,'+b64.trim();
-}).catch(e=>console.warn('Photo dialogue reference not available',e));
-$('loading').style.display='none';
-function animateMaya(dt,time){
- const distance=Math.hypot(camera.position.x-npcGroup.position.x,camera.position.z-npcGroup.position.z);
- const target=distance<4.5?Math.atan2(camera.position.x-npcGroup.position.x,camera.position.z-npcGroup.position.z):0;
- const change=Math.atan2(Math.sin(target-npcGroup.rotation.y),Math.cos(target-npcGroup.rotation.y));
- npcGroup.rotation.y+=change*Math.min(1,dt*2.2);
- const t=time*.001;
- mayaAvatar.position.y=Math.sin(t*1.6)*.006;
- torso.rotation.z=Math.sin(t*.87)*.006;
- mayaRig.head.rotation.z=Math.sin(t*.82)*.023;
- mayaRig.head.rotation.y=Math.sin(t*.57)*.035;
- mayaRig.ponytail.rotation.x=Math.sin(t*1.35)*.045;
- const talk=dialog?1:0;
- mayaRig.leftArm.rotation.x=-.04-talk*.14+Math.sin(t*1.3)*.012;
- mayaRig.rightArm.rotation.x=-.07-talk*.28+Math.sin(t*2)*(.016+talk*.05);
- mayaRig.leftArm.rotation.z=-.018+Math.sin(t*.74)*.012;
- mayaRig.rightArm.rotation.z=.018+Math.cos(t*.7)*.012;
- mayaRig.leftLeg.rotation.x=Math.sin(t*.6)*.006;
- mayaRig.rightLeg.rotation.x=-Math.sin(t*.6)*.006;
+ image.onload=()=>{
+  // Same artwork appears in the 3D exploration mode and full-screen visual novel stage.
+  $('mayaPortrait').src=image.src;$('mayaPortrait').style.display='block';
+  const texture=new THREE.Texture(image);
+  texture.colorSpace=THREE.SRGBColorSpace;
+  texture.magFilter=THREE.LinearFilter;texture.minFilter=THREE.LinearMipmapLinearFilter;texture.generateMipmaps=true;texture.anisotropy=8;texture.needsUpdate=true;
+  const material=new THREE.SpriteMaterial({map:texture,transparent:true,alphaTest:.05,depthWrite:false,color:0xffffff});
+  mayaAnimeSprite=new THREE.Sprite(material);
+  mayaAnimeSprite.center.set(.5,.05);
+  mayaAnimeSprite.scale.set(1.56,1.73,1);
+  mayaAnimeSprite.position.set(0,.12,0);
+  npcGroup.add(mayaAnimeSprite);
+  animeReady=true;$('loading').style.display='none';
+  toast('2D anime Maya loaded — press E to talk');
+ };
+ image.onerror=()=>{console.warn('Anime Maya artwork decoding failed');$('loading').style.display='none';toast('Maya artwork could not be decoded')};
+ image.src='data:image/png;base64,'+b64.trim();
+}).catch(err=>{console.warn('Anime Maya failed to load',err);$('loading').style.display='none';toast('Anime Maya unavailable — refresh to retry')});
+function animateMaya(dt,now){
+ if(!mayaAnimeSprite)return;
+ const t=now*.001;
+ const dist=Math.hypot(camera.position.x-npcGroup.position.x,camera.position.z-npcGroup.position.z);
+ mayaAnimeSprite.position.y=.12+Math.sin(t*1.3)*.012;
+ mayaAnimeSprite.material.opacity=.99;
+ const breath=1+Math.sin(t*1.4)*.003;
+ mayaAnimeSprite.scale.set(1.56*breath,1.73*breath,1);
 }
-// Prevent camera clipping through the 3D body.
-blocker(.87,-1.65,1.18,1.05);
+// A 2D visual-novel sprite has no skeletal mesh; player interaction is still spatial.
+blocker(.87,-1.65,1.22,.98);
 const interactables=[{name:'Maya',p:new THREE.Vector3(.87,1.3,-1.65),range:2.75,type:'npc'},{name:'Living room lamp',p:new THREE.Vector3(-5.9,1.4,-3.9),range:2.35,type:'lamp'},{name:'Living room television',p:new THREE.Vector3(5,1.5,-2.8),range:2.7,type:'tv'},{name:'Kitchen counter',p:new THREE.Vector3(3.55,1,2.4),range:2.5,type:'kitchen'}];
 const story={
  intro:{who:'MAYA · YOUR NEIGHBOR',line:"Oh, you're finally up! I'm Maya, from next door. What do you think of your new apartment?",choices:[['It looks beautiful. Is the city always this peaceful?','friendly'],['Honestly, I feel a little lost.','honest'],['I have to get going.','bye']]},
