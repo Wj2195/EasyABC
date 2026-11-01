@@ -1,7 +1,7 @@
 {
   "app": "TradeLens Online",
   "version": "1.5.2",
-  "updated_at": "2026-11-01T14:36:02Z",
+  "updated_at": "2026-11-01T15:11:09Z",
   "model": "9-feature technical analog; walk-forward diagnostics; separate scheduled news warnings",
   "provider": "Unofficial Yahoo Finance",
   "settings": {
@@ -50,10 +50,6 @@
       "GBP/USD",
       "USD/JPY",
       "GBP/JPY",
-      "EUR/GBP",
-      "EUR/JPY",
-      "EUR/CHF",
-      "EUR/AUD",
       "EUR/CAD",
       "EUR/NZD",
       "GBP/CHF",
@@ -73,7 +69,11 @@
       "AUD/USD",
       "NZD/USD",
       "USD/CHF",
-      "USD/CAD"
+      "USD/CAD",
+      "EUR/GBP",
+      "EUR/JPY",
+      "EUR/CHF",
+      "EUR/AUD"
     ],
     "errors": [],
     "alerts_sent": 0,
@@ -92,7 +92,28 @@
     "checked_at": "2026-11-01T14:35:36.270141Z",
     "error": null,
     "skipped_events": 0,
-    "events": [],
+    "events": [
+      {
+        "id": "9cd7d925087c0597303e077c",
+        "title": "ISM Manufacturing PMI",
+        "currency": "USD",
+        "impact": "Medium",
+        "epoch": 1793631600.0,
+        "at": "2026-11-02T15:00:00Z",
+        "time_myt": "02 Nov 2026, 11:00 PM MYT",
+        "forecast": "54.7",
+        "previous": "54.5",
+        "pairs": [
+          "EUR/USD",
+          "GBP/USD",
+          "AUD/USD",
+          "NZD/USD",
+          "USD/JPY",
+          "USD/CHF",
+          "USD/CAD"
+        ]
+      }
+    ],
     "coverage": "Current provider week; scheduled events only. Times can change. Unscheduled breaking news is not covered.",
     "history": [
       {
@@ -1119,7 +1140,7 @@
       "pair": "EUR/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:36Z",
+      "checked_at": "2026-11-01T15:10:40Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -2870,13 +2891,34 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "9cd7d925087c0597303e077c",
+          "title": "ISM Manufacturing PMI",
+          "currency": "USD",
+          "impact": "Medium",
+          "epoch": 1793631600.0,
+          "at": "2026-11-02T15:00:00Z",
+          "time_myt": "02 Nov 2026, 11:00 PM MYT",
+          "forecast": "54.7",
+          "previous": "54.5",
+          "pairs": [
+            "EUR/USD",
+            "GBP/USD",
+            "AUD/USD",
+            "NZD/USD",
+            "USD/JPY",
+            "USD/CHF",
+            "USD/CAD"
+          ]
+        }
+      ]
     },
     "GBP/USD": {
       "pair": "GBP/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:37Z",
+      "checked_at": "2026-11-01T15:10:41Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -4627,13 +4669,34 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "9cd7d925087c0597303e077c",
+          "title": "ISM Manufacturing PMI",
+          "currency": "USD",
+          "impact": "Medium",
+          "epoch": 1793631600.0,
+          "at": "2026-11-02T15:00:00Z",
+          "time_myt": "02 Nov 2026, 11:00 PM MYT",
+          "forecast": "54.7",
+          "previous": "54.5",
+          "pairs": [
+            "EUR/USD",
+            "GBP/USD",
+            "AUD/USD",
+            "NZD/USD",
+            "USD/JPY",
+            "USD/CHF",
+            "USD/CAD"
+          ]
+        }
+      ]
     },
     "AUD/USD": {
       "pair": "AUD/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:59Z",
+      "checked_at": "2026-11-01T15:11:01Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -6384,13 +6447,34 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "9cd7d925087c0597303e077c",
+          "title": "ISM Manufacturing PMI",
+          "currency": "USD",
+          "impact": "Medium",
+          "epoch": 1793631600.0,
+          "at": "2026-11-02T15:00:00Z",
+          "time_myt": "02 Nov 2026, 11:00 PM MYT",
+          "forecast": "54.7",
+          "previous": "54.5",
+          "pairs": [
+            "EUR/USD",
+            "GBP/USD",
+            "AUD/USD",
+            "NZD/USD",
+            "USD/JPY",
+            "USD/CHF",
+            "USD/CAD"
+          ]
+        }
+      ]
     },
     "NZD/USD": {
       "pair": "NZD/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:36:00Z",
+      "checked_at": "2026-11-01T15:11:02Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -8141,13 +8225,34 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "9cd7d925087c0597303e077c",
+          "title": "ISM Manufacturing PMI",
+          "currency": "USD",
+          "impact": "Medium",
+          "epoch": 1793631600.0,
+          "at": "2026-11-02T15:00:00Z",
+          "time_myt": "02 Nov 2026, 11:00 PM MYT",
+          "forecast": "54.7",
+          "previous": "54.5",
+          "pairs": [
+            "EUR/USD",
+            "GBP/USD",
+            "AUD/USD",
+            "NZD/USD",
+            "USD/JPY",
+            "USD/CHF",
+            "USD/CAD"
+          ]
+        }
+      ]
     },
     "USD/JPY": {
       "pair": "USD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:38Z",
+      "checked_at": "2026-11-01T15:10:42Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -9898,13 +10003,34 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "9cd7d925087c0597303e077c",
+          "title": "ISM Manufacturing PMI",
+          "currency": "USD",
+          "impact": "Medium",
+          "epoch": 1793631600.0,
+          "at": "2026-11-02T15:00:00Z",
+          "time_myt": "02 Nov 2026, 11:00 PM MYT",
+          "forecast": "54.7",
+          "previous": "54.5",
+          "pairs": [
+            "EUR/USD",
+            "GBP/USD",
+            "AUD/USD",
+            "NZD/USD",
+            "USD/JPY",
+            "USD/CHF",
+            "USD/CAD"
+          ]
+        }
+      ]
     },
     "USD/CHF": {
       "pair": "USD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:36:01Z",
+      "checked_at": "2026-11-01T15:11:03Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -11655,13 +11781,34 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "9cd7d925087c0597303e077c",
+          "title": "ISM Manufacturing PMI",
+          "currency": "USD",
+          "impact": "Medium",
+          "epoch": 1793631600.0,
+          "at": "2026-11-02T15:00:00Z",
+          "time_myt": "02 Nov 2026, 11:00 PM MYT",
+          "forecast": "54.7",
+          "previous": "54.5",
+          "pairs": [
+            "EUR/USD",
+            "GBP/USD",
+            "AUD/USD",
+            "NZD/USD",
+            "USD/JPY",
+            "USD/CHF",
+            "USD/CAD"
+          ]
+        }
+      ]
     },
     "USD/CAD": {
       "pair": "USD/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:36:02Z",
+      "checked_at": "2026-11-01T15:11:04Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -13412,13 +13559,34 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "9cd7d925087c0597303e077c",
+          "title": "ISM Manufacturing PMI",
+          "currency": "USD",
+          "impact": "Medium",
+          "epoch": 1793631600.0,
+          "at": "2026-11-02T15:00:00Z",
+          "time_myt": "02 Nov 2026, 11:00 PM MYT",
+          "forecast": "54.7",
+          "previous": "54.5",
+          "pairs": [
+            "EUR/USD",
+            "GBP/USD",
+            "AUD/USD",
+            "NZD/USD",
+            "USD/JPY",
+            "USD/CHF",
+            "USD/CAD"
+          ]
+        }
+      ]
     },
     "EUR/GBP": {
       "pair": "EUR/GBP",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:40Z",
+      "checked_at": "2026-11-01T15:11:05Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -15175,7 +15343,7 @@
       "pair": "EUR/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:41Z",
+      "checked_at": "2026-11-01T15:11:06Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -16932,7 +17100,7 @@
       "pair": "EUR/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:42Z",
+      "checked_at": "2026-11-01T15:11:07Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -18689,7 +18857,7 @@
       "pair": "EUR/AUD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:43Z",
+      "checked_at": "2026-11-01T15:11:08Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -20446,7 +20614,7 @@
       "pair": "EUR/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:44Z",
+      "checked_at": "2026-11-01T15:10:44Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -22203,7 +22371,7 @@
       "pair": "EUR/NZD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:45Z",
+      "checked_at": "2026-11-01T15:10:45Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -23960,7 +24128,7 @@
       "pair": "GBP/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:39Z",
+      "checked_at": "2026-11-01T15:10:43Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -25717,7 +25885,7 @@
       "pair": "GBP/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:46Z",
+      "checked_at": "2026-11-01T15:10:46Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -27474,7 +27642,7 @@
       "pair": "GBP/AUD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:47Z",
+      "checked_at": "2026-11-01T15:10:47Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -29231,7 +29399,7 @@
       "pair": "GBP/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:47Z",
+      "checked_at": "2026-11-01T15:10:48Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -30988,7 +31156,7 @@
       "pair": "GBP/NZD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:48Z",
+      "checked_at": "2026-11-01T15:10:49Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -32745,7 +32913,7 @@
       "pair": "AUD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:49Z",
+      "checked_at": "2026-11-01T15:10:50Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -34502,7 +34670,7 @@
       "pair": "AUD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:50Z",
+      "checked_at": "2026-11-01T15:10:52Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -36259,7 +36427,7 @@
       "pair": "AUD/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:51Z",
+      "checked_at": "2026-11-01T15:10:53Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -38016,7 +38184,7 @@
       "pair": "AUD/NZD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:52Z",
+      "checked_at": "2026-11-01T15:10:54Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -39773,7 +39941,7 @@
       "pair": "NZD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:53Z",
+      "checked_at": "2026-11-01T15:10:55Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -41530,7 +41698,7 @@
       "pair": "NZD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:54Z",
+      "checked_at": "2026-11-01T15:10:56Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -43287,7 +43455,7 @@
       "pair": "NZD/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:55Z",
+      "checked_at": "2026-11-01T15:10:57Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -45044,7 +45212,7 @@
       "pair": "CAD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:56Z",
+      "checked_at": "2026-11-01T15:10:58Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -46801,7 +46969,7 @@
       "pair": "CAD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:57Z",
+      "checked_at": "2026-11-01T15:10:59Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -48558,7 +48726,7 @@
       "pair": "CHF/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-01T14:35:58Z",
+      "checked_at": "2026-11-01T15:11:00Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
