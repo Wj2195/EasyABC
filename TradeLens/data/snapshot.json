@@ -1,7 +1,7 @@
 {
   "app": "TradeLens Online",
   "version": "1.5.2",
-  "updated_at": "2026-11-07T00:15:55Z",
+  "updated_at": "2026-11-07T06:06:42Z",
   "model": "9-feature technical analog; walk-forward diagnostics; separate scheduled news warnings",
   "provider": "Unofficial Yahoo Finance",
   "settings": {
@@ -50,10 +50,6 @@
       "GBP/USD",
       "USD/JPY",
       "GBP/JPY",
-      "GBP/CAD",
-      "GBP/NZD",
-      "AUD/JPY",
-      "AUD/CHF",
       "AUD/CAD",
       "AUD/NZD",
       "NZD/JPY",
@@ -73,7 +69,11 @@
       "EUR/CAD",
       "EUR/NZD",
       "GBP/CHF",
-      "GBP/AUD"
+      "GBP/AUD",
+      "GBP/CAD",
+      "GBP/NZD",
+      "AUD/JPY",
+      "AUD/CHF"
     ],
     "errors": [],
     "alerts_sent": 0,
@@ -89,7 +89,7 @@
     ],
     "status": "Updated",
     "usable": true,
-    "checked_at": "2026-11-07T00:15:25.688522Z",
+    "checked_at": "2026-11-07T06:06:18.296962Z",
     "error": null,
     "skipped_events": 0,
     "events": [],
@@ -1224,7 +1224,7 @@
       "pair": "EUR/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:26Z",
+      "checked_at": "2026-11-07T06:06:18Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -1799,7 +1799,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 1.1143302917480469,
@@ -2981,7 +2981,7 @@
       "pair": "GBP/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:27Z",
+      "checked_at": "2026-11-07T06:06:19Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -3556,7 +3556,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 1.335577130317688,
@@ -4738,7 +4738,7 @@
       "pair": "AUD/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:42Z",
+      "checked_at": "2026-11-07T06:06:28Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -5313,7 +5313,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 0.6868131756782532,
@@ -6495,7 +6495,7 @@
       "pair": "NZD/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:44Z",
+      "checked_at": "2026-11-07T06:06:29Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -7070,7 +7070,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 0.5547542572021484,
@@ -8252,7 +8252,7 @@
       "pair": "USD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:28Z",
+      "checked_at": "2026-11-07T06:06:20Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -8827,7 +8827,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 158.4250030517578,
@@ -10009,7 +10009,7 @@
       "pair": "USD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:45Z",
+      "checked_at": "2026-11-07T06:06:30Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -10584,7 +10584,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 0.8200100064277649,
@@ -11766,7 +11766,7 @@
       "pair": "USD/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:46Z",
+      "checked_at": "2026-11-07T06:06:31Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -12341,7 +12341,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 1.4127999544143677,
@@ -13523,7 +13523,7 @@
       "pair": "EUR/GBP",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:47Z",
+      "checked_at": "2026-11-07T06:06:32Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -14098,7 +14098,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 0.8346999883651733,
@@ -15280,7 +15280,7 @@
       "pair": "EUR/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:48Z",
+      "checked_at": "2026-11-07T06:06:33Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -15855,7 +15855,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 176.5850067138672,
@@ -17037,7 +17037,7 @@
       "pair": "EUR/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:49Z",
+      "checked_at": "2026-11-07T06:06:34Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -17612,7 +17612,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 0.9139599800109863,
@@ -18794,7 +18794,7 @@
       "pair": "EUR/AUD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:50Z",
+      "checked_at": "2026-11-07T06:06:35Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -19369,7 +19369,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 1.6225700378417969,
@@ -20551,7 +20551,7 @@
       "pair": "EUR/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:51Z",
+      "checked_at": "2026-11-07T06:06:35Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -21126,7 +21126,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 1.5740900039672852,
@@ -22308,7 +22308,7 @@
       "pair": "EUR/NZD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:52Z",
+      "checked_at": "2026-11-07T06:06:36Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -22883,7 +22883,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 2.0088798999786377,
@@ -24065,7 +24065,7 @@
       "pair": "GBP/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:29Z",
+      "checked_at": "2026-11-07T06:06:21Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -24640,7 +24640,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 211.5469970703125,
@@ -25822,7 +25822,7 @@
       "pair": "GBP/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:53Z",
+      "checked_at": "2026-11-07T06:06:37Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -26397,7 +26397,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 1.095020055770874,
@@ -27579,7 +27579,7 @@
       "pair": "GBP/AUD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:54Z",
+      "checked_at": "2026-11-07T06:06:38Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -28154,7 +28154,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 1.944390058517456,
@@ -29336,7 +29336,7 @@
       "pair": "GBP/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:30Z",
+      "checked_at": "2026-11-07T06:06:39Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -29911,7 +29911,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 1.8861099481582642,
@@ -31093,7 +31093,7 @@
       "pair": "GBP/NZD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:31Z",
+      "checked_at": "2026-11-07T06:06:40Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -31668,7 +31668,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 2.4067299365997314,
@@ -32850,7 +32850,7 @@
       "pair": "AUD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:32Z",
+      "checked_at": "2026-11-07T06:06:41Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -33425,7 +33425,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 108.79399871826172,
@@ -34607,7 +34607,7 @@
       "pair": "AUD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:33Z",
+      "checked_at": "2026-11-07T06:06:42Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -35182,7 +35182,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 0.5626599788665771,
@@ -36364,7 +36364,7 @@
       "pair": "AUD/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:34Z",
+      "checked_at": "2026-11-07T06:06:21Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -36939,7 +36939,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 0.9691299796104431,
@@ -38121,7 +38121,7 @@
       "pair": "AUD/NZD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:35Z",
+      "checked_at": "2026-11-07T06:06:22Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -38696,7 +38696,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 1.2375099658966064,
@@ -39878,7 +39878,7 @@
       "pair": "NZD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:36Z",
+      "checked_at": "2026-11-07T06:06:23Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -40453,7 +40453,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 87.87699890136719,
@@ -41635,7 +41635,7 @@
       "pair": "NZD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:37Z",
+      "checked_at": "2026-11-07T06:06:24Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -42210,7 +42210,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 0.4548499882221222,
@@ -43392,7 +43392,7 @@
       "pair": "NZD/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:38Z",
+      "checked_at": "2026-11-07T06:06:25Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -43967,7 +43967,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 0.7833700180053711,
@@ -45149,7 +45149,7 @@
       "pair": "CAD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:39Z",
+      "checked_at": "2026-11-07T06:06:26Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -45724,7 +45724,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 112.12300109863281,
@@ -46906,7 +46906,7 @@
       "pair": "CAD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:40Z",
+      "checked_at": "2026-11-07T06:06:27Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -47481,7 +47481,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794006000,
           "candle_time": "2026-11-06T23:00:00Z",
           "price": 0.5806000232696533,
@@ -48663,7 +48663,7 @@
       "pair": "CHF/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-07T00:15:41Z",
+      "checked_at": "2026-11-07T06:06:28Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -49238,7 +49238,7 @@
           }
         },
         "1h": {
-          "status": "Updated",
+          "status": "Old / closed",
           "candle_epoch": 1794002400,
           "candle_time": "2026-11-06T22:00:00Z",
           "price": 193.10400390625,
