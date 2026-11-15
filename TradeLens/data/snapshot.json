@@ -1,7 +1,7 @@
 {
   "app": "TradeLens Online",
   "version": "1.5.2",
-  "updated_at": "2026-11-15T07:45:03Z",
+  "updated_at": "2026-11-15T14:59:39Z",
   "model": "9-feature technical analog; walk-forward diagnostics; separate scheduled news warnings",
   "provider": "Unofficial Yahoo Finance",
   "settings": {
@@ -50,10 +50,6 @@
       "GBP/USD",
       "USD/JPY",
       "GBP/JPY",
-      "AUD/USD",
-      "NZD/USD",
-      "USD/CHF",
-      "USD/CAD",
       "EUR/GBP",
       "EUR/JPY",
       "EUR/CHF",
@@ -73,7 +69,11 @@
       "NZD/CAD",
       "CAD/JPY",
       "CAD/CHF",
-      "CHF/JPY"
+      "CHF/JPY",
+      "AUD/USD",
+      "NZD/USD",
+      "USD/CHF",
+      "USD/CAD"
     ],
     "errors": [],
     "alerts_sent": 0,
@@ -89,10 +89,91 @@
     ],
     "status": "Updated",
     "usable": true,
-    "checked_at": "2026-11-15T07:44:36.309972Z",
+    "checked_at": "2026-11-15T14:59:08.182827Z",
     "error": null,
     "skipped_events": 0,
-    "events": [],
+    "events": [
+      {
+        "id": "bce1834ef2d9aca59b84d438",
+        "title": "CPI m/m",
+        "currency": "CAD",
+        "impact": "High",
+        "epoch": 1794835800.0,
+        "at": "2026-11-16T13:30:00Z",
+        "time_myt": "16 Nov 2026, 09:30 PM MYT",
+        "forecast": "0.3%",
+        "previous": "0.1%",
+        "pairs": [
+          "USD/CAD",
+          "EUR/CAD",
+          "GBP/CAD",
+          "AUD/CAD",
+          "NZD/CAD",
+          "CAD/JPY",
+          "CAD/CHF"
+        ]
+      },
+      {
+        "id": "a0e479dc7523045dd5e3bbe4",
+        "title": "Common CPI y/y",
+        "currency": "CAD",
+        "impact": "Medium",
+        "epoch": 1794835800.0,
+        "at": "2026-11-16T13:30:00Z",
+        "time_myt": "16 Nov 2026, 09:30 PM MYT",
+        "forecast": "2.5%",
+        "previous": "2.4%",
+        "pairs": [
+          "USD/CAD",
+          "EUR/CAD",
+          "GBP/CAD",
+          "AUD/CAD",
+          "NZD/CAD",
+          "CAD/JPY",
+          "CAD/CHF"
+        ]
+      },
+      {
+        "id": "d2ac84f3c2684495ba432a60",
+        "title": "Median CPI y/y",
+        "currency": "CAD",
+        "impact": "High",
+        "epoch": 1794835800.0,
+        "at": "2026-11-16T13:30:00Z",
+        "time_myt": "16 Nov 2026, 09:30 PM MYT",
+        "forecast": "2.0%",
+        "previous": "1.9%",
+        "pairs": [
+          "USD/CAD",
+          "EUR/CAD",
+          "GBP/CAD",
+          "AUD/CAD",
+          "NZD/CAD",
+          "CAD/JPY",
+          "CAD/CHF"
+        ]
+      },
+      {
+        "id": "2c7cc95753f4f4e43798a446",
+        "title": "Trimmed CPI y/y",
+        "currency": "CAD",
+        "impact": "High",
+        "epoch": 1794835800.0,
+        "at": "2026-11-16T13:30:00Z",
+        "time_myt": "16 Nov 2026, 09:30 PM MYT",
+        "forecast": "1.9%",
+        "previous": "1.8%",
+        "pairs": [
+          "USD/CAD",
+          "EUR/CAD",
+          "GBP/CAD",
+          "AUD/CAD",
+          "NZD/CAD",
+          "CAD/JPY",
+          "CAD/CHF"
+        ]
+      }
+    ],
     "coverage": "Current provider week; scheduled events only. Times can change. Unscheduled breaking news is not covered.",
     "history": [
       {
@@ -1224,7 +1305,7 @@
       "pair": "EUR/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:36Z",
+      "checked_at": "2026-11-15T14:59:08Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -2981,7 +3062,7 @@
       "pair": "GBP/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:37Z",
+      "checked_at": "2026-11-15T14:59:09Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -4738,7 +4819,7 @@
       "pair": "AUD/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:40Z",
+      "checked_at": "2026-11-15T14:59:35Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -6495,7 +6576,7 @@
       "pair": "NZD/USD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:41Z",
+      "checked_at": "2026-11-15T14:59:36Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -8252,7 +8333,7 @@
       "pair": "USD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:38Z",
+      "checked_at": "2026-11-15T14:59:10Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -10009,7 +10090,7 @@
       "pair": "USD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:42Z",
+      "checked_at": "2026-11-15T14:59:37Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -11766,7 +11847,7 @@
       "pair": "USD/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:43Z",
+      "checked_at": "2026-11-15T14:59:39Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -13517,13 +13598,94 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "bce1834ef2d9aca59b84d438",
+          "title": "CPI m/m",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "0.3%",
+          "previous": "0.1%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "a0e479dc7523045dd5e3bbe4",
+          "title": "Common CPI y/y",
+          "currency": "CAD",
+          "impact": "Medium",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.5%",
+          "previous": "2.4%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "d2ac84f3c2684495ba432a60",
+          "title": "Median CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.0%",
+          "previous": "1.9%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "2c7cc95753f4f4e43798a446",
+          "title": "Trimmed CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "1.9%",
+          "previous": "1.8%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        }
+      ]
     },
     "EUR/GBP": {
       "pair": "EUR/GBP",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:44Z",
+      "checked_at": "2026-11-15T14:59:13Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -15280,7 +15442,7 @@
       "pair": "EUR/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:45Z",
+      "checked_at": "2026-11-15T14:59:14Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -17037,7 +17199,7 @@
       "pair": "EUR/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:46Z",
+      "checked_at": "2026-11-15T14:59:15Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -18794,7 +18956,7 @@
       "pair": "EUR/AUD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:47Z",
+      "checked_at": "2026-11-15T14:59:16Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -20551,7 +20713,7 @@
       "pair": "EUR/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:48Z",
+      "checked_at": "2026-11-15T14:59:17Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -22302,13 +22464,94 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "bce1834ef2d9aca59b84d438",
+          "title": "CPI m/m",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "0.3%",
+          "previous": "0.1%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "a0e479dc7523045dd5e3bbe4",
+          "title": "Common CPI y/y",
+          "currency": "CAD",
+          "impact": "Medium",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.5%",
+          "previous": "2.4%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "d2ac84f3c2684495ba432a60",
+          "title": "Median CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.0%",
+          "previous": "1.9%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "2c7cc95753f4f4e43798a446",
+          "title": "Trimmed CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "1.9%",
+          "previous": "1.8%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        }
+      ]
     },
     "EUR/NZD": {
       "pair": "EUR/NZD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:49Z",
+      "checked_at": "2026-11-15T14:59:18Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -24065,7 +24308,7 @@
       "pair": "GBP/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:39Z",
+      "checked_at": "2026-11-15T14:59:12Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -25822,7 +26065,7 @@
       "pair": "GBP/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:50Z",
+      "checked_at": "2026-11-15T14:59:19Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -27579,7 +27822,7 @@
       "pair": "GBP/AUD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:51Z",
+      "checked_at": "2026-11-15T14:59:20Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -29336,7 +29579,7 @@
       "pair": "GBP/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:52Z",
+      "checked_at": "2026-11-15T14:59:22Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -31087,13 +31330,94 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "bce1834ef2d9aca59b84d438",
+          "title": "CPI m/m",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "0.3%",
+          "previous": "0.1%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "a0e479dc7523045dd5e3bbe4",
+          "title": "Common CPI y/y",
+          "currency": "CAD",
+          "impact": "Medium",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.5%",
+          "previous": "2.4%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "d2ac84f3c2684495ba432a60",
+          "title": "Median CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.0%",
+          "previous": "1.9%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "2c7cc95753f4f4e43798a446",
+          "title": "Trimmed CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "1.9%",
+          "previous": "1.8%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        }
+      ]
     },
     "GBP/NZD": {
       "pair": "GBP/NZD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:53Z",
+      "checked_at": "2026-11-15T14:59:23Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -32850,7 +33174,7 @@
       "pair": "AUD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:54Z",
+      "checked_at": "2026-11-15T14:59:24Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -34607,7 +34931,7 @@
       "pair": "AUD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:55Z",
+      "checked_at": "2026-11-15T14:59:25Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -36364,7 +36688,7 @@
       "pair": "AUD/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:56Z",
+      "checked_at": "2026-11-15T14:59:26Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -38115,13 +38439,94 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "bce1834ef2d9aca59b84d438",
+          "title": "CPI m/m",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "0.3%",
+          "previous": "0.1%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "a0e479dc7523045dd5e3bbe4",
+          "title": "Common CPI y/y",
+          "currency": "CAD",
+          "impact": "Medium",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.5%",
+          "previous": "2.4%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "d2ac84f3c2684495ba432a60",
+          "title": "Median CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.0%",
+          "previous": "1.9%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "2c7cc95753f4f4e43798a446",
+          "title": "Trimmed CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "1.9%",
+          "previous": "1.8%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        }
+      ]
     },
     "AUD/NZD": {
       "pair": "AUD/NZD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:57Z",
+      "checked_at": "2026-11-15T14:59:27Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -39878,7 +40283,7 @@
       "pair": "NZD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:58Z",
+      "checked_at": "2026-11-15T14:59:29Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -41635,7 +42040,7 @@
       "pair": "NZD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:44:59Z",
+      "checked_at": "2026-11-15T14:59:30Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -43392,7 +43797,7 @@
       "pair": "NZD/CAD",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:45:00Z",
+      "checked_at": "2026-11-15T14:59:31Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -45143,13 +45548,94 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "bce1834ef2d9aca59b84d438",
+          "title": "CPI m/m",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "0.3%",
+          "previous": "0.1%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "a0e479dc7523045dd5e3bbe4",
+          "title": "Common CPI y/y",
+          "currency": "CAD",
+          "impact": "Medium",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.5%",
+          "previous": "2.4%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "d2ac84f3c2684495ba432a60",
+          "title": "Median CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.0%",
+          "previous": "1.9%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "2c7cc95753f4f4e43798a446",
+          "title": "Trimmed CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "1.9%",
+          "previous": "1.8%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        }
+      ]
     },
     "CAD/JPY": {
       "pair": "CAD/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:45:01Z",
+      "checked_at": "2026-11-15T14:59:32Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -46900,13 +47386,94 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "bce1834ef2d9aca59b84d438",
+          "title": "CPI m/m",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "0.3%",
+          "previous": "0.1%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "a0e479dc7523045dd5e3bbe4",
+          "title": "Common CPI y/y",
+          "currency": "CAD",
+          "impact": "Medium",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.5%",
+          "previous": "2.4%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "d2ac84f3c2684495ba432a60",
+          "title": "Median CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.0%",
+          "previous": "1.9%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "2c7cc95753f4f4e43798a446",
+          "title": "Trimmed CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "1.9%",
+          "previous": "1.8%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        }
+      ]
     },
     "CAD/CHF": {
       "pair": "CAD/CHF",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:45:02Z",
+      "checked_at": "2026-11-15T14:59:33Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
@@ -48657,13 +49224,94 @@
         "eligible": false,
         "reason": "15m: missing, stale or unavailable"
       },
-      "news_events": []
+      "news_events": [
+        {
+          "id": "bce1834ef2d9aca59b84d438",
+          "title": "CPI m/m",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "0.3%",
+          "previous": "0.1%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "a0e479dc7523045dd5e3bbe4",
+          "title": "Common CPI y/y",
+          "currency": "CAD",
+          "impact": "Medium",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.5%",
+          "previous": "2.4%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "d2ac84f3c2684495ba432a60",
+          "title": "Median CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "2.0%",
+          "previous": "1.9%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        },
+        {
+          "id": "2c7cc95753f4f4e43798a446",
+          "title": "Trimmed CPI y/y",
+          "currency": "CAD",
+          "impact": "High",
+          "epoch": 1794835800.0,
+          "at": "2026-11-16T13:30:00Z",
+          "time_myt": "16 Nov 2026, 09:30 PM MYT",
+          "forecast": "1.9%",
+          "previous": "1.8%",
+          "pairs": [
+            "USD/CAD",
+            "EUR/CAD",
+            "GBP/CAD",
+            "AUD/CAD",
+            "NZD/CAD",
+            "CAD/JPY",
+            "CAD/CHF"
+          ]
+        }
+      ]
     },
     "CHF/JPY": {
       "pair": "CHF/JPY",
       "ready": false,
       "status": "Incomplete / old",
-      "checked_at": "2026-11-15T07:45:03Z",
+      "checked_at": "2026-11-15T14:59:34Z",
       "timeframes": {
         "15m": {
           "status": "Old / closed",
