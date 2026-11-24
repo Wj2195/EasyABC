@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import requests
 
 from news import (parse_calendar, load_calendar, affected_pairs, upcoming_events,
-                  pending_news, news_message)
+                  pending_news, news_message, missed_news)
 
 NOW = datetime(2026, 10, 29, 11, tzinfo=timezone.utc).timestamp()
 
@@ -17,6 +17,23 @@ def feed(impact='High'):
 
 
 class NewsTests(unittest.TestCase):
+    def test_elapsed_unwarned_event_is_audited_but_never_sent_late(self):
+        calendar = load_calendar(None, {}, NOW, lambda _: feed())
+        events = upcoming_events(calendar, ['EUR/USD'], NOW)
+        missed = missed_news(calendar, ['EUR/USD'], {}, NOW, NOW+3600)
+        self.assertEqual([e['id'] for e in missed], [events[0]['id']])
+        self.assertEqual(missed[0]['pairs'], ['EUR/USD'])
+        self.assertEqual(pending_news(events, {}, NOW+3600), [])
+        self.assertEqual(missed_news(calendar, ['EUR/USD'],
+                                   {events[0]['id']: NOW}, NOW, NOW+3600), [])
+
+    def test_missed_audit_does_not_guess_without_coverage(self):
+        calendar = load_calendar(None, {}, NOW, lambda _: feed())
+        self.assertEqual(missed_news(calendar, ['EUR/USD'], {}, None, NOW+3600), [])
+        self.assertEqual(missed_news({**calendar, 'usable': False},
+                                   ['EUR/USD'], {}, NOW, NOW+3600), [])
+        self.assertEqual(missed_news(calendar, ['EUR/JPY'], {}, NOW, NOW+3600), [])
+
     def test_offset_time_and_both_currencies(self):
         events, skipped = parse_calendar(feed(), NOW)
         self.assertEqual(skipped, 0)

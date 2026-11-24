@@ -19,14 +19,14 @@ from pathlib import Path
 import numpy as np
 import requests
 
-from news import load_calendar, fetch_calendar, upcoming_events, pending_news, news_message, IMPACT_LEVELS
+from news import load_calendar, fetch_calendar, upcoming_events, pending_news, news_message, missed_news, IMPACT_LEVELS
+from freshness import SECS, SNAPSHOT_MAX_AGE, is_fresh
 from validation import walk_forward
 
 ROOT = Path(__file__).resolve().parent
 PAIRS = 'EUR/USD GBP/USD AUD/USD NZD/USD USD/JPY USD/CHF USD/CAD EUR/GBP EUR/JPY EUR/CHF EUR/AUD EUR/CAD EUR/NZD GBP/JPY GBP/CHF GBP/AUD GBP/CAD GBP/NZD AUD/JPY AUD/CHF AUD/CAD AUD/NZD NZD/JPY NZD/CHF NZD/CAD CAD/JPY CAD/CHF CHF/JPY'.split()
 TIMEFRAMES = ('15m', '1h', '1d')
 HORIZONS = (1, 3, 6, 12)
-SECS = {'15m': 900, '1h': 3600, '1d': 86400}
 MIN_AGREEMENT = 10
 REPEAT_SECONDS = 15 * 60
 
@@ -82,13 +82,6 @@ def fetch_bars(pair, tf, session, now):
     if len(candles) < 370:
         raise ValueError(f'Insufficient completed {tf} candles: {len(candles)}')
     return candles[-1500:]
-
-
-def is_fresh(start_epoch, tf, now):
-    age = now - int(start_epoch) - SECS[tf]
-    # A Friday daily close remains valid on Monday while 15m/1h must be fresh.
-    max_age = 4 * 86400 if tf == '1d' else 2 * SECS[tf]
-    return -60 <= age <= max_age
 
 
 def ema(values, size):
@@ -272,6 +265,12 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
     watch = [p for p in cfg.get('watchlist', []) if p in PAIRS]
     state = get_json(base/'state/state.json', {'run_index': 0, 'last_alerts': {}, 'history': []})
     snap = get_json(base/'data/snapshot.json', {'rows': {}})
+    try:
+        previous_run = datetime.fromisoformat(
+            state.get('last_run', snap.get('updated_at', '')).replace('Z', '+00:00')).timestamp()
+    except (ValueError, TypeError, AttributeError):
+        previous_run = None
+    scan_gap = max(0, round(now - previous_run)) if previous_run is not None else None
     rows = {p: snap.get('rows', {}).get(p, {'pair': p, 'ready': False, 'status': 'Pending'}) for p in PAIRS}
     run_index = int(state.get('run_index', 0))
     others = [p for p in PAIRS if p not in watch]
@@ -377,6 +376,14 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
     # Re-evaluate cached rows against current time. Rotating pairs must never
     # retain an old "eligible" flag after their candles have expired.
     finished_at = clock()
+    missed = state.setdefault('news_missed', [])
+    known_missed = {e['id'] for e in missed}
+    if token and chat and cfg.get('enable_telegram', True) and cfg.get('enable_news_alerts', True):
+        for event in missed_news(calendar, PAIRS, news_ledger, previous_run, finished_at):
+            if event['id'] not in known_missed:
+                missed.append({**event, 'detected_at': iso(finished_at)})
+                known_missed.add(event['id'])
+    state['news_missed'] = missed[-100:]
     for row in rows.values():
         timeframes = row.get('timeframes', {})
         for tf, entry in timeframes.items():
@@ -390,18 +397,25 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
     state['run_index'] = run_index + 1
     state['history'] = history[-150:]
     state['last_run'] = iso(finished_at)
-    output = {'app': 'TradeLens Online', 'version': '1.5.2', 'updated_at': iso(finished_at),
+    output = {'app': 'TradeLens Online', 'version': '1.5.3', 'updated_at': iso(finished_at),
         'model': '9-feature technical analog; walk-forward diagnostics; separate scheduled news warnings',
         'provider': 'Unofficial Yahoo Finance',
         'settings': {**cfg, 'alert_rule': 'at_least_10_of_12', 'minimum_agreement': MIN_AGREEMENT,
                      'repeat_alert_minutes': REPEAT_SECONDS // 60,
+                     'snapshot_max_age_seconds': SNAPSHOT_MAX_AGE,
                      'news_alert_lead_minutes': lead, 'news_impact_levels': list(IMPACT_LEVELS),
                      'alert_horizons': list(HORIZONS),
                      'timeframes': list(TIMEFRAMES), 'horizons': list(HORIZONS)},
         'status': {'pairs_checked_this_run': len(targets), 'checked_pairs': targets,
                    'errors': errors[:45], 'alerts_sent': sent, 'news_alerts_sent': news_sent,
+                   'previous_scan_gap_seconds': scan_gap,
+                   'schedule_delayed': scan_gap is not None and scan_gap > SNAPSHOT_MAX_AGE,
+                   'fresh_pairs': sum(r['ready'] for r in rows.values()),
+                   'stale_timeframes': sum(t.get('status') != 'Updated'
+                       for r in rows.values() for t in r.get('timeframes', {}).values()),
                    'telegram_configured': bool(token and chat)},
-        'news': {**calendar, 'events': events, 'history': state['news_history'][-20:]},
+        'news': {**calendar, 'events': events, 'history': state['news_history'][-20:],
+                 'missed_warnings': state['news_missed'][-20:]},
         'history': history[-50:], 'rows': rows}
     save(base/'state/state.json', state)
     save(base/'data/snapshot.json', output)
