@@ -10,6 +10,8 @@ from tkinter import messagebox, ttk
 import webbrowser
 
 from core import Journal, analyse, candidates, evaluate, fetch_snapshot, models, paper_levels
+from codex_bridge import analyse_codex, check_codex, AnalysisCancelled, CodexError
+from analysis_export import export_analysis
 
 HOME = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "TradeLensAI"
 
@@ -17,12 +19,13 @@ HOME = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "TradeLensAI"
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("TradeLens AI Desk 0.1 — Paper Trading")
+        self.root.title("TradeLens AI Desk 0.2 — Codex Analysis")
         self.root.geometry("1100x740")
         self.root.minsize(850, 600)
         self.events = queue.Queue()
         self.stop = threading.Event()
         self.stop.set()
+        self.cancel_analysis = threading.Event()
         self.busy = False
         self.closing = False
         self.journal = Journal(HOME / "journal.sqlite")
@@ -30,10 +33,12 @@ class App:
             config = json.loads((HOME / "settings.json").read_text())
         except (OSError, ValueError):
             config = {}
-        self.model = tk.StringVar(value=config.get("model", ""))
+        self.provider = tk.StringVar(value=config.get("provider", "Codex CLI"))
+        self.model = tk.StringVar(value=config.get("model", "") if "provider" in config else "")
+        self.codex_path = tk.StringVar(value=config.get("codex_path", ""))
         self.threshold = tk.StringVar(value=str(config.get("threshold", 85)))
         self.auto_paper = tk.BooleanVar(value=False)
-        self.status = tk.StringVar(value="Stopped. Connect a local Ollama model to analyse signals.")
+        self.status = tk.StringVar(value="Stopped. Check the signed-in Codex CLI connection, then start monitoring.")
         self.build()
         self.refresh_journal()
         self.root.protocol("WM_DELETE_WINDOW", self.close)
@@ -45,20 +50,26 @@ class App:
         frame = ttk.Frame(self.root, padding=16)
         frame.pack(fill="both", expand=True)
         ttk.Label(frame, text="TradeLens AI Desk", font=("Segoe UI", 21, "bold")).pack(anchor="w")
-        ttk.Label(frame, text="Independent local AI review • Forex only • Gold excluded • SIMULATION ONLY",
+        ttk.Label(frame, text="TradeLens → Codex CLI → Saved analysis • Gold excluded • No broker execution",
                   font=("Segoe UI", 11)).pack(anchor="w", pady=(3, 12))
         ttk.Label(frame, text="XM App execution: NOT CONNECTED. No login credentials or real orders are sent.",
                   foreground="#a23a12").pack(anchor="w", pady=5)
-        options = ttk.LabelFrame(frame, text="Local AI", padding=12)
+        options = ttk.LabelFrame(frame, text="Analysis connection", padding=12)
         options.pack(fill="x", pady=8)
-        ttk.Label(options, text="Installed Ollama model").grid(row=0, column=0, sticky="w")
+        ttk.Label(options, text="Analysis provider").grid(row=0, column=0, sticky="w")
+        provider_box = ttk.Combobox(options, textvariable=self.provider, values=["Codex CLI", "Ollama"], state="readonly", width=35)
+        provider_box.grid(row=0, column=1, padx=8)
+        provider_box.bind("<<ComboboxSelected>>", lambda _: self.switch_provider())
+        ttk.Button(options, text="Check connection", command=self.check_models).grid(row=0, column=2)
+        ttk.Label(options, text="Model (blank = Codex default)").grid(row=1, column=0, sticky="w", pady=5)
         self.model_box = ttk.Combobox(options, textvariable=self.model, width=35)
-        self.model_box.grid(row=0, column=1, padx=8)
-        ttk.Button(options, text="Refresh models", command=self.check_models).grid(row=0, column=2)
-        ttk.Label(options, text="Pass score (not win probability)").grid(row=1, column=0, sticky="w", pady=8)
-        ttk.Entry(options, textvariable=self.threshold, width=8).grid(row=1, column=1, sticky="w", padx=8)
-        ttk.Checkbutton(options, text="Automatically record simulated entries after all checks pass",
-                        variable=self.auto_paper).grid(row=2, column=0, columnspan=3, sticky="w")
+        self.model_box.grid(row=1, column=1, padx=8)
+        ttk.Label(options, text="Codex executable (blank = auto)").grid(row=2, column=0, sticky="w", pady=5)
+        ttk.Entry(options, textvariable=self.codex_path, width=48).grid(row=2, column=1, columnspan=2, sticky="w", padx=8)
+        ttk.Label(options, text="Pass score (not win probability)").grid(row=3, column=0, sticky="w", pady=5)
+        ttk.Entry(options, textvariable=self.threshold, width=8).grid(row=3, column=1, sticky="w", padx=8)
+        ttk.Checkbutton(options, text="Optional: record simulated entries after all checks pass",
+                        variable=self.auto_paper).grid(row=4, column=0, columnspan=3, sticky="w")
         actions = ttk.Frame(frame)
         actions.pack(fill="x", pady=8)
         for label, command in [("Start monitoring", self.start), ("Check now", self.check),
@@ -86,22 +97,33 @@ class App:
         self.detail.see("end")
         self.detail.configure(state="disabled")
 
+    def switch_provider(self):
+        self.model.set("")
+        self.model_box["values"] = []
+        self.check_models()
+
     def check_models(self):
+        provider, executable = self.provider.get(), self.codex_path.get()
         def worker():
             try:
-                self.events.put(("models", models()))
+                if provider == "Codex CLI":
+                    self.events.put(("log", "Codex connection: " + check_codex(executable)))
+                else:
+                    self.events.put(("models", models()))
             except Exception as exc:
-                self.events.put(("log", "Ollama unavailable: " + str(exc) + ". Install/start Ollama and download a model separately."))
+                self.events.put(("log", "Connection check: " + str(exc)))
         threading.Thread(target=worker, daemon=True).start()
 
     def settings(self):
         score = float(self.threshold.get())
-        if not 0 <= score <= 100 or not self.model.get().strip():
-            raise ValueError("Choose an installed AI model and a score from 0 to 100")
+        if not 0 <= score <= 100 or self.provider.get() not in ("Codex CLI", "Ollama"):
+            raise ValueError("Choose an analysis provider and a score from 0 to 100")
+        if self.provider.get() == "Ollama" and not self.model.get().strip():
+            raise ValueError("Choose an installed Ollama model")
         model = self.model.get().strip()
         HOME.mkdir(parents=True, exist_ok=True)
-        (HOME / "settings.json").write_text(json.dumps({"model": model, "threshold": score}, allow_nan=False), encoding="utf-8")
-        return model, score, bool(self.auto_paper.get())
+        (HOME / "settings.json").write_text(json.dumps({"provider": self.provider.get(), "model": model, "threshold": score, "codex_path": self.codex_path.get().strip()}, allow_nan=False), encoding="utf-8")
+        return model, score, bool(self.auto_paper.get()), self.provider.get(), self.codex_path.get().strip()
 
     def start(self):
         try:
@@ -115,7 +137,8 @@ class App:
 
     def halt(self):
         self.stop.set()
-        self.status.set("Stopped. A current AI request may finish, but it cannot create a simulated entry.")
+        self.cancel_analysis.set()
+        self.status.set("Stopped. Cancelling any active Codex analysis; no new simulated entry can be created.")
         self.log("Monitoring stopped.")
 
     def check(self):
@@ -128,10 +151,11 @@ class App:
             return
         # Check now can analyse while stopped, but cannot auto-simulate.
         self.busy = True
+        self.cancel_analysis.clear()
         self.status.set("Reading TradeLens and checking freshness…")
         threading.Thread(target=self.work, args=settings, daemon=True).start()
 
-    def work(self, model, threshold, auto_paper):
+    def work(self, model, threshold, auto_paper, provider="Codex CLI", codex_path=""):
         try:
             snapshot = fetch_snapshot()
             for line in self.journal.reconcile(snapshot, time.time()):
@@ -149,18 +173,30 @@ class App:
                     self.journal.save(signal, "WAIT", {"reason": signal["news_reason"]}, time.time())
                     continue
                 count += 1
-                self.events.put(("status", "Analysing " + signal["pair"] + " with " + model))
-                review = analyse(signal, model)
+                self.events.put(("status", "Analysing " + signal["pair"] + " with " + provider + (" / " + model if model else "")))
+                review = (analyse_codex(signal, model, codex_path, self.cancel_analysis)
+                          if provider == "Codex CLI" else analyse(signal, model))
+                if self.cancel_analysis.is_set():
+                    raise AnalysisCancelled("Analysis cancelled; result discarded.")
                 now = time.time()
                 passed, reason = evaluate(snapshot, signal, review, threshold, now)
-                data = {"review": review, "reason": reason, "snapshot_at": signal["snapshot_at"]}
+                data = {"review": review, "reason": reason, "snapshot_at": signal["snapshot_at"], "provider": provider}
                 status = "WAIT"
                 if passed:
                     data["levels"] = paper_levels(snapshot, signal, now)
                     status = "SIMULATED" if auto_paper and not self.stop.is_set() and not self.closing else "READY"
                 self.journal.save(signal, status, data, now)
+                saved = export_analysis(HOME, signal, data, status, provider, now)
+                self.events.put(("log", "Analysis saved: " + str(saved)))
                 self.events.put(("result", signal["pair"] + " " + signal["direction"] + " · " + status + " · score " + str(review["score"])))
             self.events.put(("status", "Check complete. " + ("Monitoring remains on." if not self.stop.is_set() else "Monitoring is stopped.")))
+        except AnalysisCancelled as exc:
+            self.events.put(("log", str(exc)))
+            self.events.put(("status", "Analysis cancelled; monitoring stopped."))
+        except CodexError as exc:
+            self.stop.set()
+            self.events.put(("log", str(exc)))
+            self.events.put(("status", "Codex analysis failed; monitoring paused. Check the connection before restarting."))
         except Exception as exc:
             self.events.put(("log", "No new simulated entries from this failure: " + str(exc)))
             self.events.put(("status", "Check failed; no broker orders exist. See details."))
@@ -216,6 +252,7 @@ class App:
     def close(self):
         self.closing = True
         self.stop.set()
+        self.cancel_analysis.set()
         self.root.destroy()
 
 

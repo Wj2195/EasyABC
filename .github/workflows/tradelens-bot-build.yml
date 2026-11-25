@@ -30,7 +30,7 @@ jobs:
           import app
           with tempfile.TemporaryDirectory() as tmp:
               app.HOME = Path(tmp)
-              with patch.object(app, "models", return_value=[]):
+              with patch.object(app, "models", return_value=[]), patch.object(app, "check_codex", return_value="Fixture connection"):
                   root = tk.Tk()
                   root.withdraw()
                   desk = app.App(root)

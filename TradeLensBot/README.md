@@ -1,7 +1,7 @@
-# TradeLens AI Desk 0.1 — Windows desktop app
+# TradeLens AI Desk 0.2 — Codex analysis trigger
 
 Independent desktop software which reads the existing public TradeLens snapshot,
-asks a local AI model to review eligible signals, notifies you inside the app,
+starts a separate Codex CLI review for eligible signals, notifies you inside the app,
 and optionally records simulated entries when all checks pass.
 
 **XM execution is not connected. This version never signs in, submits real/demo
@@ -18,20 +18,46 @@ The executable is unsigned. You can inspect and build the source yourself instea
 No broker credentials are requested. No real order-submission library is included.
 The AI model is not bundled and must be installed separately.
 
-## Local AI setup (no OpenAI API key required)
+## Connect your installed, signed-in Codex CLI
 
-1. Install Ollama from https://ollama.com/download/windows.
-2. Download a local model appropriate for your PC in Ollama. Model quality and
-   hardware requirements vary; the app makes no model-performance claims.
-3. Start this app and click **Refresh models**. Select an installed model.
-4. Set your review threshold (default 85 is illustrative, not a tested optimum).
-5. Click **Check now** to analyse the latest eligible signals.
-6. To monitor continuously, click **Start monitoring**.
-7. Optionally enable automatic simulated entries. This only writes the local journal.
+1. Unzip the Windows artifact and run TradeLensAI.exe on the same PC as Codex CLI.
+2. Leave **Analysis provider** set to **Codex CLI**.
+3. Leave **Model** blank to use Codex's built-in default, or select a supported model explicitly.
+4. Leave **Codex executable** blank for automatic discovery. If not found, enter the full path to
+   codex.exe or the npm codex.cmd installation entrypoint. Node is required for the npm installation.
+5. Click **Check connection**. It checks the CLI version, required exec flags, and login status,
+   without running a paid model request or displaying authentication details.
+6. Click **Check now** to review up to three new eligible signals, or **Start monitoring** to watch
+   every 60 seconds while this PC and app remain running. Repeated signals on the same candles
+   are skipped using the existing journal.
+7. Read the review in the app. Results are also saved as JSON under
+   %LOCALAPPDATA%\TradeLensAI\analysis-outbox. Each file includes signal identity, pair, direction,
+   snapshot time, analysis completion time, provider, status, score/reason, and execution_authorized=false.
 
-Ollama runs locally at http://127.0.0.1:11434. The app sends only bounded signal
-data to its chat API with a JSON schema, never browser cookies, broker credentials,
-tool calls, shell commands, or executable AI-generated code.
+**This triggers a new non-interactive Codex CLI job, not a prompt in an existing ChatGPT conversation.**
+Telegram forwarding and an OpenAI API key are not required when your CLI already uses a signed-in
+ChatGPT account. The bridge uses the CLI's existing authentication; plan limits and any billing
+associated with that login still apply. The app does not create an API account, sign you in,
+change credentials or promise unlimited/free model usage.
+
+Current Codex CLI support is required for --ignore-user-config, --ephemeral, --output-schema and
+--output-last-message. Check connection explains if an update is needed. No permissive fallback
+is attempted for older CLIs. The app ignores user CLI tool configuration for the review, uses an
+empty temporary working directory, selects the read-only sandbox, disables shell/apps/browser/
+computer-use features and web search, and passes the signal through stdin with no command shell.
+It does not use approval/sandbox bypass flags. An explicit model field can override the built-in
+model default; other personal CLI configuration is intentionally not loaded. CLI authentication
+still uses its normal credential store.
+
+The expected result is a validated object containing decision (PASS or WAIT), score (0–100),
+and reason. PASS is an analysis label, not an order authorization. Missing, malformed, oversized,
+failed, cancelled or timed-out responses are rejected. A Codex error pauses monitoring rather
+than repeatedly consuming usage or silently falling back to another model. Restart after checking
+the CLI connection. Stop cancels an active Codex child process and its process group/tree.
+
+Optional **Ollama** support is retained. Install it from https://ollama.com/download/windows,
+download a local model appropriate for your PC, select Ollama in the provider field and choose
+an installed model. Ollama calls use its local http://127.0.0.1:11434 API. The model is not bundled.
 
 ## Research behavior
 
@@ -54,11 +80,11 @@ tool calls, shell commands, or executable AI-generated code.
 - No cash profit, lot sizing, margin, broker fills, spreads, commissions, slippage,
   tick sequencing, or continuous price-path coverage is simulated. Gaps in the
   scanner feed can miss outcomes. Results are not a strategy backtest/win rate.
-- Stop prevents new automatic simulated entries. A pending local AI request may
-  finish and record an analysis, but does not contact a broker.
+- Stop prevents new automatic simulated entries. Codex jobs are cancelled when Stop is pressed; a pending Ollama request may finish, but its
+  result is discarded after cancellation. Neither provider contacts a broker.
 
 Settings and SQLite journal are stored in %LOCALAPPDATA%\TradeLensAI, independently
-of the public website. The app needs internet for TradeLens, but AI runs locally.
+of the public website. The app needs internet for TradeLens, and Codex CLI sends review requests using its configured OpenAI authentication. Ollama is the optional local-model provider.
 XM integration needs a supported execution route; browser/mobile-app credentials
 alone do not establish one. Confirm the platform/server shown in XM account details
 or the official integration interface with XM before adding an order connector.
@@ -81,6 +107,9 @@ Build from the repository root:
     python -m PyInstaller --noconfirm --clean --onefile --windowed --name TradeLensAI --paths TradeLensBot TradeLensBot/app.py
 
 ## References
+
+- Codex non-interactive mode: https://developers.openai.com/codex/noninteractive
+- Codex CLI reference: https://developers.openai.com/codex/cli/reference
 
 - Ollama chat / structured output:
   https://docs.ollama.com/api/chat
