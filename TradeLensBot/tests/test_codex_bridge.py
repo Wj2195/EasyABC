@@ -115,7 +115,8 @@ class ResolutionAndExportTests(unittest.TestCase):
             entry.parent.mkdir(parents=True);entry.write_text('// fixture')
             with patch.object(bridge.shutil, 'which', return_value='node.exe'):
                 command = bridge.resolve_codex(str(shim))
-            self.assertEqual(command, ['node.exe', str(entry)])
+            self.assertEqual(command[0], 'node.exe')
+            self.assertTrue(Path(command[1]).samefile(entry))
 
     def test_analysis_export_is_atomic_not_an_order_and_keeps_signal_identity(self):
         signal = candidates(snapshot(), NOW)[0]
