@@ -5,6 +5,7 @@ import math
 import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from contextlib import contextmanager
 from urllib.request import Request, urlopen
 
 FEED = "https://wj2195.github.io/EasyABC/TradeLens/data/snapshot.json"
@@ -213,8 +214,14 @@ class Journal:
                 id TEXT PRIMARY KEY, pair TEXT NOT NULL, direction TEXT NOT NULL,
                 status TEXT NOT NULL, updated REAL NOT NULL, data TEXT NOT NULL)""")
 
+    @contextmanager
     def connect(self):
-        return sqlite3.connect(self.path, timeout=10)
+        db = sqlite3.connect(self.path, timeout=10)
+        try:
+            with db:
+                yield db
+        finally:
+            db.close()
 
     def seen(self, signal_id):
         with self.connect() as db:
