@@ -1,0 +1,49 @@
+name: Build TradeLens AI Desk
+on:
+  push:
+    paths:
+      - "TradeLensBot/**"
+      - ".github/workflows/tradelens-bot-build.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: TradeLensBot
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Test signal checks, AI schema and paper ledger
+        run: python -m unittest discover -s TradeLensBot/tests -v
+      - name: Check GUI can start without broker access
+        shell: python
+        run: |
+          import tempfile
+          from pathlib import Path
+          from unittest.mock import patch
+          import tkinter as tk
+          import app
+          with tempfile.TemporaryDirectory() as tmp:
+              app.HOME = Path(tmp)
+              with patch.object(app, "models", return_value=[]):
+                  root = tk.Tk()
+                  root.withdraw()
+                  desk = app.App(root)
+                  root.update()
+                  desk.close()
+      - name: Install build tool
+        run: python -m pip install "pyinstaller>=6,<7"
+      - name: Build standalone Windows executable
+        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name TradeLensAI --paths TradeLensBot TradeLensBot/app.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TradeLensAI-Windows
+          path: |
+            dist/TradeLensAI.exe
+            TradeLensBot/README.md
+          retention-days: 14
