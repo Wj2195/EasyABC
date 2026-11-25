@@ -16,7 +16,9 @@ GitHub Actions run for this branch. Unzip it, then run TradeLensAI.exe.
 
 The executable is unsigned. You can inspect and build the source yourself instead.
 No broker credentials are requested. No real order-submission library is included.
-The AI model is not bundled and must be installed separately.
+Codex CLI must already be installed and signed in on this Windows PC. No local model or
+Ollama installation is required for the Codex provider. Ollama models are installed
+separately only if you choose that optional provider.
 
 ## Connect your installed, signed-in Codex CLI
 
@@ -25,6 +27,7 @@ The AI model is not bundled and must be installed separately.
 3. Leave **Model** blank to use Codex's built-in default, or select a supported model explicitly.
 4. Leave **Codex executable** blank for automatic discovery. If not found, enter the full path to
    codex.exe or the npm codex.cmd installation entrypoint. Node is required for the npm installation.
+   A CLI installed only inside WSL is not automatically discovered by this native Windows build.
 5. Click **Check connection**. It checks the CLI version, required exec flags, and login status,
    without running a paid model request or displaying authentication details.
 6. Click **Check now** to review up to three new eligible signals, or **Start monitoring** to watch
