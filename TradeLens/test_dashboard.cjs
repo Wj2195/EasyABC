@@ -30,7 +30,7 @@ function harness(snapshot=fixture()){
   class Clock extends Date{constructor(...args){super(...(args.length?args:[now]))}static now(){return now}}
   const document={getElementById(id){return nodes[id]??={value:id==='filterState'?'all':'',innerHTML:'',textContent:'',
     addEventListener(){},querySelectorAll(){return []}}}};
-  const context={document,Date:Clock,AbortController,setTimeout(){return 1},clearTimeout(){},
+  const context={document,Date:Clock,AbortController,URL,setTimeout(){return 1},clearTimeout(){},
     setInterval(cb,delay){timers.push({cb,delay})},fetch:()=>new Promise(()=>{})};
   vm.createContext(context);vm.runInContext(source,context);
   vm.runInContext('snapshot='+JSON.stringify(snapshot)+';render()',context);
@@ -113,4 +113,38 @@ test('Python and dashboard freshness policies agree on weekday, DST and expiry b
     'import json,sys;from freshness import is_fresh;print(json.dumps([is_fresh(*x) for x in json.load(sys.stdin)]))'],
     {cwd:__dirname,input:JSON.stringify(cases),encoding:'utf8'}));
   const h=harness();assert.deepEqual(cases.map(c=>h.run('candleFresh(...'+JSON.stringify(c)+')')),python);
+});
+
+function expertFixture(){
+  const s=fixture(),updated=new Date(NOW-60000).toISOString();
+  s.experts={usable:true,checked_at:new Date(NOW).toISOString(),accounts:[{
+    rank:1,owner:'alice',name:'Alice <script>alert(1)</script>',profile_url:'https://www.myfxbook.com/members/alice/strategy/123',
+    gain_pct:50,drawdown_pct:10,verified:true,source_updated_at:updated,source_update_label:'1 minute ago',
+    status:'Published forex positions',positions:[{pair:'EUR/USD',direction:'BUY',entry:1.1,take_profit:1.2,stop_loss:null,
+      estimate:{take_profit:1.15,stop_loss:1.05,reference_price:1.1,candle_time:s.rows['EUR/USD'].timeframes['1h'].candle_time}},
+      {pair:'XAU/USD',direction:'SELL',entry:2000,take_profit:1900,stop_loss:2100}]}]};
+  return s;
+}
+
+test('expert section excludes Gold and separates disclosed orders from illustrative levels',()=>{
+  const h=harness(expertFixture());
+  assert.match(h.nodes.expertTrades.innerHTML,/EUR\/USD/);
+  assert.doesNotMatch(h.nodes.expertTrades.innerHTML,/XAU|>2000/);
+  assert.match(h.nodes.expertTrades.innerHTML,/1.20000/);
+  assert.match(h.nodes.expertTrades.innerHTML,/Not disclosed/);
+  assert.match(h.nodes.expertTrades.innerHTML,/1.15000 \/ 1.05000/);
+  assert.match(h.nodes.expertAccounts.innerHTML,/&lt;script&gt;/);
+  assert.doesNotMatch(h.nodes.expertAccounts.innerHTML,/<script>/);
+  assert.match(h.nodes.expertAccounts.innerHTML,/href="https:\/\/www.myfxbook.com\/members\/alice/);
+});
+
+test('unverified, delayed and stale expert snapshots never display positions or levels',()=>{
+  for(const kind of ['unverified','delayed','stale']){
+    const s=expertFixture();
+    if(kind==='unverified')s.experts.accounts[0].verified=false;
+    if(kind==='delayed')s.experts.accounts[0].source_updated_at=new Date(NOW-1801000).toISOString();
+    if(kind==='stale')s.experts.checked_at=new Date(NOW-1801000).toISOString();
+    const h=harness(s);
+    assert.doesNotMatch(h.nodes.expertTrades.innerHTML,/1.20000|1.15000|badge buy/);
+  }
 });

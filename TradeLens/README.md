@@ -1,4 +1,4 @@
-# TradeLens 1.5.3
+# TradeLens 1.6.0
 
 Telegram technical alerts require **at least 10 of 12** forecasts to agree:
 10/12, 11/12 or 12/12. Nine or fewer does not qualify. All twelve forecasts
@@ -105,3 +105,48 @@ claiming better trade precision. [Time-series evaluation reference](https://scik
 Run tests: `PYTHONPATH=TradeLens python -m unittest discover -s TradeLens -p 'test_*.py'`
 
 Dashboard checks: `node --test TradeLens/test_dashboard.cjs`
+
+## Expert trade watch (read only, Gold excluded)
+
+The scanner reads [Myfxbook's public real-account leaderboard](https://www.myfxbook.com/systems/1)
+and watches its top three distinct account owners by **reported total gain**.
+Sponsored rows and duplicate owners are excluded; the leaderboard must be
+gain-sorted and filtered to real accounts or the adapter fails closed. This is
+a ranking within the provider's public list, not a worldwide ranking or a
+risk-adjusted recommendation. Account gains are full-account statistics and
+may include Gold or other assets; filtering positions cannot reconstruct
+forex-only returns. Drawdown and source links are shown alongside gain.
+
+Only the public `Open Trades` table is read. Positions require both track-record
+and trading-privileges verification plus a real account. Private, missing or
+unverified positions are labelled and never reconstructed from history or
+forecasts. [Myfxbook verification](https://www.myfxbook.com/help/knowledge-base/verification/)
+confirms reported history/privileges, not future performance or professional
+qualifications. Their API is for personal account information, so this feature
+does not ask for credentials or pretend it grants access to others' private trades.
+
+Source requests are throttled to once per 15 minutes, with 15-second request
+timeouts. HTTP and broker publication timestamps are separate. Public snapshots
+expire after 30 minutes; relative provider update times are approximate, and
+unrecognised dates fail closed. A failed refresh suppresses cached positions.
+Privacy changes clear previously visible positions on the next successful
+refresh. HTML/layout changes or access blocks produce an unavailable state;
+there is no paywall/login workaround. The underlying site can delay publication,
+so even a current public position is not a streaming broker feed.
+
+The forex allowlist is the existing 28 pairs. Gold/XAU (including broker suffixes),
+other metals, indices and crypto cannot be displayed. Pending orders are not
+mislabelled as executed positions. Expert TP/SL use explicit price spans only:
+pips, profit values, zeroes and undisclosed values are never substituted.
+
+The separate **illustrative TP/SL** column uses fresh completed 1h candles and
+Wilder ATR(14): TP is 3 ATR from the latest close and SL is 1.5 ATR in the opposite
+direction. These are TradeLens-generated reference levels, not expert orders or
+profit forecasts. They use the current candle close rather than the expert's
+historical entry, ignore spread/costs, and expire with the price data. Published
+expert levels are retained unchanged. [ATR definition](https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/atr).
+
+Expert data is stored in the snapshot under `experts`; refresh state is under
+`expert_watch`. Fetching occurs after existing Telegram delivery decisions.
+It does not change technical consensus, send expert-trade notifications or
+execute/copy orders. Set `enable_expert_watch: false` in `config.json` to disable it.

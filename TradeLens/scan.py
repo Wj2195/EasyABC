@@ -21,6 +21,7 @@ import requests
 
 from news import load_calendar, fetch_calendar, upcoming_events, pending_news, news_message, missed_news, IMPACT_LEVELS
 from freshness import SECS, SNAPSHOT_MAX_AGE, is_fresh
+from experts import load_experts, with_estimates, get_page as fetch_expert_page, unavailable as experts_unavailable
 from validation import walk_forward
 
 ROOT = Path(__file__).resolve().parent
@@ -256,7 +257,8 @@ def send_telegram(session, token, chat, message):
 
 
 def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=send_telegram,
-         now=None, sleep=time.sleep, news_fetch=fetch_calendar, clock=time.time):
+         now=None, sleep=time.sleep, news_fetch=fetch_calendar, clock=time.time,
+         expert_fetch=fetch_expert_page):
     if now is None:
         now = clock()
     else:
@@ -373,6 +375,11 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
                     })
             else:
                 errors.append('Telegram summary delivery failed')
+        # Public expert data is independent of our forecasts and Telegram.
+        # Fetch after deliveries so a slow public profile cannot delay an alert.
+        experts = (load_experts(session, state, clock(), PAIRS, fetch=expert_fetch)
+                   if cfg.get('enable_expert_watch', True)
+                   else experts_unavailable(clock(), 'Expert watch disabled'))
     # Re-evaluate cached rows against current time. Rotating pairs must never
     # retain an old "eligible" flag after their candles have expired.
     finished_at = clock()
@@ -397,7 +404,7 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
     state['run_index'] = run_index + 1
     state['history'] = history[-150:]
     state['last_run'] = iso(finished_at)
-    output = {'app': 'TradeLens Online', 'version': '1.5.3', 'updated_at': iso(finished_at),
+    output = {'app': 'TradeLens Online', 'version': '1.6.0', 'updated_at': iso(finished_at),
         'model': '9-feature technical analog; walk-forward diagnostics; separate scheduled news warnings',
         'provider': 'Unofficial Yahoo Finance',
         'settings': {**cfg, 'alert_rule': 'at_least_10_of_12', 'minimum_agreement': MIN_AGREEMENT,
@@ -416,6 +423,7 @@ def scan(base=ROOT, session_factory=requests.Session, fetch=fetch_bars, send=sen
                    'telegram_configured': bool(token and chat)},
         'news': {**calendar, 'events': events, 'history': state['news_history'][-20:],
                  'missed_warnings': state['news_missed'][-20:]},
+        'experts': with_estimates(experts, rows, finished_at),
         'history': history[-50:], 'rows': rows}
     save(base/'state/state.json', state)
     save(base/'data/snapshot.json', output)
