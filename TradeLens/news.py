@@ -118,6 +118,20 @@ def pending_news(events, delivered, now, lead_minutes=60):
             and now < e['epoch'] <= now + lead_minutes * 60]
 
 
+def missed_news(calendar, pairs, delivered, since, now):
+    """Audit elapsed releases still in the current feed; never send late warnings.
+
+    A missing or expired feed cannot establish coverage, and a first scan has
+    no previous coverage interval. Removed/cancelled events are not inferred.
+    """
+    if since is None or not calendar.get('usable'):
+        return []
+    return [{**e, 'pairs': affected_pairs(e['currency'], pairs)}
+            for e in calendar.get('events', [])
+            if since < e['epoch'] <= now and e['id'] not in delivered
+            and affected_pairs(e['currency'], pairs)]
+
+
 def news_message(event):
     pairs = ', '.join(p.replace('/', '') for p in event['pairs'])
     return (f'NEWS - {event["impact"].upper()} IMPACT EXPECTED\n'

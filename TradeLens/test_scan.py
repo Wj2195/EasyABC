@@ -34,12 +34,14 @@ class DeliveryTests(unittest.TestCase):
 
     def run_scan(self, success=True, direction='BUY', agreement=12, broken=False, stale=False,
                  now=NOW, news=False, pairs=None, clock=None, after_send=None, credentials=True,
-                 news_payload=None, news_fetch_hook=None):
+                 news_payload=None, news_fetch_hook=None, stale_daily=False, expert_fetch_hook=None):
         calls = 0
         def fetch(pair, tf, session, timestamp):
             if broken:
                 raise ValueError('Unavailable test data')
             t = int(timestamp)-scan.SECS[tf]-(1801 if stale and tf == '15m' else 0)
+            if stale_daily and tf == '1d':
+                t -= 86400
             return [{'t': t, 'c': 1., 'o': 1., 'h': 1.1, 'l': .9}]
         def send(session, token, chat, message):
             self.messages.append(message)
@@ -65,7 +67,8 @@ class DeliveryTests(unittest.TestCase):
              patch.object(scan, 'walk_forward', return_value={'samples': 0}):
             return scan.scan(base=self.base, session_factory=DummySession, fetch=fetch, send=send,
                              now=None if clock else now, clock=clock or (lambda: now), sleep=lambda _: None,
-                             news_fetch=fetch_news)
+                             news_fetch=fetch_news,
+                             expert_fetch=expert_fetch_hook or (lambda *_: '<html>Unavailable</html>'))
 
     def test_persisted_timer_repeats_every_fifteen_minutes(self):
         for elapsed in (60, 899, 900, 901, 1799, 1800):
@@ -171,3 +174,37 @@ class DeliveryTests(unittest.TestCase):
         self.assertEqual(self.state()['last_signal_deliveries']['EUR/USD']['sent_at'], NOW)
         self.run_scan(now=NOW+960)
         self.assertEqual(len(self.messages), 1)
+
+    def test_gap_and_missed_news_persist_without_late_delivery_or_duplicates(self):
+        self.run_scan(now=NOW, news=True, credentials=False)
+        output = self.run_scan(now=NOW+7200, news=True)
+        self.assertTrue(output['status']['schedule_delayed'])
+        self.assertEqual(output['status']['previous_scan_gap_seconds'], 7200)
+        self.assertEqual(len(output['news']['missed_warnings']), 1)
+        self.assertFalse(any(m.startswith('NEWS') for m in self.messages))
+        output = self.run_scan(now=NOW+7260, news=True)
+        self.assertFalse(output['status']['schedule_delayed'])
+        self.assertEqual(len(output['news']['missed_warnings']), 1)
+        self.assertEqual(len(self.state()['news_missed']), 1)
+
+    def test_lagging_daily_bar_blocks_opposite_alert_until_it_recovers(self):
+        output = self.run_scan(direction='SELL', stale_daily=True)
+        self.assertEqual(self.messages, [])
+        self.assertEqual(output['status']['fresh_pairs'], 0)
+        self.assertEqual(output['status']['stale_timeframes'], 1)
+        self.assertFalse(output['rows']['EUR/USD']['full_alignment']['eligible'])
+        output = self.run_scan(direction='SELL', now=NOW+60)
+        self.assertEqual(self.messages, ['EURUSD - SELL (12/12)'])
+        self.assertEqual(output['status']['fresh_pairs'], 1)
+
+    def test_expert_watch_is_read_only_and_does_not_change_signal_delivery(self):
+        from test_experts import ranking, profile, trade
+        from experts import LEADERBOARD
+        def public_page(_, url):
+            return ranking() if url == LEADERBOARD else profile(rows=trade()+trade('XAUUSD', identity='124'))
+        output = self.run_scan(now=NOW+900, expert_fetch_hook=public_page)
+        self.assertEqual(self.messages, ['EURUSD - BUY (12/12)'])
+        self.assertEqual(len(output['experts']['accounts']), 3)
+        self.assertTrue(all(len(a['positions']) == 1 for a in output['experts']['accounts']))
+        self.assertTrue(all(a['positions'][0]['pair'] == 'EUR/USD' for a in output['experts']['accounts']))
+        self.assertIn('expert_watch', self.state())

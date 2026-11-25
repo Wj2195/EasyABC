@@ -1,4 +1,4 @@
-# TradeLens 1.5.2
+# TradeLens 1.6.0
 
 Telegram technical alerts require **at least 10 of 12** forecasts to agree:
 10/12, 11/12 or 12/12. Nine or fewer does not qualify. All twelve forecasts
@@ -50,16 +50,40 @@ not covered. The feed covers only the current provider week, not a full rolling
 seven-day calendar. At a week boundary, next-week events become available only
 when the provider updates its feed.
 
-The existing 15-minute GitHub workflow remains the scheduler. Runs can be
+The GitHub workflow requests a scan every five minutes, away from the top of
+the hour, increasing recovery opportunities after a dropped invocation. The
+15-minute successful-delivery cooldown is unchanged. Changing the cron also
+re-registers its schedule actor. Runs can still be
 [delayed or dropped](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
-No exact advance-warning time or continuous news coverage is guaranteed.
+No exact advance-warning time or continuous news coverage is guaranteed. Strict
+timing requires an independent scheduler/always-on worker; a cron change alone
+cannot guarantee it. The scanner publishes its previous scan gap and current
+coverage. A gap over 30 minutes is reported even after data recovers.
+
+When the current calendar still contains an event whose release passed since
+the previous scan without a recorded delivery, it is stored in a separate
+missed-warning audit (when Telegram/news alerts are enabled and configured).
+This audit never sends an overdue warning or consumes a delivery timer.
+Cancelled/removed events, expired feeds, and prior-week events cannot be
+reliably reconstructed, so this is a record of known gaps, not proof of full coverage.
 
 ## Analysis quality
 
 The nine-feature analog model is unchanged mathematically. Vectorization makes
 its historical checks practical. The 15m freshness limit is now 30 minutes after
-candle close (previously two hours); 1h remains two hours and daily four days.
-The scanner rechecks rows before notification and the browser expires old eligibility too.
+candle close (previously two hours); 1h remains two hours. Daily freshness now
+requires the latest completed weekday bar, with a two-hour publication grace
+after UTC midnight and a one-hour provider/DST timestamp tolerance. Friday's
+bar remains valid over the weekend and on Monday; Thursday's bar cannot pass
+as Friday's. Holiday gaps are treated as unavailable rather than guessed.
+The scanner rechecks rows before notification and the browser uses the same policy.
+
+The dashboard expires a snapshot after 30 minutes, hides expired forecast
+scores, labels historical charts, and shows current pair coverage and refresh
+failures. A 30-second render timer expires data even if a request stalls; fetches
+time out after 15 seconds. Forecast matrices show the highest-scoring outcome,
+including SIDEWAYS; low-strength consensus has a visible label. These diagnostics
+do not change the user's directional 10/12 rule or Telegram message format.
 
 Each scanned timeframe/horizon includes up to 40 historical walk-forward tests.
 Every training label ends strictly before the test forecast origin. Outcomes
@@ -79,3 +103,50 @@ timeframes and broker costs is needed before changing model weights or
 claiming better trade precision. [Time-series evaluation reference](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html).
 
 Run tests: `PYTHONPATH=TradeLens python -m unittest discover -s TradeLens -p 'test_*.py'`
+
+Dashboard checks: `node --test TradeLens/test_dashboard.cjs`
+
+## Expert trade watch (read only, Gold excluded)
+
+The scanner reads [Myfxbook's public real-account leaderboard](https://www.myfxbook.com/systems/1)
+and watches its top three distinct account owners by **reported total gain**.
+Sponsored rows and duplicate owners are excluded; the leaderboard must be
+gain-sorted and filtered to real accounts or the adapter fails closed. This is
+a ranking within the provider's public list, not a worldwide ranking or a
+risk-adjusted recommendation. Account gains are full-account statistics and
+may include Gold or other assets; filtering positions cannot reconstruct
+forex-only returns. Drawdown and source links are shown alongside gain.
+
+Only the public `Open Trades` table is read. Positions require both track-record
+and trading-privileges verification plus a real account. Private, missing or
+unverified positions are labelled and never reconstructed from history or
+forecasts. [Myfxbook verification](https://www.myfxbook.com/help/knowledge-base/verification/)
+confirms reported history/privileges, not future performance or professional
+qualifications. Their API is for personal account information, so this feature
+does not ask for credentials or pretend it grants access to others' private trades.
+
+Source requests are throttled to once per 15 minutes, with 15-second request
+timeouts. HTTP and broker publication timestamps are separate. Public snapshots
+expire after 30 minutes; relative provider update times are approximate, and
+unrecognised dates fail closed. A failed refresh suppresses cached positions.
+Privacy changes clear previously visible positions on the next successful
+refresh. HTML/layout changes or access blocks produce an unavailable state;
+there is no paywall/login workaround. The underlying site can delay publication,
+so even a current public position is not a streaming broker feed.
+
+The forex allowlist is the existing 28 pairs. Gold/XAU (including broker suffixes),
+other metals, indices and crypto cannot be displayed. Pending orders are not
+mislabelled as executed positions. Expert TP/SL use explicit price spans only:
+pips, profit values, zeroes and undisclosed values are never substituted.
+
+The separate **illustrative TP/SL** column uses fresh completed 1h candles and
+Wilder ATR(14): TP is 3 ATR from the latest close and SL is 1.5 ATR in the opposite
+direction. These are TradeLens-generated reference levels, not expert orders or
+profit forecasts. They use the current candle close rather than the expert's
+historical entry, ignore spread/costs, and expire with the price data. Published
+expert levels are retained unchanged. [ATR definition](https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/atr).
+
+Expert data is stored in the snapshot under `experts`; refresh state is under
+`expert_watch`. Fetching occurs after existing Telegram delivery decisions.
+It does not change technical consensus, send expert-trade notifications or
+execute/copy orders. Set `enable_expert_watch: false` in `config.json` to disable it.
